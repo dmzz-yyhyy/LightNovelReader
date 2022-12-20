@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "indi.dmzzyyhyy.lightnovelreader"
-        minSdk 29
+        minSdk 25
         targetSdk 30
         versionCode 1
         versionName "1.0"
