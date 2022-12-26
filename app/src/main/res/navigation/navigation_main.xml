@@ -1,0 +1,21 @@
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/navigation_main"
+            app:startDestination="@id/homeFragment">
+    <fragment android:id="@+id/homeFragment"
+              android:name="indi.dmzzyyhyy.lightnovelreader.ui.HomeFragment"
+              android:label="HomeFragment"
+              tools:layout="@layout/fragment_home">
+    </fragment>
+    <fragment android:id="@+id/bookshelfFragment"
+              android:name="indi.dmzzyyhyy.lightnovelreader.ui.BookshelfFragment"
+              android:label="BookshelfFragment"
+              tools:layout="@layout/fragment_bookshelf">
+    </fragment>
+    <fragment android:id="@+id/mineFragment"
+              android:name="indi.dmzzyyhyy.lightnovelreader.ui.MineFragment"
+              android:label="MineFragment"
+              tools:layout="@layout/fragment_mine">
+    </fragment>
+</navigation>

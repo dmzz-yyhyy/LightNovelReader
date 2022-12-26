@@ -4,9 +4,26 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="1.2" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ic_dashboard_black_24dp.xml" value="0.3964102564102564" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.3964102564102564" />
         <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ic_launcher_background.xml" value="0.13697916666666668" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.3964102564102564" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ico_bookshelf.xml" value="0.3953846153846154" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ico_home.xml" value="0.3953846153846154" />
         <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ico_menu.xml" value="0.28072916666666664" />
-        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/drawable/ico_mine.xml" value="0.3953846153846154" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/activity_main2.xml" value="0.1879432624113475" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/fragment_blank.xml" value="0.38645833333333335" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/fragment_bookshelf.xml" value="0.24166666666666667" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/fragment_home.xml" value="0.1879432624113475" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/fragment_mine.xml" value="0.24166666666666667" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/fragment_notifications.xml" value="0.38645833333333335" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/home.xml" value="0.25" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/home_activity.xml" value="0.37135416666666665" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/home_fragment.xml" value="0.38645833333333335" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/layout/main_activity.xml" value="0.5" />
+        <entry key="..\:/Java/LightNovelReader/app/src/main/res/menu/bottom_nav_menu.xml" value="0.4010416666666667" />
         <entry key="..\:/Java/LightNovelReader/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.28072916666666664" />
         <entry key="..\:/Java/LightNovelReader/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.4" />
       </map>
