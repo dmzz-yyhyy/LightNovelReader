@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.BookData
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBooksData
 
 @Composable
 fun ReadingBookCard(bookData: BookData) {
@@ -25,23 +26,21 @@ fun ReadingBookCard(bookData: BookData) {
         modifier = Modifier.padding(4.dp, top = padding, bottom = padding * 2),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        Row(Modifier.padding(16.dp)
         ) {
             AsyncImage(
                 model = bookData.coverURL,
                 contentDescription = "cover",
                 modifier = Modifier
-                    .size(128.dp)
-                    .padding(top = padding, bottom = padding, start = 0.dp, end = 0.dp)
+                    .size(height = 128.dp, width = 88.dp)
             )
             Column(
-                modifier = Modifier.padding(start = 2.dp, end = padding * 2, top = 4.dp),
+                modifier = Modifier.padding(start = 8.dp, end = padding * 2),
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
                     text = bookData.bookName,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleLarge
                 )
                 Divider(
                     color = Color.Black,
@@ -55,4 +54,10 @@ fun ReadingBookCard(bookData: BookData) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewReadingBookCard() {
+    ReadingBookCard(LocalBooksData.booksDataList[0])
 }

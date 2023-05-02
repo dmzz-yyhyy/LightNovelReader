@@ -1,16 +1,12 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui
+package indi.dmzz_yyhyy.lightnovelreader.ui.Fragment
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBooksData
+import indi.dmzz_yyhyy.lightnovelreader.ui.ReadingBookCard
 
 @Preview(showBackground = true)
 @Composable
@@ -21,6 +17,10 @@ fun ReadingFragment() {
             .padding(padding)
             .fillMaxWidth()
     ) {
-        ReadingBookCard(LocalBooksData.book1)
+        for (bookData in LocalBooksData.booksDataList) {
+            ReadingBookCard(bookData)
+        }
     }
 }
+
+
