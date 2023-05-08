@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.Fragment
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.fragments
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
