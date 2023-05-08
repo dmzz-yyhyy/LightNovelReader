@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.home.iteams
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.iteam
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,21 +9,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import indi.dmzz_yyhyy.lightnovelreader.data.BookData
+import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBooksData
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalMainNavController
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadingBookCard(bookData: BookData) {
+fun ReadingBookCard(book: Book) {
+    val mainNavController = LocalMainNavController.current
     val padding = 8.dp
     Card(
+        onClick = { println(mainNavController);mainNavController.navigate("reader/${book.bookUID}") },
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.padding(4.dp, top = padding, bottom = padding * 2),
         elevation = CardDefaults.cardElevation(4.dp)
+        // the codec below won't stay there for a long time
+
+
     ) {
         Row(Modifier.padding(16.dp)
         ) {
             AsyncImage(
-                model = bookData.coverURL,
+                model = book.coverURL,
                 contentDescription = "cover",
                 modifier = Modifier
                     .size(height = 128.dp, width = 88.dp)
@@ -33,8 +40,9 @@ fun ReadingBookCard(bookData: BookData) {
                 verticalArrangement = Arrangement.Top
             ) {
                 Text(
-                    text = bookData.bookName,
-                    style = MaterialTheme.typography.titleLarge
+                    text = book.bookName,
+                    style = MaterialTheme.typography.titleLarge,
+                    maxLines = 1
                 )
                 Divider(
                     color = Color.Black,

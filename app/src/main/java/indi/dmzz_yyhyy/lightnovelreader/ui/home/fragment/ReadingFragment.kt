@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.home.fragments
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.fragment
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBooksData
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.iteams.ReadingBookCard
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.iteam.ReadingBookCard
 
 @Preview(showBackground = true)
 @Composable

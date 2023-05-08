@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui
+package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Box
@@ -14,8 +14,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.ui.Fragment.BookcaseFragment
-import indi.dmzz_yyhyy.lightnovelreader.ui.Fragment.ReadingFragment
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.fragment.BookcaseFragment
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.fragment.ReadingFragment
 
 object RouteConfig {
     const val READING = "reading"
@@ -35,7 +35,7 @@ object Labels {
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
-fun MainContent() {
+fun HomeContent() {
     var selectedItem by remember { mutableStateOf(0) }
     var selectedItemName by remember { mutableStateOf("阅读中") }
     val navController = rememberNavController()
@@ -65,7 +65,7 @@ fun MainContent() {
                     }
                 )
                 NavigationBarItem(
-                    icon = { Icon(painter = painterResource(id = R.drawable.reading), null) },
+                    icon = { Icon(painter = painterResource(id = R.drawable.search), null) },
                     label = { Text("探索") },
                     selected = selectedItem == 2,
                     onClick = {

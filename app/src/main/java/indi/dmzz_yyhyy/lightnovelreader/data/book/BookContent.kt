@@ -1,7 +1,7 @@
-package indi.dmzz_yyhyy.lightnovelreader.data
+package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 data class BookContent(val url: String){
-    var chaptersList: List<BookChapter> = listOf(
+    var chaptersList: MutableList<BookChapter> = mutableListOf(
         BookChapter(
             "第一章", "    「你在干嘛？」\n" +
                     "\n" +
