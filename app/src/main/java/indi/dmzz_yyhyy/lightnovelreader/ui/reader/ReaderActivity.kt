@@ -27,51 +27,5 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderActivity(bookUID: String?) {
-    var book: Book? = null
-    if (bookUID == null) {
-        error("uid was null")
-    } else {
-        book = BookData.getBook(bookUID.toString())
-    }
-    if (book == null) {
-        error("book not found")
-    }
-    val chapter by remember { mutableStateOf(book.bookContent.chaptersList[0]) }
-    val chapterTitle by remember { mutableStateOf(book.bookContent.chaptersList[0].chapterTitle) }
-    val chapterContent by remember { mutableStateOf(book.bookContent.chaptersList[0].contentText) }
-    var isVisible by remember { mutableStateOf(false) }
-
-    Scaffold(
-        modifier = Modifier.pointerInput(Unit) {
-            detectTapGestures(
-                onTap = { isVisible = !isVisible }
-            )
-        },
-        topBar = {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = fadeIn(animationSpec = tween(400)),
-                exit = fadeOut(animationSpec = tween(400))
-            ) {
-                TopAppBar(title = { Text(chapterTitle) })
-            }
-        },
-        bottomBar = {
-            AnimatedVisibility(
-                visible = isVisible,
-                enter = slideInVertically(initialOffsetY = { 2* it / 3 }, animationSpec = tween(400)),
-                exit = slideOutVertically(targetOffsetY = { 2* it / 3}, animationSpec = tween(400))
-            ) {
-                BottomAppBar {}
-            }
-        }
-    ) {
-        TextFragment(chapterContent)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ReaderActivityPreview() {
-    ReaderActivity("2c1d3800e0b785bf7905d0f758d8396d")
+    //write a navigation here
 }
