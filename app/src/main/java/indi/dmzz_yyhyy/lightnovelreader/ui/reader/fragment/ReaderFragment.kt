@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.reader
+package indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility

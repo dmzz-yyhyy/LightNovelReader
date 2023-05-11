@@ -1,6 +1,5 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.reader
+package indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme

@@ -64,8 +64,8 @@ fun MainContent() {
                     route = "reader/{bookUID}",
                     arguments = listOf(navArgument("bookUID") { type = NavType.StringType })
                 ) { backStackEntry ->
-                    val bookID = backStackEntry.arguments?.getString("bookUID")
-                    ReaderActivity(bookID)
+                    val bookUID = backStackEntry.arguments?.getString("bookUID")
+                    ReaderActivity(bookUID)
                 }
 
                 composable(route = "hoome") {
