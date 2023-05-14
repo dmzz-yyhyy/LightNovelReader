@@ -13,13 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
 import indi.dmzz_yyhyy.lightnovelreader.data.BookData
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderFragment(bookUID: String?) {
+fun ReaderFragment(navController: NavController, bookUID: String?, chapterIndex: Int?) {
     var book: Book? = null
     if (bookUID == null) {
         error("uid was null")
@@ -29,9 +30,9 @@ fun ReaderFragment(bookUID: String?) {
     if (book == null) {
         error("book not found")
     }
-    val chapter by remember { mutableStateOf(book.bookContent.chaptersList[0]) }
-    val chapterTitle by remember { mutableStateOf(book.bookContent.chaptersList[0].chapterTitle) }
-    val chapterContent by remember { mutableStateOf(book.bookContent.chaptersList[0].contentText) }
+    val chapter by remember { mutableStateOf(book.bookContent.chaptersList[chapterIndex!!]) }
+    val chapterTitle by remember { mutableStateOf(chapter.chapterTitle) }
+    val chapterContent by remember { mutableStateOf(chapter.contentText) }
     var isVisible by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -61,10 +62,4 @@ fun ReaderFragment(bookUID: String?) {
     ) {
         TextFragment(chapterContent)
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ReaderFragmentPreview() {
-    ReaderFragment("2c1d3800e0b785bf7905d0f758d8396d")
 }

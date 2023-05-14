@@ -67,11 +67,6 @@ fun MainContent() {
                     val bookUID = backStackEntry.arguments?.getString("bookUID")
                     ReaderActivity(bookUID)
                 }
-
-                composable(route = "hoome") {
-                    HomeContent()
-                }
-
             }
         }
     }
