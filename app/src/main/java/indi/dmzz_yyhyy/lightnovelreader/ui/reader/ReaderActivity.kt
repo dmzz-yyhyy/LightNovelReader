@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost

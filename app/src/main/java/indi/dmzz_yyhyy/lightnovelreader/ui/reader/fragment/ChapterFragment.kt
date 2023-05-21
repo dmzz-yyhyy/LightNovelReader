@@ -31,9 +31,6 @@ fun ChapterFragment(navController: NavController, bookUID: String?) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("DetailPage") })
-        },
-        bottomBar = {
-            BottomAppBar {}
         }
     ) {
         Column {
@@ -76,26 +73,15 @@ fun ChapterFragment(navController: NavController, bookUID: String?) {
                 )
 
             }
-            Column {
                 LazyColumn {
                     for (chapter in book.bookContent.chaptersList) {
                         item {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(onClick = { /* TODO */ })
-                            ) {
-                                Text(
-                                    text = chapter.chapterTitle,
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
+
 
                         }
                     }
                 }
-            }
+
         }
     }
 }
