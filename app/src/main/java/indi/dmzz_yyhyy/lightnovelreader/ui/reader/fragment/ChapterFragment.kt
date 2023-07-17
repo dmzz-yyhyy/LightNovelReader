@@ -2,28 +2,21 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.*
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
-import indi.dmzz_yyhyy.lightnovelreader.data.BookData
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ChapterFragment(navController: NavController, bookUID: String?) {
+fun ChapterFragment(navController: NavController, bookUID: Int) {
+    /*
     val book: Book?
     if (bookUID == null) {
         error("uid was null")
     } else {
-        book = BookData.getBook(bookUID.toString())
+        book = BookData.getBook(bookUID)
     }
     if (book == null) {
         error("book not found")
@@ -46,11 +39,13 @@ fun ChapterFragment(navController: NavController, bookUID: String?) {
                         modifier = Modifier.padding(start = 8.dp, end = 8.dp),
                         verticalArrangement = Arrangement.Top
                     ) {
-                        Text(
-                            text = book.bookName,
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 3
-                        )
+                        book.bookName.let { it ->
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 3
+                            )
+                        }
                         Text(
                             text = "Description",
                             style = MaterialTheme.typography.bodyMedium
@@ -74,14 +69,15 @@ fun ChapterFragment(navController: NavController, bookUID: String?) {
 
             }
                 LazyColumn {
-                    for (chapter in book.bookContent.chaptersList) {
+                    """for (chapter in book.bookContent.chaptersList) {
                         item {
 
 
                         }
-                    }
+                    }"""
                 }
 
         }
     }
+    */
 }

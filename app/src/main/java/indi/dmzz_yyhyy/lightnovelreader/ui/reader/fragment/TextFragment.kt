@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBooksData
 
 @Composable
 fun TextFragment(contentText: String) {
@@ -20,10 +19,4 @@ fun TextFragment(contentText: String) {
                 style = MaterialTheme.typography.bodyMedium)
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun TextFragmentPreview() {
-    TextFragment(LocalBooksData.booksDataList[0].bookContent.chaptersList[0].contentText)
 }

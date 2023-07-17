@@ -11,20 +11,21 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment.ChapterFragment
 import indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment.ReaderFragment
 
 @Composable
-fun ReaderActivity(bookUID: String?) {
+fun ReaderActivity(bookID: Int?) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
         startDestination = "chapter",
     ) {
         composable(route = "chapter") {
-            ChapterFragment(navController, bookUID)
+            bookID?.let { it1 -> ChapterFragment(navController, it1) }
         }
         composable(route = "reader/{chapterIndex}",
             arguments = listOf(navArgument("chapterIndex") { type = NavType.IntType })) {  backStackEntry ->
             val chapterIndex = backStackEntry.arguments?.getInt("chapterIndex")
-            ReaderFragment(navController, bookUID, chapterIndex)
+            ReaderFragment(navController, bookID, chapterIndex)
         }
     }
 }
+
 

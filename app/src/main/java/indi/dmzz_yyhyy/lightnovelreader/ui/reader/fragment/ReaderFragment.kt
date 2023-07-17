@@ -1,27 +1,15 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import indi.dmzz_yyhyy.lightnovelreader.data.BookData
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderFragment(navController: NavController, bookUID: String?, chapterIndex: Int?) {
-    var book: Book? = null
+fun ReaderFragment(navController: NavController, bookUID: Int?, chapterIndex: Int?) {
+    """var book: Book? = null
     if (bookUID == null) {
         error("uid was null")
     } else {
@@ -61,5 +49,5 @@ fun ReaderFragment(navController: NavController, bookUID: String?, chapterIndex:
         }
     ) {
         TextFragment(chapterContent)
-    }
+    }"""
 }
