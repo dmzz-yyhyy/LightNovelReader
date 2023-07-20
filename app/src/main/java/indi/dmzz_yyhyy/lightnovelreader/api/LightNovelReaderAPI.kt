@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.api
 
+import indi.dmzz_yyhyy.lightnovelreader.data.book.Chapter
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Information
 import indi.dmzz_yyhyy.lightnovelreader.data.local.Config
 import okhttp3.Interceptor
@@ -49,12 +50,24 @@ class LightNovelReaderAPI @Inject constructor() {
     interface LightNovelReaderBackgroundAPI {
         @GET("get_book_information")
         fun getBookInformation(@Query("book_id") bookID: Int): Call<Information>
+
+        @GET("get_book_chapter_list")
+        fun getBookChapterList(@Query("book_id") bookID: Int): Call<Information>
+
+        @GET("get_book_chapter_content")
+        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<Information>
     }
 
-        fun getBookInformation(bookID: Int): Information? {
-            val dataCall: Call<Information> = service.getBookInformation(bookID)
-            val data: Response<Information>? = dataCall.execute()
-            return data?.body()
-        }
+    fun getBookInformation(bookId: Int): Information? {
+        val dataCall: Call<Information> = service.getBookInformation(bookId)
+        val data: Response<Information>? = dataCall.execute()
+        return data?.body()
+    }
+
+    fun getBookChapterList(bookId: Int, ): List<Chapter> {
+        val dataCall: Call<Information> = service.getBookChapterList(bookId)
+        val data: Response<Information>? = dataCall.execute()
+        return
+    }
 
 }

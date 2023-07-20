@@ -57,5 +57,4 @@ class LocalBookDataSource @Inject constructor(){
         bookList.add(index, book)
     }
 
-
 }

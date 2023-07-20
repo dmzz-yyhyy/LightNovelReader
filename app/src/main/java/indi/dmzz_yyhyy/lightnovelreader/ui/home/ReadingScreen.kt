@@ -32,7 +32,7 @@ fun ReadingScreen(
                 .fillMaxWidth()
         ) {
             for (book in readingUiState.readingBookDataList) {
-                ReadingBookCard(book)
+                ReadingBookCard(book, readingUiState.onCardClick)
             }
         }
 

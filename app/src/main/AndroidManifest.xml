@@ -29,6 +29,11 @@
                     android:name="android.app.lib_name"
                     android:value=""/>
         </activity>
+        <activity
+                android:name=".ui.reader.ReaderActivity"
+                android:exported="false"
+                android:theme="@style/Theme.LightNovelReader">
+        </activity>
     </application>
 
 </manifest>

@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data
 import android.util.Log
 import indi.dmzz_yyhyy.lightnovelreader.api.LightNovelReaderAPI
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
+import indi.dmzz_yyhyy.lightnovelreader.data.book.Chapter
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Information
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -22,6 +23,11 @@ class WebBookDataSource @Inject constructor(
         val data = information.data
         Log.i("Web", "Books get success, bookId=${data.bookID}")
         return Book(data.bookID, data.bookName, data.bookCoverURL, data.bookIntroduction)
+    }
+    suspend fun getBookChapterList(bookId: Int): List<Chapter> {
+        withContext(ioDispatcher) {
+            lightNovelReaderAPI.getBookInformation(bookId)
+        }
     }
 }
 

@@ -22,9 +22,6 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.RouteConfig
 import indi.dmzz_yyhyy.lightnovelreader.ui.theme.LightNovelReaderTheme
 
-val LocalMainNavController = compositionLocalOf<NavController> {
-    error("No NavController provided")
-}
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
 

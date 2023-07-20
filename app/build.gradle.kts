@@ -62,7 +62,7 @@ dependencies {
     implementation("androidx.navigation:navigation-runtime-ktx:2.5.2")
     implementation("androidx.navigation:navigation-compose:2.5.0-alpha03")
     implementation ("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0-alpha03")
+    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
     implementation ("io.coil-kt:coil-compose:2.3.0")
     implementation ("com.squareup.retrofit2:retrofit:2.4.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.1.0")

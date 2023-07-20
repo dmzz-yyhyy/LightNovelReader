@@ -28,9 +28,7 @@ class ReadingBookRepository  @Inject constructor(
         Log.d("ReadingBookRepository", "readingBookList=$_readingList")
         val readingBookList: MutableList<Book> = mutableListOf()
         for (bookId in _readingList) {
-            bookRepository.getBook(bookId)?.let { readingBookList.add(it) }
-            Log.i("ReadingViewModel", "Book gets success.${readingBookList[readingBookList.size - 1].bookID}")
-        }
+            bookRepository.getBook(bookId)?.let { readingBookList.add(it) }}
         return readingBookList
     }
 }

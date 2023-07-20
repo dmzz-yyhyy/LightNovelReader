@@ -1,26 +1,28 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.iteam
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.LocalMainNavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadingBookCard(book: Book) {
+fun ReadingBookCard(book: Book, onCardClick: (Int, Context) -> Unit) {
     val padding = 8.dp
+    val context = LocalContext.current
 
     Card(
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier.padding(4.dp, top = padding, bottom = padding * 2),
-        elevation = CardDefaults.cardElevation(4.dp)
-        // the codec below won't stay there for a long time
+        elevation = CardDefaults.cardElevation(4.dp),
+        onClick = { onCardClick(book.bookID, context) }
 
 
     ) {

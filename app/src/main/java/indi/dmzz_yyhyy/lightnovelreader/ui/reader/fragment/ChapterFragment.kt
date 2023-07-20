@@ -11,7 +11,6 @@ import androidx.navigation.NavController
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ChapterFragment(navController: NavController, bookUID: Int) {
-    /*
     val book: Book?
     if (bookUID == null) {
         error("uid was null")
@@ -68,16 +67,16 @@ fun ChapterFragment(navController: NavController, bookUID: Int) {
                 )
 
             }
-                LazyColumn {
-                    """for (chapter in book.bookContent.chaptersList) {
+            LazyColumn {
+                """for (chapter in book.bookContent.chaptersList) {
                         item {
 
 
                         }
                     }"""
-                }
+            }
 
         }
     }
-    */
+
 }
