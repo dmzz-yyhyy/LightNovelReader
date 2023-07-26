@@ -1,3 +1,13 @@
 <resources>
-    <string name="app_name">LightNovelReader</string>
+    <string name="app_name" translatable="false">LightNovelReader</string>
+    <string name="nav_reading">Reading</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_discover">Discover</string>
+    <string name="nav_profile">Profile</string>
+    <string name="current_reading">Current Reading: %s</string>
+    <string name="last_reading_time">Last reading time: %s</string>
+    <string name="contents">Contents</string>
+    <string name="chapters">Chapters</string>
+    <string name="read">Read</string>
+    <string name="summary">Summary</string>
 </resources>

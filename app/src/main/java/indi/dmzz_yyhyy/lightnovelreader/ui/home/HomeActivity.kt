@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -35,7 +36,7 @@ class HomeActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
-                    var screenName by remember { mutableStateOf("阅读中") }
+                    var screenName by remember { mutableStateOf(getString(R.string.nav_reading)) }
                     Scaffold(
                         topBar = { TopAppBar(title = { Text(screenName) }) },
                         bottomBar = {
@@ -44,40 +45,40 @@ class HomeActivity : ComponentActivity() {
                             NavigationBar {
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.reading), null) },
-                                    label = { Text("阅读中") },
+                                    label = { Text(stringResource(id = R.string.nav_reading)) },
                                     selected = selectedItem == 0,
                                     onClick = {
-                                        screenName = "阅读中"
+                                        screenName = getString(R.string.nav_reading)
                                         selectedItem = 0
                                         navController.navigate(RouteConfig.READING)
                                     }
                                 )
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.bookcase), null) },
-                                    label = { Text("书架") },
+                                    label = { Text(stringResource(id = R.string.nav_library)) },
                                     selected = selectedItem == 1,
                                     onClick = {
-                                        screenName = "书架"
+                                        screenName = getString(R.string.nav_library)
                                         selectedItem = 1
                                         navController.navigate(RouteConfig.BOOKCASE)
                                     }
                                 )
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.search), null) },
-                                    label = { Text("探索") },
+                                    label = { Text(stringResource(id = R.string.nav_discover)) },
                                     selected = selectedItem == 2,
                                     onClick = {
-                                        screenName = "探索"
+                                        screenName = getString(R.string.nav_discover)
                                         selectedItem = 2
                                         navController.navigate(RouteConfig.SEARCH)
                                     }
                                 )
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.mine), null) },
-                                    label = { Text("我的") },
+                                    label = { Text(stringResource(id = R.string.nav_profile)) },
                                     selected = selectedItem == 3,
                                     onClick = {
-                                        screenName = "我的"
+                                        screenName = getString(R.string.nav_profile)
                                         selectedItem = 3
                                         navController.navigate(RouteConfig.MINE)
                                     }

@@ -8,9 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import indi.dmzz_yyhyy.lightnovelreader.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -20,7 +22,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("章节") })
+            TopAppBar(title = { Text(stringResource(id = R.string.chapters),) })
         }
     ) {
         LazyColumn {
@@ -44,7 +46,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             )
                             Text(
                                 modifier = Modifier.padding(start = 3.dp),
-                                text = "简介",
+                                text = stringResource(id = R.string.summary),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             LazyColumn(Modifier.height(140.dp)) {
@@ -61,13 +63,13 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                         onClick = { },
                         modifier = Modifier.align(alignment = Alignment.BottomEnd).padding(end = 24.dp)
                     ) {
-                        Text(text = "阅读")
+                        Text(text = stringResource(id = R.string.read))
                     }
                 }
                 Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
                     Column (){
                     Text(
-                        text = "目录",
+                        text = stringResource(id = R.string.contents),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(top = 10.dp)
                     )

@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,11 +55,11 @@ fun ReadingBookCard(book: Book, onCardClick: (Int, Context) -> Unit) {
                     maxLines = 1
                 )
                 Text(
-                    text = "当前阅读: ",
+                    text = stringResource(id = R.string.current_reading),
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(modifier = Modifier.align(Alignment.End),
-                    text = "上次阅读时间",
+                    text = stringResource(id = R.string.last_reading_time),
                     textAlign = TextAlign.End,
                     style = MaterialTheme.typography.titleSmall
                 )

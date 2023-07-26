@@ -1,0 +1,12 @@
+<resources>
+    <string name="nav_reading">阅读中</string>
+    <string name="nav_library">书架</string>
+    <string name="nav_discover">探索</string>
+    <string name="nav_profile">我的</string>
+    <string name="current_reading">当前阅读: %s</string>
+    <string name="last_reading_time">上次阅读时间: %s</string>
+    <string name="contents">目录</string>
+    <string name="chapters">章节</string>
+    <string name="read">阅读</string>
+    <string name="summary">简介</string>
+</resources>
