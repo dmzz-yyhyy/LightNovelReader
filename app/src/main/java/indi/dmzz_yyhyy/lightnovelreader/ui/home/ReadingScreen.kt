@@ -22,9 +22,8 @@ fun ReadingScreen(
     navController: NavController,
     readingViewModel: ReadingViewModel
 ) {
-    readingViewModel.reading()
-
     val readingUiState by readingViewModel.uiState.collectAsState()
+
         val padding = 16.dp
         Column(
             Modifier

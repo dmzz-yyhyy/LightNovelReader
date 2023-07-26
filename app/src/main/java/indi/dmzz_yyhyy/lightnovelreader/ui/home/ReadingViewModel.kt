@@ -17,7 +17,7 @@ class ReadingViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ReadingUiState())
     val uiState: StateFlow<ReadingUiState> = _uiState
-    fun reading() {
+    init {
         viewModelScope.launch() {
                 _uiState.update {
                     readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.getReadingBookList())
@@ -25,5 +25,4 @@ class ReadingViewModel @Inject constructor(
             }
         }
     }
-
 }

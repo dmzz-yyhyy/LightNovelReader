@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.reader.fragment
+package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn

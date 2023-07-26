@@ -27,8 +27,4 @@ class BookRepository  @Inject constructor (
         return book
     }
 
-    suspend fun getBookChapterList(bookId: Int): Book? {
-        return null
-    }
-
 }

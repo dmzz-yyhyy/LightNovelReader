@@ -82,7 +82,6 @@ fun LightNovelReaderTheme(
 
   MaterialTheme(
     colorScheme = colors,
-    typography = replyTypography,
     content = content
   )
 }
