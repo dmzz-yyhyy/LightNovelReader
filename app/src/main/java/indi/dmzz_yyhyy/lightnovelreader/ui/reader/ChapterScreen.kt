@@ -4,10 +4,12 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -22,77 +24,102 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(id = R.string.chapters),) })
+            TopAppBar(title = { Text(stringResource(id = R.string.chapters)) })
         }
     ) {
         LazyColumn {
+            item { Box(Modifier.padding(it)) }
             item {
-                Box(modifier = Modifier.padding(24.dp, top = 76.dp)) {
-                    Row {
-                        AsyncImage(
-                            model = chapterUiState.bookCoverUrl,
-                            contentDescription = "cover",
-                            modifier = Modifier
-                                .size(height = 160.dp, width = 110.dp)
-                        )
-                        Column(
-                            modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                            verticalArrangement = Arrangement.Top
-                        ) {
-                            Text(
-                                text = chapterUiState.bookName,
-                                style = MaterialTheme.typography.labelLarge,
-                                maxLines = 3
+                Card(
+                    Modifier
+                        .padding(8.dp)
+                ) {
+                    Box(
+                        Modifier.height(200.dp)
+                    ) {
+                        Row {
+                            AsyncImage(
+                                model = chapterUiState.bookCoverUrl,
+                                contentDescription = "cover",
+                                modifier = Modifier
+                                    .size(height = 200.dp, width = 137.dp)
+                                    .clip(RoundedCornerShape(12.dp))
                             )
-                            Text(
-                                modifier = Modifier.padding(start = 3.dp),
-                                text = stringResource(id = R.string.summary),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                            LazyColumn(Modifier.height(140.dp)) {
-                                item {
-                                    Text(
-                                        text = chapterUiState.bookIntroduction,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                            Column(
+                                Modifier
+                                    .height(136.dp)
+                                    .padding(8.dp, top = 16.dp, end = 24.dp),
+                                verticalArrangement = Arrangement.Top
+                            ) {
+                                Text(
+                                    text = chapterUiState.bookName,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    maxLines = 3
+                                )
+                                Text(
+                                    modifier = Modifier.padding(start = 3.dp),
+                                    text = stringResource(id = R.string.summary),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                LazyColumn(Modifier.height(140.dp)) {
+                                    item {
+                                        Text(
+                                            text = chapterUiState.bookIntroduction,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                    Button(
-                        onClick = { },
-                        modifier = Modifier.align(alignment = Alignment.BottomEnd).padding(end = 24.dp)
-                    ) {
-                        Text(text = stringResource(id = R.string.read))
+                        Text(modifier = Modifier
+                            .padding(start = 145.dp, bottom = 36.dp)
+                            .align(alignment = Alignment.BottomStart),
+                            style = MaterialTheme.typography.bodySmall,
+                            text = "上次阅读:")
+                        Button(
+                            onClick = { },
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .align(alignment = Alignment.BottomEnd)
+                        ) {
+                            Text(text = stringResource(id = R.string.read))
+                        }
                     }
                 }
-                Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
-                    Column (){
-                    Text(
-                        text = stringResource(id = R.string.contents),
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(top = 10.dp)
-                    )
-                    Divider()
-                        for (volume in chapterUiState.volumeList) {
-                                Text(
-                                    text = volume.volumeName,
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                                Divider(Modifier.padding(4.dp))
-                                Box(Modifier.padding(4.dp)) {
-                                    Column {
-                                    for (chapter in volume.chapters) {
 
-                                            Text(
-                                                text = chapter.title,
-                                                style = MaterialTheme.typography.labelMedium
-                                            )
-                                            Divider(Modifier.padding(2.dp))
+
+
+                Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
+                    Column {
+                        Divider()
+                        Text(
+                            text = stringResource(id = R.string.contents),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                        )
+                        Box(Modifier.padding(8.dp)) {
+                            Column {
+                                for (volume in chapterUiState.volumeList) {
+                                    Text(
+                                        modifier = Modifier.padding(start = 2.dp),
+                                        text = volume.volumeName,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Box(Modifier.padding(8.dp)) {
+                                        Column {
+                                            for (chapter in volume.chapters) {
+
+                                                Text(
+                                                    modifier = Modifier.padding(start = 2.dp),
+                                                    text = chapter.title,
+                                                    style = MaterialTheme.typography.titleSmall
+                                                )
+                                                Divider()
+                                            }
                                         }
                                     }
                                 }
-
+                            }
                         }
                     }
                 }

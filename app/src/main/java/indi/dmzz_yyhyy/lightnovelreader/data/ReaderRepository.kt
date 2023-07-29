@@ -35,7 +35,7 @@ class ReaderRepository @Inject constructor(
     suspend fun load(bookId: Int) {
         _bookId = bookId
         if (bookRepository.getBook(bookId) != null) { _book = bookRepository.getBook(bookId)!! }
-        _volumeList = webBookDataSource.getBookChapterList(bookId)!!.data.toMutableList()
+        if (webBookDataSource.getBookChapterList(bookId) != null) { _volumeList = webBookDataSource.getBookChapterList(bookId)!!.data.toMutableList() }
         while (true) {
             if (_volumeList.size != 0 && _book.bookID != 0) {
                 updateData()

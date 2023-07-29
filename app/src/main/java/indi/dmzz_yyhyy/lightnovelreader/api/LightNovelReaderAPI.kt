@@ -26,8 +26,8 @@ class LightNovelReaderAPI @Inject constructor() {
             val builder = url.newBuilder()
             requestBuilder.url(builder.build())
                 .method(request.method, request.body)
-                .addHeader("clientType", "IOS")
-                .addHeader("Content-Type", "application/x-www-form-urlencoded")
+                .header("Connection","close")
+                .header("Connection","close")
             chain.proceed(requestBuilder.build())
         }
         private val client: OkHttpClient.Builder = OkHttpClient.Builder()

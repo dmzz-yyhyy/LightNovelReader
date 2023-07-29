@@ -21,7 +21,7 @@ class ChapterViewModel @Inject constructor(
         viewModelScope.launch {
             readerRepository.dataFlow.collect {
                 Log.d("Web", "data got")
-                Log.d("Debug", "${readerRepository.bookName}")
+                Log.d("Debug", readerRepository.bookName)
                 _uiState.update {
                         chapterUiState -> chapterUiState.copy(
                             bookName = readerRepository.bookName,
