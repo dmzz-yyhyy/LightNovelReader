@@ -42,29 +42,31 @@ fun ReadingBookCard(book: Book, onCardClick: (Int, Context) -> Unit) {
                     .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
-            Column(
-                modifier = Modifier
+            Box(Modifier.height(128.dp)){
+                Column(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = book.bookName,
+                        style = MaterialTheme.typography.headlineSmall,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = stringResource(id = R.string.current_reading),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                Text(modifier = Modifier
                     .padding(8.dp)
-                    .fillMaxWidth()
-                    .height(128.dp),
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = book.bookName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    maxLines = 1
-                )
-                Text(
-                    text = stringResource(id = R.string.current_reading),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(modifier = Modifier.align(Alignment.End),
+                    .align(Alignment.BottomEnd),
                     text = stringResource(id = R.string.last_reading_time),
                     textAlign = TextAlign.End,
                     style = MaterialTheme.typography.titleSmall
                 )
             }
-            }
+        }
     }
 }
 
