@@ -5,4 +5,6 @@ object RouteConfig {
     const val BOOKCASE = "bookcase"
     const val SEARCH = "search"
     const val MINE = "mine"
+    const val CHAPTERS = "chapters"
+    const val READER = "reader"
 }

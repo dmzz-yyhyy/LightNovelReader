@@ -4,14 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.data.ReaderRepository
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.ReadingViewModel
+import indi.dmzz_yyhyy.lightnovelreader.data.RouteConfig
 import indi.dmzz_yyhyy.lightnovelreader.ui.theme.LightNovelReaderTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,7 +29,7 @@ class ReaderActivity : ComponentActivity() {
         val intent = intent
         val bookId = intent.getIntExtra("bookId", 0)
         scope.launch {
-            readerRepository.load(bookId)
+            readerRepository.loadChapterList(bookId)
         }
 
         setContent {
@@ -39,14 +37,15 @@ class ReaderActivity : ComponentActivity() {
             LightNovelReaderTheme {
         NavHost(
             navController = navController,
-            startDestination = "chapter",
+            startDestination = RouteConfig.CHAPTERS,
         ) {
-            composable(route = "chapter") {
-                val chapterViewModel: ChapterViewModel = hiltViewModel<ChapterViewModel>()
+            composable(route = RouteConfig.CHAPTERS) {
+                val chapterViewModel: ChapterViewModel = hiltViewModel()
                 ChapterScreen(navController, chapterViewModel)
             }
-            composable(route = "reader"){
-
+            composable(route = RouteConfig.READER){
+                val readerViewModel: ReaderViewModel = hiltViewModel()
+                ReaderScreen(navController, readerViewModel)
             }
         }
     }}}

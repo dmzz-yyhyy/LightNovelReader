@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -110,7 +111,11 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                             for (chapter in volume.chapters) {
 
                                                 Text(
-                                                    modifier = Modifier.padding(start = 2.dp),
+                                                    modifier = Modifier.padding(start = 2.dp).clickable(
+                                                        onClick = {
+                                                            chapterUiState.onChapterClick(navController, chapterViewModel, chapter.id)
+                                                        }
+                                                    ),
                                                     text = chapter.title,
                                                     style = MaterialTheme.typography.titleSmall
                                                 )

@@ -33,4 +33,8 @@ class ChapterViewModel @Inject constructor(
             }
         }
     }
+
+    fun setChapterContentId(id: Int){
+        readerRepository.setChapterContentId(id)
+    }
 }

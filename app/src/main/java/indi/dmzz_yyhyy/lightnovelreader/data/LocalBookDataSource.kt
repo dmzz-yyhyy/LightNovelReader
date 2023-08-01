@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 
 class LocalBookDataSource @Inject constructor(){
-    private val bookList = mutableListOf<Book>(Book(Int.MAX_VALUE, "", "", ""))
+    private val bookList = mutableListOf(Book(Int.MAX_VALUE, "", "", ""))
     private val maxBookListLong = 20
     private var recentlyAddBookId = 0
 
@@ -36,7 +36,7 @@ class LocalBookDataSource @Inject constructor(){
 
     fun getBook(bookId: Int):Book? {
         if (bookList.size == 0) {return null}
-        var index = binarySearch(bookId)
+        val index = binarySearch(bookId)
         if (bookList[index].bookID == bookId) {
             return bookList[index]
         }

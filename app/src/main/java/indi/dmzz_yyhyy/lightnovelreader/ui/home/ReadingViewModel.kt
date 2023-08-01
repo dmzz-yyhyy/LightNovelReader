@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -18,10 +17,15 @@ class ReadingViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ReadingUiState())
     val uiState: StateFlow<ReadingUiState> = _uiState
     init {
-        viewModelScope.launch() {
+        _uiState.update {
+                readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.readingBookList.value)
+        }
+        viewModelScope.launch {
+            readingBookRepository.readingBookList.collect{
                 _uiState.update {
-                    readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.getReadingBookList())
+                        readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.readingBookList.value)
 
+                }
             }
         }
     }

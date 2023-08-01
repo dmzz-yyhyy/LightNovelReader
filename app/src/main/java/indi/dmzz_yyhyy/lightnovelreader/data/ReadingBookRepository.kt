@@ -1,8 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.data
 
 import android.util.Log
-import dagger.hilt.android.scopes.ActivityScoped
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,6 +12,8 @@ class ReadingBookRepository  @Inject constructor(
     private val bookRepository: BookRepository
 ){
     private var _readingList: MutableList<Int> = mutableListOf()
+    private var _readingBookList: MutableStateFlow<MutableList<Book>> = MutableStateFlow(mutableListOf())
+    val readingBookList: StateFlow<MutableList<Book>> = _readingBookList
     fun setReadingBookList(readingBookList: List<Int>) {
         _readingList = readingBookList.toMutableList()
         Log.d("ReadingBookRepository", "set readingBookList success readingBookList=$_readingList")
@@ -24,11 +27,11 @@ class ReadingBookRepository  @Inject constructor(
         _readingList.remove(bookId)
     }
 
-    suspend fun getReadingBookList(): MutableList<Book> {
+    suspend fun loadReadingBookList() {
         Log.d("ReadingBookRepository", "readingBookList=$_readingList")
         val readingBookList: MutableList<Book> = mutableListOf()
         for (bookId in _readingList) {
             bookRepository.getBook(bookId)?.let { readingBookList.add(it) }}
-        return readingBookList
+        _readingBookList.value = readingBookList
     }
 }

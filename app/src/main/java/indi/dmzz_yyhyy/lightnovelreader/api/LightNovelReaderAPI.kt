@@ -1,8 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.api
 
-import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterList
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Content
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Information
+import indi.dmzz_yyhyy.lightnovelreader.data.book.*
 import indi.dmzz_yyhyy.lightnovelreader.data.local.Config
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -51,42 +49,42 @@ class LightNovelReaderAPI @Inject constructor() {
     // Makes news-related network synchronous requests.
     interface LightNovelReaderBackgroundAPI {
         @GET("get_book_information")
-        fun getBookInformation(@Query("book_id") bookID: Int): Call<Information>
+        fun getBookInformation(@Query("book_id") bookID: Int): Call<WebData<Information>>
 
         @GET("get_book_chapter_list")
-        fun getBookChapterList(@Query("book_id") bookID: Int): Call<ChapterList>
+        fun getBookChapterList(@Query("book_id") bookID: Int): Call<WebData<List<Volume>>>
 
         @GET("get_book_chapter_content")
-        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<Content>
+        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<WebData<ChapterContent>>
     }
 
     fun getBookInformation(bookId: Int, reconnectTimes: Int = 5): Information? {
         return try {
-            val dataCall: Call<Information> = service.getBookInformation(bookId)
-            val data: Response<Information>? = dataCall.execute()
-            data?.body()
+            val dataCall: Call<WebData<Information>> = service.getBookInformation(bookId)
+            val data: Response<WebData<Information>>? = dataCall.execute()
+            data?.body()?.data
         } catch (error: SocketTimeoutException){
             if (reconnectTimes != 0) { return getBookInformation(bookId, reconnectTimes - 1) }
             null
         }
     }
 
-    fun getBookChapterList(bookId: Int, reconnectTimes: Int = 5): ChapterList? {
+    fun getBookChapterList(bookId: Int, reconnectTimes: Int = 5): List<Volume>? {
         return try {
-            val dataCall: Call<ChapterList> = service.getBookChapterList(bookId)
-            val data: Response<ChapterList>? = dataCall.execute()
-            data?.body()
+            val dataCall: Call<WebData<List<Volume>>> = service.getBookChapterList(bookId)
+            val data: Response<WebData<List<Volume>>>? = dataCall.execute()
+            data?.body()?.data
         } catch (error: SocketTimeoutException){
             if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
             null
         }
     }
 
-    fun getBookContent(bookId: Int, chapterId: Int, reconnectTimes: Int = 5): Content? {
+    fun getBookContent(bookId: Int, chapterId: Int, reconnectTimes: Int = 5): ChapterContent? {
         return try {
-            val dataCall: Call<Content> = service.getBookContent(bookId, chapterId)
-            val data: Response<Content>? = dataCall.execute()
-            data?.body()
+            val dataCall: Call<WebData<ChapterContent>> = service.getBookContent(bookId, chapterId)
+            val data: Response<WebData<ChapterContent>>? = dataCall.execute()
+            data?.body()?.data
         } catch (error: SocketTimeoutException){
             if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
             null
