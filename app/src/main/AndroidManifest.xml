@@ -13,12 +13,12 @@
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:supportsRtl="true"
-            android:theme="@style/Theme.LightNovelReader.Starting"
+            android:theme="@style/Theme.LightNovelReader"
             tools:targetApi="31">
         <activity
-                android:name=".ui.home.HomeActivity"
+                android:name=".LaunchActivity"
                 android:exported="true"
-                android:theme="@style/Theme.LightNovelReader.Starting">
+                android:theme="@style/Theme.LightNovelReader">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -28,6 +28,11 @@
             <meta-data
                     android:name="android.app.lib_name"
                     android:value=""/>
+        </activity>
+        <activity
+                android:name=".ui.home.HomeActivity"
+                android:exported="false"
+                android:theme="@style/Theme.LightNovelReader">
         </activity>
         <activity
                 android:name=".ui.reader.ReaderActivity"
