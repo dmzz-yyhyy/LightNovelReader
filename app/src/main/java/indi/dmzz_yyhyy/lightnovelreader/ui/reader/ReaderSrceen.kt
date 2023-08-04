@@ -2,9 +2,9 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -77,12 +77,8 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                 }
             }
         }) {
-
-            LazyColumn(Modifier.pointerInput(Unit){
-                detectVerticalDragGestures { _, _ ->
-                    readerViewModel.onClickMiddle(readerUiState.isBottomBarOpen)
-                }
-            }) {
+            val lazyListState = rememberLazyListState()
+            LazyColumn(state = lazyListState) {
                 item {
                     Text(
                         modifier = Modifier
@@ -91,6 +87,14 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+            }
+            LaunchedEffect(lazyListState) {
+                println("First visible item index: ${lazyListState.firstVisibleItemIndex}")
+                println("First visible item scroll offset: ${lazyListState.firstVisibleItemScrollOffset}")
+                println("Total items count: ${lazyListState.layoutInfo.totalItemsCount}")
+            }
+            LaunchedEffect(remember { derivedStateOf { lazyListState.firstVisibleItemScrollOffset } }){
+                readerViewModel.onClickMiddle(readerUiState.isBottomBarOpen)
             }
         }
     }
