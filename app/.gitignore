@@ -1,6 +1,16 @@
 *.iml
 .gradle
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/gradle.xml
+/.idea/misc.xml
+/.idea/assetWizardSettings.xml
 .idea
 .vscode
 .DS_Store
+*.log
+vcs.xml
 build/
