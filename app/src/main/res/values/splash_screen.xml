@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.LightNovelReader.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon_foreground_splash</item>
-        <item name="windowSplashScreenBackground">#476fa8</item>
+        <item name="windowSplashScreenBackground">#FF6B94FF</item>
         <item name="postSplashScreenTheme">@style/Theme.LightNovelReader</item>
 
     </style>
