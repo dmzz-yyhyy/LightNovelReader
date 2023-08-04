@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.iteam
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -16,16 +15,17 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.ReadingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadingBookCard(book: Book, onCardClick: (Int, Context) -> Unit) {
+fun ReadingBookCard(readingViewModel: ReadingViewModel, book: Book) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
             .padding(top = 8.dp, bottom = 8.dp)
             .fillMaxWidth(),
-        onClick = { onCardClick(book.bookID, context) }
+        onClick = { readingViewModel.onCardClick(book.bookID, context) }
 
     ) {
         Row(Modifier.fillMaxWidth()){

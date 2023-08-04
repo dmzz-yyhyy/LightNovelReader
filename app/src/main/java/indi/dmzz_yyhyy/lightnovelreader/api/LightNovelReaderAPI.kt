@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.net.ProtocolException
 import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -66,6 +67,11 @@ class LightNovelReaderAPI @Inject constructor() {
         } catch (error: SocketTimeoutException){
             if (reconnectTimes != 0) { return getBookInformation(bookId, reconnectTimes - 1) }
             null
+        } catch (error: ProtocolException) {
+            if (reconnectTimes != 0) {
+                return getBookInformation(bookId, reconnectTimes - 1)
+            }
+            null
         }
     }
 
@@ -77,6 +83,9 @@ class LightNovelReaderAPI @Inject constructor() {
         } catch (error: SocketTimeoutException){
             if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
             null
+        } catch (error: ProtocolException){
+            if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
+            null
         }
     }
 
@@ -86,6 +95,9 @@ class LightNovelReaderAPI @Inject constructor() {
             val data: Response<WebData<ChapterContent>>? = dataCall.execute()
             data?.body()?.data
         } catch (error: SocketTimeoutException){
+            if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
+            null
+        } catch (error: ProtocolException){
             if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
             null
         }

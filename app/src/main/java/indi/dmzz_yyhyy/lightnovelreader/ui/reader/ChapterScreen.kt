@@ -1,7 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -93,33 +97,53 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
                     Column {
                         Divider()
-                        Text(
-                            text = stringResource(id = R.string.contents),
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier
-                        )
-                        Box(Modifier.padding(8.dp)) {
-                            Column {
-                                for (volume in chapterUiState.volumeList) {
-                                    Text(
-                                        modifier = Modifier.padding(start = 2.dp),
-                                        text = volume.volumeName,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Box(Modifier.padding(8.dp)) {
-                                        Column {
-                                            for (chapter in volume.chapters) {
+                        Log.d("wwwwwww", "${chapterUiState.isLoading}")
+                        if (chapterUiState.isLoading){
 
-                                                Text(
-                                                    modifier = Modifier.padding(start = 2.dp).clickable(
-                                                        onClick = {
-                                                            chapterUiState.onChapterClick(navController, chapterViewModel, chapter.id)
-                                                        }
-                                                    ),
-                                                    text = chapter.title,
-                                                    style = MaterialTheme.typography.titleSmall
-                                                )
-                                                Divider()
+                            Log.d("wwwwwww", "loading")
+                            Box(Modifier
+                                .fillMaxSize(),
+                                contentAlignment = Alignment.Center){
+                                Image(
+                                    modifier = Modifier.size(108.dp, 108.dp),
+                                    painter = painterResource(id = R.drawable.loading),
+                                    contentDescription = "Icon Image",
+                                    contentScale = ContentScale.Crop)
+                                Text("loading")
+                            }
+                        }
+                        else {
+                            Text(
+                                text = stringResource(id = R.string.contents),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                            )
+                            Box(Modifier.padding(8.dp)) {
+                                Column {
+                                    for (volume in chapterUiState.volumeList) {
+                                        Text(
+                                            modifier = Modifier.padding(start = 2.dp),
+                                            text = volume.volumeName,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        Box(Modifier.padding(8.dp)) {
+                                            Column {
+                                                for (chapter in volume.chapters) {
+
+                                                    Text(
+                                                        modifier = Modifier.padding(start = 2.dp).clickable(
+                                                            onClick = {
+                                                                chapterViewModel.onChapterClick(
+                                                                    navController,
+                                                                    chapter.id
+                                                                )
+                                                            }
+                                                        ),
+                                                        text = chapter.title,
+                                                        style = MaterialTheme.typography.titleSmall
+                                                    )
+                                                    Divider()
+                                                }
                                             }
                                         }
                                     }

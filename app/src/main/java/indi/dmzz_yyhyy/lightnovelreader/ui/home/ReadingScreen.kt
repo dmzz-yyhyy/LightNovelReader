@@ -27,7 +27,7 @@ fun ReadingScreen(
                 .fillMaxWidth()
         ) {
             for (book in readingUiState.readingBookDataList) {
-                ReadingBookCard(book, readingUiState.onCardClick)
+                ReadingBookCard(readingViewModel, book)
             }
         }
 

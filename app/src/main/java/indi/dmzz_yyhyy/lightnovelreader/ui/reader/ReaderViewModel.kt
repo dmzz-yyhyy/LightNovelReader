@@ -23,6 +23,7 @@ class ReaderViewModel  @Inject constructor(
                 Log.d("Web", "content got")
                 _uiState.update {
                         readerUiState -> readerUiState.copy(
+                            isLoading = false,
                             title = readerRepository.chapterContent.value.title,
                             content = readerRepository.chapterContent.value.content
                         )
@@ -33,6 +34,49 @@ class ReaderViewModel  @Inject constructor(
             readerRepository.chapterContentId.collect {
                 _uiState.update {
                         readerUiState -> readerUiState.copy(
+                    isLoading = true,
+                    chapterId = readerRepository.chapterContentId.value,
+                    title = readerRepository.chapterContent.value.title,
+                    content = readerRepository.chapterContent.value.content
+                )
+                }
+            }
+        }
+    }
+    fun onClickMiddle(isBottomBarOpen: Boolean){
+        if(isBottomBarOpen){
+            _uiState.update {
+                readerUiState -> readerUiState.copy(
+                    isBottomBarOpen = false
+                )
+            }
+        }
+    }
+    fun onClickBelow(){
+        _uiState.update {
+            readerUiState ->  readerUiState.copy(
+                isBottomBarOpen = true
+            )
+        }
+    }
+
+    fun onClickNextButton(chapterId: Int) {
+        readerRepository.setChapterContentId(chapterId+1)
+        _uiState.update {
+                readerUiState -> readerUiState.copy(
+            isLoading = true,
+            chapterId = chapterId+1,
+            title = "",
+            content = ""
+        )
+        }
+        viewModelScope.launch {
+            readerRepository.loadChapterContent()
+            readerRepository.chapterContent.collect {
+                Log.d("Web", "content got")
+                _uiState.update {
+                        readerUiState -> readerUiState.copy(
+                    isLoading = false,
                     title = readerRepository.chapterContent.value.title,
                     content = readerRepository.chapterContent.value.content
                 )

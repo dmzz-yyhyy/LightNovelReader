@@ -13,40 +13,27 @@ class ReaderRepository @Inject constructor(
     private val webBookDataSource: WebBookDataSource,
     private val bookRepository: BookRepository
 ) {
-    private var _book: Book = Book(0, "", "", "")
+    private var _book: MutableStateFlow<Book> = MutableStateFlow(Book(0, "", "", ""))
     private var _bookId: Int = 0
-    private var _volumeList: MutableList<Volume> = mutableListOf()
+    private var _volumeList: MutableStateFlow<MutableList<Volume>> = MutableStateFlow(mutableListOf())
     private var _chapterContentId: MutableStateFlow<Int> = MutableStateFlow(0)
     private var _chapterContent: MutableStateFlow<ChapterContent> = MutableStateFlow(ChapterContent("", ""))
-    private var _dataFlow = MutableStateFlow(0)
 
-    val bookName: String get() = _book.bookName
-    val bookCoverUrl: String get() = _book.coverURL
-    val bookIntroduction: String get() = _book.introduction
-    val volumeList: List<Volume> get() = _volumeList
+    val book: StateFlow<Book> get() = _book
+    val bookName: String get() = _book.value.bookName
+    val bookCoverUrl: String get() = _book.value.coverURL
+    val bookIntroduction: String get() = _book.value.introduction
+    val volumeList: StateFlow<List<Volume>> get() = _volumeList
     val chapterContentId: StateFlow<Int> get() = _chapterContentId
     val chapterContent: StateFlow<ChapterContent> get() = _chapterContent
-    val dataFlow: StateFlow<Int> get() = _dataFlow
 
     // 更新数据的方法
-    private fun updateData() {
-        // 更新数据逻辑...
-        // 数据更新后使用emit发射新值
-        _dataFlow.value = _dataFlow.value + 1
-    }
-
     suspend fun loadChapterList(bookId: Int) {
         _bookId = bookId
         val book = bookRepository.getBook(bookId)
-        if (book != null) { _book = book }
+        if (book != null) { _book.value = book }
         val chapterList = webBookDataSource.getBookChapterList(bookId)
-        if (chapterList != null) { _volumeList = chapterList.toMutableList() }
-        while (true) {
-            if (_volumeList.size != 0 && _book.bookID != 0) {
-                updateData()
-                return
-            }
-        }
+        if (chapterList != null) { _volumeList.value = chapterList.toMutableList() }
     }
     suspend fun loadChapterContent(){
         _chapterContent.value = ChapterContent("", "")
