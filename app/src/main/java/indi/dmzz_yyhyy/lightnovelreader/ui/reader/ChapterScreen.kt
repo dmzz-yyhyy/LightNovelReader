@@ -1,13 +1,14 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +30,14 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(id = R.string.chapters)) })
+            TopAppBar(
+                navigationIcon = { IconButton(onClick = { chapterViewModel.onClickBackButton() }){
+                    Icon(
+                        Icons.Outlined.ArrowBack,
+                        contentDescription = "back"
+                    )
+                }},
+                title = { Text(stringResource(id = R.string.chapters)) })
         }
     ) {
         LazyColumn {
@@ -97,10 +105,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
                     Column {
                         Divider()
-                        Log.d("wwwwwww", "${chapterUiState.isLoading}")
                         if (chapterUiState.isLoading){
-
-                            Log.d("wwwwwww", "loading")
                             Box(Modifier
                                 .fillMaxSize(),
                                 contentAlignment = Alignment.Center){
@@ -109,7 +114,6 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                     painter = painterResource(id = R.drawable.loading),
                                     contentDescription = "Icon Image",
                                     contentScale = ContentScale.Crop)
-                                Text("loading")
                             }
                         }
                         else {
@@ -133,7 +137,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                                     Text(
                                                         modifier = Modifier.padding(start = 2.dp).clickable(
                                                             onClick = {
-                                                                chapterViewModel.onChapterClick(
+                                                                chapterViewModel.onClickChapter(
                                                                     navController,
                                                                     chapter.id
                                                                 )

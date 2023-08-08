@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.ReaderRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,7 @@ class ReaderViewModel  @Inject constructor(
                 Log.d("Web", "content got")
                 _uiState.update {
                         readerUiState -> readerUiState.copy(
-                            isLoading = false,
+                            isLoading = readerRepository.chapterContent.value.title == "",
                             title = readerRepository.chapterContent.value.title,
                             content = readerRepository.chapterContent.value.content
                         )
@@ -36,6 +37,31 @@ class ReaderViewModel  @Inject constructor(
                         readerUiState -> readerUiState.copy(
                     isLoading = true,
                     chapterId = readerRepository.chapterContentId.value,
+                    title = readerRepository.chapterContent.value.title,
+                    content = readerRepository.chapterContent.value.content
+                )
+                }
+            }
+        }
+    }
+
+    private fun changeChapter(chapterId: Int){
+        readerRepository.setChapterContentId(chapterId)
+        _uiState.update {
+                readerUiState -> readerUiState.copy(
+            isLoading = true,
+            chapterId = chapterId,
+            title = "",
+            content = ""
+        )
+        }
+        viewModelScope.launch {
+            readerRepository.loadChapterContent()
+            readerRepository.chapterContent.collect {
+                Log.d("Web", "content got")
+                _uiState.update {
+                        readerUiState -> readerUiState.copy(
+                    isLoading = readerRepository.chapterContent.value.title == "",
                     title = readerRepository.chapterContent.value.title,
                     content = readerRepository.chapterContent.value.content
                 )
@@ -60,28 +86,30 @@ class ReaderViewModel  @Inject constructor(
         }
     }
 
-    fun onClickNextButton(chapterId: Int) {
-        readerRepository.setChapterContentId(chapterId+1)
+    fun onClickMenuButton() {
         _uiState.update {
-                readerUiState -> readerUiState.copy(
-            isLoading = true,
-            chapterId = chapterId+1,
-            title = "",
-            content = ""
-        )
-        }
-        viewModelScope.launch {
-            readerRepository.loadChapterContent()
-            readerRepository.chapterContent.collect {
-                Log.d("Web", "content got")
-                _uiState.update {
-                        readerUiState -> readerUiState.copy(
-                    isLoading = false,
-                    title = readerRepository.chapterContent.value.title,
-                    content = readerRepository.chapterContent.value.content
-                )
-                }
-            }
+            readerUiState ->  readerUiState.copy(
+                isBottomBarOpen = false,
+                isSideSheetsOpen = true,
+                volumeList = readerRepository.volumeList.value
+            )
         }
     }
+    fun onClickNextButton(chapterId: Int) {
+        changeChapter(chapterId + 1)
+    }
+    fun onClickBeforeButton(chapterId: Int) {
+        changeChapter(chapterId - 1)
+    }
+    fun onClickBackButton(navController: NavController) {
+        navController.popBackStack()
+    }
+    fun onCloseChapterSideSheets() {
+        _uiState.update {
+            readerUiState -> readerUiState.copy(
+                isSideSheetsOpen = false
+            )
+        }
+    }
+
 }

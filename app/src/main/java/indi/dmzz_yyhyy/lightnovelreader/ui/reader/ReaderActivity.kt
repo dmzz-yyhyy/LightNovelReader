@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,6 +25,7 @@ class ReaderActivity : ComponentActivity() {
 
     private val scope = CoroutineScope(Dispatchers.Main)
 
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = intent
@@ -41,6 +43,13 @@ class ReaderActivity : ComponentActivity() {
         ) {
             composable(route = RouteConfig.CHAPTERS) {
                 val chapterViewModel: ChapterViewModel = hiltViewModel()
+                scope.launch {
+                    chapterViewModel.isCloseActivity.collect {
+                        if (chapterViewModel.isCloseActivity.value) {
+                            finish()
+                        }
+                    }
+                }
                 ChapterScreen(navController, chapterViewModel)
             }
             composable(route = RouteConfig.READER){

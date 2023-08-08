@@ -18,7 +18,9 @@ class ChapterViewModel @Inject constructor(
     private val readerRepository: ReaderRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ChapterUiState())
+    private val _isCloseActivity = MutableStateFlow(false)
     val uiState: StateFlow<ChapterUiState> = _uiState
+    val isCloseActivity: StateFlow<Boolean> = _isCloseActivity
     init {
         viewModelScope.launch {
             readerRepository.book.collect {
@@ -37,17 +39,23 @@ class ChapterViewModel @Inject constructor(
             readerRepository.volumeList.collect {
                 Log.d("Web", "chapters data got")
                 Log.d("Debug", readerRepository.bookName)
-                _uiState.update {
-                        chapterUiState -> chapterUiState.copy(
+                if (readerRepository.volumeList.value.isNotEmpty()) {
+                    _uiState.update { chapterUiState ->
+                        chapterUiState.copy(
                             isLoading = false,
                             volumeList = readerRepository.volumeList.value
                         )
+                    }
                 }
             }
         }
     }
-    fun onChapterClick(navController: NavController, chapterId: Int){
+    fun onClickChapter(navController: NavController, chapterId: Int){
         readerRepository.setChapterContentId(chapterId)
         navController.navigate(RouteConfig.READER)
     }
+    fun onClickBackButton(){
+        _isCloseActivity.value = true
+    }
+
 }

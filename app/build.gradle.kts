@@ -58,6 +58,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.7.0")
     implementation ("androidx.compose.ui:ui:1.4.0")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.4.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.4.0")
     implementation("androidx.compose.material3:material3:1.0.1")
     implementation("androidx.navigation:navigation-runtime-ktx:2.5.2")
     implementation("androidx.navigation:navigation-compose:2.5.0-alpha03")
@@ -67,7 +68,6 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.4.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.1.0")
     implementation("com.google.dagger:hilt-android:2.46.1")
-
     kapt("com.google.dagger:hilt-android-compiler:2.45")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
