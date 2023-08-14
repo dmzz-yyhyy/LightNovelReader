@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">LightNovelReader</string>
     <string name="nav_reading">Reading</string>
-    <string name="nav_library">Library</string>
+    <string name="nav_bookcase">Bookcase</string>
     <string name="nav_discover">Discover</string>
     <string name="nav_profile">Profile</string>
     <string name="current_reading">Current Reading: %s</string>

@@ -12,7 +12,7 @@ class LightNovelReaderApplication: Application(){
 
     override fun onCreate() {
         super.onCreate()
-        readingBookRepository.setReadingBookList(listOf(2152, 2359))
+        readingBookRepository.setReadingBookList(listOf(2152, 2359, 2272))
     }
 
 }

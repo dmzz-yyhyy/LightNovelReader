@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.data.ReaderRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
 import indi.dmzz_yyhyy.lightnovelreader.ui.theme.LightNovelReaderTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -18,7 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
 import indi.dmzz_yyhyy.lightnovelreader.ui.theme.LightNovelReaderTheme
 
 @AndroidEntryPoint
@@ -34,29 +34,24 @@ class HomeActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
-                    var screenName by remember { mutableStateOf(getString(R.string.nav_reading)) }
+                    var selectedItem by remember { mutableStateOf(0) }
                     Scaffold(
-                        topBar = { TopAppBar(title = { Text(screenName) }) },
                         bottomBar = {
-                            var selectedItem by remember { mutableStateOf(0) }
-
                             NavigationBar {
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.reading), null) },
                                     label = { Text(stringResource(id = R.string.nav_reading)) },
                                     selected = selectedItem == 0,
                                     onClick = {
-                                        screenName = getString(R.string.nav_reading)
                                         selectedItem = 0
                                         navController.navigate(RouteConfig.READING)
                                     }
                                 )
                                 NavigationBarItem(
                                     icon = { Icon(painter = painterResource(id = R.drawable.bookcase), null) },
-                                    label = { Text(stringResource(id = R.string.nav_library)) },
+                                    label = { Text(stringResource(id = R.string.nav_bookcase)) },
                                     selected = selectedItem == 1,
                                     onClick = {
-                                        screenName = getString(R.string.nav_library)
                                         selectedItem = 1
                                         navController.navigate(RouteConfig.BOOKCASE)
                                     }
@@ -66,7 +61,6 @@ class HomeActivity : ComponentActivity() {
                                     label = { Text(stringResource(id = R.string.nav_discover)) },
                                     selected = selectedItem == 2,
                                     onClick = {
-                                        screenName = getString(R.string.nav_discover)
                                         selectedItem = 2
                                         navController.navigate(RouteConfig.SEARCH)
                                     }
@@ -76,7 +70,6 @@ class HomeActivity : ComponentActivity() {
                                     label = { Text(stringResource(id = R.string.nav_profile)) },
                                     selected = selectedItem == 3,
                                     onClick = {
-                                        screenName = getString(R.string.nav_profile)
                                         selectedItem = 3
                                         navController.navigate(RouteConfig.MINE)
                                     }
@@ -84,19 +77,20 @@ class HomeActivity : ComponentActivity() {
                             } }
                     ) {
                         Box(Modifier.padding(it)) {
+                            val readingViewModel = hiltViewModel<ReadingViewModel>()
+                            val searchViewModel = hiltViewModel<SearchViewModel>()
                         NavHost(
                             navController = navController,
                             startDestination = RouteConfig.READING,
                         ) {
                             composable(route = RouteConfig.READING) {
-                                val readingViewModel = hiltViewModel<ReadingViewModel>()
                                 ReadingScreen(navController, readingViewModel)
                             }
                             composable(route = RouteConfig.BOOKCASE) {
                                 BookcaseScreen(navController)
                             }
                             composable(route = RouteConfig.SEARCH) {
-                                SearchScreen(navController)
+                                SearchScreen(navController, searchViewModel)
                             }
                             composable(route = RouteConfig.MINE) {
                                 MineScreen(navController)

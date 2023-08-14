@@ -57,6 +57,9 @@ class LightNovelReaderAPI @Inject constructor() {
 
         @GET("get_book_chapter_content")
         fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<WebData<ChapterContent>>
+
+        @GET("search_book")
+        fun searchBook(@Query("search_type") searchType: String, @Query("keyword") keyword: String, @Query("page") page: Int): Call<WebData<Search>>
     }
 
     fun getBookInformation(bookId: Int, reconnectTimes: Int = 5): Information? {
@@ -99,6 +102,20 @@ class LightNovelReaderAPI @Inject constructor() {
             null
         } catch (error: ProtocolException){
             if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
+            null
+        }
+    }
+
+    fun searchBook(searchType: String, keyword: String, page: Int, reconnectTimes: Int = 5): Search? {
+        return try {
+            val dataCall: Call<WebData<Search>> = service.searchBook(searchType, keyword, page)
+            val data: Response<WebData<Search>>? = dataCall.execute()
+            data?.body()?.data
+        } catch (error: SocketTimeoutException){
+            if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
+            null
+        } catch (error: ProtocolException){
+            if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
             null
         }
     }

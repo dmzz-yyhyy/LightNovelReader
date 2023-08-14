@@ -140,7 +140,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                 title = {
                     Text(
                         text = stringResource(id = R.string.contents),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleLarge
                     )
                 }) {
                 LazyColumn {
@@ -167,9 +167,6 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                                 }
                             }
                         }
-
-
-
                     }
                 }
             }

@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "indi.dmzz_yyhyy.lightnovelreader"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "indi.dmzz_yyhyy.lightnovelreader"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "0.2.1"
         vectorDrawables {
@@ -68,6 +68,7 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:2.4.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.1.0")
     implementation("com.google.dagger:hilt-android:2.46.1")
+    implementation("androidx.compose.foundation:foundation-android:+")
     kapt("com.google.dagger:hilt-android-compiler:2.45")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

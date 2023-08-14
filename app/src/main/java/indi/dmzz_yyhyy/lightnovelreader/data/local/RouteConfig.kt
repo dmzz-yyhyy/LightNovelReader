@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data
+package indi.dmzz_yyhyy.lightnovelreader.data.local
 
 object RouteConfig {
     const val READING = "reading"
@@ -7,4 +7,5 @@ object RouteConfig {
     const val MINE = "mine"
     const val CHAPTERS = "chapters"
     const val READER = "reader"
+    const val HOME = "home"
 }

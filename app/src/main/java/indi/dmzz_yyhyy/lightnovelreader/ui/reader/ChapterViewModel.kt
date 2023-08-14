@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.ReaderRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

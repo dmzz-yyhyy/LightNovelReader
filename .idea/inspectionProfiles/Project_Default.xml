@@ -1,6 +1,11 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <Languages>
+        <language minSize="140" name="Kotlin" />
+      </Languages>
+    </inspection_tool>
     <inspection_tool class="FunctionName" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PreviewAnnotationInFunctionWithParameters" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="composableFile" value="true" />
