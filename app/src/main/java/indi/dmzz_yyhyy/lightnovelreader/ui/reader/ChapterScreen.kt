@@ -6,11 +6,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -100,15 +101,55 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 }
 
 
+                var isChapterReversed by remember { mutableStateOf(false) }
+                var isVolumeReversed by remember { mutableStateOf(false) }
 
                 Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
                     Column {
                         Divider()
                         println(chapterUiState.isLoading)
-                        if (chapterUiState.isLoading){
+                        if (chapterUiState.isLoading) {
                             Loading()
-                        }
-                        else {
+                        } else {
+                            Row(Modifier.padding(8.dp)) {
+                                // Chapters
+                                Button(
+                                    onClick = {
+                                        isChapterReversed = !isChapterReversed
+                                    },
+                                    modifier = Modifier.padding(end = 8.dp)
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = if (isChapterReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(id = R.string.chapters) + ": " + if (isChapterReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            modifier = Modifier.padding(start = 4.dp)
+                                        )
+                                    }
+                                }
+                                // Volumes
+                                Button(
+                                    onClick = {
+                                        isVolumeReversed = !isVolumeReversed
+                                    }
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = if (isVolumeReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                        Text(
+                                            text = stringResource(id = R.string.volumes) + ": " + if (isVolumeReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            modifier = Modifier.padding(start = 4.dp)
+                                        )
+                                    }
+                                }
+                            }
                             Text(
                                 text = stringResource(id = R.string.contents),
                                 style = MaterialTheme.typography.titleLarge,
@@ -116,7 +157,12 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             )
                             Box(Modifier.padding(8.dp)) {
                                 Column {
-                                    for (volume in chapterUiState.volumeList) {
+                                    val sortedVolumeList = if (isVolumeReversed) {
+                                        chapterUiState.volumeList.reversed()
+                                    } else {
+                                        chapterUiState.volumeList
+                                    }
+                                    for (volume in sortedVolumeList) {
                                         Text(
                                             modifier = Modifier.padding(start = 2.dp),
                                             text = volume.volumeName,
@@ -124,8 +170,12 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                         )
                                         Box(Modifier.padding(8.dp)) {
                                             Column {
-                                                for (chapter in volume.chapters) {
-
+                                                val sortedChapters = if (isChapterReversed) {
+                                                    volume.chapters.reversed()
+                                                } else {
+                                                    volume.chapters
+                                                }
+                                                for (chapter in sortedChapters) {
                                                     Text(
                                                         modifier = Modifier.padding(start = 2.dp).clickable(
                                                             onClick = {

@@ -10,11 +10,15 @@
     <string name="last_reading_time">Last reading time: %s</string>
     <string name="contents">Contents</string>
     <string name="chapters">Chapters</string>
+    <string name="volumes">Volumes</string>
     <string name="read">Read</string>
     <string name="summary">Summary</string>
     <!--  -->
     <string name="prefix_writer">Writer:</string>
     <string name="prefix_tags">Tags:</string>
+    
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
     <!-- Descriptions -->
     <string name="desc_back">back</string>
     <string name="desc_more">more</string>

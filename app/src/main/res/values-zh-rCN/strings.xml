@@ -9,11 +9,15 @@
     <string name="last_reading_time">上次阅读时间: %s</string>
     <string name="contents">目录</string>
     <string name="chapters">章节</string>
+    <string name="volumes">卷</string>
     <string name="read">阅读</string>
     <string name="summary">简介</string>
     <!--  -->
     <string name="prefix_writer">作者: </string>
     <string name="prefix_tags">标签: </string>
+
+    <string name="ascending">正序</string>
+    <string name="descending">倒序</string>
     <!-- Descriptions -->
     <string name="desc_back">返回</string>
     <string name="desc_more">更多</string>
