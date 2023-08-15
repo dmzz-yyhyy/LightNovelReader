@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ModalSideSheet
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -93,15 +94,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
             }
         }) {
             if (readerUiState.isLoading){
-                Box(Modifier
-                    .fillMaxSize(),
-                    contentAlignment = Alignment.Center){
-                    Image(
-                        modifier = Modifier.size(108.dp, 108.dp),
-                        painter = painterResource(id = R.drawable.loading),
-                        contentDescription = "Icon Image",
-                        contentScale = ContentScale.Crop)
-                }
+                Loading()
             }
             else {
                 val lazyListState = rememberLazyListState()

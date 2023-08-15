@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -22,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -30,12 +28,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
-import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SearchBar
 
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel) {
@@ -64,7 +62,6 @@ fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel)
             NavHost(
                 navController = searchNavController,
                 startDestination = RouteConfig.HOME,
-                route = searchViewModel.uiState.value.route,
             ) {
                 composable(route = RouteConfig.HOME) {
                     Home(searchNavController, searchViewModel)
@@ -73,6 +70,7 @@ fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel)
                     Search(searchNavController, searchViewModel)
                 }
             }
+            searchViewModel.uiState.value.route?.let { it1 -> searchNavController.navigate(it1) }
         }
     }
 }
@@ -91,15 +89,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
     val density = LocalDensity.current.density
     val searchUiState by searchViewModel.uiState.collectAsState()
     if (searchUiState.isLoading){
-        Box(Modifier
-            .fillMaxSize(),
-            contentAlignment = Alignment.Center){
-            Image(
-                modifier = Modifier.size(108.dp, 108.dp),
-                painter = painterResource(id = R.drawable.loading),
-                contentDescription = "Icon Image",
-                contentScale = ContentScale.Crop)
-        }
+        Loading()
     }
     else {
         var maxHeight by remember { mutableStateOf(0.dp) }
@@ -214,8 +204,9 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             }
                         }
                     }
-                    item {
+                    item(key=1) {
                         Row (Modifier
+                            .fillMaxWidth()
                             .height(40.dp)
                             .border(
                                 width = 1.dp,
@@ -248,7 +239,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Text(modifier = Modifier
                                     .align(Alignment.Center),
-                                    text = "3",
+                                    text = searchUiState.page.toString(),
                                     style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface))
                             }
                             Box(Modifier
@@ -270,7 +261,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Text(modifier = Modifier
                                     .align(Alignment.Center),
-                                    text = "9",
+                                    text = searchUiState.totalPage.toString(),
                                     style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface))
                             }
                     }
