@@ -3,11 +3,27 @@
     <string name="nav_reading">Reading</string>
     <string name="nav_bookcase">Bookcase</string>
     <string name="nav_discover">Discover</string>
+    <string name="title_search">Enter book name…</string>
     <string name="nav_profile">Profile</string>
+    <string name="last_read">Last read: %s</string>
     <string name="current_reading">Current Reading: %s</string>
     <string name="last_reading_time">Last reading time: %s</string>
     <string name="contents">Contents</string>
     <string name="chapters">Chapters</string>
     <string name="read">Read</string>
     <string name="summary">Summary</string>
+    <!--  -->
+    <string name="prefix_writer">Writer:</string>
+    <string name="prefix_tags">Tags:</string>
+    <!-- Descriptions -->
+    <string name="desc_back">back</string>
+    <string name="desc_more">more</string>
+    <string name="desc_menu">menu</string>
+    <string name="desc_bookmark">bookmark</string>
+    <string name="desc_previous">previous</string>
+    <string name="desc_next">next</string>
+    <string name="desc_close">close</string>
+    <string name="desc_cover">cover</string>
+    <string name="desc_icon_image">icon image</string>
+    <string name="desc_search">search</string>
 </resources>

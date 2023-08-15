@@ -2,11 +2,27 @@
     <string name="nav_reading">阅读中</string>
     <string name="nav_bookcase">书架</string>
     <string name="nav_discover">探索</string>
+    <string name="title_search">输入书本名……</string>
     <string name="nav_profile">我的</string>
+    <string name="last_read">上次阅读: %s</string>
     <string name="current_reading">当前阅读: %s</string>
     <string name="last_reading_time">上次阅读时间: %s</string>
     <string name="contents">目录</string>
     <string name="chapters">章节</string>
     <string name="read">阅读</string>
     <string name="summary">简介</string>
+    <!--  -->
+    <string name="prefix_writer">作者: </string>
+    <string name="prefix_tags">标签: </string>
+    <!-- Descriptions -->
+    <string name="desc_back">返回</string>
+    <string name="desc_more">更多</string>
+    <string name="desc_menu">菜单</string>
+    <string name="desc_bookmark">书签</string>
+    <string name="desc_previous">上一个</string>
+    <string name="desc_next">下一个</string>
+    <string name="desc_close">关闭</string>
+    <string name="desc_cover">封面</string>
+    <string name="desc_icon_image">图标</string>
+    <string name="desc_search">搜索</string>
 </resources>

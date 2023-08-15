@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
@@ -55,7 +56,7 @@ class LaunchActivity : ComponentActivity() {
                     Image(
                         modifier = Modifier.size(108.dp, 108.dp),
                         painter = painterResource(id = R.drawable.icon_foreground),
-                        contentDescription = "Icon Image",
+                        contentDescription = stringResource(id = R.string.desc_icon_image),
                         contentScale = ContentScale.Crop)
                 }
             }

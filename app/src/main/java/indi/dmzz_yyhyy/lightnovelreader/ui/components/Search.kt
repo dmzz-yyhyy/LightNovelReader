@@ -18,10 +18,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction.Companion.Done
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import indi.dmzz_yyhyy.lightnovelreader.R
 
 
 @Composable
@@ -53,7 +55,7 @@ fun SearchBar(
                     onClick = onClickMenuButton) {
                     Icon(
                         Icons.Outlined.Menu,
-                        contentDescription = "menu"
+                        contentDescription = stringResource(id = R.string.desc_menu)
                     )
                 }
             }

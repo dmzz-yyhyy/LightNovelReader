@@ -60,7 +60,7 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: Book) {
         Row(Modifier.fillMaxWidth()){
             AsyncImage(
                 model = book.coverURL,
-                contentDescription = "cover",
+                contentDescription = stringResource(id = R.string.desc_cover),
                 modifier = Modifier
                     .size(height = 128.dp, width = 88.dp)
                     .clip(RoundedCornerShape(12.dp)),

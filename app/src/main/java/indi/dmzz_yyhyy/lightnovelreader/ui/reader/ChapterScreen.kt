@@ -33,7 +33,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 navigationIcon = { IconButton(onClick = { chapterViewModel.onClickBackButton() }){
                     Icon(
                         Icons.Outlined.ArrowBack,
-                        contentDescription = "back"
+                        contentDescription = stringResource(id = R.string.desc_back)
                     )
                 }},
                 title = { Text(stringResource(id = R.string.chapters)) })
@@ -52,7 +52,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                         Row {
                             AsyncImage(
                                 model = chapterUiState.bookCoverUrl,
-                                contentDescription = "cover",
+                                contentDescription = stringResource(id = R.string.desc_cover),
                                 modifier = Modifier
                                     .size(height = 200.dp, width = 137.dp)
                                     .clip(RoundedCornerShape(12.dp))
@@ -87,7 +87,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             .padding(start = 145.dp, bottom = 36.dp)
                             .align(alignment = Alignment.BottomStart),
                             style = MaterialTheme.typography.bodySmall,
-                            text = "上次阅读:")
+                            text = stringResource(id = R.string.last_read))
                         Button(
                             onClick = { },
                             modifier = Modifier

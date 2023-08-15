@@ -39,7 +39,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                 IconButton(onClick = { readerViewModel.onClickBackButton(navController) }){
                 Icon(
                     Icons.Outlined.ArrowBack,
-                    contentDescription = "back"
+                    contentDescription = stringResource(id = R.string.desc_back)
                 )
             }},
             title = { Text(readerUiState.title) }) },
@@ -49,31 +49,31 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                     IconButton(modifier = Modifier.size(48.dp), onClick = {}){
                         Icon(
                             Icons.Outlined.MoreVert,
-                            contentDescription = "more"
+                            contentDescription = stringResource(id = R.string.desc_more)
                         )
                     }
                     IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickMenuButton() }){
                         Icon(
                             Icons.Outlined.Menu,
-                            contentDescription = "menu"
+                            contentDescription = stringResource(id = R.string.desc_menu)
                         )
                     }
                     IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickBeforeButton(readerUiState.chapterId) }){
                         Icon(
                             Icons.Outlined.NavigateBefore,
-                            contentDescription = "before"
+                            contentDescription = stringResource(id = R.string.desc_previous)
                         )
                     }
                     IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickNextButton(readerUiState.chapterId) }){
                         Icon(
                             Icons.Outlined.NavigateNext,
-                            contentDescription = "next"
+                            contentDescription = stringResource(id = R.string.desc_next)
                         )
                     }
                     IconButton(modifier = Modifier.size(48.dp), onClick = {}){
                         Icon(
                             Icons.Outlined.BookmarkBorder,
-                            contentDescription = "bookmark"
+                            contentDescription = stringResource(id = R.string.desc_bookmark)
                         )
                     }
                 }
@@ -125,7 +125,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                     IconButton(onClick = { readerViewModel.onCloseChapterSideSheets() }) {
                         Icon(
                             Icons.Outlined.Close,
-                            contentDescription = "close"
+                            contentDescription = stringResource(id = R.string.desc_close)
                         )
                     }
                 },

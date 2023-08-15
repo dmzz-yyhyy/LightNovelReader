@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -28,6 +29,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SearchBar
@@ -44,14 +46,14 @@ fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel)
             SearchBar(
                 modifier = Modifier.padding(16.dp),
                 value = text,
-                label = "enter book name",
+                label = stringResource(id = R.string.title_search),
                 onValueChange = { text = it },
                 onDone = { searchViewModel.onClickSearch(searchNavController, text) },
                 trailingIcon = {
                     IconButton(onClick = { searchViewModel.onClickSearch(searchNavController, text) }) {
                         Icon(
                             Icons.Outlined.Search,
-                            contentDescription = "search"
+                            contentDescription = stringResource(id = R.string.desc_search)
                         )
                     }
                 }
@@ -112,7 +114,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                         Column(Modifier.fillMaxSize()) {
                             AsyncImage(
                                 model = it.coverUrl,
-                                contentDescription = "cover",
+                                contentDescription = stringResource(id = R.string.desc_cover),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(190.dp)
@@ -131,14 +133,14 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxWidth().padding(6.dp, end = 2.dp)) {
                                 Text(
                                     modifier = Modifier.align(Alignment.TopStart),
-                                    text = "writer:" + it.writer,
+                                    text = stringResource(id = R.string.prefix_writer) + it.writer,
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
                             Box(Modifier.fillMaxWidth().padding(6.dp, top = 0.dp, bottom = 4.dp)) {
                                 Text(
                                     modifier = Modifier.align(Alignment.BottomEnd),
-                                    text = "tags:" + it.tags.joinToString(" "),
+                                    text = stringResource(id = R.string.prefix_tags) + it.tags.joinToString(" "),
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
@@ -168,7 +170,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                 Column {
                                     AsyncImage(
                                         model = it.coverUrl,
-                                        contentDescription = "cover",
+                                        contentDescription = stringResource(id = R.string.desc_cover),
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(190.dp)
@@ -189,14 +191,14 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                     Box(Modifier.fillMaxWidth().padding(6.dp, end = 2.dp)) {
                                         Text(
                                             modifier = Modifier.align(Alignment.TopStart),
-                                            text = "writer:" + it.writer,
+                                            text = stringResource(id = R.string.prefix_writer) + it.writer,
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }
                                     Box(Modifier.fillMaxWidth().padding(6.dp, top = 0.dp, bottom = 4.dp)) {
                                         Text(
                                             modifier = Modifier.align(Alignment.BottomEnd),
-                                            text = "tags:" + it.tags.joinToString(" "),
+                                            text = stringResource(id = R.string.prefix_tags) + it.tags.joinToString(" "),
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }
@@ -227,7 +229,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Icon(
                                     imageVector = Icons.Outlined.NavigateBefore,
-                                    contentDescription = "before",
+                                    contentDescription = stringResource(id = R.string.desc_previous),
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(18.dp))
@@ -249,7 +251,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Icon(
                                     imageVector = Icons.Outlined.NavigateNext,
-                                    contentDescription = "next",
+                                    contentDescription = stringResource(id = R.string.desc_next),
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(18.dp))
