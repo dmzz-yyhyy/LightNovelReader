@@ -24,8 +24,7 @@ class ChapterViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             readerRepository.book.collect {
-                Log.d("Web", "data got")
-                Log.d("Debug", readerRepository.bookName)
+                Log.d("Debug", "Book data collected: " + readerRepository.bookName)
                 _uiState.update {
                         chapterUiState -> chapterUiState.copy(
                             bookName = readerRepository.bookName,
@@ -37,9 +36,8 @@ class ChapterViewModel @Inject constructor(
         }
         viewModelScope.launch {
             readerRepository.volumeList.collect {
-                Log.d("Web", "chapters data got")
-                Log.d("Debug", readerRepository.bookName)
                 if (readerRepository.volumeList.value.isNotEmpty()) {
+                    Log.d("Debug", "Chapters data collected: " + readerRepository.bookName)
                     _uiState.update { chapterUiState ->
                         chapterUiState.copy(
                             isLoading = false,
@@ -52,6 +50,7 @@ class ChapterViewModel @Inject constructor(
     }
     fun onClickChapter(navController: NavController, chapterId: Int){
         readerRepository.setChapterContentId(chapterId)
+        Log.i("Reader", "Loading chapterId=$chapterId")
         navController.navigate(RouteConfig.READER)
     }
     fun onClickBackButton(){

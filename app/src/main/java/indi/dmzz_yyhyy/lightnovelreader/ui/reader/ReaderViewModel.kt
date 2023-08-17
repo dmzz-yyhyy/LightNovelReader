@@ -21,7 +21,6 @@ class ReaderViewModel  @Inject constructor(
         viewModelScope.launch {
             readerRepository.loadChapterContent()
             readerRepository.chapterContent.collect {
-                Log.d("Web", "content got")
                 _uiState.update {
                         readerUiState -> readerUiState.copy(
                             isLoading = readerRepository.chapterContent.value.title == "",
@@ -29,6 +28,7 @@ class ReaderViewModel  @Inject constructor(
                             content = readerRepository.chapterContent.value.content
                         )
                 }
+                Log.d("Reader", "ChapterContent collected, title=" + readerRepository.chapterContent.value.title)
             }
         }
         viewModelScope.launch {

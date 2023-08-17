@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.api
 
+import android.util.Log
 import indi.dmzz_yyhyy.lightnovelreader.data.book.*
 import indi.dmzz_yyhyy.lightnovelreader.data.local.Config
 import okhttp3.Interceptor
@@ -10,8 +11,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
-import java.net.ProtocolException
-import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -64,29 +63,24 @@ class LightNovelReaderAPI @Inject constructor() {
 
     fun getBookInformation(bookId: Int, reconnectTimes: Int = 5): Information? {
         return try {
+            Log.d("API", "Attempting to getBookInformation: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<WebData<Information>> = service.getBookInformation(bookId)
             val data: Response<WebData<Information>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: SocketTimeoutException){
-            if (reconnectTimes != 0) { return getBookInformation(bookId, reconnectTimes - 1) }
-            null
-        } catch (error: ProtocolException) {
-            if (reconnectTimes != 0) {
-                return getBookInformation(bookId, reconnectTimes - 1)
-            }
+        } catch (error: Exception){
+            if (reconnectTimes > 0) { return getBookInformation(bookId, reconnectTimes - 1) }
             null
         }
+
     }
 
     fun getBookChapterList(bookId: Int, reconnectTimes: Int = 5): List<Volume>? {
         return try {
+            Log.d("API", "Attempting to getBookChapterList: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<WebData<List<Volume>>> = service.getBookChapterList(bookId)
             val data: Response<WebData<List<Volume>>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: SocketTimeoutException){
-            if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
-            null
-        } catch (error: ProtocolException){
+        } catch (error: Exception){
             if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
             null
         }
@@ -94,13 +88,11 @@ class LightNovelReaderAPI @Inject constructor() {
 
     fun getBookContent(bookId: Int, chapterId: Int, reconnectTimes: Int = 5): ChapterContent? {
         return try {
+            Log.d("API", "Attempting to getBookContent: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<WebData<ChapterContent>> = service.getBookContent(bookId, chapterId)
             val data: Response<WebData<ChapterContent>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: SocketTimeoutException){
-            if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
-            null
-        } catch (error: ProtocolException){
+        } catch (error: Exception){
             if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
             null
         }
@@ -108,13 +100,11 @@ class LightNovelReaderAPI @Inject constructor() {
 
     fun searchBook(searchType: String, keyword: String, page: Int, reconnectTimes: Int = 5): Search? {
         return try {
+            Log.d("API", "Attempting to searchBook: searchType=$searchType, keyword=$keyword, page=$page. [remaining $reconnectTimes]")
             val dataCall: Call<WebData<Search>> = service.searchBook(searchType, keyword, page)
             val data: Response<WebData<Search>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: SocketTimeoutException){
-            if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
-            null
-        } catch (error: ProtocolException){
+        } catch (error: Exception){
             if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
             null
         }
