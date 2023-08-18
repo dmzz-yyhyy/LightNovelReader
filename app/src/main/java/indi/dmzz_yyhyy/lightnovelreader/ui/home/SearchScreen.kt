@@ -1,13 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.NavigateBefore
@@ -22,8 +20,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -83,7 +79,7 @@ fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home(searchNavController: NavController, searchViewModel: SearchViewModel){
+fun Home(searchNavController: NavController, searchViewModel: SearchViewModel) {
     Text("QwQ")
 }
 
@@ -93,12 +89,11 @@ fun Home(searchNavController: NavController, searchViewModel: SearchViewModel){
 fun Search(searchNavController: NavController, searchViewModel: SearchViewModel) {
     val density = LocalDensity.current.density
     val searchUiState by searchViewModel.uiState.collectAsState()
-    if (searchUiState.isLoading){
+    if (searchUiState.isLoading) {
         Loading()
-    }
-    else {
+    } else {
         var maxHeight by remember { mutableStateOf(0.dp) }
-        var isGetMaxHeight by remember { mutableStateOf( false ) }
+        var isGetMaxHeight by remember { mutableStateOf(false) }
         if (maxHeight == 0.dp && !isGetMaxHeight) {
             LazyVerticalGrid(
                 modifier = Modifier.fillMaxSize(),
@@ -111,8 +106,8 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                         .onSizeChanged { newSize ->
                             val heightDp = (newSize.height / density).dp
                             if (heightDp > maxHeight) {
-                            maxHeight = heightDp
-                        }
+                                maxHeight = heightDp
+                            }
                         }) {
                         Column(Modifier.fillMaxSize()) {
                             AsyncImage(
@@ -152,8 +147,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                 }
             }
             isGetMaxHeight = true
-        }
-        else {
+        } else {
             Column {
                 LazyVerticalGrid(
                     modifier = Modifier.fillMaxSize(),
@@ -211,70 +205,34 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             }
                         }
                     }
-                    item(key=1) {
-                        Row (Modifier
-                            .fillMaxWidth()
-                            .height(40.dp)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline,
-                                shape = CircleShape
-                            )
-                            .clip(CircleShape)) {
-                            Box(Modifier.fillMaxHeight().weight(1f)){
-                                Text(modifier = Modifier
-                                    .align(Alignment.Center),
-                                    text = "1",
-                                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface))
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                        ) {
+                            IconButton(onClick = { searchViewModel.onClickFistPageButton() }){
+                                Text("1", style = MaterialTheme.typography.labelLarge)
                             }
-                            Box(Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.outline))
-                            Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
-                                Icon(
-                                    imageVector = Icons.Outlined.NavigateBefore,
-                                    contentDescription = "before",
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .size(18.dp))
+                            IconButton(onClick = { searchViewModel.onClickBeforePageButton() }){
+                                Icon(Icons.Outlined.NavigateBefore, contentDescription = "before page")
                             }
-                            Box(Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.outline))
-                            Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
-                                Text(modifier = Modifier
-                                    .align(Alignment.Center),
-                                    text = searchUiState.page.toString(),
-                                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface))
+                            Box(Modifier.size(48.dp)){
+                                Text(
+                                    searchUiState.page.toString(),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
                             }
-                            Box(Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.outline))
-                            Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
-                                Icon(
-                                    imageVector = Icons.Outlined.NavigateNext,
-                                    contentDescription = "next",
-                                    modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .size(18.dp))
+                            IconButton(onClick = { searchViewModel.onClickNextPageButton() }){
+                                Icon(Icons.Outlined.NavigateNext, contentDescription = "next page")
                             }
-                            Box(Modifier
-                                .width(1.dp)
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.outline))
-                            Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
-                                Text(modifier = Modifier
-                                    .align(Alignment.Center),
-                                    text = searchUiState.totalPage.toString(),
-                                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface))
+                            IconButton(onClick = { searchViewModel.onClickLastPageButton() }){
+                                Text(searchUiState.totalPage.toString(), style = MaterialTheme.typography.labelLarge)
                             }
+                        }
+                        }
                     }
-                }
                 }
             }
         }
     }
-}
