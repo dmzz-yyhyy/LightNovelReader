@@ -2,10 +2,11 @@ package indi.dmzz_yyhyy.lightnovelreader.data
 
 import indi.dmzz_yyhyy.lightnovelreader.data.room.dao.ReadingBookDao
 import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.ReadingBook
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,15 +14,14 @@ import javax.inject.Singleton
 class ReadingBookRepository  @Inject constructor(
     private val readingBookDao: ReadingBookDao
 ){
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private var _readingBookList: MutableStateFlow<List<ReadingBook>> = MutableStateFlow(mutableListOf())
     val readingBookList: StateFlow<List<ReadingBook>> get() = _readingBookList
 
     init {
-        runBlocking {
-            launch {
-                readingBookDao.getAll().collect {
-                    _readingBookList.value = it
-                }
+        coroutineScope.launch {
+            readingBookDao.getAll().collect {
+                _readingBookList.value = it
             }
         }
     }
