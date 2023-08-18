@@ -16,7 +16,7 @@
             android:theme="@style/Theme.LightNovelReader"
             tools:targetApi="31">
         <activity
-                android:name=".LaunchActivity"
+                android:name=".ui.home.HomeActivity"
                 android:exported="true"
                 android:theme="@style/Theme.LightNovelReader">
             <intent-filter>
@@ -28,11 +28,6 @@
             <meta-data
                     android:name="android.app.lib_name"
                     android:value=""/>
-        </activity>
-        <activity
-                android:name=".ui.home.HomeActivity"
-                android:exported="false"
-                android:theme="@style/Theme.LightNovelReader">
         </activity>
         <activity
                 android:name=".ui.reader.ReaderActivity"

@@ -1,7 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
+import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.ReadingBook
+
 
 data class ReadingUiState(
-    val readingBookDataList: List<Book> = listOf(),
+    val readingBookDataList: List<ReadingBook> = listOf(),
 )

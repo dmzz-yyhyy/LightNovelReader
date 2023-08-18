@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -77,13 +80,13 @@ class HomeActivity : ComponentActivity() {
                             } }
                     ) {
                         Box(Modifier.padding(it)) {
-                            val readingViewModel = hiltViewModel<ReadingViewModel>()
                             val searchViewModel = hiltViewModel<SearchViewModel>()
                         NavHost(
                             navController = navController,
                             startDestination = RouteConfig.READING,
                         ) {
                             composable(route = RouteConfig.READING) {
+                                val readingViewModel = hiltViewModel<ReadingViewModel>()
                                 ReadingScreen(navController, readingViewModel)
                             }
                             composable(route = RouteConfig.BOOKCASE) {

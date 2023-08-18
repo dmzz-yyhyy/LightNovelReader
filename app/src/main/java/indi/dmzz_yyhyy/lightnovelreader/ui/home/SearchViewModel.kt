@@ -1,11 +1,16 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.SearchRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.ui.reader.ReaderActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -38,20 +43,19 @@ class SearchViewModel @Inject constructor(
         }
     }
     private fun changePage(page: Int) {
-        searchRepository.setPage(page)
         _uiState.update {
-            searchUiState -> searchUiState.copy(
-                isLoading = true,
-                page = page
-            )
+                searchUiState -> searchUiState.copy(
+            isLoading = true,
+            page = page
+        )
         }
+        searchRepository.setPage(page)
         load()
     }
     fun onHomePageLoad() {
         _uiState.update { searchUiState ->
             searchUiState.copy(
                 isLoading = true,
-                route = null,
                 page = 1,
                 keyword = "",
                 bookList = listOf(),
@@ -65,10 +69,34 @@ class SearchViewModel @Inject constructor(
         _uiState.update { searchUiState ->
             searchUiState.copy(
                 isLoading = true,
-                route = RouteConfig.SEARCH,
                 keyword = keyword
             )
         }
         load()
+    }
+
+    fun onCardClick(bookId: Int, context: Context){
+        val intent = Intent(context, ReaderActivity::class.java)
+        intent.putExtra("bookId", bookId)
+        ContextCompat.startActivity(context, intent, Bundle())
+    }
+
+    fun onClickFistPageButton(){
+        changePage(1)
+    }
+
+    fun onClickBeforePageButton(){
+        if (_uiState.value.page > 1) {
+            changePage(_uiState.value.page - 1)
+        }
+    }
+
+    fun onClickNextPageButton(){
+        if (_uiState.value.page < searchRepository.totalPage.value) {
+            changePage(_uiState.value.page + 1)
+        }
+    }
+    fun onClickLastPageButton(){
+        changePage(searchRepository.totalPage.value)
     }
 }

@@ -2,6 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Book
+import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.ReadingBook
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
@@ -33,13 +35,13 @@ fun ReadingScreen(
         Box(Modifier.padding(it)) {
             val readingUiState by readingViewModel.uiState.collectAsState()
             val padding = 16.dp
-            Column(
+            LazyColumn(
                 Modifier
                     .padding(start = padding, end = padding)
                     .fillMaxWidth()
             ) {
-                for (book in readingUiState.readingBookDataList) {
-                    ReadingBookCard(readingViewModel, book)
+                items(readingUiState.readingBookDataList) {
+                    ReadingBookCard(readingViewModel, it)
                 }
             }
         }
@@ -48,18 +50,18 @@ fun ReadingScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadingBookCard(readingViewModel: ReadingViewModel, book: Book) {
+fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
             .padding(bottom = 8.dp)
             .fillMaxWidth(),
-        onClick = { readingViewModel.onCardClick(book.bookID, context) }
+        onClick = { readingViewModel.onCardClick(book.bookId, context) }
 
     ) {
         Row(Modifier.fillMaxWidth()){
             AsyncImage(
-                model = book.coverURL,
+                model = book.coverUrl,
                 contentDescription = stringResource(id = R.string.desc_cover),
                 modifier = Modifier
                     .size(height = 128.dp, width = 88.dp)

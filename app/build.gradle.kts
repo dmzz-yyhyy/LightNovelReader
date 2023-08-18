@@ -13,8 +13,8 @@ android {
         applicationId = "indi.dmzz_yyhyy.lightnovelreader"
         minSdk = 24
         targetSdk = 34
-        versionCode = 31
-        versionName = "0.3.1"
+        versionCode = 32
+        versionName = "0.3.2"
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -30,7 +30,7 @@ android {
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
-                targetCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = "1.8"
@@ -50,6 +50,7 @@ android {
 
 
 dependencies {
+    val room_version = "2.5.2"
 
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.9.0")
@@ -78,8 +79,21 @@ dependencies {
     debugImplementation ("androidx.compose.ui:ui-test-manifest:1.4.0")
     kapt ("androidx.hilt:hilt-compiler:1.0.0")
 
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.room:room-rxjava2:$room_version")
+    implementation("androidx.room:room-rxjava3:$room_version")
+    implementation("androidx.room:room-guava:$room_version")
+    testImplementation("androidx.room:room-testing:$room_version")
+    implementation("androidx.room:room-paging:$room_version")
+
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }
 kapt {
     correctErrorTypes = true
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
 }

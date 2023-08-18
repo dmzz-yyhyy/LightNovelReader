@@ -53,8 +53,28 @@ class ChapterViewModel @Inject constructor(
         Log.i("Reader", "Loading chapterId=$chapterId")
         navController.navigate(RouteConfig.READER)
     }
+
+    fun onClickReadButton(navController: NavController){
+        readerRepository.setChapterContentId(readerRepository.volumeList.value[0].chapters[0].id)
+        navController.navigate(RouteConfig.READER)
+    }
+
     fun onClickBackButton(){
         _isCloseActivity.value = true
+    }
+
+    fun onClickChapterSortingButton(){
+        _uiState.update { chapterUiState ->
+            chapterUiState.copy(
+                isChapterReversed = !chapterUiState.isChapterReversed
+            ) }
+    }
+
+    fun onClickVolumeSortingButton(){
+        _uiState.update { chapterUiState ->
+            chapterUiState.copy(
+                isVolumeReversed = !chapterUiState.isVolumeReversed
+            ) }
     }
 
 }

@@ -10,8 +10,7 @@ import javax.inject.Inject
 
 @ActivityRetainedScoped
 class ReaderRepository @Inject constructor(
-    private val webBookDataSource: WebBookDataSource,
-    private val bookRepository: BookRepository
+    private val webBookDataSource: WebBookDataSource
 ) {
     private var _book: MutableStateFlow<Book> = MutableStateFlow(Book(0, "", "", ""))
     private var _bookId: Int = 0
@@ -21,7 +20,7 @@ class ReaderRepository @Inject constructor(
 
     val book: StateFlow<Book> get() = _book
     val bookName: String get() = _book.value.bookName
-    val bookCoverUrl: String get() = _book.value.coverURL
+    val bookCoverUrl: String get() = _book.value.coverUrl
     val bookIntroduction: String get() = _book.value.introduction
     val volumeList: StateFlow<List<Volume>> get() = _volumeList
     val chapterContentId: StateFlow<Int> get() = _chapterContentId
@@ -30,7 +29,7 @@ class ReaderRepository @Inject constructor(
     // 更新数据的方法
     suspend fun loadChapterList(bookId: Int) {
         _bookId = bookId
-        val book = bookRepository.getBook(bookId)
+        val book = webBookDataSource.getBook(bookId)
         if (book != null) { _book.value = book }
         val chapterList = webBookDataSource.getBookChapterList(bookId)
         if (chapterList != null) { _volumeList.value = chapterList.toMutableList() }

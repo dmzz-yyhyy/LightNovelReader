@@ -34,6 +34,7 @@ class SearchRepository @Inject constructor(
         }
 
     suspend fun load(){
+        _bookList.value = listOf()
         if (_localBookListList[_page] == null) {
             _search = searchBook(_searchType, _keyword, _page)
             _localBookListList[_page] = _search

@@ -20,7 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -157,11 +160,13 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                     columns = GridCells.Fixed(3)
                 ) {
                     items(searchUiState.bookList) {
+                        val context = LocalContext.current
                         Card(
-                            Modifier
+                            modifier = Modifier
                                 .padding(8.dp)
                                 .width(100.dp)
-                                .height(maxHeight)
+                                .height(maxHeight),
+                            onClick = { searchViewModel.onCardClick(it.bookId, context) }
                         ) {
                             Column(
                                 Modifier.fillMaxSize(),
@@ -229,7 +234,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Icon(
                                     imageVector = Icons.Outlined.NavigateBefore,
-                                    contentDescription = stringResource(id = R.string.desc_previous),
+                                    contentDescription = "before",
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(18.dp))
@@ -251,7 +256,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             Box(Modifier.fillMaxHeight().weight(1f).padding(start = 12.dp, end = 12.dp)){
                                 Icon(
                                     imageVector = Icons.Outlined.NavigateNext,
-                                    contentDescription = stringResource(id = R.string.desc_next),
+                                    contentDescription = "next",
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(18.dp))

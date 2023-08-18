@@ -4,6 +4,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 
 data class ChapterUiState(
     val isLoading: Boolean = true,
+    val isChapterReversed: Boolean = false,
+    val isVolumeReversed: Boolean = false,
     val bookName: String = "",
     val bookCoverUrl: String = "",
     val bookIntroduction: String = "",

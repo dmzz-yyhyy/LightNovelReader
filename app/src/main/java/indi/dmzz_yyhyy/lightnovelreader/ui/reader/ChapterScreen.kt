@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -90,7 +92,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             style = MaterialTheme.typography.bodySmall,
                             text = stringResource(id = R.string.last_read))
                         Button(
-                            onClick = { },
+                            onClick = { chapterViewModel.onClickReadButton(navController) },
                             modifier = Modifier
                                 .padding(8.dp)
                                 .align(alignment = Alignment.BottomEnd)
@@ -101,8 +103,6 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 }
 
 
-                var isChapterReversed by remember { mutableStateOf(false) }
-                var isVolumeReversed by remember { mutableStateOf(false) }
 
                 Box(modifier = Modifier.padding(8.dp), contentAlignment = Alignment.TopCenter) {
                     Column {
@@ -114,37 +114,34 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             Row(Modifier.padding(8.dp)) {
                                 // Chapters
                                 Button(
-                                    onClick = {
-                                        isChapterReversed = !isChapterReversed
-                                    },
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier.padding(end = 8.dp),
+                                    onClick = { chapterViewModel.onClickChapterSortingButton() },
+                                    enabled = !chapterUiState.volumeList.isEmpty()
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
-                                            imageVector = if (isChapterReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            imageVector = if (chapterUiState.isChapterReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                                             contentDescription = null,
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = stringResource(id = R.string.chapters) + ": " + if (isChapterReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            text = stringResource(id = R.string.chapters) + ": " + if (chapterUiState.isChapterReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
                                             modifier = Modifier.padding(start = 4.dp)
                                         )
                                     }
                                 }
                                 // Volumes
                                 Button(
-                                    onClick = {
-                                        isVolumeReversed = !isVolumeReversed
-                                    }
+                                    onClick = { chapterViewModel.onClickVolumeSortingButton() }
                                 ) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
-                                            imageVector = if (isVolumeReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            imageVector = if (chapterUiState.isVolumeReversed) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
                                             contentDescription = null,
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = stringResource(id = R.string.volumes) + ": " + if (isVolumeReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            text = stringResource(id = R.string.volumes) + ": " + if (chapterUiState.isVolumeReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
                                             modifier = Modifier.padding(start = 4.dp)
                                         )
                                     }
@@ -157,7 +154,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                             )
                             Box(Modifier.padding(8.dp)) {
                                 Column {
-                                    val sortedVolumeList = if (isVolumeReversed) {
+                                    val sortedVolumeList = if (chapterUiState.isVolumeReversed) {
                                         chapterUiState.volumeList.reversed()
                                     } else {
                                         chapterUiState.volumeList
@@ -170,7 +167,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                         )
                                         Box(Modifier.padding(8.dp)) {
                                             Column {
-                                                val sortedChapters = if (isChapterReversed) {
+                                                val sortedChapters = if (chapterUiState.isChapterReversed) {
                                                     volume.chapters.reversed()
                                                 } else {
                                                     volume.chapters
