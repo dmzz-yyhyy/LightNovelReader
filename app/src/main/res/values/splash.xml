@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.LightNovelReader.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_foreground</item>
+        <item name="windowSplashScreenBackground">#6B94FF</item>
+        <item name="postSplashScreenTheme">@style/Theme.LightNovelReader</item>
+
+    </style>
+</resources>

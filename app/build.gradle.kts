@@ -78,6 +78,7 @@ dependencies {
     debugImplementation ("androidx.compose.ui:ui-tooling:1.4.0")
     debugImplementation ("androidx.compose.ui:ui-test-manifest:1.4.0")
     kapt ("androidx.hilt:hilt-compiler:1.0.0")
+    implementation ("androidx.core:core-splashscreen:1.0.0")
 
     implementation("androidx.room:room-runtime:$room_version")
     annotationProcessor("androidx.room:room-compiler:$room_version")
