@@ -1,8 +1,8 @@
-package indi.dmzz_yyhyy.lightnovelreader.api
+package indi.dmzz_yyhyy.lightnovelreader.data.web.api
 
 import android.util.Log
-import indi.dmzz_yyhyy.lightnovelreader.data.book.*
 import indi.dmzz_yyhyy.lightnovelreader.data.local.Config
+import indi.dmzz_yyhyy.lightnovelreader.data.`object`.*
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 
-class LightNovelReaderAPI @Inject constructor() {
+class LightNovelReaderWebAPI @Inject constructor() {
     companion object {
         private val interceptor = Interceptor { chain ->
             val request = chain.request()
@@ -49,23 +49,24 @@ class LightNovelReaderAPI @Inject constructor() {
     // Makes news-related network synchronous requests.
     interface LightNovelReaderBackgroundAPI {
         @GET("get_book_information")
-        fun getBookInformation(@Query("book_id") bookID: Int): Call<WebData<Information>>
+        fun getBookInformation(@Query("book_id") bookID: Int): Call<Data<Information>>
 
         @GET("get_book_chapter_list")
-        fun getBookChapterList(@Query("book_id") bookID: Int): Call<WebData<List<Volume>>>
+        fun getBookChapterList(@Query("book_id") bookID: Int): Call<Data<List<Volume>>>
 
         @GET("get_book_chapter_content")
-        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<WebData<ChapterContent>>
+        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<Data<ChapterContent>>
 
         @GET("search_book")
-        fun searchBook(@Query("search_type") searchType: String, @Query("keyword") keyword: String, @Query("page") page: Int): Call<WebData<Search>>
+        fun searchBook(@Query("search_type") searchType: String, @Query("keyword") keyword: String, @Query("page") page: Int): Call<Data<SearchBooks>>
     }
 
     fun getBookInformation(bookId: Int, reconnectTimes: Int = 5): Information? {
         return try {
             Log.d("API", "Attempting to getBookInformation: bookID=$bookId. [remaining $reconnectTimes]")
-            val dataCall: Call<WebData<Information>> = service.getBookInformation(bookId)
-            val data: Response<WebData<Information>>? = dataCall.execute()
+            val dataCall: Call<Data<Information>> = service.getBookInformation(bookId)
+            val data: Response<Data<Information>>? = dataCall.execute()
+            Log.d("API", data.toString())
             data?.body()?.data
         } catch (error: Exception){
             if (reconnectTimes > 0) { return getBookInformation(bookId, reconnectTimes - 1) }
@@ -77,8 +78,8 @@ class LightNovelReaderAPI @Inject constructor() {
     fun getBookChapterList(bookId: Int, reconnectTimes: Int = 5): List<Volume>? {
         return try {
             Log.d("API", "Attempting to getBookChapterList: bookID=$bookId. [remaining $reconnectTimes]")
-            val dataCall: Call<WebData<List<Volume>>> = service.getBookChapterList(bookId)
-            val data: Response<WebData<List<Volume>>>? = dataCall.execute()
+            val dataCall: Call<Data<List<Volume>>> = service.getBookChapterList(bookId)
+            val data: Response<Data<List<Volume>>>? = dataCall.execute()
             data?.body()?.data
         } catch (error: Exception){
             if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
@@ -89,8 +90,8 @@ class LightNovelReaderAPI @Inject constructor() {
     fun getBookContent(bookId: Int, chapterId: Int, reconnectTimes: Int = 5): ChapterContent? {
         return try {
             Log.d("API", "Attempting to getBookContent: bookID=$bookId. [remaining $reconnectTimes]")
-            val dataCall: Call<WebData<ChapterContent>> = service.getBookContent(bookId, chapterId)
-            val data: Response<WebData<ChapterContent>>? = dataCall.execute()
+            val dataCall: Call<Data<ChapterContent>> = service.getBookContent(bookId, chapterId)
+            val data: Response<Data<ChapterContent>>? = dataCall.execute()
             data?.body()?.data
         } catch (error: Exception){
             if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
@@ -98,13 +99,14 @@ class LightNovelReaderAPI @Inject constructor() {
         }
     }
 
-    fun searchBook(searchType: String, keyword: String, page: Int, reconnectTimes: Int = 5): Search? {
+    fun searchBook(searchType: String, keyword: String, page: Int, reconnectTimes: Int = 5): SearchBooks? {
         return try {
             Log.d("API", "Attempting to searchBook: searchType=$searchType, keyword=$keyword, page=$page. [remaining $reconnectTimes]")
-            val dataCall: Call<WebData<Search>> = service.searchBook(searchType, keyword, page)
-            val data: Response<WebData<Search>>? = dataCall.execute()
+            val dataCall: Call<Data<SearchBooks>> = service.searchBook(searchType, keyword, page)
+            val data: Response<Data<SearchBooks>>? = dataCall.execute()
             data?.body()?.data
         } catch (error: Exception){
+            Log.e("API", error.localizedMessage)
             if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
             null
         }

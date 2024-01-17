@@ -69,7 +69,10 @@ class SearchViewModel @Inject constructor(
         _uiState.update { searchUiState ->
             searchUiState.copy(
                 isLoading = true,
-                keyword = keyword
+                keyword = keyword,
+                page = 1,
+                bookList = listOf(),
+                totalPage = 0
             )
         }
         load()
@@ -77,7 +80,7 @@ class SearchViewModel @Inject constructor(
 
     fun onCardClick(bookId: Int, context: Context){
         val intent = Intent(context, ReaderActivity::class.java)
-        intent.putExtra("bookId", bookId)
+        intent.putExtra("id", bookId)
         ContextCompat.startActivity(context, intent, Bundle())
     }
 

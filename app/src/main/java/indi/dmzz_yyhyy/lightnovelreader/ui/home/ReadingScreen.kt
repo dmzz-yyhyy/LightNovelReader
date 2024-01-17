@@ -56,7 +56,7 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
         modifier = Modifier
             .padding(bottom = 8.dp)
             .fillMaxWidth(),
-        onClick = { readingViewModel.onCardClick(book.bookId, context) }
+        onClick = { readingViewModel.onCardClick(book.id, context) }
 
     ) {
         Row(Modifier.fillMaxWidth()){

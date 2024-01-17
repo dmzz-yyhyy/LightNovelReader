@@ -1,7 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,10 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -44,7 +43,9 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
             }},
             title = { Text(readerUiState.title) }) },
         bottomBar = {
-            if(readerUiState.isBottomBarOpen){
+            AnimatedVisibility(
+                visible = readerUiState.isBottomBarOpen,
+            ) {
                 BottomAppBar{
                     IconButton(modifier = Modifier.size(48.dp), onClick = {}){
                         Icon(
@@ -116,7 +117,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
             }
         }
     }
-
+    // 章节选择侧边栏
     if (readerUiState.isSideSheetsOpen){
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
             ModalSideSheet(modifier = Modifier
@@ -142,15 +143,20 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                             for (volume in readerUiState.volumeList) {
                                 Text(
                                     modifier = Modifier.padding(start = 2.dp),
-                                    text = volume.volumeName,
+                                    text = volume.volumeTitle,
                                     style = MaterialTheme.typography.titleMedium
                                 )
-                                Box(Modifier.padding(8.dp)) {
+                                Box(
+                                    Modifier
+                                        .padding(8.dp)
+                                ) {
                                     Column {
                                         for (chapter in volume.chapters) {
 
                                             Text(
-                                                modifier = Modifier.padding(start = 2.dp),
+                                                modifier = Modifier
+                                                                .padding(start = 2.dp)
+                                                                .clickable { readerViewModel.onClickChangeChapter(chapter.id) },
                                                 text = chapter.title,
                                                 style = MaterialTheme.typography.titleSmall
                                             )

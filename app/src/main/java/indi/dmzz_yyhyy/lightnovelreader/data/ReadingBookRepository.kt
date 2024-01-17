@@ -28,7 +28,7 @@ class ReadingBookRepository  @Inject constructor(
 
     fun isBookInList(bookId: Int): Boolean {
         for (book in _readingBookList.value) {
-            if (book.bookId == bookId) {
+            if (book.id == bookId) {
                 return true
             }
         }

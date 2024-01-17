@@ -4,9 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class ReadingBook(
+data class BookChapter (
     @PrimaryKey val id: Int,
-    var bookName: String,
-    var coverUrl: String,
-    var introduction: String,
+    val bookId: Int,
+    val bookName: String,
+    val volumeId: Int,
 )

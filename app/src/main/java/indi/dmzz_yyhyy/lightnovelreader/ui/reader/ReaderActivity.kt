@@ -29,7 +29,7 @@ class ReaderActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val intent = intent
-        val bookId = intent.getIntExtra("bookId", 0)
+        val bookId = intent.getIntExtra("id", 0)
         scope.launch {
             readerRepository.loadChapterList(bookId)
         }

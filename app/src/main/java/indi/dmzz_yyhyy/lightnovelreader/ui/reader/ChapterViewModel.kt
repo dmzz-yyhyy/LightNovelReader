@@ -50,7 +50,7 @@ class ChapterViewModel @Inject constructor(
     }
     fun onClickChapter(navController: NavController, chapterId: Int){
         readerRepository.setChapterContentId(chapterId)
-        Log.i("Reader", "Loading chapterId=$chapterId")
+        Log.i("Reader", "Loading id=$chapterId")
         navController.navigate(RouteConfig.READER)
     }
 

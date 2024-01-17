@@ -36,7 +36,7 @@ class ReadingViewModel @Inject constructor(
     }
     fun onCardClick(bookId: Int, context: Context){
         val intent = Intent(context, ReaderActivity::class.java)
-        intent.putExtra("bookId", bookId)
+        intent.putExtra("id", bookId)
         startActivity(context, intent, Bundle())
     }
 }

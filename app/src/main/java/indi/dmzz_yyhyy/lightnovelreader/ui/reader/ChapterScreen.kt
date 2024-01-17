@@ -8,12 +8,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -162,7 +161,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                     for (volume in sortedVolumeList) {
                                         Text(
                                             modifier = Modifier.padding(start = 2.dp),
-                                            text = volume.volumeName,
+                                            text = volume.volumeTitle,
                                             style = MaterialTheme.typography.titleMedium
                                         )
                                         Box(Modifier.padding(8.dp)) {

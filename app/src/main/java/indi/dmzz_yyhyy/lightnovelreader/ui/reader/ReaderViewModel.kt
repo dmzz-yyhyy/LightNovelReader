@@ -23,40 +23,25 @@ class ReaderViewModel @Inject constructor(
     val uiState: StateFlow<ReaderUiState> = _uiState
 
     init {
+        // 获取书本类容并更新UiState
         viewModelScope.launch {
             readerRepository.loadChapterContent()
-        }
-        viewModelScope.launch {
-            readerRepository.chapterContent.collect {
-                if (readerRepository.chapterContent.value.content != "") {
-                    _uiState.update { readerUiState ->
-                        readerUiState.copy(
-                            isLoading = false,
-                            title = readerRepository.chapterContent.value.title,
-                            content = readerRepository.chapterContent.value.content
-                        )
-                    }
-                    Log.d("Reader", "ChapterContent collected, title=" + readerRepository.chapterContent.value.title)
-                }
+            _uiState.update { readerUiState ->
+                readerUiState.copy(
+                    isLoading = false,
+                    chapterId = readerRepository.chapterContentId.value,
+                    title = readerRepository.chapterContent.value.title,
+                    content = readerRepository.chapterContent.value.content
+                )
             }
+            Log.d("Reader", "ChapterContent loaded, name=" + readerRepository.chapterContent.value.title)
         }
+        // 将书本列入正在阅读列表
         viewModelScope.launch {
-            readerRepository.chapterContentId.collect {
-                _uiState.update { readerUiState ->
-                    readerUiState.copy(
-                        isLoading = true,
-                        chapterId = readerRepository.chapterContentId.value,
-                        title = readerRepository.chapterContent.value.title,
-                        content = readerRepository.chapterContent.value.content
-                    )
-                }
-            }
-        }
-        viewModelScope.launch {
-            if (!readingBookRepository.isBookInList(readerRepository.book.value.bookID)) {
+            if (!readingBookRepository.isBookInList(readerRepository.book.value.id)) {
                 readingBookRepository.addReadingBook(ReadingBook(
-                    bookId = readerRepository.book.value.bookID,
-                    bookName = readerRepository.book.value.bookName,
+                    id = readerRepository.book.value.id,
+                    bookName = readerRepository.book.value.name,
                     coverUrl = readerRepository.book.value.coverUrl,
                     introduction = readerRepository.book.value.introduction
                 ))
@@ -65,7 +50,9 @@ class ReaderViewModel @Inject constructor(
     }
 
     private fun changeChapter(chapterId: Int) {
+        // 设置章节
         readerRepository.setChapterContentId(chapterId)
+        // 归零UiState
         _uiState.update { readerUiState ->
             readerUiState.copy(
                 isLoading = true,
@@ -74,12 +61,13 @@ class ReaderViewModel @Inject constructor(
                 content = ""
             )
         }
+        // 侦听章节类容更新并更新UiState
         viewModelScope.launch {
             readerRepository.loadChapterContent()
             readerRepository.chapterContent.collect {
                 if (readerRepository.chapterContent.value.content != "") {
                     Log.d("Web", "content got")
-                    Log.d("Web", "title: ${readerRepository.chapterContent.value.title}")
+                    Log.d("Web", "name: ${readerRepository.chapterContent.value.title}")
                     _uiState.update { readerUiState ->
                         readerUiState.copy(
                             isLoading = false,
@@ -138,5 +126,9 @@ class ReaderViewModel @Inject constructor(
                 isSideSheetsOpen = false
             )
         }
+    }
+
+    fun onClickChangeChapter(chapterId: Int) {
+        changeChapter(chapterId)
     }
 }

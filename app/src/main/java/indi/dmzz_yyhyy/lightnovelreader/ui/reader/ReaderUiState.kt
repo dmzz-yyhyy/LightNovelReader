@@ -1,6 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.reader
 
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
+import indi.dmzz_yyhyy.lightnovelreader.data.`object`.Volume
 
 data class ReaderUiState (
     val isLoading: Boolean = true,

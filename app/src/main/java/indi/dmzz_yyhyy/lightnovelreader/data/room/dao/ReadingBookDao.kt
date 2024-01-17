@@ -12,6 +12,6 @@ abstract class ReadingBookDao {
     abstract fun getAll(): Flow<List<ReadingBook>>
     @Insert
     abstract suspend fun add(book: ReadingBook)
-    @Query("DELETE FROM readingbook WHERE bookId=:bookId")
-    abstract suspend fun delete(bookId: Int)
+    @Query("DELETE FROM readingbook WHERE id=:id")
+    abstract suspend fun delete(id: Int)
 }
