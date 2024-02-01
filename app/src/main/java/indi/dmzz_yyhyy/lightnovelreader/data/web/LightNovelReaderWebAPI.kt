@@ -1,10 +1,11 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.web.api
+package indi.dmzz_yyhyy.lightnovelreader.data.web
 
 import android.util.Log
 import indi.dmzz_yyhyy.lightnovelreader.data.local.Config
 import indi.dmzz_yyhyy.lightnovelreader.data.`object`.*
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
@@ -59,7 +60,14 @@ class LightNovelReaderWebAPI @Inject constructor() {
 
         @GET("search_book")
         fun searchBook(@Query("search_type") searchType: String, @Query("keyword") keyword: String, @Query("page") page: Int): Call<Data<SearchBooks>>
+
+        @GET(".")
+        fun getServerMetadata(): Call<ServerMetadata>
+
+        @GET("update_apk")
+        fun getUpdateApk(): Call<ResponseBody>
     }
+
 
     fun getBookInformation(bookId: Int, reconnectTimes: Int = 5): Information? {
         return try {
@@ -106,10 +114,37 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val data: Response<Data<SearchBooks>>? = dataCall.execute()
             data?.body()?.data
         } catch (error: Exception){
-            Log.e("API", error.localizedMessage)
+            error.localizedMessage?.let { Log.e("API", it) }
             if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
             null
         }
     }
 
+    fun getServerMetadata(reconnectTimes: Int = 5): ServerMetadata? {
+        return try {
+            Log.d("API", "Attempting to getServerMetadata. [remaining $reconnectTimes]")
+            val dataCall: Call<ServerMetadata> = service.getServerMetadata()
+            val data: Response<ServerMetadata>? = dataCall.execute()
+            data?.body()
+        } catch (error: Exception){
+            error.localizedMessage?.let { Log.e("API", it) }
+            if (reconnectTimes != 0) { return getServerMetadata( reconnectTimes - 1) }
+            null
+        }
+    }
+
+    fun getUpdateApk(reconnectTimes: Int = 5): ResponseBody? {
+        return try {
+            Log.d("API", "Attempting to getUpdateApk. [remaining $reconnectTimes]")
+            val dataCall: Call<ResponseBody> = service.getUpdateApk()
+
+            val data: Response<ResponseBody>? = dataCall.execute()
+            println("老子tm下好了！")
+            data?.body()
+        } catch (error: Exception){
+            error.localizedMessage?.let { Log.e("API", it) }
+            if (reconnectTimes != 0) { return getUpdateApk( reconnectTimes - 1) }
+            null
+        }
+    }
 }

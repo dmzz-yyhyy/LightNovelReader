@@ -5,7 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.`object`.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.`object`.Information
 import indi.dmzz_yyhyy.lightnovelreader.data.`object`.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebDataSource
-import indi.dmzz_yyhyy.lightnovelreader.data.web.api.LightNovelReaderWebAPI
+import indi.dmzz_yyhyy.lightnovelreader.data.web.LightNovelReaderWebAPI
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject

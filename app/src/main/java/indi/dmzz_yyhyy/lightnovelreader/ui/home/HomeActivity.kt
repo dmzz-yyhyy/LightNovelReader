@@ -8,11 +8,10 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -23,26 +22,72 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.UpdateRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.RouteConfig
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.UpdateAlertDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.splash.SplashViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.theme.LightNovelReaderTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeActivity : ComponentActivity() {
+    @Inject
+    lateinit var updateRepository: UpdateRepository
 
-    private val viewModel: SplashViewModel by viewModels()
-    @OptIn(ExperimentalMaterial3Api::class)
+
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private val splashViewModel: SplashViewModel by viewModels()
+    @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
-
         val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition{viewModel.isLoading.value}
+        splashScreen.setKeepOnScreenCondition{splashViewModel.isLoading.value}
         super.onCreate(savedInstanceState)
         setContent {
+            val isNeedUpdate = remember { mutableStateOf(false) }
+            val isDownloadingUpdate = remember { mutableStateOf(false) }
+            scope.launch {
+                updateRepository.updateDetection(this@HomeActivity)
+                isNeedUpdate.value = updateRepository.isNeedUpdate.value
+            }
             LightNovelReaderTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     var selectedItem by remember { mutableIntStateOf(0) }
+                    if (isNeedUpdate.value) {
+                        UpdateAlertDialog(
+                            onDismissRequest = {
+                                isNeedUpdate.value = false
+                            },
+                            onConfirmation = {
+                                isNeedUpdate.value = false
+                                isDownloadingUpdate.value = true
+                                scope.launch { updateRepository.updateApp(this@HomeActivity) }
+                                scope.launch {
+                                    while (!updateRepository.isOver.value){
+                                        updateRepository.isOver.collect {
+                                            if (updateRepository.isOver.value) {
+                                                isDownloadingUpdate.value = false
+                                            }
+                                        }
+                                    }}
+                            },
+                            dialogTitle = "有新的更新可用",
+                            dialogText = "服务端上有更新的客户端版本，我们建议恁进行升级.",
+                        )
+                    }
+                    if (isDownloadingUpdate.value) {
+                        AlertDialog(
+                            icon = { Icon(Icons.Default.Download, contentDescription = "download") },
+                            title = { Text("正在下载", style = MaterialTheme.typography.headlineSmall) },
+                            text = { Text("正在从客户端获取数据，请稍等...") },
+                            onDismissRequest = {},
+                            confirmButton = {},
+                            dismissButton = {}
+                        )}
                     Scaffold(
                         bottomBar = {
                             NavigationBar {

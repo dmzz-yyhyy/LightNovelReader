@@ -12,7 +12,7 @@ android {
         applicationId = "indi.dmzz_yyhyy.lightnovelreader"
         minSdk = 24
         targetSdk = 34
-        versionCode = 33
+        versionCode = 303002
         versionName = "0.3.3"
         vectorDrawables {
             useSupportLibrary = true
