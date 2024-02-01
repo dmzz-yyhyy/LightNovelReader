@@ -1,15 +1,14 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
-import indi.dmzz_yyhyy.lightnovelreader.data.`object`.ChapterContent
-import indi.dmzz_yyhyy.lightnovelreader.data.`object`.Information
-import indi.dmzz_yyhyy.lightnovelreader.data.`object`.SearchBooks
-import indi.dmzz_yyhyy.lightnovelreader.data.`object`.Volume
-import indi.dmzz_yyhyy.lightnovelreader.data.web.api.LightNovelReaderWebAPI
+import indi.dmzz_yyhyy.lightnovelreader.data.`object`.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import javax.inject.Inject
+import javax.inject.Singleton
 
 
+@Singleton
 class WebDataSource @Inject constructor(
     private val lightNovelReaderWebAPI: LightNovelReaderWebAPI,
     private val ioDispatcher: CoroutineDispatcher
@@ -30,7 +29,6 @@ class WebDataSource @Inject constructor(
         }
 
     suspend fun getBookContent(bookId: Int, chapterId: Int): ChapterContent? =
-
         withContext(ioDispatcher) {
             lightNovelReaderWebAPI.getBookContent(bookId, chapterId)
         }
@@ -39,6 +37,16 @@ class WebDataSource @Inject constructor(
         withContext(ioDispatcher) {
             searchBookCache = lightNovelReaderWebAPI.searchBook(searchType, keyword, page)
             searchBookCache
+        }
+
+    suspend fun getServerMetadata(): ServerMetadata? =
+        withContext(ioDispatcher) {
+            lightNovelReaderWebAPI.getServerMetadata()
+        }
+
+    suspend fun getUpdateApk(): ResponseBody? =
+        withContext(ioDispatcher) {
+            lightNovelReaderWebAPI.getUpdateApk()
         }
 }
 
