@@ -30,4 +30,12 @@
     <string name="desc_cover">cover</string>
     <string name="desc_icon_image">icon image</string>
     <string name="desc_search">search</string>
+    <string name="new_update_available">New update available</string>
+    <string name="new_update_available_text">A new version of the application is available, we recommend you to
+        update.
+    </string>
+    <string name="downloading">Downloading</string>
+    <string name="downloading_text">Downloading from server...</string>
+    <string name="update_confirm">Update</string>
+    <string name="update_dismiss">Dismiss</string>
 </resources>

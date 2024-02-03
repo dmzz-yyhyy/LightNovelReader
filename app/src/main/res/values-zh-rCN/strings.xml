@@ -7,6 +7,8 @@
     <string name="last_read">上次阅读: %s</string>
     <string name="current_reading">当前阅读: %s</string>
     <string name="last_reading_time">上次阅读时间: %s</string>
+    <string name="new_update_available">有新的更新可用</string>
+    <string name="new_update_available_text">服务端上有更新的客户端版本，我们建议您进行升级。</string>
     <string name="contents">目录</string>
     <string name="chapters">章节</string>
     <string name="volumes">卷</string>
@@ -29,4 +31,8 @@
     <string name="desc_cover">封面</string>
     <string name="desc_icon_image">图标</string>
     <string name="desc_search">搜索</string>
+    <string name="downloading">正在下载…</string>
+    <string name="downloading_text">正在从服务端获取数据，请稍等...</string>
+    <string name="update_confirm">升级</string>
+    <string name="update_dismiss">忽略</string>
 </resources>

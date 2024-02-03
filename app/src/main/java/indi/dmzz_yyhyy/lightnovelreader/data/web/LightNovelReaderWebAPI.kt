@@ -139,7 +139,7 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val dataCall: Call<ResponseBody> = service.getUpdateApk()
 
             val data: Response<ResponseBody>? = dataCall.execute()
-            println("老子tm下好了！")
+            Log.w("API","老子tm下好了！")
             data?.body()
         } catch (error: Exception){
             error.localizedMessage?.let { Log.e("API", it) }

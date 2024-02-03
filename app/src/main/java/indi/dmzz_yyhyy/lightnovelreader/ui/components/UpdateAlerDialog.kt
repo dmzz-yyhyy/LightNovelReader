@@ -8,6 +8,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import indi.dmzz_yyhyy.lightnovelreader.R
 
 @Composable
 fun UpdateAlertDialog(
@@ -35,7 +37,7 @@ fun UpdateAlertDialog(
                     onConfirmation()
                 }
             ) {
-                Text("升级")
+                Text(stringResource(id = R.string.update_confirm))
             }
         },
         dismissButton = {
@@ -44,7 +46,7 @@ fun UpdateAlertDialog(
                     onDismissRequest()
                 }
             ) {
-                Text("忽略")
+                Text(stringResource(id = R.string.update_dismiss))
             }
         }
     )

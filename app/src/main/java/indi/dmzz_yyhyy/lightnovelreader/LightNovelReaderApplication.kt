@@ -5,9 +5,6 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class LightNovelReaderApplication: Application(){
-
-
-
     override fun onCreate() {
         super.onCreate()
     }

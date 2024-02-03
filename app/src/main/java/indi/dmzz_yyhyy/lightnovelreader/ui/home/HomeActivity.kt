@@ -75,15 +75,15 @@ class HomeActivity : ComponentActivity() {
                                         }
                                     }}
                             },
-                            dialogTitle = "有新的更新可用",
-                            dialogText = "服务端上有更新的客户端版本，我们建议恁进行升级.",
+                            dialogTitle = stringResource(id = R.string.new_update_available),
+                            dialogText = stringResource(id = R.string.new_update_available_text),
                         )
                     }
                     if (isDownloadingUpdate.value) {
                         AlertDialog(
                             icon = { Icon(Icons.Default.Download, contentDescription = "download") },
-                            title = { Text("正在下载", style = MaterialTheme.typography.headlineSmall) },
-                            text = { Text("正在从客户端获取数据，请稍等...") },
+                            title = { Text(stringResource(id = R.string.downloading), style = MaterialTheme.typography.headlineSmall) },
+                            text = { Text(stringResource(id = R.string.downloading_text)) },
                             onDismissRequest = {},
                             confirmButton = {},
                             dismissButton = {}
