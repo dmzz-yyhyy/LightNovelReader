@@ -41,7 +41,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                     contentDescription = stringResource(id = R.string.desc_back)
                 )
             }},
-            title = { Text(readerUiState.title) }) },
+            title = { Text(readerUiState.title, maxLines = 2) }) },
         bottomBar = {
             AnimatedVisibility(
                 visible = readerUiState.isBottomBarOpen,
@@ -120,7 +120,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
     // 章节选择侧边栏
     if (readerUiState.isSideSheetsOpen){
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
-            ModalSideSheet(modifier = Modifier
+            ModalSideSheet(modifier = Modifier.padding(top = 36.dp)
                 .align(alignment = Alignment.TopEnd),
                 closeButton = {
                     IconButton(onClick = { readerViewModel.onCloseChapterSideSheets() }) {

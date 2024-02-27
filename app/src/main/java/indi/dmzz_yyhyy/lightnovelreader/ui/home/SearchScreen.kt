@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -107,7 +108,8 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                 columns = GridCells.Fixed(3)
             ) {
                 items(searchUiState.bookList) {
-                    Card(Modifier
+                    Card(
+                        Modifier
                         .padding(8.dp)
                         .width(100.dp)
                         .onSizeChanged { newSize ->
@@ -115,37 +117,38 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                             if (heightDp > maxHeight) {
                                 maxHeight = heightDp
                             }
-                        }) {
+                        },
+                        colors = CardDefaults.cardColors(
+                        containerColor = Color.Transparent)) {
                         Column(Modifier.fillMaxSize()) {
                             AsyncImage(
                                 model = it.coverUrl,
                                 contentDescription = stringResource(id = R.string.desc_cover),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(190.dp)
+                                    .height(155.dp)
                                     .clip(RoundedCornerShape(12.dp)),
                                 contentScale = ContentScale.Crop
                             )
 
                             Text(
-                                modifier = Modifier.padding(3.dp, bottom = 0.dp, top = 6.dp),
+                                modifier = Modifier.padding(bottom = 0.dp, top = 6.dp),
                                 text = it.name,
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = MaterialTheme.colorScheme.onSurface,
-                                    fontFamily = FontFamily.SansSerif
                                 )
                             )
-                            Box(Modifier.fillMaxWidth().padding(6.dp, end = 2.dp)) {
+                            Box(Modifier.fillMaxWidth().padding(end = 2.dp)) {
                                 Text(
                                     modifier = Modifier.align(Alignment.TopStart),
-                                    text = stringResource(id = R.string.prefix_writer) + it.writer,
+                                    text = stringResource(id = R.string.prefix_writer) + " " + it.writer,
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
-                            Box(Modifier.fillMaxWidth().padding(6.dp, top = 0.dp, bottom = 4.dp)) {
+                            Box(Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 4.dp)) {
                                 Text(
                                     modifier = Modifier.align(Alignment.BottomEnd),
-                                    text = stringResource(id = R.string.prefix_tags) + it.tags.joinToString(" "),
+                                    text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
@@ -165,6 +168,9 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                     items(searchUiState.bookList) {
                         val context = LocalContext.current
                         Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
+                            ),
                             modifier = Modifier
                                 .padding(8.dp)
                                 .width(100.dp)
@@ -181,7 +187,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                         contentDescription = stringResource(id = R.string.desc_cover),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(190.dp)
+                                            .height(155.dp)
                                             .clip(RoundedCornerShape(12.dp)),
                                         contentScale = ContentScale.Crop
                                     )
@@ -189,24 +195,25 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                     Text(
                                         modifier = Modifier.padding(3.dp, bottom = 0.dp, top = 6.dp),
                                         text = it.name,
-                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                        maxLines = 3,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
                                             color = MaterialTheme.colorScheme.onSurface,
-                                            fontFamily = FontFamily.SansSerif
                                         )
+
                                     )
                                 }
                                 Column {
-                                    Box(Modifier.fillMaxWidth().padding(6.dp, end = 2.dp)) {
+                                    Box(Modifier.fillMaxWidth().padding(end = 2.dp)) {
                                         Text(
                                             modifier = Modifier.align(Alignment.TopStart),
-                                            text = stringResource(id = R.string.prefix_writer) + it.writer,
+                                            text = stringResource(id = R.string.prefix_writer) + " " + it.writer,
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }
-                                    Box(Modifier.fillMaxWidth().padding(6.dp, top = 0.dp, bottom = 4.dp)) {
+                                    Box(Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 4.dp)) {
                                         Text(
                                             modifier = Modifier.align(Alignment.BottomEnd),
-                                            text = stringResource(id = R.string.prefix_tags) + it.tags.joinToString(" "),
+                                            text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }

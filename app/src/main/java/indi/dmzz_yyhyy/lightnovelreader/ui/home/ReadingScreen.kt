@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -30,6 +31,7 @@ fun ReadingScreen(
     readingViewModel: ReadingViewModel
 ) {
     Scaffold(
+        modifier = Modifier.navigationBarsPadding(),
         topBar = { TopAppBar(title = { Text(stringResource(id = R.string.nav_reading)) }) }
     ){
         Box(Modifier.padding(it)) {
@@ -53,6 +55,8 @@ fun ReadingScreen(
 fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
     val context = LocalContext.current
     Card(
+        colors = CardDefaults.cardColors(
+        containerColor = Color.Transparent),
         modifier = Modifier
             .padding(bottom = 8.dp)
             .fillMaxWidth(),
@@ -76,12 +80,12 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
                 ) {
                     Text(
                         text = book.bookName,
-                        style = MaterialTheme.typography.headlineSmall,
-                        maxLines = 1
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 2
                     )
                     Text(
                         text = stringResource(id = R.string.current_reading),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
                 Text(modifier = Modifier

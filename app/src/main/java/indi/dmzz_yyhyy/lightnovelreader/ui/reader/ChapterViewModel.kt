@@ -63,14 +63,14 @@ class ChapterViewModel @Inject constructor(
         _isCloseActivity.value = true
     }
 
-    fun onClickChapterSortingButton(){
+    fun toggleChapterSorting(){
         _uiState.update { chapterUiState ->
             chapterUiState.copy(
                 isChapterReversed = !chapterUiState.isChapterReversed
             ) }
     }
 
-    fun onClickVolumeSortingButton(){
+    fun toggleVolumeSorting(){
         _uiState.update { chapterUiState ->
             chapterUiState.copy(
                 isVolumeReversed = !chapterUiState.isVolumeReversed
