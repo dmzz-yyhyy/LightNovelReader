@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Sort
-import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +42,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
             TopAppBar(
                 navigationIcon = { IconButton(onClick = { chapterViewModel.onClickBackButton() }){
                     Icon(
-                        Icons.Outlined.ArrowBack,
+                        Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = stringResource(id = R.string.desc_back)
                     )
                 }},
@@ -53,9 +52,9 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
         LazyColumn {
             item { Box(Modifier.padding(it)) }
             item {
-                Card(
+                OutlinedCard(
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.Transparent
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f),
                     ),
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp)
                 ) {
@@ -70,7 +69,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                     .clip(RoundedCornerShape(12.dp))
                             )
                             Column(
-                                Modifier.height(136.dp).padding(12.dp, top = 16.dp),
+                                Modifier.height(136.dp).padding(16.dp, top = 16.dp).fillMaxWidth(),
                                 verticalArrangement = Arrangement.Top
                             ) {
                                 Text(
@@ -126,7 +125,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                 /** Contents */
                 Box(modifier = Modifier.padding(6.dp), contentAlignment = Alignment.TopCenter) {
                     Column {
-                        Divider()
+                        HorizontalDivider()
                         println(chapterUiState.isLoading)
                         if (chapterUiState.isLoading) {
                             Loading()
@@ -171,7 +170,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                 ) {
                                     IconButton(onClick = { expanded = !expanded }) {
                                         Icon(
-                                            imageVector = Icons.Default.Sort,
+                                            imageVector = Icons.AutoMirrored.Filled.Sort,
                                             contentDescription = "Sort"
                                         )
                                     }
@@ -230,7 +229,7 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                                         text = chapter.title,
                                                         style = MaterialTheme.typography.titleSmall
                                                     )
-                                                    Divider()
+                                                    HorizontalDivider()
                                                 }
                                             }
                                         }

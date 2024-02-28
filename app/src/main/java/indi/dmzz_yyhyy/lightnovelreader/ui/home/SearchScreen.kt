@@ -2,19 +2,19 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.NavigateBefore
-import androidx.compose.material.icons.outlined.NavigateNext
+import androidx.compose.material.icons.automirrored.outlined.NavigateBefore
+import androidx.compose.material.icons.automirrored.outlined.NavigateNext
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -24,7 +24,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -39,7 +38,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SearchBar
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel) {
     var text by remember { mutableStateOf(searchViewModel.uiState.value.keyword) }
@@ -85,14 +83,12 @@ fun SearchScreen(navController: NavController, searchViewModel: SearchViewModel)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Home(searchNavController: NavController, searchViewModel: SearchViewModel) {
     Text("QwQ")
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Search(searchNavController: NavController, searchViewModel: SearchViewModel) {
     val density = LocalDensity.current.density
@@ -108,47 +104,48 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                 columns = GridCells.Fixed(3)
             ) {
                 items(searchUiState.bookList) {
-                    Card(
+                    OutlinedCard(
                         Modifier
-                        .padding(8.dp)
-                        .width(100.dp)
-                        .onSizeChanged { newSize ->
+                        .padding(5.dp).width(100.dp).onSizeChanged { newSize ->
                             val heightDp = (newSize.height / density).dp
                             if (heightDp > maxHeight) {
                                 maxHeight = heightDp
                             }
                         },
                         colors = CardDefaults.cardColors(
-                        containerColor = Color.Transparent)) {
+                            containerColor = MaterialTheme.colorScheme.surface,
+                        ),) {
                         Column(Modifier.fillMaxSize()) {
                             AsyncImage(
                                 model = it.coverUrl,
                                 contentDescription = stringResource(id = R.string.desc_cover),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(155.dp)
+                                    .height(165.dp)
                                     .clip(RoundedCornerShape(12.dp)),
                                 contentScale = ContentScale.Crop
                             )
-
                             Text(
-                                modifier = Modifier.padding(bottom = 0.dp, top = 6.dp),
+                                modifier = Modifier.padding(3.dp, bottom = 0.dp, top = 6.dp),
                                 text = it.name,
-                                style = MaterialTheme.typography.bodyLarge.copy(
+                                maxLines = 3,
+                                style = MaterialTheme.typography.bodyMedium.copy(
                                     color = MaterialTheme.colorScheme.onSurface,
                                 )
                             )
-                            Box(Modifier.fillMaxWidth().padding(end = 2.dp)) {
+
+                            Box(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp)) {
                                 Text(
                                     modifier = Modifier.align(Alignment.TopStart),
                                     text = stringResource(id = R.string.prefix_writer) + " " + it.writer,
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
-                            Box(Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 4.dp)) {
+                            Box(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp, bottom = 4.dp)) {
                                 Text(
-                                    modifier = Modifier.align(Alignment.BottomEnd),
-                                    text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),
+                                    modifier = Modifier.align(Alignment.BottomStart),
+                                    /*text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),*/
+                                    text = it.tags.joinToString(""),
                                     style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 )
                             }
@@ -167,16 +164,15 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                 ) {
                     items(searchUiState.bookList) {
                         val context = LocalContext.current
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.Transparent
-                            ),
+                        OutlinedCard(
                             modifier = Modifier
-                                .padding(8.dp)
+                                .padding(5.dp)
                                 .width(100.dp)
                                 .height(maxHeight),
-                            onClick = { searchViewModel.onCardClick(it.id, context) }
-                        ) {
+                            onClick = { searchViewModel.onCardClick(it.id, context)},
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
+                            ),) {
                             Column(
                                 Modifier.fillMaxSize(),
                                 verticalArrangement = Arrangement.SpaceBetween
@@ -187,11 +183,10 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                         contentDescription = stringResource(id = R.string.desc_cover),
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .height(155.dp)
+                                            .height(165.dp)
                                             .clip(RoundedCornerShape(12.dp)),
                                         contentScale = ContentScale.Crop
                                     )
-
                                     Text(
                                         modifier = Modifier.padding(3.dp, bottom = 0.dp, top = 6.dp),
                                         text = it.name,
@@ -199,21 +194,21 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                         style = MaterialTheme.typography.bodyMedium.copy(
                                             color = MaterialTheme.colorScheme.onSurface,
                                         )
-
                                     )
                                 }
                                 Column {
-                                    Box(Modifier.fillMaxWidth().padding(end = 2.dp)) {
+                                    Box(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp)) {
                                         Text(
                                             modifier = Modifier.align(Alignment.TopStart),
                                             text = stringResource(id = R.string.prefix_writer) + " " + it.writer,
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }
-                                    Box(Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 4.dp)) {
+                                    Box(Modifier.fillMaxWidth().padding(start = 2.dp, end = 2.dp, bottom = 4.dp)) {
                                         Text(
-                                            modifier = Modifier.align(Alignment.BottomEnd),
-                                            text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),
+                                            modifier = Modifier.align(Alignment.BottomStart),
+                                            /*text = stringResource(id = R.string.prefix_tags) + " " + it.tags.joinToString(" "),*/
+                                            text = it.tags.joinToString(""),
                                             style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         )
                                     }
@@ -235,7 +230,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                         Text("1", style = MaterialTheme.typography.labelLarge)
                                     }
                                     IconButton(onClick = { searchViewModel.onClickBeforePageButton() }) {
-                                        Icon(Icons.Outlined.NavigateBefore, contentDescription = "before page")
+                                        Icon(Icons.AutoMirrored.Outlined.NavigateBefore, contentDescription = "before page")
                                     }
                                     Box(Modifier.size(48.dp)) {
                                         Text(
@@ -245,7 +240,7 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                                         )
                                     }
                                     IconButton(onClick = { searchViewModel.onClickNextPageButton() }) {
-                                        Icon(Icons.Outlined.NavigateNext, contentDescription = "next page")
+                                        Icon(Icons.AutoMirrored.Outlined.NavigateNext, contentDescription = "next page")
                                     }
                                     IconButton(onClick = { searchViewModel.onClickLastPageButton() }) {
                                         Text(

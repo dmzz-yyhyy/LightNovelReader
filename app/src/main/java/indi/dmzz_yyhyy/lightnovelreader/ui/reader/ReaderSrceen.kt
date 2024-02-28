@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,17 +32,21 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
     val density = LocalDensity.current.density
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val interactionSource = remember { MutableInteractionSource() }
 
     Scaffold(
-        topBar = { TopAppBar(
-            navigationIcon = {
-                IconButton(onClick = { readerViewModel.onClickBackButton(navController) }){
-                Icon(
-                    Icons.Outlined.ArrowBack,
-                    contentDescription = stringResource(id = R.string.desc_back)
-                )
+        topBar = {
+            AnimatedVisibility (visible = readerUiState.isAppBarVisible) {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = { readerViewModel.onClickBackButton(navController) }){
+                            Icon(
+                                Icons.Outlined.ArrowBack,
+                                contentDescription = stringResource(id = R.string.desc_back)
+                            )
+                        }},
+                    title = { Text(readerUiState.title, maxLines = 2) })
             }},
-            title = { Text(readerUiState.title, maxLines = 2) }) },
         bottomBar = {
             AnimatedVisibility(
                 visible = readerUiState.isBottomBarOpen,
@@ -108,7 +113,14 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                     item {
                         Text(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .padding(16.dp, top=0.dp)
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = interactionSource,
+                                    onClick = {
+                                    readerViewModel.onClickText(readerUiState.isAppBarVisible)
+                                }),
+
                             text = readerUiState.content,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -155,8 +167,8 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
 
                                             Text(
                                                 modifier = Modifier
-                                                                .padding(start = 2.dp)
-                                                                .clickable { readerViewModel.onClickChangeChapter(chapter.id) },
+                                                    .padding(start = 2.dp)
+                                                    .clickable { readerViewModel.onClickChangeChapter(chapter.id) },
                                                 text = chapter.title,
                                                 style = MaterialTheme.typography.titleSmall
                                             )
