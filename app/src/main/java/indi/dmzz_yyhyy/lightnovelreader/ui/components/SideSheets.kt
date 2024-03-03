@@ -21,40 +21,44 @@ fun ModalSideSheet(
     title: @Composable () -> Unit,
     closeButton: @Composable () -> Unit,
     onClickScrim: () -> Unit = {},
-    content: @Composable () -> Unit = {}
-) {Box(Modifier.fillMaxWidth().fillMaxHeight()) {
-    Box(Modifier
-        .fillMaxWidth()
-        .fillMaxHeight()
-        .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
-        .clickable {
-            onClickScrim()
-        })
-        Card(modifier
+    content: @Composable () -> Unit = {},
+) {
+    Box(Modifier.fillMaxWidth().fillMaxHeight()) {
+        Box(Modifier
+            .fillMaxWidth()
             .fillMaxHeight()
-            .align(Alignment.TopStart)
-            .width(width),
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
+            .clickable {
+                onClickScrim()
+            })
+        Card(
+            modifier
+                .fillMaxHeight()
+                .align(Alignment.TopStart)
+                .width(width),
             shape = RoundedCornerShape(
                 topStart = 12.dp,
                 topEnd = 0.dp,
                 bottomStart = 12.dp,
-                bottomEnd = 0.dp),
+                bottomEnd = 0.dp
+            ),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
+        ) {
             Column {
                 Box(
                     Modifier
                         .padding(
-                        top = 12.dp,
-                        end = 24.dp,
-                        start = 4.dp)
+                            top = 12.dp,
+                            end = 24.dp,
+                            start = 4.dp
+                        )
                         .fillMaxWidth()
                 ) {
                     Box(Modifier.align(alignment = Alignment.TopStart)) {
                         Row {
                             backButton()
                             Box(Modifier.height(48.dp)) {
-                                Box(Modifier.align(alignment = Alignment.Center)){
+                                Box(Modifier.align(alignment = Alignment.Center)) {
                                     title()
                                 }
                             }

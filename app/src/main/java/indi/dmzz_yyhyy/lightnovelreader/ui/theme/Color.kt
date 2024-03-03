@@ -1,4 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.theme
+
 import androidx.compose.ui.graphics.Color
 
 val md_theme_light_primary = Color(0xFF3949E5)

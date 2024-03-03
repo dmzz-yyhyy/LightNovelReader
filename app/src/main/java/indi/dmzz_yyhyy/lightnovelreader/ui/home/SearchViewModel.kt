@@ -19,17 +19,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchRepository: SearchRepository
+    private val searchRepository: SearchRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SearchUiState())
     val uiState: StateFlow<SearchUiState> = _uiState
 
-    private fun load(){
+    private fun load() {
         viewModelScope.launch {
             searchRepository.load()
         }
         viewModelScope.launch {
-            searchRepository.bookList.collect{
+            searchRepository.bookList.collect {
                 if (searchRepository.bookList.value.isNotEmpty()) {
                     _uiState.update { searchUiState ->
                         searchUiState.copy(
@@ -42,16 +42,18 @@ class SearchViewModel @Inject constructor(
             }
         }
     }
+
     private fun changePage(page: Int) {
-        _uiState.update {
-                searchUiState -> searchUiState.copy(
-            isLoading = true,
-            page = page
-        )
+        _uiState.update { searchUiState ->
+            searchUiState.copy(
+                isLoading = true,
+                page = page
+            )
         }
         searchRepository.setPage(page)
         load()
     }
+
     fun onHomePageLoad() {
         _uiState.update { searchUiState ->
             searchUiState.copy(
@@ -63,6 +65,7 @@ class SearchViewModel @Inject constructor(
             )
         }
     }
+
     fun onClickSearch(searchNavController: NavController, keyword: String) {
         searchNavController.navigate(RouteConfig.SEARCH)
         searchRepository.setKeyword(keyword)
@@ -78,28 +81,29 @@ class SearchViewModel @Inject constructor(
         load()
     }
 
-    fun onCardClick(bookId: Int, context: Context){
+    fun onCardClick(bookId: Int, context: Context) {
         val intent = Intent(context, ReaderActivity::class.java)
         intent.putExtra("id", bookId)
         ContextCompat.startActivity(context, intent, Bundle())
     }
 
-    fun onClickFistPageButton(){
+    fun onClickFistPageButton() {
         changePage(1)
     }
 
-    fun onClickBeforePageButton(){
+    fun onClickBeforePageButton() {
         if (_uiState.value.page > 1) {
             changePage(_uiState.value.page - 1)
         }
     }
 
-    fun onClickNextPageButton(){
+    fun onClickNextPageButton() {
         if (_uiState.value.page < searchRepository.totalPage.value) {
             changePage(_uiState.value.page + 1)
         }
     }
-    fun onClickLastPageButton(){
+
+    fun onClickLastPageButton() {
         changePage(searchRepository.totalPage.value)
     }
 }

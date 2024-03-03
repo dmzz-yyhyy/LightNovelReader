@@ -20,7 +20,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 fun MineScreen(navController: NavController) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(id = R.string.nav_profile)) }) }
-    ){
+    ) {
         Box(Modifier.padding(it)) {
             Column {
             }

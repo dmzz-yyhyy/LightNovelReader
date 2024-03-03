@@ -6,6 +6,6 @@ data class Volume(
 ) {
     data class Chapter(
         val title: String,
-        val id: Int
+        val id: Int,
     )
 }

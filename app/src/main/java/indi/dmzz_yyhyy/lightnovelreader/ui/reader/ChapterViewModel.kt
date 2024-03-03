@@ -15,22 +15,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChapterViewModel @Inject constructor(
-    private val readerRepository: ReaderRepository
+    private val readerRepository: ReaderRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ChapterUiState())
     private val _isCloseActivity = MutableStateFlow(false)
     val uiState: StateFlow<ChapterUiState> = _uiState
     val isCloseActivity: StateFlow<Boolean> = _isCloseActivity
+
     init {
         viewModelScope.launch {
             readerRepository.book.collect {
                 Log.d("Debug", "Book data collected: " + readerRepository.bookName)
-                _uiState.update {
-                        chapterUiState -> chapterUiState.copy(
-                            bookName = readerRepository.bookName,
-                            bookCoverUrl = readerRepository.bookCoverUrl,
-                            bookIntroduction = readerRepository.bookIntroduction
-                        )
+                _uiState.update { chapterUiState ->
+                    chapterUiState.copy(
+                        bookName = readerRepository.bookName,
+                        bookCoverUrl = readerRepository.bookCoverUrl,
+                        bookIntroduction = readerRepository.bookIntroduction
+                    )
                 }
             }
         }
@@ -48,33 +49,35 @@ class ChapterViewModel @Inject constructor(
             }
         }
     }
-    fun onClickChapter(navController: NavController, chapterId: Int){
+
+    fun onClickChapter(navController: NavController, chapterId: Int) {
         readerRepository.setChapterContentId(chapterId)
         Log.i("Reader", "Loading id=$chapterId")
         navController.navigate(RouteConfig.READER)
     }
 
-    fun onClickReadButton(navController: NavController){
-        readerRepository.setChapterContentId(readerRepository.volumeList.value[0].chapters[0].id)
+    fun onClickReadButton(navController: NavController) {
+        readerRepository.loadLastReadChapter()
         navController.navigate(RouteConfig.READER)
     }
 
-    fun onClickBackButton(){
+    fun onClickBackButton() {
         _isCloseActivity.value = true
     }
 
-    fun onClickChapterSortingButton(){
+    fun onClickChapterSortingButton() {
         _uiState.update { chapterUiState ->
             chapterUiState.copy(
                 isChapterReversed = !chapterUiState.isChapterReversed
-            ) }
+            )
+        }
     }
 
-    fun onClickVolumeSortingButton(){
+    fun onClickVolumeSortingButton() {
         _uiState.update { chapterUiState ->
             chapterUiState.copy(
                 isVolumeReversed = !chapterUiState.isVolumeReversed
-            ) }
+            )
+        }
     }
-
 }

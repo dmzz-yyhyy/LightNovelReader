@@ -14,5 +14,6 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Singleton
     @Provides
-    fun provideLightNovelReaderDatabase(@ApplicationContext context: Context):LightNovelReaderDatabase = LightNovelReaderDatabase.getDB(context)
+    fun provideLightNovelReaderDatabase(@ApplicationContext context: Context): LightNovelReaderDatabase =
+        LightNovelReaderDatabase.getDB(context)
 }

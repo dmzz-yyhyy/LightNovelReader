@@ -11,22 +11,25 @@ import indi.dmzz_yyhyy.lightnovelreader.data.room.dao.ReadingBookDao
 import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.*
 
 
-@Database(entities = [ReadingBook::class, BookChapterContent::class, BookVolume::class, BookChapter::class, BookMetadata::class], version = 3   )
+@Database(
+    entities = [ReadingBook::class, BookChapterContent::class, BookVolume::class, BookChapter::class, BookMetadata::class],
+    version = 30400004
+)
 abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun readingBookDao(): ReadingBookDao
     abstract fun bookMetadataDao(): BookMetadataDao
     abstract fun bookChapterListDao(): BookVolumeDao
     abstract fun bookChapterContentDao(): BookChapterContentDao
 
-    companion object{
-        private val instance:LightNovelReaderDatabase?= null
+    companion object {
+        private val instance: LightNovelReaderDatabase? = null
 
         @Synchronized
-        fun getDB(context: Context):LightNovelReaderDatabase{
+        fun getDB(context: Context): LightNovelReaderDatabase {
             return instance ?: buildDB(context)
         }
 
-        private fun buildDB(context:Context):LightNovelReaderDatabase{
+        private fun buildDB(context: Context): LightNovelReaderDatabase {
             val builder = Room.databaseBuilder(
                 context,
                 LightNovelReaderDatabase::class.java,

@@ -25,8 +25,8 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val builder = url.newBuilder()
             requestBuilder.url(builder.build())
                 .method(request.method, request.body)
-                .header("Connection","close")
-                .header("Connection","close")
+                .header("Connection", "close")
+                .header("Connection", "close")
             chain.proceed(requestBuilder.build())
         }
         private val client: OkHttpClient.Builder = OkHttpClient.Builder()
@@ -56,10 +56,17 @@ class LightNovelReaderWebAPI @Inject constructor() {
         fun getBookChapterList(@Query("book_id") bookID: Int): Call<Data<List<Volume>>>
 
         @GET("get_book_chapter_content")
-        fun getBookContent(@Query("book_id") bookId: Int, @Query("chapter_id") chapterId: Int): Call<Data<ChapterContent>>
+        fun getBookContent(
+            @Query("book_id") bookId: Int,
+            @Query("chapter_id") chapterId: Int,
+        ): Call<Data<ChapterContent>>
 
         @GET("search_book")
-        fun searchBook(@Query("search_type") searchType: String, @Query("keyword") keyword: String, @Query("page") page: Int): Call<Data<SearchBooks>>
+        fun searchBook(
+            @Query("search_type") searchType: String,
+            @Query("keyword") keyword: String,
+            @Query("page") page: Int,
+        ): Call<Data<SearchBooks>>
 
         @GET(".")
         fun getServerMetadata(): Call<ServerMetadata>
@@ -76,8 +83,10 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val data: Response<Data<Information>>? = dataCall.execute()
             Log.d("API", data.toString())
             data?.body()?.data
-        } catch (error: Exception){
-            if (reconnectTimes > 0) { return getBookInformation(bookId, reconnectTimes - 1) }
+        } catch (error: Exception) {
+            if (reconnectTimes > 0) {
+                return getBookInformation(bookId, reconnectTimes - 1)
+            }
             null
         }
 
@@ -89,8 +98,10 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val dataCall: Call<Data<List<Volume>>> = service.getBookChapterList(bookId)
             val data: Response<Data<List<Volume>>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: Exception){
-            if (reconnectTimes != 0) { return getBookChapterList(bookId, reconnectTimes - 1) }
+        } catch (error: Exception) {
+            if (reconnectTimes != 0) {
+                return getBookChapterList(bookId, reconnectTimes - 1)
+            }
             null
         }
     }
@@ -101,21 +112,28 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val dataCall: Call<Data<ChapterContent>> = service.getBookContent(bookId, chapterId)
             val data: Response<Data<ChapterContent>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: Exception){
-            if (reconnectTimes != 0) { return getBookContent(bookId, chapterId, reconnectTimes - 1) }
+        } catch (error: Exception) {
+            if (reconnectTimes != 0) {
+                return getBookContent(bookId, chapterId, reconnectTimes - 1)
+            }
             null
         }
     }
 
     fun searchBook(searchType: String, keyword: String, page: Int, reconnectTimes: Int = 5): SearchBooks? {
         return try {
-            Log.d("API", "Attempting to searchBook: searchType=$searchType, keyword=$keyword, page=$page. [remaining $reconnectTimes]")
+            Log.d(
+                "API",
+                "Attempting to searchBook: searchType=$searchType, keyword=$keyword, page=$page. [remaining $reconnectTimes]"
+            )
             val dataCall: Call<Data<SearchBooks>> = service.searchBook(searchType, keyword, page)
             val data: Response<Data<SearchBooks>>? = dataCall.execute()
             data?.body()?.data
-        } catch (error: Exception){
+        } catch (error: Exception) {
             error.localizedMessage?.let { Log.e("API", it) }
-            if (reconnectTimes != 0) { return searchBook(searchType, keyword, page, reconnectTimes - 1) }
+            if (reconnectTimes != 0) {
+                return searchBook(searchType, keyword, page, reconnectTimes - 1)
+            }
             null
         }
     }
@@ -126,9 +144,11 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val dataCall: Call<ServerMetadata> = service.getServerMetadata()
             val data: Response<ServerMetadata>? = dataCall.execute()
             data?.body()
-        } catch (error: Exception){
+        } catch (error: Exception) {
             error.localizedMessage?.let { Log.e("API", it) }
-            if (reconnectTimes != 0) { return getServerMetadata( reconnectTimes - 1) }
+            if (reconnectTimes != 0) {
+                return getServerMetadata(reconnectTimes - 1)
+            }
             null
         }
     }
@@ -139,11 +159,13 @@ class LightNovelReaderWebAPI @Inject constructor() {
             val dataCall: Call<ResponseBody> = service.getUpdateApk()
 
             val data: Response<ResponseBody>? = dataCall.execute()
-            Log.w("API","老子tm下好了！")
+            Log.w("API", "老子tm下好了！")
             data?.body()
-        } catch (error: Exception){
+        } catch (error: Exception) {
             error.localizedMessage?.let { Log.e("API", it) }
-            if (reconnectTimes != 0) { return getUpdateApk( reconnectTimes - 1) }
+            if (reconnectTimes != 0) {
+                return getUpdateApk(reconnectTimes - 1)
+            }
             null
         }
     }

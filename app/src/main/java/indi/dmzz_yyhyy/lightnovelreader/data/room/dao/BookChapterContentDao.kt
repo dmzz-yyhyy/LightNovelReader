@@ -14,6 +14,7 @@ abstract class BookChapterContentDao {
 
     @Query("INSERT INTO bookchaptercontent VALUES (:contentId, :bookId, :title, :content)")
     abstract suspend fun add(contentId: Int, bookId: Int, title: String, content: String)
+
     @Query("DELETE FROM bookchaptercontent WHERE id=:id")
     abstract suspend fun delete(id: Int)
 }

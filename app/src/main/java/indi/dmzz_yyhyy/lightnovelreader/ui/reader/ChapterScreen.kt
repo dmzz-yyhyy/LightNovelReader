@@ -32,12 +32,14 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
     Scaffold(
         topBar = {
             TopAppBar(
-                navigationIcon = { IconButton(onClick = { chapterViewModel.onClickBackButton() }){
-                    Icon(
-                        Icons.Outlined.ArrowBack,
-                        contentDescription = stringResource(id = R.string.desc_back)
-                    )
-                }},
+                navigationIcon = {
+                    IconButton(onClick = { chapterViewModel.onClickBackButton() }) {
+                        Icon(
+                            Icons.Outlined.ArrowBack,
+                            contentDescription = stringResource(id = R.string.desc_back)
+                        )
+                    }
+                },
                 title = { Text(stringResource(id = R.string.chapters)) })
         }
     ) {
@@ -85,11 +87,13 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                 }
                             }
                         }
-                        Text(modifier = Modifier
-                            .padding(start = 145.dp, bottom = 36.dp)
-                            .align(alignment = Alignment.BottomStart),
+                        Text(
+                            modifier = Modifier
+                                .padding(start = 145.dp, bottom = 36.dp)
+                                .align(alignment = Alignment.BottomStart),
                             style = MaterialTheme.typography.bodySmall,
-                            text = stringResource(id = R.string.last_read))
+                            text = stringResource(id = R.string.last_read)
+                        )
                         Button(
                             onClick = { chapterViewModel.onClickReadButton(navController) },
                             modifier = Modifier
@@ -124,7 +128,9 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = stringResource(id = R.string.chapters) + ": " + if (chapterUiState.isChapterReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            text = stringResource(id = R.string.chapters) + ": " + if (chapterUiState.isChapterReversed) stringResource(
+                                                id = R.string.descending
+                                            ) else stringResource(id = R.string.ascending),
                                             modifier = Modifier.padding(start = 4.dp)
                                         )
                                     }
@@ -140,7 +146,9 @@ fun ChapterScreen(navController: NavController, chapterViewModel: ChapterViewMod
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Text(
-                                            text = stringResource(id = R.string.volumes) + ": " + if (chapterUiState.isVolumeReversed) stringResource(id = R.string.descending) else stringResource(id = R.string.ascending),
+                                            text = stringResource(id = R.string.volumes) + ": " + if (chapterUiState.isVolumeReversed) stringResource(
+                                                id = R.string.descending
+                                            ) else stringResource(id = R.string.ascending),
                                             modifier = Modifier.padding(start = 4.dp)
                                         )
                                     }

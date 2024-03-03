@@ -17,24 +17,28 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ReadingViewModel @Inject constructor(
-    private val readingBookRepository: ReadingBookRepository
+    private val readingBookRepository: ReadingBookRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ReadingUiState())
     val uiState: StateFlow<ReadingUiState> = _uiState
+
     init {
-        _uiState.update {
-                readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.readingBookList.value)
+        _uiState.update { readingUiState ->
+            readingUiState.copy(readingBookDataList = readingBookRepository.readingBookMetadataList.value)
         }
         viewModelScope.launch {
-            readingBookRepository.readingBookList.collect{
-                _uiState.update {
-                        readingUiState -> readingUiState.copy(readingBookDataList = readingBookRepository.readingBookList.value)
+            while (true) {
+                readingBookRepository.readingBookMetadataList.collect {
+                    _uiState.update { readingUiState ->
+                        readingUiState.copy(readingBookDataList = readingBookRepository.readingBookMetadataList.value)
 
+                    }
                 }
             }
         }
     }
-    fun onCardClick(bookId: Int, context: Context){
+
+    fun onCardClick(bookId: Int, context: Context) {
         val intent = Intent(context, ReaderActivity::class.java)
         intent.putExtra("id", bookId)
         startActivity(context, intent, Bundle())

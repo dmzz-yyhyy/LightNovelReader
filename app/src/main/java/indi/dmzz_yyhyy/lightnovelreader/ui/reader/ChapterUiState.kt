@@ -9,5 +9,6 @@ data class ChapterUiState(
     val bookName: String = "",
     val bookCoverUrl: String = "",
     val bookIntroduction: String = "",
-    val volumeList: List<Volume> = listOf()
+    val lastReadChapterName: String = "暂未阅读",
+    val volumeList: List<Volume> = listOf(),
 )

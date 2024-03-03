@@ -40,10 +40,11 @@ class HomeActivity : ComponentActivity() {
 
     private val scope = CoroutineScope(Dispatchers.Main)
     private val splashViewModel: SplashViewModel by viewModels()
+
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition{splashViewModel.isLoading.value}
+        splashScreen.setKeepOnScreenCondition { splashViewModel.isLoading.value }
         super.onCreate(savedInstanceState)
         setContent {
             val isNeedUpdate = remember { mutableStateOf(false) }
@@ -67,13 +68,14 @@ class HomeActivity : ComponentActivity() {
                                 isDownloadingUpdate.value = true
                                 scope.launch { updateRepository.updateApp(this@HomeActivity) }
                                 scope.launch {
-                                    while (!updateRepository.isOver.value){
+                                    while (!updateRepository.isOver.value) {
                                         updateRepository.isOver.collect {
                                             if (updateRepository.isOver.value) {
                                                 isDownloadingUpdate.value = false
                                             }
                                         }
-                                    }}
+                                    }
+                                }
                             },
                             dialogTitle = stringResource(id = R.string.new_update_available),
                             dialogText = stringResource(id = R.string.new_update_available_text),
@@ -82,12 +84,18 @@ class HomeActivity : ComponentActivity() {
                     if (isDownloadingUpdate.value) {
                         AlertDialog(
                             icon = { Icon(Icons.Default.Download, contentDescription = "download") },
-                            title = { Text(stringResource(id = R.string.downloading), style = MaterialTheme.typography.headlineSmall) },
+                            title = {
+                                Text(
+                                    stringResource(id = R.string.downloading),
+                                    style = MaterialTheme.typography.headlineSmall
+                                )
+                            },
                             text = { Text(stringResource(id = R.string.downloading_text)) },
                             onDismissRequest = {},
                             confirmButton = {},
                             dismissButton = {}
-                        )}
+                        )
+                    }
                     Scaffold(
                         bottomBar = {
                             NavigationBar {
@@ -127,29 +135,30 @@ class HomeActivity : ComponentActivity() {
                                         navController.navigate(RouteConfig.MINE)
                                     }
                                 )
-                            } }
+                            }
+                        }
                     ) {
                         Box(Modifier.padding(it)) {
                             val searchViewModel = hiltViewModel<SearchViewModel>()
-                        NavHost(
-                            navController = navController,
-                            startDestination = RouteConfig.READING,
-                        ) {
-                            composable(route = RouteConfig.READING) {
-                                val readingViewModel = hiltViewModel<ReadingViewModel>()
-                                ReadingScreen(navController, readingViewModel)
-                            }
-                            composable(route = RouteConfig.BOOKCASE) {
-                                BookcaseScreen(navController)
-                            }
-                            composable(route = RouteConfig.SEARCH) {
-                                SearchScreen(navController, searchViewModel)
-                            }
-                            composable(route = RouteConfig.MINE) {
-                                MineScreen(navController)
+                            NavHost(
+                                navController = navController,
+                                startDestination = RouteConfig.READING,
+                            ) {
+                                composable(route = RouteConfig.READING) {
+                                    val readingViewModel = hiltViewModel<ReadingViewModel>()
+                                    ReadingScreen(readingViewModel)
+                                }
+                                composable(route = RouteConfig.BOOKCASE) {
+                                    BookcaseScreen(navController)
+                                }
+                                composable(route = RouteConfig.SEARCH) {
+                                    SearchScreen(navController, searchViewModel)
+                                }
+                                composable(route = RouteConfig.MINE) {
+                                    MineScreen(navController)
+                                }
                             }
                         }
-                    }
                     }
                 }
             }

@@ -7,7 +7,6 @@ import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.ReaderRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.ReadingBookRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.ReadingBook
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -39,12 +38,7 @@ class ReaderViewModel @Inject constructor(
         // 将书本列入正在阅读列表
         viewModelScope.launch {
             if (!readingBookRepository.isBookInList(readerRepository.book.value.id)) {
-                readingBookRepository.addReadingBook(ReadingBook(
-                    id = readerRepository.book.value.id,
-                    bookName = readerRepository.book.value.name,
-                    coverUrl = readerRepository.book.value.coverUrl,
-                    introduction = readerRepository.book.value.introduction
-                ))
+                readingBookRepository.addReadingBook(readerRepository.book.value.toBookMeatData())
             }
         }
     }

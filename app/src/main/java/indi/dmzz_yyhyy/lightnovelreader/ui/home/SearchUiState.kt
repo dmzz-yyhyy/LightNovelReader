@@ -11,5 +11,5 @@ data class SearchUiState(
     val page: Int = 1,
     val keyword: String = "",
     val bookList: List<Information> = listOf(),
-    val totalPage: Int = 0
+    val totalPage: Int = 0,
 )

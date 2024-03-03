@@ -11,8 +11,8 @@ import javax.inject.Inject
 
 @ActivityRetainedScoped
 class SearchRepository @Inject constructor(
-    private val webDataSource: WebDataSource
-){
+    private val webDataSource: WebDataSource,
+) {
     private var _searchType: String = SearchType.articleName
     private var _keyword: String = ""
     private var _page: Int = 1
@@ -25,9 +25,7 @@ class SearchRepository @Inject constructor(
     val totalPage: StateFlow<Int> get() = _totalPage
 
 
-
-
-    suspend fun load(){
+    suspend fun load() {
         _page = 1
         _bookList.value = listOf()
         _totalPage.value = 0

@@ -15,8 +15,10 @@ import androidx.compose.ui.unit.dp
 @Preview(backgroundColor = 0xFFFFFFF)
 @Composable
 fun Loading() {
-    Box(modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-        contentAlignment = Alignment.Center) {
+    Box(
+        modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
         CircularProgressIndicator(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.size(50.dp).align(Alignment.Center)

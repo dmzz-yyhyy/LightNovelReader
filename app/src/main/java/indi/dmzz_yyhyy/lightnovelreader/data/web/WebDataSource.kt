@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class WebDataSource @Inject constructor(
     private val lightNovelReaderWebAPI: LightNovelReaderWebAPI,
-    private val ioDispatcher: CoroutineDispatcher
+    private val ioDispatcher: CoroutineDispatcher,
 ) {
     private var searchBookCache: SearchBooks? = null
     suspend fun getInformation(bookId: Int): Information? =

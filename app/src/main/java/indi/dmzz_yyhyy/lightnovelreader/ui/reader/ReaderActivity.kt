@@ -37,27 +37,29 @@ class ReaderActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             LightNovelReaderTheme {
-        NavHost(
-            navController = navController,
-            startDestination = RouteConfig.CHAPTERS,
-        ) {
-            composable(route = RouteConfig.CHAPTERS) {
-                val chapterViewModel: ChapterViewModel = hiltViewModel()
-                scope.launch {
-                    chapterViewModel.isCloseActivity.collect {
-                        if (chapterViewModel.isCloseActivity.value) {
-                            finish()
+                NavHost(
+                    navController = navController,
+                    startDestination = RouteConfig.CHAPTERS,
+                ) {
+                    composable(route = RouteConfig.CHAPTERS) {
+                        val chapterViewModel: ChapterViewModel = hiltViewModel()
+                        scope.launch {
+                            chapterViewModel.isCloseActivity.collect {
+                                if (chapterViewModel.isCloseActivity.value) {
+                                    finish()
+                                }
+                            }
                         }
+                        ChapterScreen(navController, chapterViewModel)
+                    }
+                    composable(route = RouteConfig.READER) {
+                        val readerViewModel: ReaderViewModel = hiltViewModel()
+                        ReaderScreen(navController, readerViewModel)
                     }
                 }
-                ChapterScreen(navController, chapterViewModel)
-            }
-            composable(route = RouteConfig.READER){
-                val readerViewModel: ReaderViewModel = hiltViewModel()
-                ReaderScreen(navController, readerViewModel)
             }
         }
-    }}}
+    }
 
     override fun onDestroy() {
         super.onDestroy()

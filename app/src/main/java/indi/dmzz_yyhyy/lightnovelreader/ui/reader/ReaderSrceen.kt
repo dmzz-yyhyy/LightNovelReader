@@ -33,45 +33,52 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
     val screenHeight = configuration.screenHeightDp.dp
 
     Scaffold(
-        topBar = { TopAppBar(
-            navigationIcon = {
-                IconButton(onClick = { readerViewModel.onClickBackButton(navController) }){
-                Icon(
-                    Icons.Outlined.ArrowBack,
-                    contentDescription = stringResource(id = R.string.desc_back)
-                )
-            }},
-            title = { Text(readerUiState.title) }) },
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { readerViewModel.onClickBackButton(navController) }) {
+                        Icon(
+                            Icons.Outlined.ArrowBack,
+                            contentDescription = stringResource(id = R.string.desc_back)
+                        )
+                    }
+                },
+                title = { Text(readerUiState.title) })
+        },
         bottomBar = {
             AnimatedVisibility(
                 visible = readerUiState.isBottomBarOpen,
             ) {
-                BottomAppBar{
-                    IconButton(modifier = Modifier.size(48.dp), onClick = {}){
+                BottomAppBar {
+                    IconButton(modifier = Modifier.size(48.dp), onClick = {}) {
                         Icon(
                             Icons.Outlined.MoreVert,
                             contentDescription = stringResource(id = R.string.desc_more)
                         )
                     }
-                    IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickMenuButton() }){
+                    IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickMenuButton() }) {
                         Icon(
                             Icons.Outlined.Menu,
                             contentDescription = stringResource(id = R.string.desc_menu)
                         )
                     }
-                    IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickBeforeButton(readerUiState.chapterId) }){
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        onClick = { readerViewModel.onClickBeforeButton(readerUiState.chapterId) }) {
                         Icon(
                             Icons.Outlined.NavigateBefore,
                             contentDescription = stringResource(id = R.string.desc_previous)
                         )
                     }
-                    IconButton(modifier = Modifier.size(48.dp), onClick = { readerViewModel.onClickNextButton(readerUiState.chapterId) }){
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        onClick = { readerViewModel.onClickNextButton(readerUiState.chapterId) }) {
                         Icon(
                             Icons.Outlined.NavigateNext,
                             contentDescription = stringResource(id = R.string.desc_next)
                         )
                     }
-                    IconButton(modifier = Modifier.size(48.dp), onClick = {}){
+                    IconButton(modifier = Modifier.size(48.dp), onClick = {}) {
                         Icon(
                             Icons.Outlined.BookmarkBorder,
                             contentDescription = stringResource(id = R.string.desc_bookmark)
@@ -84,20 +91,18 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
         Box(Modifier
             .padding(top = it.calculateTopPadding())
             .pointerInput(Unit) {
-            detectTapGestures { offset ->
-                val y = (offset.y/density).dp
-                if(it.calculateTopPadding() < y && y < screenHeight-80.dp-it.calculateTopPadding()){
-                    readerViewModel.onClickMiddle(readerUiState.isBottomBarOpen)
+                detectTapGestures { offset ->
+                    val y = (offset.y / density).dp
+                    if (it.calculateTopPadding() < y && y < screenHeight - 80.dp - it.calculateTopPadding()) {
+                        readerViewModel.onClickMiddle(readerUiState.isBottomBarOpen)
+                    } else {
+                        readerViewModel.onClickBelow()
+                    }
                 }
-                else{
-                    readerViewModel.onClickBelow()
-                }
-            }
-        }) {
-            if (readerUiState.isLoading){
+            }) {
+            if (readerUiState.isLoading) {
                 Loading()
-            }
-            else {
+            } else {
                 val lazyListState = rememberLazyListState()
                 var isScrolling by remember { mutableStateOf(false) }
                 LaunchedEffect(lazyListState.isScrollInProgress) {
@@ -118,7 +123,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
         }
     }
     // 章节选择侧边栏
-    if (readerUiState.isSideSheetsOpen){
+    if (readerUiState.isSideSheetsOpen) {
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
             ModalSideSheet(modifier = Modifier
                 .align(alignment = Alignment.TopEnd),
@@ -155,8 +160,8 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
 
                                             Text(
                                                 modifier = Modifier
-                                                                .padding(start = 2.dp)
-                                                                .clickable { readerViewModel.onClickChangeChapter(chapter.id) },
+                                                    .padding(start = 2.dp)
+                                                    .clickable { readerViewModel.onClickChangeChapter(chapter.id) },
                                                 text = chapter.title,
                                                 style = MaterialTheme.typography.titleSmall
                                             )

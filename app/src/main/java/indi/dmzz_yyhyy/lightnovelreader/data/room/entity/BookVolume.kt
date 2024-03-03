@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.room.entity;
+package indi.dmzz_yyhyy.lightnovelreader.data.room.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,6 +8,6 @@ data class BookVolume(
         @PrimaryKey val id: Int,
         val bookId: Int,
         val volumeIndex: Int,
-        val volumeName: String
+        val volumeName: String,
 
-)
+        )

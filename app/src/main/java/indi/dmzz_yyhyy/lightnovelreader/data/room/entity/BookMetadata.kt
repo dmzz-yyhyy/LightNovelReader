@@ -15,5 +15,5 @@ data class BookMetadata(
     var type: String,
     var tags: List<String>,
     var introduction: String,
-    var lastReadChapterId: Int
+    var lastReadChapterId: Int = -1,
 )

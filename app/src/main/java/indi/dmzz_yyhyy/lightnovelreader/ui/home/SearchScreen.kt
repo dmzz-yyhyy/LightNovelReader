@@ -216,36 +216,35 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
 
-                            Box(
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                        ) {
+                            Row(
                                 Modifier
-                                    .fillMaxWidth()
+                                    .align(Alignment.Center)
                             ) {
-                                Row(
-                                    Modifier
-                                        .align(Alignment.Center)
-                                ) {
-                                    IconButton(onClick = { searchViewModel.onClickFistPageButton() }) {
-                                        Text("1", style = MaterialTheme.typography.labelLarge)
-                                    }
-                                    IconButton(onClick = { searchViewModel.onClickBeforePageButton() }) {
-                                        Icon(Icons.Outlined.NavigateBefore, contentDescription = "before page")
-                                    }
-                                    Box(Modifier.size(48.dp)) {
-                                        Text(
-                                            searchUiState.page.toString(),
-                                            style = MaterialTheme.typography.labelLarge,
-                                            modifier = Modifier.align(Alignment.Center)
-                                        )
-                                    }
-                                    IconButton(onClick = { searchViewModel.onClickNextPageButton() }) {
-                                        Icon(Icons.Outlined.NavigateNext, contentDescription = "next page")
-                                    }
-                                    IconButton(onClick = { searchViewModel.onClickLastPageButton() }) {
-                                        Text(
-                                            searchUiState.totalPage.toString(),
-                                            style = MaterialTheme.typography.labelLarge
-                                        )
-                                    }
+                                IconButton(onClick = { searchViewModel.onClickFistPageButton() }) {
+                                    Text("1", style = MaterialTheme.typography.labelLarge)
+                                }
+                                IconButton(onClick = { searchViewModel.onClickBeforePageButton() }) {
+                                    Icon(Icons.Outlined.NavigateBefore, contentDescription = "before page")
+                                }
+                                Box(Modifier.size(48.dp)) {
+                                    Text(
+                                        searchUiState.page.toString(),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                                IconButton(onClick = { searchViewModel.onClickNextPageButton() }) {
+                                    Icon(Icons.Outlined.NavigateNext, contentDescription = "next page")
+                                }
+                                IconButton(onClick = { searchViewModel.onClickLastPageButton() }) {
+                                    Text(
+                                        searchUiState.totalPage.toString(),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
                         }
@@ -254,11 +253,13 @@ fun Search(searchNavController: NavController, searchViewModel: SearchViewModel)
             }
         }
     }
+}
+
 object TopWithFooter : Arrangement.Vertical {
     override fun Density.arrange(
         totalSize: Int,
         sizes: IntArray,
-        outPositions: IntArray
+        outPositions: IntArray,
     ) {
         var y = 0
         sizes.forEachIndexed { index, size ->

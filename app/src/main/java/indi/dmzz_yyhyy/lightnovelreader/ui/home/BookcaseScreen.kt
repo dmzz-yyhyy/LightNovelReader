@@ -16,7 +16,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 fun BookcaseScreen(navController: NavController) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(id = R.string.nav_bookcase)) }) }
-    ){
+    ) {
 
     }
 }

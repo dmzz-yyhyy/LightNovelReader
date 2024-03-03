@@ -13,12 +13,15 @@ object DaoModule {
     @Singleton
     @Provides
     fun readingBookDao(db: LightNovelReaderDatabase) = db.readingBookDao()
+
     @Singleton
     @Provides
     fun bookMetadataDao(db: LightNovelReaderDatabase) = db.bookMetadataDao()
+
     @Singleton
     @Provides
     fun bookChapterListDao(db: LightNovelReaderDatabase) = db.bookChapterListDao()
+
     @Singleton
     @Provides
     fun bookChapterContentDao(db: LightNovelReaderDatabase) = db.bookChapterContentDao()

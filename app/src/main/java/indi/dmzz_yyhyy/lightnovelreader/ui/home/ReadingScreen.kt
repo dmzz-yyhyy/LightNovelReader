@@ -17,21 +17,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.ReadingBook
+import indi.dmzz_yyhyy.lightnovelreader.data.room.entity.BookMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
 @Composable
 fun ReadingScreen(
-    navController: NavController,
-    readingViewModel: ReadingViewModel
+    readingViewModel: ReadingViewModel,
 ) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(id = R.string.nav_reading)) }) }
-    ){
+    ) {
         Box(Modifier.padding(it)) {
             val readingUiState by readingViewModel.uiState.collectAsState()
             val padding = 16.dp
@@ -50,7 +48,7 @@ fun ReadingScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
+fun ReadingBookCard(readingViewModel: ReadingViewModel, book: BookMetadata) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
@@ -59,7 +57,7 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
         onClick = { readingViewModel.onCardClick(book.id, context) }
 
     ) {
-        Row(Modifier.fillMaxWidth()){
+        Row(Modifier.fillMaxWidth()) {
             AsyncImage(
                 model = book.coverUrl,
                 contentDescription = stringResource(id = R.string.desc_cover),
@@ -68,14 +66,14 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
                     .clip(RoundedCornerShape(12.dp)),
                 contentScale = ContentScale.Crop
             )
-            Box(Modifier.height(128.dp)){
+            Box(Modifier.height(128.dp)) {
                 Column(
                     modifier = Modifier
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
                     Text(
-                        text = book.bookName,
+                        text = book.name,
                         style = MaterialTheme.typography.headlineSmall,
                         maxLines = 1
                     )
@@ -84,9 +82,10 @@ fun ReadingBookCard(readingViewModel: ReadingViewModel, book: ReadingBook) {
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-                Text(modifier = Modifier
-                    .padding(8.dp)
-                    .align(Alignment.BottomEnd),
+                Text(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .align(Alignment.BottomEnd),
                     text = stringResource(id = R.string.last_reading_time),
                     textAlign = TextAlign.End,
                     style = MaterialTheme.typography.titleSmall

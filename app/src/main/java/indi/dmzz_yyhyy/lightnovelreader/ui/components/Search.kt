@@ -38,16 +38,19 @@ fun SearchBar(
     onValueChange: (String) -> Unit,
     onClickMenuButton: () -> Unit = {},
     onDone: (KeyboardActionScope) -> Unit = {},
-    trailingIcon: @Composable () -> Unit = {}
+    trailingIcon: @Composable () -> Unit = {},
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
-    Box(modifier
-        .clip(CircleShape)
-        .height(56.dp)
-        .background(MaterialTheme.colorScheme.surfaceVariant)){
+    Box(
+        modifier
+            .clip(CircleShape)
+            .height(56.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Row(
             Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween) {
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             Box(
                 Modifier
                     .fillMaxHeight()
@@ -55,7 +58,8 @@ fun SearchBar(
             ) {
                 IconButton(
                     modifier = Modifier.align(Alignment.Center),
-                    onClick = onClickMenuButton) {
+                    onClick = onClickMenuButton
+                ) {
                     Icon(
                         Icons.Outlined.Menu,
                         contentDescription = stringResource(id = R.string.desc_menu)
@@ -77,7 +81,8 @@ fun SearchBar(
                     onValueChange = onValueChange,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Text,
-                        imeAction = Done),
+                        imeAction = Done
+                    ),
                     keyboardActions = KeyboardActions(
                         onDone = {
                             onDone(this)
@@ -97,8 +102,8 @@ fun SearchBar(
             }
             Box(
                 Modifier
-                .fillMaxHeight()
-                .padding(start = 4.dp, end = 4.dp)
+                    .fillMaxHeight()
+                    .padding(start = 4.dp, end = 4.dp)
             ) {
                 Box(Modifier.align(Alignment.Center)) {
                     trailingIcon()
