@@ -81,7 +81,7 @@ class LightNovelReaderWebAPI @Inject constructor() {
             Log.d("API", "Attempting to getBookInformation: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<Data<Information>> = service.getBookInformation(bookId)
             val data: Response<Data<Information>>? = dataCall.execute()
-            Log.d("API", data.toString())
+            /*Log.d("API", data.toString())*/
             data?.body()?.data
         } catch (error: Exception) {
             if (reconnectTimes > 0) {
@@ -97,6 +97,7 @@ class LightNovelReaderWebAPI @Inject constructor() {
             Log.d("API", "Attempting to getBookChapterList: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<Data<List<Volume>>> = service.getBookChapterList(bookId)
             val data: Response<Data<List<Volume>>>? = dataCall.execute()
+            /*Log.d("API", data.toString())*/
             data?.body()?.data
         } catch (error: Exception) {
             if (reconnectTimes != 0) {
@@ -111,6 +112,7 @@ class LightNovelReaderWebAPI @Inject constructor() {
             Log.d("API", "Attempting to getBookContent: bookID=$bookId. [remaining $reconnectTimes]")
             val dataCall: Call<Data<ChapterContent>> = service.getBookContent(bookId, chapterId)
             val data: Response<Data<ChapterContent>>? = dataCall.execute()
+            /*Log.d("API", data.toString())*/
             data?.body()?.data
         } catch (error: Exception) {
             if (reconnectTimes != 0) {

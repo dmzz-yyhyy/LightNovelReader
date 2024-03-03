@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -31,20 +32,21 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
     val density = LocalDensity.current.density
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
+    val interactionSource = remember { MutableInteractionSource() }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                navigationIcon = {
-                    IconButton(onClick = { readerViewModel.onClickBackButton(navController) }) {
-                        Icon(
-                            Icons.Outlined.ArrowBack,
-                            contentDescription = stringResource(id = R.string.desc_back)
-                        )
-                    }
-                },
-                title = { Text(readerUiState.title) })
-        },
+            AnimatedVisibility (visible = readerUiState.isAppBarVisible) {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = { readerViewModel.onClickBackButton(navController) }){
+                            Icon(
+                                Icons.Outlined.ArrowBack,
+                                contentDescription = stringResource(id = R.string.desc_back)
+                            )
+                        }},
+                    title = { Text(readerUiState.title, maxLines = 2) })
+            }},
         bottomBar = {
             AnimatedVisibility(
                 visible = readerUiState.isBottomBarOpen,
@@ -113,7 +115,14 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                     item {
                         Text(
                             modifier = Modifier
-                                .padding(16.dp),
+                                .padding(16.dp, top=0.dp)
+                                .clickable(
+                                    indication = null,
+                                    interactionSource = interactionSource,
+                                    onClick = {
+                                    readerViewModel.onClickText(readerUiState.isAppBarVisible)
+                                }),
+
                             text = readerUiState.content,
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -125,7 +134,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
     // 章节选择侧边栏
     if (readerUiState.isSideSheetsOpen) {
         Box(Modifier.fillMaxWidth().fillMaxHeight()) {
-            ModalSideSheet(modifier = Modifier
+            ModalSideSheet(modifier = Modifier.padding(top = 36.dp)
                 .align(alignment = Alignment.TopEnd),
                 closeButton = {
                     IconButton(onClick = { readerViewModel.onCloseChapterSideSheets() }) {
@@ -165,7 +174,7 @@ fun ReaderScreen(navController: NavController, readerViewModel: ReaderViewModel)
                                                 text = chapter.title,
                                                 style = MaterialTheme.typography.titleSmall
                                             )
-                                            Divider()
+                                            HorizontalDivider()
                                         }
                                     }
                                 }

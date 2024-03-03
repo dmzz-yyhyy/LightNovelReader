@@ -74,6 +74,22 @@ class ReaderViewModel @Inject constructor(
         }
     }
 
+    fun onClickText(isAppBarVisible: Boolean) {
+
+        _uiState.update { readerUiState ->
+            if (isAppBarVisible) {
+                readerUiState.copy(
+                    isAppBarVisible = false,
+                    isBottomBarOpen = false
+                )
+            } else {
+                readerUiState.copy(
+                    isAppBarVisible = true,
+                    isBottomBarOpen = true
+            ) }
+        }
+    }
+
     fun onClickMiddle(isBottomBarOpen: Boolean) {
         if (isBottomBarOpen) {
             _uiState.update { readerUiState ->

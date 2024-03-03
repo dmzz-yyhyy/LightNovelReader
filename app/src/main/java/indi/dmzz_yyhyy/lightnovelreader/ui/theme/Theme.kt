@@ -1,10 +1,15 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.theme
 
+import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 
 private val lightColors = lightColorScheme(
@@ -73,14 +78,22 @@ fun LightNovelReaderTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val colors = if (!useDarkTheme) {
-        lightColors
-    } else {
-        darkColors
+    val colorScheme = when {
+        useDarkTheme -> darkColors
+        else -> lightColors
+    }
+
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as Activity).window
+        window.statusBarColor = colorScheme.background.toArgb()
+        window.navigationBarColor = colorScheme.surface.toArgb()
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDarkTheme
+        WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !useDarkTheme
     }
 
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = colorScheme,
         content = content
     )
 }

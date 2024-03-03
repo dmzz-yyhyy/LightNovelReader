@@ -16,9 +16,6 @@
     <!--  -->
     <string name="prefix_writer">Writer:</string>
     <string name="prefix_tags">Tags:</string>
-    
-    <string name="ascending">Ascending</string>
-    <string name="descending">Descending</string>
     <!-- Descriptions -->
     <string name="desc_back">back</string>
     <string name="desc_more">more</string>
@@ -35,7 +32,9 @@
         update.
     </string>
     <string name="downloading">Downloading</string>
-    <string name="downloading_text">Downloading from server...</string>
+    <string name="downloading_text">Downloading from server…</string>
     <string name="update_confirm">Update</string>
     <string name="update_dismiss">Dismiss</string>
+    <string name="sw_chapter_sorting">Switch chapters sorting</string>
+    <string name="sw_volume_sorting">Switch volume sorting</string>
 </resources>
