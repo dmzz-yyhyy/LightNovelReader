@@ -1,7 +1,8 @@
 # LightNovelReader
  Android平台的轻小说阅读软件
  使用Jetpack Compose框架编写
- **当前后台服务端属于离线状态，我们将于不久后重新部署后台，您也可以自行部署 [项目地址](https://github.com/dmzz-yyhyy/LightNovelReaderBackground)
+ 
+ *当前后台服务端属于离线状态，我们将于不久后重新部署后台，您也可以自行部署 [项目地址](https://github.com/dmzz-yyhyy/LightNovelReaderBackground)
 # 进度
  - [x] 基本界面搭建
  - [x] 阅读器编写
