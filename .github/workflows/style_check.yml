@@ -1,0 +1,29 @@
+name: Style Check in CI
+on:
+  push:
+    branches:
+      - releases/**
+  pull_request:
+    branches:
+      - releases/**
+
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3.1.0
+      - name: Setup Java 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: zulu
+          java-version: 17
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+      - name: download checkstyle
+        run: curl -o checkstyle.jar -L https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.15.0/checkstyle-10.15.0-all.jar
+      - name: checkstyle
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: java -jar checkstyle.jar -c style.xml -f xml app/src | reviewdog -f=checkstyle -name="Checkstyle" -reporter=github-check -level=warning
