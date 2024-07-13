@@ -2,11 +2,21 @@ name: ci.yml
 on:
   push:
     branches: [master, refactoring]
+    paths:
+      - app/src/**
+      - build.gradle.kts
+      - gradle.properties
+      - gradlew
   pull_request:
     branches: [master, refactoring]
+    paths:
+      - app/src/**
+      - build.gradle.kts
+      - gradle.properties
+      - gradlew
 
 jobs:
-  ci:
+  BuildDebugApk:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
