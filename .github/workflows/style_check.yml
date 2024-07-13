@@ -1,11 +1,9 @@
 name: Style Check in CI
 on:
   push:
-    branches:
-      - releases/**
+    branches: [master, refactoring]
   pull_request:
-    branches:
-      - releases/**
+    branches: [master, refactoring]
 
 jobs:
   checkstyle:
