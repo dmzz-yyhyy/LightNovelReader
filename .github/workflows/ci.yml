@@ -1,19 +1,9 @@
-name: ci.yml
+name: DebugApkBuild
 on:
   push:
     branches: [master, refactoring]
-    paths:
-      - app/src/**
-      - build.gradle.kts
-      - gradle.properties
-      - gradlew
   pull_request:
     branches: [master, refactoring]
-    paths:
-      - app/src/**
-      - build.gradle.kts
-      - gradle.properties
-      - gradlew
 
 jobs:
   BuildDebugApk:
@@ -24,6 +14,9 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: make gradle wrapper executable
+        if: ${{ runner.os != 'Windows' }}
+        run: chmod +x ./gradlew
       - name: Build debug APK
         run: ./gradlew assembleDebug
       - name: Upload APK
@@ -33,7 +26,6 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
       - uses: r0adkll/sign-android-release@v1
         name: Sign app APK
-        # ID used to access action output
         id: sign_app
         with:
           releaseDirectory: app/build/outputs/apk/release
@@ -42,10 +34,7 @@ jobs:
           keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-          # override default build-tools version (33.0.0) -- optional
           BUILD_TOOLS_VERSION: "34.0.0"
-
-      # Example use of `signedReleaseFile` output -- not needed
       - uses: actions/upload-artifact@v2
         with:
           name: Signed app bundle
