@@ -81,6 +81,8 @@ dependencies {
     implementation("androidx.navigation:navigation-dynamic-features-fragment:$navVersion")
     androidTestImplementation("androidx.navigation:navigation-testing:$navVersion")
     implementation("androidx.navigation:navigation-compose:$navVersion")
+    // coil
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
 }
 

@@ -2,7 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools">
 
+  <uses-permission android:name="android.permission.INTERNET"/>
   <application
+    android:usesCleartextTraffic="true"
     android:name=".LightNovelReaderApplication"
     android:allowBackup="true"
     android:dataExtractionRules="@xml/data_extraction_rules"

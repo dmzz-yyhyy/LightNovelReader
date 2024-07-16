@@ -17,7 +17,7 @@ fun LightNovelReaderApp() {
 fun LightNovelReaderNavHost(
     navController: NavHostController
 ) {
-    NavHost(navController = navController, startDestination = Screen.Home.Reading.route) {
+    NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(route = Screen.Home.route) {
             HomeScreen(
                 onOpenBook = {
