@@ -14,22 +14,22 @@ sealed class Screen(
         data object Bookshelf : Screen("home_bookshelf")
         data object Settings : Screen("home_settings")
     }
-    data object Book {
-        data object Detail : Screen(
-            route = "detail/{bookId}",
-            navArguments = listOf(navArgument("bookId") {
-                type = NavType.IntType
-            })
-        ) {
-            fun createRoute(bookId: Int) = "detail/${bookId}"
-        }
+    data object Book : Screen(
+        route = "book/{bookId}",
+        navArguments = listOf(navArgument("bookId") {
+            type = NavType.IntType
+        })
+    ) {
+        fun createRoute(bookId: Int) = "book/${bookId}"
+
+        data object Detail: Screen("detail")
         data object Content : Screen(
-            route = "content/content/{chapterId}",
+            route = "book_content/{chapterId}",
             navArguments = listOf(navArgument("chapterId") {
                 type = NavType.IntType
             })
         ) {
-            fun createRoute(chapterId: Int) = "content/${chapterId}"
+            fun createRoute(chapterId: Int) = "book_content/${chapterId}"
         }
     }
 }
