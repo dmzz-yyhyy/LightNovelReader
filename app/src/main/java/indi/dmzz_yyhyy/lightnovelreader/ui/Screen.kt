@@ -9,10 +9,10 @@ sealed class Screen(
     val navArguments: List<NamedNavArgument> = emptyList()
 ) {
     data object Home : Screen("home") {
-        data object Reading : Screen("home/reading")
-        data object Exploration : Screen("home/exploration")
-        data object Bookshelf : Screen("home/bookshelf")
-        data object Settings : Screen("home/settings")
+        data object Reading : Screen("home_reading")
+        data object Exploration : Screen("home_exploration")
+        data object Bookshelf : Screen("home_bookshelf")
+        data object Settings : Screen("home_settings")
     }
     data object Book {
         data object Detail : Screen(
