@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
-import indi.dmzz_yyhyy.lightnovelreader.data.location.TestBookData
+import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import java.time.LocalDateTime
@@ -138,7 +138,7 @@ fun DetailScreen(
         item {
             Box(Modifier.fillMaxWidth().height(18.dp))
         }
-        for (bookVolume in TestBookData.zxcv.volumes) {
+        for (bookVolume in emptyList<Volume>()) {
             item {
                 Text(
                     text = bookVolume.volumeTitle,
