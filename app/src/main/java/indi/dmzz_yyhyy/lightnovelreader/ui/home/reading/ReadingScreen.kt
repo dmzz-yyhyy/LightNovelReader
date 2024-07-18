@@ -1,8 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +35,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import java.time.LocalDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReadingScreen(
     onOpenBook: (Int) -> Unit,
@@ -59,12 +56,12 @@ fun ReadingScreen(
                     "其实我──久世政近的俄语听力达到母语水准。\n" +
                     "毫不知情的艾莉同学，今天也以甜蜜的俄语表现娇羞的一面，害我止不住笑意？\n" +
                     "全校学生心目中的女神，才貌双全俄罗斯美少女和我的青春恋爱喜剧！\n",
-            listOf(),
             "角川文库",
             1046232,
             LocalDateTime.now(),
             false),
         UserReadingData(
+            0,
             LocalDateTime.now(),
             130,
             0.8,

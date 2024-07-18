@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.book
+package indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity
 
 import java.time.LocalDateTime
 

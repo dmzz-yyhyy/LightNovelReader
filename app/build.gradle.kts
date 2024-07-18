@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -10,6 +11,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
+        multiDexEnabled = true
         applicationId = "indi.dmzz_yyhyy.lightnovelreader"
         minSdk = 24
         targetSdk = 34
@@ -32,6 +34,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
@@ -52,6 +55,8 @@ android {
 }
 
 dependencies {
+    // desugaring support
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // android lib
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
@@ -83,7 +88,19 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$navVersion")
     // coil
     implementation("io.coil-kt:coil-compose:2.6.0")
-
+    // jsoup
+    implementation("org.jsoup:jsoup:1.18.1")
+    // room
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    annotationProcessor("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-rxjava2:$roomVersion")
+    implementation("androidx.room:room-rxjava3:$roomVersion")
+    implementation("androidx.room:room-guava:$roomVersion")
+    testImplementation("androidx.room:room-testing:$roomVersion")
+    implementation("androidx.room:room-paging:$roomVersion")
 }
 
 kapt {

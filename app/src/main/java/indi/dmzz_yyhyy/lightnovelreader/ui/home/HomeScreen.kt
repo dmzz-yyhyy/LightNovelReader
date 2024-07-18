@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -25,7 +24,6 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     onOpenBook: (Int) -> Unit

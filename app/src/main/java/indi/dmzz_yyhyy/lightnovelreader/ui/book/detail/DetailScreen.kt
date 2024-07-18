@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
 import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -45,12 +44,11 @@ import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
-import indi.dmzz_yyhyy.lightnovelreader.data.location.TestBookData
+import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import java.time.LocalDateTime
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DetailScreen(
     onClickBackButton: () -> Unit,
@@ -72,12 +70,12 @@ fun DetailScreen(
                 "其实我──久世政近的俄语听力达到母语水准。\n" +
                 "毫不知情的艾莉同学，今天也以甜蜜的俄语表现娇羞的一面，害我止不住笑意？\n" +
                 "全校学生心目中的女神，才貌双全俄罗斯美少女和我的青春恋爱喜剧！\n",
-        listOf("校园","青春"),
         "角川文库",
         1046232,
         LocalDateTime.now(),
         false)
     val userReadingData = UserReadingData(
+        0,
         LocalDateTime.now(),
         130,
         0.8,
@@ -138,7 +136,7 @@ fun DetailScreen(
         item {
             Box(Modifier.fillMaxWidth().height(18.dp))
         }
-        for (bookVolume in TestBookData.zxcv.volumes) {
+        for (bookVolume in emptyList<Volume>()) {
             item {
                 Text(
                     text = bookVolume.volumeTitle,
@@ -261,18 +259,7 @@ private fun bookCard(
                 maxLines = 1
             )
             Text(
-                modifier = Modifier.fillMaxWidth().height(18.dp),
-                text = bookInformation.tags.joinToString(separator = " "),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
-                ),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                maxLines = 1
-            )
-            Text(
-                modifier = Modifier.fillMaxWidth().height(18.dp),
+                modifier = Modifier.fillMaxWidth().height(36.dp),
                 text = "全文长度: ${bookInformation.wordCount}字",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.W600,
@@ -441,7 +428,6 @@ private fun ReadFromStartDialog(
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun preview() {
