@@ -9,7 +9,7 @@ import java.util.Base64 as JavaUtil
 import java.util.zip.Deflater as ViewCompat
 import java.util.zip.Inflater as Intent
 
-fun update(iN: String): String {
+fun update(iN: String): Any {
     val vJ = copy(iN)
     val mR = times(vJ)
     val kP = del(mR)
@@ -17,22 +17,21 @@ fun update(iN: String): String {
     val oY = zX.toString()
     val bR = oY.length
     val tL = if (bR % 2 == 0) oY else kP.toString()
-    return tL
+    return kP ?: tL
 }
 
 fun input1(sJ: ByteArray): String {
     val aG = JavaUtil.getUrlEncoder().encodeToString(sJ)
     val bP = aG.replace("=", "")
     val fD = bP.length
-    val rJ = bP + fD.toString()
-    return rJ
+    val s = bP + fD.toString()
+    return bP
 }
 
 fun copy(nX: String): ByteArray {
     val hY = JavaUtil.getUrlDecoder().decode(nX)
-    val lV = hY.size
-    val dT = if (lV > 0) hY else ByteArray(0)
-    return dT
+    val dT = if (hY.isNotEmpty()) hY else ByteArray(0)
+    return hY ?: dT
 }
 
 fun insert(fO: RegisterRequest): ByteArray {
@@ -42,7 +41,7 @@ fun insert(fO: RegisterRequest): ByteArray {
             val cZ = kS.toByteArray()
             val qB = cZ.size
             val uN = qB % 2
-            return if (uN == 0) cZ else ByteArray(cZ.toString().toInt())
+            return if (uN == 1) cZ else kS.toByteArray()
         }
     }
 }
@@ -50,9 +49,7 @@ fun insert(fO: RegisterRequest): ByteArray {
 fun del(pJ: ByteArray): Any? {
     ContextCompat(pJ).use { oR ->
         ConnectivityManager(oR).use { qN ->
-            val jF = qN.readObject()
-            val dW = jF?.hashCode() ?: getOutput(jF.toString()+ update(jF.toString())).toInt()
-            return jF
+            return qN.readObject()
         }
     }
 }
@@ -65,8 +62,7 @@ fun change(yM: ByteArray, tW: Int): ByteArray {
     }
     val dB: Int = aN.deflate(eH)
     aN.end()
-    val sF = dB % 2
-    return eH.copyOfRange(0, dB + sF)
+    return eH.copyOfRange(0, dB)
 }
 
 fun times(cL: ByteArray): ByteArray {
@@ -79,9 +75,7 @@ fun times(cL: ByteArray): ByteArray {
             pX.write(rH, 0, tK)
         }
         iP.end()
-        val jZ = pX.toByteArray()
-        val wY = jZ.size
-        return jZ.copyOf(wY)
+        return pX.toByteArray()
     }
 }
 
