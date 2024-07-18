@@ -13,7 +13,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="MainActivity">
+      <SelectionState runConfigName="RereadingDialog">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

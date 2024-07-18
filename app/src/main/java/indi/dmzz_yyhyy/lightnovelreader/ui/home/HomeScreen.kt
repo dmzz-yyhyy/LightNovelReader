@@ -32,11 +32,11 @@ fun HomeScreen(
 ) {
     val navController = rememberNavController()
     var topBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar = topBar,
         bottomBar = {
             NavigationBar {
-                var selectedItem by remember { mutableIntStateOf(0) }
                 NavigationBarItem(
                     icon = {
                         if (selectedItem == 0)
@@ -62,7 +62,6 @@ fun HomeScreen(
                     ) },
                     selected = selectedItem == 0,
                     onClick = {
-                        selectedItem = 0
                         navController.navigate(Screen.Home.Reading.route)
                     }
                 )
@@ -91,7 +90,6 @@ fun HomeScreen(
                     ) },
                     selected = selectedItem == 1,
                     onClick = {
-                        selectedItem = 1
                         navController.navigate(Screen.Home.Bookshelf.route)
                     }
                 )
@@ -120,7 +118,6 @@ fun HomeScreen(
                     ) },
                     selected = selectedItem == 2,
                     onClick = {
-                        selectedItem = 2
                         navController.navigate(Screen.Home.Exploration.route)
                     }
                 )
@@ -149,26 +146,32 @@ fun HomeScreen(
                     ) },
                     selected = selectedItem == 3,
                     onClick = {
-                        selectedItem = 3
                         navController.navigate(Screen.Home.Settings.route)
                     }
                 )
             }
         }
-    ) {
+    ) { it ->
         Box(Modifier.padding(it)) {
             NavHost(navController = navController, startDestination = Screen.Home.Reading.route) {
                 composable(route = Screen.Home.Reading.route) {
-                    ReadingScreen(onOpenBook) { topBar1 -> topBar = topBar1 }
+                    selectedItem = 0
+                    ReadingScreen(
+                        onOpenBook = onOpenBook,
+                        topBar = {newTopBar -> topBar = newTopBar}
+                    )
                 }
                 composable(route = Screen.Home.Bookshelf.route) {
-                    Text("施工中")
+                    selectedItem = 1
+                    Text("书架·施工中")
                 }
                 composable(route = Screen.Home.Exploration.route) {
-                    Text("施工中")
+                    selectedItem = 2
+                    Text("探索·施工中")
                 }
                 composable(route = Screen.Home.Settings.route) {
-                    Text("施工中")
+                    selectedItem = 3
+                    Text("设置·施工中")
                 }
             }
         }

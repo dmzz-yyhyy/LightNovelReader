@@ -12,5 +12,6 @@ data class BookInformation(
     val publishingHouse: String,
     val wordCount: Int,
     val lastUpdated: LocalDateTime,
-    val isComplete: Boolean,
-)
+    val isComplete: Boolean
+) {
+}
