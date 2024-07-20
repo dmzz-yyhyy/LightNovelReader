@@ -10,4 +10,18 @@ data class UserReadingData(
     val lastReadChapterId: Int,
     val lastReadChapterTitle: String,
     val lastReadChapterProgress: Double
-)
+) {
+    companion object {
+        fun empty(): UserReadingData {
+            return UserReadingData(
+                -1,
+                LocalDateTime.MIN,
+                -1,
+                0.0,
+                -1,
+                "",
+                0.0
+            )
+        }
+    }
+}

@@ -1,18 +1,20 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
 
-import WebDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
-import java.time.LocalDateTime
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.jsoup.Jsoup
 
-object Wenku8Api: WebDataSource {
+object Wenku8Api: WebBookDataSource {
     private const val BOOK_INFORMATION_URL = "https://www.wenku8.net/wap/article/articleinfo.php?id="
     private const val BOOK_VOLUMES_URL = "https://www.wenku8.net/wap/article/readbook.php?aid="
-    override fun getBookInformation(id: Int): BookInformation {
+    private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+    override suspend fun getBookInformation(id: Int): BookInformation {
         val soup = Jsoup.connect(BOOK_INFORMATION_URL+id).get()
         return BookInformation(
             id,
@@ -26,16 +28,17 @@ object Wenku8Api: WebDataSource {
             soup.select("card")[0].toString()
                 .split("字数:")[1]
                 .split("字<br>")[0].toInt(),
-            LocalDateTime.parse("20"+soup.select("card")[0].toString()
+            LocalDate.parse("20"+soup.select("card")[0].toString()
                 .split("更新:")[1]
-                .split("<br>")[0]),
+                .split("<br>")[0],
+                DATA_TIME_FORMATTER).atStartOfDay(),
                 soup.select("card")[0].toString()
                     .split("状态:")[1]
                     .split("<br>")[0] != "连载中"
         )
     }
 
-    override fun getBookVolumes(id: Int): BookVolumes {
+    override suspend fun getBookVolumes(id: Int): BookVolumes {
         val soup = Jsoup.connect(BOOK_VOLUMES_URL+id).get()
         val totalPage = soup.text().split("[1/")[1].split("]")[0].toInt()
         println(totalPage)

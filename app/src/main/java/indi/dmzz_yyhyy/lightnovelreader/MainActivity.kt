@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent

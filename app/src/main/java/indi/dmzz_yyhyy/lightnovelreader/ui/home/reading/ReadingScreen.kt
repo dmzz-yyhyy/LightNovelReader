@@ -29,63 +29,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
-import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import java.time.LocalDateTime
 
 @Composable
 fun ReadingScreen(
     onOpenBook: (Int) -> Unit,
-    topBar: (@Composable () -> Unit) -> Unit
+    topBar: (@Composable () -> Unit) -> Unit,
+    viewModel: ReadingViewModel = hiltViewModel()
 ) {
-    // test data
-    val book = ReadingBook(
-        BookInformation(
-            0,
-            "不时轻声地以俄语遮羞的邻座艾莉同学",
-            "http://img.wenku8.com/image/2/2930/2930s.jpg",
-            "灿灿SUN",
-            "「И наменятоже обрати внимание.」\n" +
-                    "「啊？你说什么？」\n" +
-                    "「没有啊？我只是说『这家伙真的很蠢』。」\n" +
-                    "「可以别用俄语骂我吗？」\n" +
-                    "坐在我旁边座位的绝世银发美少女艾莉，轻轻露出夸耀胜利的笑容……\n" +
-                    "然而实际上不是这样。她刚才说的俄语是：「理我一下啦！」\n" +
-                    "其实我──久世政近的俄语听力达到母语水准。\n" +
-                    "毫不知情的艾莉同学，今天也以甜蜜的俄语表现娇羞的一面，害我止不住笑意？\n" +
-                    "全校学生心目中的女神，才貌双全俄罗斯美少女和我的青春恋爱喜剧！\n",
-            "角川文库",
-            1046232,
-            LocalDateTime.now(),
-            false),
-        UserReadingData(
-            0,
-            LocalDateTime.now(),
-            130,
-            0.8,
-            100,
-            "短篇 画集附录短篇 后来被欺负得相当惨烈",
-            0.8,
-        )
-    )
-    val readingBooks = listOf(
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy(),
-        book.copy()
-    )
-
-
+    val readingBooks = viewModel.uiState.recentReadingBooks
     topBar { TopBar() }
+    if (viewModel.uiState.isLoading) {
+        Loading()
+        return
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp, 16.dp, 0.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -128,7 +89,7 @@ private fun TopBar() {
 }
 
 @Composable
-private fun SimpleBookCard(book: ReadingBook, onOpenBook: (Int) -> Unit,) {
+private fun SimpleBookCard(book: ReadingBook, onOpenBook: (Int) -> Unit) {
     Row(Modifier
         .fillMaxWidth().height(120.dp)) {
         Cover(81.dp, 120.dp, book.coverUrl)
@@ -239,7 +200,7 @@ private fun LargeBookCard(book: ReadingBook) {
 @SuppressLint("NewApi")
 private fun formTime(time: LocalDateTime): String {
     val dayAndPrefixList = listOf("", "昨天", "前天", "大前天")
-    var prefix = ""
+    val prefix: String
     if (time.year < LocalDateTime.now().year) {
         prefix = "去年"
         return prefix

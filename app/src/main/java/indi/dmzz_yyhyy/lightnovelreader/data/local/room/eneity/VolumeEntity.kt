@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.loacltion.room.entity
+package indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -7,8 +7,10 @@ import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.IntListConverter
 
 @TypeConverters(IntListConverter::class)
-@Entity(tableName = "volume_entity")
+@Entity(tableName = "volume")
 data class VolumeEntity(
+    @ColumnInfo(name = "book_id")
+    val bookId: Int,
     @PrimaryKey
     @ColumnInfo(name = "volume_id")
     val volumeId: Int,
