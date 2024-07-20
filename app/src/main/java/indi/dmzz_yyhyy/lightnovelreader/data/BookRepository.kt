@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.data
 
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import javax.inject.Inject
@@ -25,13 +26,29 @@ class BookRepository @Inject constructor(
         coroutineScope.launch {
             webBookDataSource.getBookInformation(id)?.let { information ->
                 localBookDataSource.updateBookInformation(information)
-                localBookDataSource.getBookInformation(id)?.let {
+                localBookDataSource.getBookInformation(id)?.let { newInfo ->
                     bookInformation.update {
-                        it
+                        newInfo
                     }
                 }
             }
         }
         return bookInformation
+    }
+
+    suspend fun getBookVolumes(id: Int): Flow<BookVolumes> {
+        val bookVolumes: MutableStateFlow<BookVolumes> =
+            MutableStateFlow(localBookDataSource.getBookVolumes(id) ?: BookVolumes.empty())
+        coroutineScope.launch {
+            webBookDataSource.getBookVolumes(id)?.let { information ->
+                localBookDataSource.updateBookVolumes(id, information)
+                localBookDataSource.getBookVolumes(id)?.let { newBookVolumes ->
+                    bookVolumes.update {
+                        newBookVolumes
+                    }
+                }
+            }
+        }
+        return bookVolumes
     }
 }

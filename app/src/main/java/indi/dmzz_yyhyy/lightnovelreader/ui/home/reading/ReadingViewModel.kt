@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading;
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,7 +20,7 @@ class ReadingViewModel @Inject constructor(
     val uiState: ReadingUiState = _uiState
 
     //FIXME test code
-    private val ids = listOf(3698, 3672, 3686, 3353, 3474, 3698, 3672, 3686, 3353, 3474)
+    private val ids = listOf(3698, 2883, 3672, 3686, 3353, 3474, 3698, 3672, 3686, 3353, 3474)
     private val userReadingData =  UserReadingData(
     0,
     LocalDateTime.now(),
@@ -45,6 +45,7 @@ class ReadingViewModel @Inject constructor(
                     val bookInformation = bookRepository.getBookInformation(id)
                     _uiState.recentReadingBooks[index] = ReadingBook(bookInformation.first(), userReadingData)
                         bookInformation.collect { bookInformation1 ->
+                            if (bookInformation1.id == -1) return@collect
                             _uiState.recentReadingBooks[index] = ReadingBook(bookInformation1, userReadingData)
                             _uiState.isLoading =
                                 _uiState.recentReadingBooks.isEmpty()

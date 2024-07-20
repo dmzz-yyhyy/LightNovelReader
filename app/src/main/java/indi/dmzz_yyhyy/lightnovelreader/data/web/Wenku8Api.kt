@@ -39,30 +39,33 @@ object Wenku8Api: WebBookDataSource {
     }
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
-        val soup = Jsoup.connect(BOOK_VOLUMES_URL+id).get()
+        val soup = Jsoup.connect(BOOK_VOLUMES_URL +id).get()
         val totalPage = soup.text().split("[1/")[1].split("]")[0].toInt()
-        println(totalPage)
         val elements: MutableList<String> = mutableListOf()
-        for (volume in 1..totalPage+1) {
+        for (volume in 1..totalPage) {
             elements += Jsoup.connect("$BOOK_VOLUMES_URL$id&page=$volume").get().toString()
-                .split("〖").drop(1).joinToString()
+                .split("作者").drop(1).joinToString()
+                .split("\n", limit = 2)[1]
                 .split("到第")[0]
                 .replace("<br>", "")
                 .replace("      ", "")
                 .replace(", ", "")
                 .replace("</a>", "")
+                .replace("〖", "")
                 .split("\n")
                 .filter { it.isNotEmpty() }
         }
         val volumes: MutableList<Volume> = mutableListOf()
         var title = ""
         val chapters: MutableList<ChapterInformation> = mutableListOf()
-        for ((index, element) in elements.withIndex()) {
+        var index = 0
+        for (element in elements) {
             if (element.endsWith("〗")) {
                 if (index != 0)
-                    volumes.add(Volume(id*100+index, title, chapters.toList()))
+                    volumes.add(Volume(id*100000+index, title, chapters.toList()))
                 title = element.replace("〗", "")
                 chapters.clear()
+                index++
                 continue
             }
             chapters.add(
@@ -75,7 +78,7 @@ object Wenku8Api: WebBookDataSource {
                 )
             )
         }
-        println(volumes)
+        volumes.add(Volume(id*100000+index, title, chapters.toList()))
         return BookVolumes(volumes)
     }
 }

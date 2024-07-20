@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book
 
-import android.os.Build
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -39,9 +38,10 @@ fun BookScreen(
                     topBar = {newTopBar ->
                         topBar = newTopBar
                     },
-                    dialog = {newdialog ->
-                        dialog = newdialog
-                    }
+                    dialog = {newDialog ->
+                        dialog = newDialog
+                    },
+                    id
                 )
             }
         }
