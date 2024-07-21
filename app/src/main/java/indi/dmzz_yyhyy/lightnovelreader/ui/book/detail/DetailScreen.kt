@@ -1,7 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -39,55 +37,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
-import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.BookScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
-import java.time.LocalDateTime
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DetailScreen(
     onClickBackButton: () -> Unit,
     topBar: (@Composable () -> Unit) -> Unit,
-    dialog: (@Composable () -> Unit) -> Unit
-
+    dialog: (@Composable () -> Unit) -> Unit,
+    id: Int,
+    viewModel: DetailViewModel = hiltViewModel()
 ) {
-    val bookInformation = BookInformation(
-        0,
-        "不时轻声地以俄语遮羞的邻座艾莉同学",
-        "http://img.wenku8.com/image/2/2930/2930s.jpg",
-        "灿灿SUN",
-        "「И наменятоже обрати внимание.」\n" +
-                "「啊？你说什么？」\n" +
-                "「没有啊？我只是说『这家伙真的很蠢』。」\n" +
-                "「可以别用俄语骂我吗？」\n" +
-                "坐在我旁边座位的绝世银发美少女艾莉，轻轻露出夸耀胜利的笑容……\n" +
-                "然而实际上不是这样。她刚才说的俄语是：「理我一下啦！」\n" +
-                "其实我──久世政近的俄语听力达到母语水准。\n" +
-                "毫不知情的艾莉同学，今天也以甜蜜的俄语表现娇羞的一面，害我止不住笑意？\n" +
-                "全校学生心目中的女神，才貌双全俄罗斯美少女和我的青春恋爱喜剧！\n",
-        listOf("校园","青春"),
-        "角川文库",
-        1046232,
-        LocalDateTime.now(),
-        false)
-    val userReadingData = UserReadingData(
-        LocalDateTime.now(),
-        130,
-        0.8,
-        100,
-        "短篇 画集附录短篇 后来被欺负得相当惨烈",
-        0.8,
-    )
     var isShowDialog by remember { mutableStateOf(false) }
+    val uiState = viewModel.uiState
+    topBar { TopBar(onClickBackButton, uiState.bookInformation.title) }
 
-    topBar { TopBar(onClickBackButton, bookInformation.title) }
+    var bookId by remember { mutableStateOf(0) }
+    if (bookId != id) {
+        bookId = id
+        viewModel.init(bookId)
+    }
+    if (uiState.isLoading) {
+        Loading()
+        return
+    }
+
     dialog {
         if (isShowDialog) ReadFromStartDialog(
             onConfirmation = {
@@ -100,11 +80,11 @@ fun DetailScreen(
         )
     }
 
-    LazyColumn (Modifier.padding(16.dp, 8.dp)) {
+    LazyColumn (Modifier.padding(16.dp, 8.dp).fillMaxSize()) {
         item {
             bookCard(
-                bookInformation = bookInformation,
-                userReadingData = userReadingData,
+                bookInformation = uiState.bookInformation,
+                userReadingData = uiState.userReadingData,
                 onCLickReadFromStart = { isShowDialog = true })
         }
         item {
@@ -119,7 +99,7 @@ fun DetailScreen(
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Description(bookInformation.description)
+                Description(uiState.bookInformation.description)
             }
         }
         item {
@@ -138,7 +118,7 @@ fun DetailScreen(
         item {
             Box(Modifier.fillMaxWidth().height(18.dp))
         }
-        for (bookVolume in emptyList<Volume>()) {
+        for (bookVolume in uiState.bookVolumes.volumes) {
             item {
                 Text(
                     text = bookVolume.volumeTitle,
@@ -237,51 +217,53 @@ private fun bookCard(
             Cover(110.dp, 165.dp, bookInformation.coverUrl)
         }
         Column {
-            Text(
-                modifier = Modifier.fillMaxWidth().height(60.dp),
-                text = bookInformation.title,
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 24.sp,
-                    lineHeight = 28.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2
-            )
-            Box(Modifier.height(4.dp))
-            Text(
-                modifier = Modifier.fillMaxWidth().height(18.dp),
-                text = "作者: ${bookInformation.author}",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
-                ),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                maxLines = 1
-            )
-            Text(
-                modifier = Modifier.fillMaxWidth().height(18.dp),
-                text = bookInformation.tags.joinToString(separator = " "),
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
-                ),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                maxLines = 1
-            )
-            Text(
-                modifier = Modifier.fillMaxWidth().height(18.dp),
-                text = "全文长度: ${bookInformation.wordCount}字",
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
-                ),
-                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                maxLines = 1
-            )
+            Column(Modifier.fillMaxSize().height(114.dp)) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = bookInformation.title,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.W600,
+                        fontSize = 24.sp,
+                        lineHeight = 28.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2
+                )
+                Box(Modifier.height(4.dp))
+                Text(
+                    modifier = Modifier.fillMaxWidth().height(18.dp),
+                    text = "作者: ${bookInformation.author}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.W600,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth().height(18.dp),
+                    text = "全文长度: ${bookInformation.wordCount}字",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.W600,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1
+                )
+                Text(
+                    modifier = Modifier.fillMaxWidth().height(18.dp),
+                    text = "状态: ${ if (bookInformation.isComplete) "已完结" else "连载中" }",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.W600,
+                        fontSize = 14.sp,
+                        lineHeight = 18.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    maxLines = 1
+                )
+            }
             Row(modifier = Modifier
                 .padding(vertical = 8.dp)
                 .fillMaxWidth()
@@ -439,11 +421,4 @@ private fun ReadFromStartDialog(
             }
         }
     )
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Preview
-@Composable
-fun preview() {
-    BookScreen({}, 1)
 }

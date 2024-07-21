@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.book
+package indi.dmzz_yyhyy.lightnovelreader
 
 import java.time.LocalDateTime
 
@@ -12,7 +12,8 @@ data class UserReadingData(
     val lastReadChapterProgress: Double
 ) {
     companion object {
-        fun empty(): UserReadingData = UserReadingData(
+        fun empty(): UserReadingData {
+            return UserReadingData(
                 -1,
                 LocalDateTime.MIN,
                 -1,
@@ -21,5 +22,6 @@ data class UserReadingData(
                 "",
                 0.0
             )
+        }
     }
 }
