@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web
 
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
+import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import java.time.LocalDate
@@ -12,6 +13,7 @@ import org.jsoup.Jsoup
 object Wenku8Api: WebBookDataSource {
     private const val BOOK_INFORMATION_URL = "https://www.wenku8.net/wap/article/articleinfo.php?id="
     private const val BOOK_VOLUMES_URL = "https://www.wenku8.net/wap/article/readbook.php?aid="
+    private const val CHAPTER_CONTENT_URL = "https://www.wenku8.net/wap/article/readchapter.php?aid="
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     override suspend fun getBookInformation(id: Int): BookInformation {
@@ -80,5 +82,38 @@ object Wenku8Api: WebBookDataSource {
         }
         volumes.add(Volume(id*100000+index, title, chapters.toList()))
         return BookVolumes(volumes)
+    }
+
+    override suspend fun getChapterContent(bookId: Int, chapterId: Int): ChapterContent {
+        val pageRegex = Regex("[0-9]/(.*)]<input")
+        val titleRegex = Regex("报时.*<br>\n*(.*)<br")
+        val contentRegex = Regex("</anchor><b.*>([\\s\\S]*)<br.*>\n*?.*?<input name=\"page\" format=\".*N\"")
+        val soup = Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}").get()
+        var title = ""
+        var content = ""
+        soup.let { document ->
+            titleRegex.find(document.toString())?.let {
+                title = it.groups[1]?.value ?: ""
+                title = title.replace("      ", "")
+            }
+            val page = pageRegex.find(document.toString())?.let {
+                it.groups[1]?.value?.toInt() ?: 0
+            } ?: 0
+            content = (1..page).map { pageIndex ->
+                contentRegex.find(Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}&page=$pageIndex").get().toString())
+                    ?.let { result ->
+                        (result.groups[1]?.value ?: "")
+                            .replace("      ", "")
+                            .replace("&nbsp;", " ")
+                            .replace("<br><br>", "\n")
+                            .let {
+                                if (it.startsWith("\n"))
+                                    it.replaceFirst("\n", "")
+                                else it
+                            }.replace("<br>", "\n")
+                    }
+            }.joinToString("")
+        }
+        return ChapterContent(chapterId, title, content)
     }
 }

@@ -16,8 +16,7 @@ data class BookInformation(
     val isComplete: Boolean
 ) {
     companion object {
-        fun empty(): BookInformation {
-            return BookInformation(
+        fun empty(): BookInformation = BookInformation(
                 -1,
                 "",
                 "",
@@ -28,6 +27,5 @@ data class BookInformation(
                 LocalDateTime.MIN,
                 false
             )
-        }
     }
 }

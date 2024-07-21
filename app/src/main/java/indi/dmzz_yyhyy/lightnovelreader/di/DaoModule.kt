@@ -7,6 +7,7 @@ import dagger.hilt.components.SingletonComponent
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import javax.inject.Singleton
 
 @Module
@@ -21,4 +22,9 @@ object DaoModule {
     @Provides
     fun provideBookVolumesDao(db: LightNovelReaderDatabase): BookVolumesDao =
         db.bookVolumesDao()
+
+    @Singleton
+    @Provides
+    fun provideChapterContentDao(db: LightNovelReaderDatabase): ChapterContentDao =
+        db.chapterContentDao()
 }

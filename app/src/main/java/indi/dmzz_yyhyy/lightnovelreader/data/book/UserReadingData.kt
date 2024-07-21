@@ -12,8 +12,7 @@ data class UserReadingData(
     val lastReadChapterProgress: Double
 ) {
     companion object {
-        fun empty(): UserReadingData {
-            return UserReadingData(
+        fun empty(): UserReadingData = UserReadingData(
                 -1,
                 LocalDateTime.MIN,
                 -1,
@@ -22,6 +21,5 @@ data class UserReadingData(
                 "",
                 0.0
             )
-        }
     }
 }
