@@ -31,9 +31,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import java.time.LocalDateTime
+
+val ReadingScreenInfo: NavItem =
+    NavItem(
+        route = Screen.Home.Reading.route,
+        drawable = R.drawable.animated_book,
+        label = R.string.nav_reading
+    )
 
 @Composable
 fun ReadingScreen(

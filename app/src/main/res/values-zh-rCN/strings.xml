@@ -1,0 +1,7 @@
+<resources>
+    <!-- navigation items -->
+    <string name="nav_reading">阅读中</string>
+    <string name="nav_bookshelf">书架</string>
+    <string name="nav_exploration">探索</string>
+    <string name="nav_settings">设置</string>
+</resources>

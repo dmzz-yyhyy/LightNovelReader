@@ -1,10 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
-import android.os.Build
+import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
+import androidx.compose.animation.graphics.res.animatedVectorResource
+import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
+import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -16,140 +18,72 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
 
+@OptIn(ExperimentalAnimationGraphicsApi::class)
 @Composable
 fun HomeScreen(
     onOpenBook: (Int) -> Unit
 ) {
     val navController = rememberNavController()
-    var topBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var topBar : @Composable () -> Unit by remember { mutableStateOf( @Composable {}) }
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
         topBar = topBar,
         bottomBar = {
+            val entry by navController.currentBackStackEntryAsState()
+            val destination = entry?.destination
             NavigationBar {
-                NavigationBarItem(
-                    icon = {
-                        if (selectedItem == 0)
-                            Icon(painter = painterResource(id = R.drawable.filled_book_24px),
-                                contentDescription = null,
-                                tint = if (selectedItem == 0)
-                                    MaterialTheme.colorScheme.onSurface
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant)
-                        else Icon(painter = painterResource(id = R.drawable.outline_book_24px),
-                            contentDescription = null,
-                            tint = if (selectedItem == 0)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant) },
-                    label = { Text(
-                        text = "Reading",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (selectedItem == 0)
-                            MaterialTheme.colorScheme.onSurface
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    ) },
-                    selected = selectedItem == 0,
-                    onClick = {
-                        navController.navigate(Screen.Home.Reading.route)
-                    }
-                )
-                NavigationBarItem(
-                    icon = {
-                        if (selectedItem == 1)
-                            Icon(painter = painterResource(id = R.drawable.filled_shelves_24px),
-                                contentDescription = null,
-                                tint = if (selectedItem == 1)
-                                    MaterialTheme.colorScheme.onSurface
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant)
-                        else Icon(painter = painterResource(id = R.drawable.outline_shelves_24px),
-                            contentDescription = null,
-                            tint = if (selectedItem == 1)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant) },
-                    label = { Text(
-                        text = "Bookcase",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (selectedItem == 1)
-                            MaterialTheme.colorScheme.onSurface
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    ) },
-                    selected = selectedItem == 1,
-                    onClick = {
-                        navController.navigate(Screen.Home.Bookshelf.route)
-                    }
-                )
-                NavigationBarItem(
-                    icon = {
-                        if (selectedItem == 2)
-                            Icon(painter = painterResource(id = R.drawable.filled_explore_24px),
-                                contentDescription = null,
-                                tint = if (selectedItem == 2)
-                                    MaterialTheme.colorScheme.onSurface
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant)
-                        else Icon(painter = painterResource(id = R.drawable.outline_explore_24px),
-                            contentDescription = null,
-                            tint = if (selectedItem == 2)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant) },
-                    label = { Text(
-                        text = "Exploration",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (selectedItem == 2)
-                            MaterialTheme.colorScheme.onSurface
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    ) },
-                    selected = selectedItem == 2,
-                    onClick = {
-                        navController.navigate(Screen.Home.Exploration.route)
-                    }
-                )
-                NavigationBarItem(
-                    icon = {
-                        if (selectedItem == 3)
-                            Icon(painter = painterResource(id = R.drawable.filled_settings_24px),
-                                contentDescription = null,
-                                tint = if (selectedItem == 3)
-                                    MaterialTheme.colorScheme.onSurface
-                                else
-                                    MaterialTheme.colorScheme.onSurfaceVariant)
-                        else Icon(painter = painterResource(id = R.drawable.outline_settings_24px),
-                            contentDescription = null,
-                            tint = if (selectedItem == 3)
-                                MaterialTheme.colorScheme.onSurface
-                            else
-                                MaterialTheme.colorScheme.onSurfaceVariant) },
-                    label = { Text(
-                        text = "Settings",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (selectedItem == 3)
-                            MaterialTheme.colorScheme.onSurface
-                        else
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                    ) },
-                    selected = selectedItem == 3,
-                    onClick = {
-                        navController.navigate(Screen.Home.Settings.route)
-                    }
-                )
+                for (navItem in listOf(
+                    ReadingScreenInfo,
+                    BookshelfScreenInfo,
+                    ExplorationScreenInfo,
+                    SettingsScreenInfo)
+                ) {
+                    val selected = destination?.hierarchy?.any {
+                        it.route == navItem.route } == true
+                    NavigationBarItem(
+                        selected = selected,
+                        onClick = {
+                            navController.navigate(navItem.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = {
+                            Icon(
+                                painter = rememberAnimatedVectorPainter(
+                                    AnimatedImageVector.animatedVectorResource(navItem.drawable),
+                                    selected
+                                ),
+                                contentDescription = null
+                            )
+                        },
+                        label = {
+                            Text(
+                                text = stringResource(navItem.label),
+                                maxLines = 1
+                            )
+                        }
+                    )
+                }
             }
         }
-    ) { it ->
+    ) {
         Box(Modifier.padding(it)) {
             NavHost(navController = navController, startDestination = Screen.Home.Reading.route) {
                 composable(route = Screen.Home.Reading.route) {
@@ -175,3 +109,21 @@ fun HomeScreen(
         }
     }
 }
+
+val BookshelfScreenInfo = NavItem (
+    route = Screen.Home.Bookshelf.route,
+    drawable = R.drawable.animated_bookshelf,
+    label = R.string.nav_bookshelf
+)
+
+val ExplorationScreenInfo = NavItem (
+    route = Screen.Home.Exploration.route,
+    drawable = R.drawable.animated_exploration,
+    label = R.string.nav_exploration
+)
+
+val SettingsScreenInfo = NavItem (
+    route = Screen.Home.Settings.route,
+    drawable = R.drawable.animated_settings,
+    label = R.string.nav_settings
+)

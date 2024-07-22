@@ -1,0 +1,29 @@
+<animated-vector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:name="vector"
+            android:width="24dp"
+            android:height="24dp"
+            android:viewportWidth="24"
+            android:viewportHeight="24">
+            <path
+                android:name="path"
+                android:pathData="M 3 23 L 3 1 L 5 1 L 5 3 L 19 3 L 19 1 L 21 1 L 21 23 L 19 23 L 19 21 L 5 21 L 5 23 L 3 23 Z M 5 11 L 7 11 L 7 7 L 13 7 L 13 11 L 19 11 L 19 5 L 5 5 L 5 11 Z M 5 19 L 11 19 L 11 15 L 17 15 L 17 19 L 19 19 L 19 13 L 5 13 L 5 19 Z M 9 11 L 11 11 L 11 9 L 9 9 L 9 11 Z M 13 19 L 15 19 L 15 17 L 13 17 L 13 19 Z M 13 19 L 15 19 L 13 19 Z"
+                android:fillColor="#000"
+                android:strokeWidth="1"/>
+        </vector>
+    </aapt:attr>
+    <target android:name="path">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="pathData"
+                android:duration="600"
+                android:valueFrom="M 3 23 L 3 1 L 5 1 L 5 3 L 19 3 L 19 1 L 21 1 L 21 23 L 19 23 L 19 21 L 5 21 L 5 23 L 3 23 Z M 5 11 L 7 11 L 7 7 L 13 7 L 13 11 L 19 11 L 19 5 L 5 5 L 5 11 Z M 5 19 L 11 19 L 11 15 L 17 15 L 17 19 L 19 19 L 19 13 L 5 13 L 5 19 Z M 9 11 L 11 11 L 11 9 L 9 9 L 9 11 Z M 13 19 L 15 19 L 15 17 L 13 17 L 13 19 Z M 13 19 L 15 19 L 13 19 Z"
+                android:valueTo="M 3 23 L 3 1 L 5 1 L 5 3 L 19 3 L 19 1 L 21 1 L 21 23 L 19 23 L 19 21 L 5 21 L 5 23 L 3 23 Z M 5 11 L 7 11 L 7 7 L 13 7 L 13 11 L 19 11 L 19 5 L 5 5 L 5 11 Z M 5 19 L 11 19 L 11 15 L 17 15 L 17 19 L 19 19 L 19 13 L 5 13 L 5 19 Z M 9 8 L 11 8 L 11 9 L 9 9 L 9 8 Z M 13 16 L 15 16 L 15 17 L 13 17 L 13 16 Z M 14 19 L 15 19 L 14 19 Z"
+                android:valueType="pathType"
+                android:interpolator="@android:anim/anticipate_overshoot_interpolator"/>
+        </aapt:attr>
+    </target>
+</animated-vector>
