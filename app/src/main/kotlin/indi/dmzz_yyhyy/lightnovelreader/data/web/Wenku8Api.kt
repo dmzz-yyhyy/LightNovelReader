@@ -6,14 +6,15 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
+import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.jsoup.Jsoup
 
 object Wenku8Api: WebBookDataSource {
-    private const val BOOK_INFORMATION_URL = "https://www.wenku8.net/wap/article/articleinfo.php?id="
-    private const val BOOK_VOLUMES_URL = "https://www.wenku8.net/wap/article/readbook.php?aid="
-    private const val CHAPTER_CONTENT_URL = "https://www.wenku8.net/wap/article/readchapter.php?aid="
+    private val BOOK_INFORMATION_URL = update("eNpb85aBtYTBNKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknFUZn5qXl6xVkFNhnptgCAJkrFgQ").toString()
+    private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
+    private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     override suspend fun getBookInformation(id: Int): BookInformation {
