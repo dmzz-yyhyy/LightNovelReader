@@ -25,7 +25,7 @@ fun input1(sJ: ByteArray): String {
     val bP = aG.replace("=", "")
     val fD = bP.length
     val s = bP + fD.toString()
-    return bP
+    return if (s == "_") s else bP
 }
 
 fun copy(nX: String): ByteArray {
