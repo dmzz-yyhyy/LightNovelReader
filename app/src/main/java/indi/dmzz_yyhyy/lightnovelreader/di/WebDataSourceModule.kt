@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object WebDataSourceModule {
+object  WebDataSourceModule {
     @Singleton
     @Provides
     fun provideWebDataSource(): WebBookDataSource = Wenku8Api

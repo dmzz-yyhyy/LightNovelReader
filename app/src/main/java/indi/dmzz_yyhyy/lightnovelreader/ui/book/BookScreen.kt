@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.content.ContentScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.DetailScreen
 
 @Composable
@@ -20,12 +21,14 @@ fun BookScreen(
     id: Int) {
     val navController = rememberNavController()
     var topBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     Scaffold(
-        topBar = topBar
-    ) { it ->
+        topBar = topBar,
+        bottomBar = bottomBar
+    ) { paddingValues ->
         NavHost(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = Screen.Book.Detail.route
         ) {
@@ -35,14 +38,38 @@ fun BookScreen(
             ) {
                 DetailScreen(
                     onClickBackButton = onClickBackButton,
-                    topBar = {newTopBar ->
+                    onClickChapter = {
+                        navController.navigate(Screen.Book.Content.createRoute(it))
+                    },
+                    topBar = { newTopBar ->
                         topBar = newTopBar
                     },
-                    dialog = {newDialog ->
+                    dialog = { newDialog ->
                         dialog = newDialog
                     },
                     id
                 )
+            }
+            composable(
+                route = Screen.Book.Content.route,
+                arguments = Screen.Book.Content.navArguments
+            ) { navBackStackEntry ->
+                navBackStackEntry.arguments?.let {
+                    ContentScreen(
+                        onClickBackButton = {
+                            navController.popBackStack()
+                        },
+                        topBar = {newTopBar ->
+                            topBar = newTopBar
+                        },
+                        bottomBar = {newbottomBar ->
+                            bottomBar = newbottomBar
+                        },
+                        paddingValues,
+                        id,
+                        it.getInt("chapterId")
+                    )
+                }
             }
         }
         dialog()

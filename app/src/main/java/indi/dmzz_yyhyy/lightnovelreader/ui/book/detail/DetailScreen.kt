@@ -49,6 +49,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 @Composable
 fun DetailScreen(
     onClickBackButton: () -> Unit,
+    onClickChapter: (Int) -> Unit,
     topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     id: Int,
@@ -138,7 +139,7 @@ fun DetailScreen(
                             remember { MutableInteractionSource() },
                             indication = null
                         ) {
-                            //TODO: 章节跳转
+                            onClickChapter(it.id)
                         },
                     text = it.title,
                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -310,7 +311,6 @@ private fun Description(description: String) {
     var expandSummaryText by remember { mutableStateOf(false) }
     Column(Modifier
         .animateContentSize()
-
         .fillMaxWidth()) {
         Text(
             text = description,
