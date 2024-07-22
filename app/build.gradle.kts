@@ -108,6 +108,8 @@ dependencies {
     implementation("androidx.room:room-guava:$roomVersion")
     testImplementation("androidx.room:room-testing:$roomVersion")
     implementation("androidx.room:room-paging:$roomVersion")
+    // Splash API
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
 
 kapt {
