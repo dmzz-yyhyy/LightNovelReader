@@ -4,4 +4,7 @@
     <string name="nav_bookshelf">书架</string>
     <string name="nav_exploration">探索</string>
     <string name="nav_settings">设置</string>
+    <!-- UI -->
+    <string name="ui_menu">菜单</string>
+    <string name="ui_more">更多</string>
 </resources>

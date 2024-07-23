@@ -23,7 +23,7 @@ fun BookScreen(
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     Scaffold(
         topBar = topBar
-    ) { it ->
+    ) {
         NavHost(
             modifier = Modifier.padding(it),
             navController = navController,
@@ -35,12 +35,8 @@ fun BookScreen(
             ) {
                 DetailScreen(
                     onClickBackButton = onClickBackButton,
-                    topBar = {newTopBar ->
-                        topBar = newTopBar
-                    },
-                    dialog = {newDialog ->
-                        dialog = newDialog
-                    },
+                    topBar = {newTopBar -> topBar = newTopBar },
+                    dialog = {newDialog -> dialog = newDialog },
                     id
                 )
             }

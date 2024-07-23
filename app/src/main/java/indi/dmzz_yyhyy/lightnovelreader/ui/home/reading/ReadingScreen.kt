@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -36,13 +39,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-val ReadingScreenInfo: NavItem =
-    NavItem(
-        route = Screen.Home.Reading.route,
-        drawable = R.drawable.animated_book,
-        label = R.string.nav_reading
-    )
+val ReadingScreenInfo = NavItem(
+    route = Screen.Home.Reading.route,
+    drawable = R.drawable.animated_book,
+    label = R.string.nav_reading
+)
 
 @Composable
 fun ReadingScreen(
@@ -84,15 +87,21 @@ fun ReadingScreen(
 @Composable
 private fun TopBar() {
     TopAppBar(
-        title = { Text(
-            text = "Reading",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        ) },
-        actions = { IconButton(
-            onClick = {}) {
-            Icon(painterResource(id = R.drawable.more_vert_24px), "more")
-        }
+        title = {
+            Text(
+                text = stringResource(R.string.nav_reading),
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        modifier = Modifier.fillMaxWidth(),
+        actions = {
+            IconButton(onClick = { }) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.ui_more)
+                )
+            }
         }
     )
 }
@@ -208,25 +217,33 @@ private fun LargeBookCard(book: ReadingBook) {
 
 @SuppressLint("NewApi")
 private fun formTime(time: LocalDateTime): String {
-    val dayAndPrefixList = listOf("", "昨天", "前天", "大前天")
-    val prefix: String
-    if (time.year < LocalDateTime.now().year) {
-        prefix = "去年"
-        return prefix
-    }
-    if (LocalDateTime.now().dayOfYear - time.dayOfYear in 1..3) {
-        prefix = dayAndPrefixList[LocalDateTime.now().dayOfYear - time.dayOfYear]
-        if (LocalDateTime.now().dayOfYear - time.dayOfYear == 1) {
-            return prefix + "${time.hour}:${time.minute}"
-        }
-        return prefix
-    }
-    if (time.hour - LocalDateTime.now().hour in 1..2) {
-        return "${time.hour - LocalDateTime.now().hour}小时前"
-    }
-    if (time.minute - LocalDateTime.now().minute == 0) {
-        return "刚刚"
-    }
-    return "${time.minute - LocalDateTime.now().minute}分钟前"
-}
+    val now = LocalDateTime.now()
+    val dayDiff = now.dayOfYear - time.dayOfYear
+    val hourDiff = now.hour - time.hour
+    val minuteDiff = now.minute - time.minute
 
+    return when {
+        time.isAfter(now) -> {
+            val formatter = DateTimeFormatter.ofPattern("MM/dd HH:mm")
+            time.format(formatter)
+        }
+        time.year < now.year -> "去年"
+        dayDiff in 1..3 -> {
+            val prefix = when (dayDiff) {
+                1 -> "昨天"
+                2 -> "前天"
+                3 -> "大前天"
+                else -> ""
+            }
+            if (dayDiff <=2) {
+                "$prefix ${time.hour}:${time.minute}"
+            } else {
+                prefix
+            }
+        }
+        hourDiff in 1..24 -> "$hourDiff 小时前"
+        minuteDiff == 0 -> "刚刚"
+        minuteDiff in 1 until 60 -> "$minuteDiff 分钟前"
+        else -> "很久之前"
+    }
+}
