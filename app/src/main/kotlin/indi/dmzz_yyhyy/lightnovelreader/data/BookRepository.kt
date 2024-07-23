@@ -3,7 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LocalBookDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -57,7 +57,10 @@ class BookRepository @Inject constructor(
         val chapterContent: MutableStateFlow<ChapterContent> =
             MutableStateFlow(localBookDataSource.getChapterContent(chapterId) ?: ChapterContent.empty())
         coroutineScope.launch {
-            webBookDataSource.getChapterContent(bookId, chapterId)?.let { content ->
+            webBookDataSource.getChapterContent(
+                chapterId = chapterId,
+                bookId = bookId
+            )?.let { content ->
                 localBookDataSource.updateChapterContent(content)
                 localBookDataSource.getChapterContent(chapterId)?.let { newContent ->
                     chapterContent.update {

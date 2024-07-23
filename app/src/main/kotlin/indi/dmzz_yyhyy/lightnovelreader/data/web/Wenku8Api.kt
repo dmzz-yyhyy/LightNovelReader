@@ -6,6 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
+import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import org.jsoup.Jsoup
@@ -84,13 +85,27 @@ object Wenku8Api: WebBookDataSource {
         return BookVolumes(volumes)
     }
 
-    override suspend fun getChapterContent(bookId: Int, chapterId: Int): ChapterContent {
+    override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         val pageRegex = Regex("[0-9]/(.*)]<input")
         val titleRegex = Regex("报时.*<br>\n*(.*)<br")
         val contentRegex = Regex("</anchor><b.*>([\\s\\S]*)<br.*>\n*?.*?<input name=\"page\" format=\".*N\"")
         val soup = Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}").get()
         var title = ""
         var content = ""
+        val lastChapter = soup.select("a[title=\"链接\"]").toList()
+            .filter { it.text().equals("上章") }.let {
+                if (it.isEmpty())
+                    -1
+                else it[0].attr("href")
+                    .split("=").last().toInt()
+            }
+        val nextChapter = soup.select("a[title=\"链接\"]").toList()
+            .filter { it.text().equals("下章") }.let {
+                if (it.isEmpty())
+                    -1
+                else it[0].attr("href")
+                    .split("=").last().toInt()
+            }
         soup.let { document ->
             titleRegex.find(document.toString())?.let {
                 title = it.groups[1]?.value ?: ""
@@ -114,6 +129,6 @@ object Wenku8Api: WebBookDataSource {
                     }
             }.joinToString("")
         }
-        return ChapterContent(chapterId, title, content)
+        return ChapterContent(chapterId, title, content, lastChapter, nextChapter)
     }
 }

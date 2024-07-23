@@ -47,8 +47,9 @@ fun BookScreen(
                     dialog = { newDialog ->
                         dialog = newDialog
                     },
-                    id
+                    id = id
                 )
+                bottomBar = {}
             }
             composable(
                 route = Screen.Book.Content.route,
@@ -65,7 +66,6 @@ fun BookScreen(
                         bottomBar = {newbottomBar ->
                             bottomBar = newbottomBar
                         },
-                        paddingValues,
                         id,
                         it.getInt("chapterId")
                     )

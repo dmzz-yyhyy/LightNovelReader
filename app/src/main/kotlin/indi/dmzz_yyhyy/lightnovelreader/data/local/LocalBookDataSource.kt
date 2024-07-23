@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.local.room
+package indi.dmzz_yyhyy.lightnovelreader.data.local
 
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes

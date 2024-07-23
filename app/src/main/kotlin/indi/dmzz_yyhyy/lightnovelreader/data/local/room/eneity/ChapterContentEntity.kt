@@ -9,4 +9,6 @@ data class ChapterContentEntity(
     val id: Int,
     val title: String,
     val content: String,
+    val lastChapter: Int,
+    val nextChapter: Int
 )
