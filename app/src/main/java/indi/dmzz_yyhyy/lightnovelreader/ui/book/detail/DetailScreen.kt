@@ -27,8 +27,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,19 +48,21 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
     onClickBackButton: () -> Unit,
     topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     id: Int,
-    viewModel: DetailViewModel = hiltViewModel()
+    viewModel: DetailViewModel = hiltViewModel(),
+    scrollBehavior: TopAppBarScrollBehavior
 ) {
     var isShowDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState
-    topBar { TopBar(onClickBackButton, uiState.bookInformation.title) }
+    topBar { TopBar(onClickBackButton, uiState.bookInformation.title, scrollBehavior) }
 
-    var bookId by remember { mutableStateOf(0) }
+    var bookId by remember { mutableIntStateOf(0) }
     if (bookId != id) {
         bookId = id
         viewModel.init(bookId)
@@ -70,147 +74,140 @@ fun DetailScreen(
 
     dialog {
         if (isShowDialog) ReadFromStartDialog(
-            onConfirmation = {
-                isShowDialog = false
-                //TODO: 从头阅读逻辑
-            },
-            onDismissRequest = {
-                isShowDialog = false
-            }
+            /* TODO: 从头阅读逻辑  */
+            onConfirmation = { isShowDialog = false},
+            onDismissRequest = { isShowDialog = false }
         )
     }
-
-    LazyColumn (Modifier.padding(16.dp, 8.dp).fillMaxSize()) {
-        item {
-            bookCard(
-                bookInformation = uiState.bookInformation,
-                userReadingData = uiState.userReadingData,
-                onCLickReadFromStart = { isShowDialog = true })
-        }
-        item {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    LazyColumn (
+        Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 0.dp).fillMaxSize()
+    ) {
+            item {
+                BookCard(
+                    bookInformation = uiState.bookInformation,
+                    userReadingData = uiState.userReadingData,
+                    onCLickReadFromStart = { isShowDialog = true })
+            }
+            item {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = "介绍",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.W600,
+                            fontSize = 20.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Description(uiState.bookInformation.description)
+                }
+            }
+            item {
+                Box(Modifier.fillMaxWidth().height(18.dp))
+            }
+            item {
                 Text(
-                    text = "介绍",
+                    text = "目录",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.W600,
                         fontSize = 20.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Description(uiState.bookInformation.description)
+            }
+            item {
+                Box(Modifier.fillMaxWidth().height(18.dp))
+            }
+            for (bookVolume in uiState.bookVolumes.volumes) {
+                item {
+                    Text(
+                        text = bookVolume.volumeTitle,
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontWeight = FontWeight.W600,
+                            fontSize = 16.sp
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                items(bookVolume.chapters) {
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 4.dp)
+                            .clickable(
+                                interactionSource =
+                                remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                //TODO: 章节跳转
+                            },
+                        text = it.title,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.W400
+                        ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
-        item {
-            Box(Modifier.fillMaxWidth().height(18.dp))
-        }
-        item {
-            Text(
-                text = "目录",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontWeight = FontWeight.W600,
-                    fontSize = 20.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface
+    Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onClick = { //TODO: 继续阅读
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filled_menu_book_24px),
+                        contentDescription = null
+                    )
+                },
+                text = { Text(text = "继续阅读") },
             )
         }
-        item {
-            Box(Modifier.fillMaxWidth().height(18.dp))
-        }
-        for (bookVolume in uiState.bookVolumes.volumes) {
-            item {
-                Text(
-                    text = bookVolume.volumeTitle,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.W600,
-                        fontSize = 16.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            items(bookVolume.chapters) {
-                Text(
-                    modifier = Modifier
-                        .padding(vertical = 4.dp)
-                        .clickable(
-                            interactionSource =
-                            remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            //TODO: 章节跳转
-                        },
-                    text = it.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.W400
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-        }
-    }
-    Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
-        ExtendedFloatingActionButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            onClick = { //TODO: 继续阅读
-                },
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.filled_menu_book_24px),
-                    contentDescription = null
-                )
-            },
-            text = { Text(text = "继续阅读") },
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     onClickBackButton: () -> Unit,
-    title: String
+    title: String,
+    scrollBehavior: TopAppBarScrollBehavior
 ) {
     TopAppBar(
-        navigationIcon = {
-            IconButton(
-                onClick = onClickBackButton) {
-                Icon(painterResource(id = R.drawable.arrow_back_24px), "mark")
-            }
-        },
-        title = {
-            LazyRow {
-                item {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1
-                    )
-                }
-            }
+        title = { LazyRow { item {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1
+            ) } }
         },
         actions = {
             IconButton(
-                onClick = {//TODO: 书签
-                    }) {
+                onClick = { /* TODO: 书签 */ }) {
                 Icon(painterResource(id = R.drawable.outline_bookmark_24px), "mark")
             }
-            IconButton(
-                onClick = {}) {
+            IconButton( onClick = {}) {
                 Icon(painterResource(id = R.drawable.more_vert_24px), "more")
             }
-        }
+        },
+        navigationIcon = {
+            IconButton(
+                onClick = onClickBackButton) {
+                Icon(painterResource(id = R.drawable.arrow_back_24px), "back")
+            }
+        },
+        scrollBehavior = scrollBehavior
     )
 }
 
 @Composable
-private fun bookCard(
+private fun BookCard(
     bookInformation: BookInformation,
     userReadingData: UserReadingData,
     onCLickReadFromStart: () -> Unit
 ) {
     Row(
+        modifier = Modifier.padding(top = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Box(Modifier.padding(top = 6.dp)) {

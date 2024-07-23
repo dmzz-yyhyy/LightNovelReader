@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +27,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,24 +53,26 @@ val ReadingScreenInfo = NavItem(
     label = R.string.nav_reading
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadingScreen(
     onOpenBook: (Int) -> Unit,
     topBar: (@Composable () -> Unit) -> Unit,
-    viewModel: ReadingViewModel = hiltViewModel()
+    viewModel: ReadingViewModel = hiltViewModel(),
+    scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 ) {
     val readingBooks = viewModel.uiState.recentReadingBooks
-    topBar { TopBar() }
+    topBar { TopBar(scrollBehavior) }
     if (viewModel.uiState.isLoading) {
         Loading()
         return
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(16.dp, 0.dp, 16.dp, 0.dp),
+        modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             Text(
-                modifier = Modifier.padding(0.dp, 8.dp, 0.dp, 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                 text = "最近阅读 (${readingBooks.size})",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontSize = 16.sp,
@@ -85,24 +93,31 @@ fun ReadingScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar() {
+private fun TopBar(
+    scrollBehavior: TopAppBarScrollBehavior
+) {
     TopAppBar(
         title = {
-            Text(
-                text = stringResource(R.string.nav_reading),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
+                Text(
+                    text = stringResource(R.string.nav_reading),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
         modifier = Modifier.fillMaxWidth(),
         actions = {
             IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(R.string.ui_more)
-                )
-            }
-        }
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(R.string.ui_more)
+                    )
+                }
+        },
+        windowInsets =
+        WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+        ),
+        scrollBehavior = scrollBehavior
     )
 }
 
