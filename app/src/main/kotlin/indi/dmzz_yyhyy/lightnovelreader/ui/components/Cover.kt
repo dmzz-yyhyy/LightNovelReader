@@ -32,8 +32,7 @@ fun Cover(width: Dp, height: Dp, url: String) {
         }
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
-                .data(url
-                )
+                .data(url)
                 .crossfade(true)
                 .build(),
             contentDescription = "cover",

@@ -15,10 +15,13 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
@@ -37,10 +40,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
@@ -81,10 +87,8 @@ fun ContentScreen(
             enter = expandVertically(expandFrom= Alignment.Top),
             exit = shrinkVertically(shrinkTowards = Alignment.Top)
         ) {
-                contentLazyColumnState.layoutInfo.visibleItemsInfo.firstOrNull()?.let {
-                    readingChapterProgress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-                            (it.size - contentLazyColumnState.layoutInfo.viewportSize.height)
-                }
+                readingChapterProgress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
+                        (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height)
             BottomBar(
                 chapterContent = viewModel.uiState.chapterContent,
                 readingChapterProgress = readingChapterProgress,
@@ -116,7 +120,7 @@ fun ContentScreen(
         exit = fadeOut() + scaleOut(targetScale = 0.7f)
     ) {
         AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {
-            LazyColumn(
+            ContentTextComponent(
                 modifier = Modifier
                     .animateContentSize()
                     .fillMaxSize()
@@ -127,17 +131,9 @@ fun ContentScreen(
                     ) {
                         isImmersive = !isImmersive
                     },
-                state = contentLazyColumnState
-            ) {
-                item {
-                    Text(
-                        modifier = Modifier.padding(18.dp, 8.dp),
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.W400
-                    )
-                }
-            }
+                state = contentLazyColumnState,
+                content = it
+            )
         }
     }
 }
@@ -249,5 +245,43 @@ private fun BottomBar(
                 contentDescription = "nextChapter")
         }
         Box(Modifier.fillMaxHeight().width(12.dp))
+    }
+}
+
+@Composable
+fun ContentTextComponent(
+    modifier: Modifier,
+    state: LazyListState,
+    content: String
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = state,
+    ) {
+        items(
+            content
+            .replace("[image]", "ImageSplitMark[image]")
+            .replace("[/image]", "ImageSplitMark")
+            .split("ImageSplitMark")
+        ) {
+            if (it.startsWith("[image]"))
+                AsyncImage(
+                    modifier = Modifier.fillMaxWidth(),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(it
+                            .replace("[image]", "")
+                            .replace("\n", "")
+                        )
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = null
+                )
+            else Text(
+                modifier = Modifier.padding(18.dp, 8.dp),
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.W400
+            )
+        }
     }
 }
