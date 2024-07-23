@@ -3,9 +3,9 @@ package indi.dmzz_yyhyy.lightnovelreader
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dagger.hilt.android.AndroidEntryPoint
+import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 
 @AndroidEntryPoint
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
-            MaterialTheme {
+            LightNovelReaderTheme {
                 LightNovelReaderApp()
             }
         }
