@@ -5,4 +5,7 @@
     <string name="nav_bookshelf">Bookshelf</string>
     <string name="nav_exploration">Exploration</string>
     <string name="nav_settings">Settings</string>
+    <!-- UI -->
+    <string name="ui_menu">Menu</string>
+    <string name="ui_more">More</string>
 </resources>

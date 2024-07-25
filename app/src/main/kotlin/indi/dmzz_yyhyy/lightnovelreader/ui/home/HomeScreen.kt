@@ -6,11 +6,13 @@ import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -18,7 +20,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -31,15 +35,17 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
 
-@OptIn(ExperimentalAnimationGraphicsApi::class)
+@OptIn(ExperimentalAnimationGraphicsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onOpenBook: (Int) -> Unit
 ) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable () -> Unit by remember { mutableStateOf( @Composable {}) }
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = topBar,
         bottomBar = {
             val entry by navController.currentBackStackEntryAsState()
@@ -84,13 +90,14 @@ fun HomeScreen(
             }
         }
     ) {
-        Box(Modifier.padding(it)) {
+        Box(Modifier.padding(it).padding(top = 4.dp)) {
             NavHost(navController = navController, startDestination = Screen.Home.Reading.route) {
                 composable(route = Screen.Home.Reading.route) {
                     selectedItem = 0
                     ReadingScreen(
                         onOpenBook = onOpenBook,
-                        topBar = {newTopBar -> topBar = newTopBar}
+                        topBar = {newTopBar -> topBar = newTopBar},
+                        scrollBehavior = scrollBehavior
                     )
                 }
                 composable(route = Screen.Home.Bookshelf.route) {
