@@ -43,9 +43,12 @@ fun BookScreen(
                 arguments = Screen.Book.Detail.navArguments
             ) {
                 DetailScreen(
+                    onClickChapter = {
+                        navController.navigate(Screen.Book.Content.createRoute(it))
+                    },
                     onClickBackButton = onClickBackButton,
-                    topBar = {newTopBar -> topBar = newTopBar },
-                    dialog = {newDialog -> dialog = newDialog },
+                    topBar = { newTopBar -> topBar = newTopBar },
+                    dialog = { newDialog -> dialog = newDialog },
                     scrollBehavior = scrollBehavior,
                     id = id,
                 )
