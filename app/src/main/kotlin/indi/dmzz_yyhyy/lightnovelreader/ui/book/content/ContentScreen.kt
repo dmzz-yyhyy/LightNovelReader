@@ -12,7 +12,10 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,15 +26,25 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,17 +54,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import java.text.DecimalFormat
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentScreen(
     onClickBackButton: () -> Unit,
@@ -61,12 +78,20 @@ fun ContentScreen(
     chapterId: Int,
     viewModel: ContentViewModel = hiltViewModel()
 ) {
+    val currentView = LocalView.current
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
+    val bottomSheetState = rememberModalBottomSheetState()
     var lastChapterId by remember { mutableStateOf(0) }
     var changed by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
     var readingChapterProgress by remember { mutableStateOf(0.0f) }
+    var showBottomSheet by remember { mutableStateOf(false) }
+
+    var fontSize by remember { mutableStateOf(16.0f) }
+    var fontLineHeight by remember { mutableStateOf(0.0f) }
+    var keepScreenOn by remember { mutableStateOf(false) }
+
     if (lastChapterId != chapterId) {
         lastChapterId = chapterId
         viewModel.init(bookId, chapterId)
@@ -103,8 +128,15 @@ fun ContentScreen(
                     coroutineScope.launch {
                         contentLazyColumnState.scrollToItem(0, 0)
                     }
-                }
+                },
+                onClickSettings = { showBottomSheet = true }
             )
+        }
+    }
+    DisposableEffect(Unit) {
+        currentView.keepScreenOn = keepScreenOn
+        onDispose {
+            currentView.keepScreenOn = false
         }
     }
     AnimatedVisibility(
@@ -132,9 +164,40 @@ fun ContentScreen(
                         isImmersive = !isImmersive
                     },
                 state = contentLazyColumnState,
-                content = it
+                content = it,
+                fontSize = fontSize,
+                fontLineHeight = fontLineHeight
             )
         }
+    }
+    AnimatedVisibility(visible = showBottomSheet) {
+        SettingsBottomSheet(
+            state = bottomSheetState,
+            onDismissRequest = {
+                coroutineScope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                    if (!bottomSheetState.isVisible) {
+                        showBottomSheet = false
+                    }
+                }
+                showBottomSheet = false
+            },
+            fontSize = fontSize,
+            onFontSizeSliderChange = {
+                fontSize = it
+            },
+            onFontSizeSliderChangeFinished = {
+            },
+            fontLineHeight = fontLineHeight,
+            onFontLineHeightSliderChange = {
+                fontLineHeight = it
+            },
+            onFontLineHeightSliderChangeFinished = {
+            },
+            isKeepScreenOn = keepScreenOn,
+            onKeepScreenOnChange = {
+                keepScreenOn = it
+            }
+        )
     }
 }
 
@@ -180,7 +243,8 @@ private fun BottomBar(
     chapterContent: ChapterContent,
     readingChapterProgress: Float,
     onClickLastChapter: () -> Unit,
-    onClickNextChapter: () -> Unit
+    onClickNextChapter: () -> Unit,
+    onClickSettings: () -> Unit
 ) {
     BottomAppBar {
         Box(Modifier.fillMaxHeight().width(12.dp))
@@ -209,9 +273,7 @@ private fun BottomBar(
                 contentDescription = "fullscreen")
         }
         IconButton(
-            onClick = {
-                //TODO 设置
-            }) {
+            onClick = onClickSettings) {
             Icon(
                 painter = painterResource(R.drawable.outline_settings_24px),
                 contentDescription = "setting")
@@ -252,7 +314,9 @@ private fun BottomBar(
 fun ContentTextComponent(
     modifier: Modifier,
     state: LazyListState,
-    content: String
+    content: String,
+    fontSize: Float,
+    fontLineHeight: Float,
 ) {
     LazyColumn(
         modifier = modifier,
@@ -280,8 +344,156 @@ fun ContentTextComponent(
                 modifier = Modifier.padding(18.dp, 8.dp),
                 text = it,
                 style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.W400
+                fontWeight = FontWeight.W400,
+                fontSize = fontSize.sp,
+                lineHeight = (fontSize + fontLineHeight).sp
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsBottomSheet(
+    state: SheetState,
+    onDismissRequest: () -> Unit,
+    fontSize: Float,
+    onFontSizeSliderChange: (Float) -> Unit,
+    onFontSizeSliderChangeFinished: () -> Unit,
+    fontLineHeight: Float,
+    onFontLineHeightSliderChange: (Float) -> Unit,
+    onFontLineHeightSliderChangeFinished: () -> Unit,
+    isKeepScreenOn: Boolean,
+    onKeepScreenOnChange: (Boolean) -> Unit,
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = state
+    ) {
+        Box(
+            modifier = Modifier.padding(16.dp, 0.dp, 16.dp, 22.dp)
+        ) {
+            Column(
+                modifier = Modifier.clip(RoundedCornerShape(16.dp)),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SettingsSlider(
+                    describe = "阅读器字体大小",
+                    unit = "sp",
+                    value = fontSize,
+                    valueRange = 8f..64f,
+                    onSlideChange = onFontSizeSliderChange,
+                    onSliderChangeFinished = onFontSizeSliderChangeFinished
+                )
+                SettingsSlider(
+                    describe = "阅读器字距大小",
+                    unit = "sp",
+                    valueRange = 0f..32f,
+                    value = fontLineHeight,
+                    onSlideChange = onFontLineHeightSliderChange,
+                    onSliderChangeFinished = onFontLineHeightSliderChangeFinished
+                )
+                SettingsSwitch(
+                    title = "屏幕常亮",
+                    describe = "在阅读页时，总是保持屏幕开启。这将导致耗电量增加",
+                    checked = isKeepScreenOn,
+                    onCheckedChange = onKeepScreenOnChange,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SettingsSlider(
+    describe: String,
+    unit: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    onSlideChange: (Float) -> Unit,
+    onSliderChangeFinished: () -> Unit
+) {
+    FilledCard {
+        Column(Modifier.padding(21.dp, 19.dp, 21.dp, 9.dp)) {
+            Text(
+                text = describe,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.W500,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1
+            )
+            Text(
+                text = "${DecimalFormat("#.#").format(value)}$unit",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.W500,
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                color = MaterialTheme.colorScheme.secondary,
+                maxLines = 1
+            )
+            Slider(
+                modifier = Modifier.fillMaxWidth(),
+                value = value,
+                valueRange = valueRange,
+                onValueChange = onSlideChange,
+                onValueChangeFinished = onSliderChangeFinished,
+                colors = SliderDefaults.colors(
+                    inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
+                steps = ((valueRange.endInclusive - valueRange.start)*2-1).toInt()
+            )
+        }
+    }
+}
+
+@Composable
+fun SettingsSwitch(
+    title: String,
+    describe: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    FilledCard(Modifier.fillMaxWidth()) {
+        Box(Modifier.fillMaxWidth().padding(21.dp, 10.dp, 19.dp, 12.dp)) {
+            Column (Modifier.align(Alignment.CenterStart)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.W500,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1
+                )
+                Text(
+                    text = describe,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.W500,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+            Switch(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                checked = checked,
+                onCheckedChange = onCheckedChange
+            )
+        }
+    }
+}
+
+@Composable
+fun FilledCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
+        shape = RoundedCornerShape(6.dp),
+        modifier = modifier,
+        content = content
+    )
 }
