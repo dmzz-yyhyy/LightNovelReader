@@ -61,6 +61,8 @@ fun BookScreen(
                 navBackStackEntry.arguments?.let {
                     ContentScreen(
                         onClickBackButton = {
+                            bottomBar = {}
+                            topBar = {}
                             navController.popBackStack()
                         },
                         topBar = {newTopBar ->
