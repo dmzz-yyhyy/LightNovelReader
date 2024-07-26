@@ -20,7 +20,7 @@ data class ReadingBook(
     val publishingHouse : String get() = bookInformation.publishingHouse
     val lastReadTime: LocalDateTime get() = userReadingData.lastReadTime
     val totalReadTime: Int get() = userReadingData.totalReadTime
-    val readingProgress: Double get() = userReadingData.readingProgress
+    val readingProgress: Float get() = userReadingData.readingProgress
     val lastReadChapterId: Int get() = userReadingData.lastReadChapterId
     val lastReadChapterTitle: String get() = userReadingData.lastReadChapterTitle
 }

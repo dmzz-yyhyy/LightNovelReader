@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.content.ContentScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.DetailScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,13 +26,15 @@ fun BookScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = topBar
-    ) {
+        topBar = topBar,
+        bottomBar = bottomBar
+    ) { paddingValues ->
         NavHost(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             navController = navController,
             startDestination = Screen.Book.Detail.route
         ) {
@@ -40,12 +43,36 @@ fun BookScreen(
                 arguments = Screen.Book.Detail.navArguments
             ) {
                 DetailScreen(
+                    onClickChapter = {
+                        navController.navigate(Screen.Book.Content.createRoute(it))
+                    },
                     onClickBackButton = onClickBackButton,
-                    topBar = {newTopBar -> topBar = newTopBar },
-                    dialog = {newDialog -> dialog = newDialog },
-                    id,
-                    scrollBehavior = scrollBehavior
+                    topBar = { newTopBar -> topBar = newTopBar },
+                    dialog = { newDialog -> dialog = newDialog },
+                    scrollBehavior = scrollBehavior,
+                    id = id,
                 )
+                bottomBar = {}
+            }
+            composable(
+                route = Screen.Book.Content.route,
+                arguments = Screen.Book.Content.navArguments
+            ) { navBackStackEntry ->
+                navBackStackEntry.arguments?.let { bundle ->
+                    ContentScreen(
+                        onClickBackButton = {
+                            navController.popBackStack()
+                        },
+                        topBar = {newTopBar ->
+                            topBar = newTopBar
+                        },
+                        bottomBar = {newBottomBar ->
+                            bottomBar = newBottomBar
+                        },
+                        bookId = id,
+                        chapterId = bundle.getInt("chapterId")
+                    )
+                }
             }
         }
         dialog()

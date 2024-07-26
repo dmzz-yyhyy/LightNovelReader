@@ -6,7 +6,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
-import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import java.time.LocalDateTime
 
@@ -149,15 +148,6 @@ object TestBookData {
         false
     )
 
-    val userReadingData = UserReadingData(
-        0,
-        LocalDateTime.now(),
-        130,
-        0.8,
-        100,
-        "短篇 画集附录短篇 后来被欺负得相当惨烈",
-        0.8,
-    )
 
     val bookVolumes = BookVolumes(
         listOf(

@@ -51,16 +51,40 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
+    viewModel: DetailViewModel = hiltViewModel(),
     onClickBackButton: () -> Unit,
+    onClickChapter: (Int) -> Unit,
+    onClickReadFromStart: () -> Unit = {
+        viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
+            onClickChapter(it)
+        }
+    },
+    onClickContinueReading: () -> Unit = {
+        if (viewModel.uiState.userReadingData.lastReadChapterId == -1)
+            viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
+                onClickChapter(it)
+            }
+        else
+            onClickChapter(viewModel.uiState.userReadingData.lastReadChapterId)
+    },
+    onClickBookMark: () -> Unit = {
+    },
+    onClickMore: () -> Unit = {
+    },
     topBar: (@Composable () -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
     id: Int,
-    viewModel: DetailViewModel = hiltViewModel(),
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     var isShowDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState
-    topBar { TopBar(onClickBackButton, uiState.bookInformation.title, scrollBehavior) }
+    topBar { TopBar(
+        onClickBackButton = onClickBackButton,
+        onClickBookMark = onClickBookMark,
+        onClickMore = onClickMore,
+        scrollBehavior = scrollBehavior,
+        title = uiState.bookInformation.title
+    ) }
 
     var bookId by remember { mutableIntStateOf(0) }
     if (bookId != id) {
@@ -74,9 +98,13 @@ fun DetailScreen(
 
     dialog {
         if (isShowDialog) ReadFromStartDialog(
-            /* TODO: 从头阅读逻辑  */
-            onConfirmation = { isShowDialog = false},
-            onDismissRequest = { isShowDialog = false }
+            onConfirmation = {
+                isShowDialog = false
+                onClickReadFromStart()
+            },
+            onDismissRequest = {
+                isShowDialog = false
+            }
         )
     }
     LazyColumn (
@@ -86,7 +114,12 @@ fun DetailScreen(
                 BookCard(
                     bookInformation = uiState.bookInformation,
                     userReadingData = uiState.userReadingData,
-                    onCLickReadFromStart = { isShowDialog = true })
+                    onCLickReadFromStart = {
+                        if (uiState.userReadingData.lastReadChapterId == -1)
+                            onClickReadFromStart()
+                        else isShowDialog = true
+                    },
+                    onClickContinueReading = onClickContinueReading)
             }
             item {
                 Column(
@@ -139,7 +172,7 @@ fun DetailScreen(
                                 remember { MutableInteractionSource() },
                                 indication = null
                             ) {
-                                //TODO: 章节跳转
+                                onClickChapter(it.id)
                             },
                         text = it.title,
                         style = MaterialTheme.typography.bodyMedium.copy(
@@ -151,42 +184,52 @@ fun DetailScreen(
             }
         }
     Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
-            ExtendedFloatingActionButton(
-                modifier = Modifier.align(Alignment.BottomEnd),
-                onClick = { //TODO: 继续阅读
-                },
-                icon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.filled_menu_book_24px),
-                        contentDescription = null
-                    )
-                },
-                text = { Text(text = "继续阅读") },
-            )
-        }
+        ExtendedFloatingActionButton(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            onClick = onClickContinueReading,
+            icon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.filled_menu_book_24px),
+                    contentDescription = null
+                )
+            },
+            text = { Text(text = "继续阅读") },
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     onClickBackButton: () -> Unit,
+    onClickBookMark: () -> Unit,
+    onClickMore: () -> Unit,
     title: String,
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     TopAppBar(
-        title = { LazyRow { item {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                maxLines = 1
-            ) } }
+        title = {
+            LazyRow {
+                item {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.W400,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1
+                    )
+                }
+            }
         },
         actions = {
             IconButton(
-                onClick = { /* TODO: 书签 */ }) {
+                onClick = onClickBookMark
+            ) {
                 Icon(painterResource(id = R.drawable.outline_bookmark_24px), "mark")
             }
-            IconButton( onClick = {}) {
+            IconButton(
+                onClick = onClickMore
+            ) {
                 Icon(painterResource(id = R.drawable.more_vert_24px), "more")
             }
         },
@@ -204,7 +247,8 @@ private fun TopBar(
 private fun BookCard(
     bookInformation: BookInformation,
     userReadingData: UserReadingData,
-    onCLickReadFromStart: () -> Unit
+    onCLickReadFromStart: () -> Unit,
+    onClickContinueReading: () -> Unit
 ) {
     Row(
         modifier = Modifier.padding(top = 14.dp),
@@ -269,11 +313,9 @@ private fun BookCard(
                 Button(
                     modifier = Modifier.width(82.dp),
                     contentPadding = PaddingValues(12.5.dp, 10.5.dp),
-                    onClick = {
-                        onCLickReadFromStart()
-                    }
+                    onClick = onCLickReadFromStart
                 ) {
-                    Text(text = "从头阅读",
+                    Text(text = if (userReadingData.lastReadChapterId == -1) "开始阅读" else "从头阅读",
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.W500
                         ),
@@ -281,20 +323,21 @@ private fun BookCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis)
                 }
-                OutlinedButton(
-                    onClick = {
-                        //TODO: 继续阅读
-                    },
-                    contentPadding = PaddingValues(12.5.dp, 10.5.dp)
-                ) {
-                    Text(
-                        text = "继续阅读: ${userReadingData.lastReadChapterTitle.split(" ")[0]}",
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.W600
-                        ),
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis)
+                if (userReadingData.lastReadChapterId != -1) {
+                    OutlinedButton(
+                        onClick = onClickContinueReading,
+                        contentPadding = PaddingValues(12.5.dp, 10.5.dp)
+                    ) {
+                        Text(
+                            text = "继续阅读: ${userReadingData.lastReadChapterTitle.split(" ")[0]}",
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.W600
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                 }
             }
         }
@@ -307,7 +350,6 @@ private fun Description(description: String) {
     var expandSummaryText by remember { mutableStateOf(false) }
     Column(Modifier
         .animateContentSize()
-
         .fillMaxWidth()) {
         Text(
             text = description,
@@ -386,12 +428,10 @@ private fun ReadFromStartDialog(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
-        onDismissRequest = { onDismissRequest() },
+        onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
-                onClick = {
-                    onConfirmation()
-                }
+                onClick = onConfirmation
             ) {
                 Text(
                     text = "确定",
@@ -404,9 +444,7 @@ private fun ReadFromStartDialog(
         },
         dismissButton = {
             TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
+                onClick = onDismissRequest
             ) {
                 Text(
                     text = "不确定",

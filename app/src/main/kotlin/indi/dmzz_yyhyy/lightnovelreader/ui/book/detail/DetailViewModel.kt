@@ -30,7 +30,6 @@ class DetailViewModel @Inject constructor(
             }
             val bookVolumes = bookRepository.getBookVolumes(bookId)
             _uiState.bookVolumes = bookVolumes.first()
-            println(_uiState.bookVolumes)
             _uiState.isLoading = _uiState.bookVolumes.volumes.isEmpty()
             viewModelScope.launch {
                 bookVolumes.collect {
@@ -40,9 +39,13 @@ class DetailViewModel @Inject constructor(
                     _uiState.isLoading = _uiState.bookVolumes.volumes.isEmpty()
                 }
             }
-            println(uiState.isLoading)
-            println(uiState.bookVolumes)
-            println(uiState.bookInformation)
+            val userReadingData = bookRepository.getUserReadingData(bookId)
+            _uiState.userReadingData = userReadingData.first()
+            viewModelScope.launch {
+                userReadingData.collect {
+                    _uiState.userReadingData = it
+                }
+            }
         }
     }
 }
