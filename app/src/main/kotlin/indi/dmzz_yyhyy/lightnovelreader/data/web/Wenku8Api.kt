@@ -87,10 +87,9 @@ object Wenku8Api: WebBookDataSource {
 
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         val pageRegex = Regex("[0-9]/(.*)]<input")
-        val titleRegex = Regex("报时.*<br>\n*(.*)<br")
         val contentRegex = Regex("</anchor><b.*>([\\s\\S]*)<br.*>\n*?.*?<input name=\"page\" format=\".*N\"")
         val soup = Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}").get()
-        var title = ""
+        var title: String
         var content = ""
         val lastChapter = soup.select("a[title=\"链接\"]").toList()
             .filter { it.text().equals("上章") }.let {
@@ -107,10 +106,7 @@ object Wenku8Api: WebBookDataSource {
                     .split("=").last().toInt()
             }
         soup.let { document ->
-            titleRegex.find(document.toString())?.let {
-                title = it.groups[1]?.value ?: ""
-                title = title.replace("      ", "")
-            }
+            title = document.selectFirst("card")?.attr("title") ?: ""
             val page = pageRegex.find(document.toString())?.let {
                 it.groups[1]?.value?.toInt() ?: 0
             } ?: 0

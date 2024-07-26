@@ -4,9 +4,7 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
-import indi.dmzz_yyhyy.lightnovelreader.data.location.TestBookData
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import java.io.IOException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,8 +17,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class DatabaseTest {
 
-    private lateinit var bookInformationDao: BookInformationDao
-    private lateinit var volumesDao: BookVolumesDao
+    private lateinit var userReadingDataDao: UserReadingDataDao
     private lateinit var db: LightNovelReaderDatabase
 
     @Before
@@ -29,8 +26,7 @@ class DatabaseTest {
         db = Room.inMemoryDatabaseBuilder(context, LightNovelReaderDatabase::class.java)
             .allowMainThreadQueries()
             .build()
-        bookInformationDao = db.bookInformationDao()
-        volumesDao = db.bookVolumesDao()
+        userReadingDataDao = db.userReadingDataDao()
     }
 
     @After
@@ -46,11 +42,7 @@ class DatabaseTest {
     fun insertAndGet() {
 
         CoroutineScope(Dispatchers.Default).launch {
-            bookInformationDao.update(TestBookData.bookInformation)
-            println(bookInformationDao.get(0))
-
-            volumesDao.update(0, TestBookData.bookVolumes)
-            println(volumesDao.getBookVolumes(0))
+            println(userReadingDataDao.getAll())
         }
     }
 }

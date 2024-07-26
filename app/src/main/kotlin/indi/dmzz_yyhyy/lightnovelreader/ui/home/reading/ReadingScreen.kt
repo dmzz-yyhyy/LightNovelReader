@@ -238,6 +238,7 @@ private fun formTime(time: LocalDateTime): String {
     val minuteDiff = now.minute - time.minute
 
     return when {
+        time == LocalDateTime.MIN -> "从未"
         time.isAfter(now) -> {
             val formatter = DateTimeFormatter.ofPattern("MM/dd HH:mm")
             time.format(formatter)

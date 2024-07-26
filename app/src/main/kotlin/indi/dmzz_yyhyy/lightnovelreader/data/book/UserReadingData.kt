@@ -6,20 +6,20 @@ data class UserReadingData(
     val id: Int,
     val lastReadTime: LocalDateTime,
     val totalReadTime: Int,
-    val readingProgress: Double,
+    val readingProgress: Float,
     val lastReadChapterId: Int,
     val lastReadChapterTitle: String,
-    val lastReadChapterProgress: Double
+    val lastReadChapterProgress: Float
 ) {
     companion object {
         fun empty(): UserReadingData = UserReadingData(
                 -1,
                 LocalDateTime.MIN,
                 -1,
-                0.0,
+                0.0f,
                 -1,
                 "",
-                0.0
+                0.0f
             )
     }
 }

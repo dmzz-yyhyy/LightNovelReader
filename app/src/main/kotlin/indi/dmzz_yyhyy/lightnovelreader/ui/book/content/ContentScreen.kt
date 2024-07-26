@@ -1,5 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.content
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -45,6 +47,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,18 +57,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import java.text.DecimalFormat
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,15 +82,17 @@ fun ContentScreen(
     chapterId: Int,
     viewModel: ContentViewModel = hiltViewModel()
 ) {
-    val currentView = LocalView.current
+    val activity = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
     val bottomSheetState = rememberModalBottomSheetState()
+    var isRunning by remember { mutableStateOf(false) }
     var lastChapterId by remember { mutableStateOf(0) }
     var changed by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
     var readingChapterProgress by remember { mutableStateOf(0.0f) }
     var showBottomSheet by remember { mutableStateOf(false) }
+    var totalReadingTime by remember { mutableStateOf(0) }
 
     var fontSize by remember { mutableStateOf(16.0f) }
     var fontLineHeight by remember { mutableStateOf(0.0f) }
@@ -96,7 +102,20 @@ fun ContentScreen(
         lastChapterId = chapterId
         viewModel.init(bookId, chapterId)
         changed = true
+        totalReadingTime = 0
+        if (lastChapterId == viewModel.uiState.userReadingData.lastReadChapterId) {
+            coroutineScope.launch {
+                contentLazyColumnState.scrollToItem(0, 0)
+            }
+        }
     }
+    if (readingChapterProgress != contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
+        (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height))
+        viewModel.changeChapterReadingProgress(
+            bookId,
+            chapterId,
+            contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
+                (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height))
     topBar {
         AnimatedVisibility(
             visible = !isImmersive,
@@ -133,12 +152,29 @@ fun ContentScreen(
             )
         }
     }
-    DisposableEffect(Unit) {
-        currentView.keepScreenOn = keepScreenOn
-        onDispose {
-            currentView.keepScreenOn = false
+    LifecycleResumeEffect(Unit) {
+        isRunning = true
+        onPauseOrDispose {
+            isRunning = false
+            viewModel.updateTotalReadingTime(bookId, chapterId, totalReadingTime)
         }
     }
+
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            totalReadingTime += 1
+            delay(1000)
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+    if (keepScreenOn)
+        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    else
+        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     AnimatedVisibility(
         visible =  viewModel.uiState.isLoading,
         enter = fadeIn(),

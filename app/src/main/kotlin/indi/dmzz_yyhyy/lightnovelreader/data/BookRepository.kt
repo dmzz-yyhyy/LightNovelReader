@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import javax.inject.Inject
@@ -11,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -70,5 +72,12 @@ class BookRepository @Inject constructor(
             }
         }
         return chapterContent
+    }
+
+    fun getUserReadingData(bookId: Int): Flow<UserReadingData> =
+        localBookDataSource.getUserReadingData(bookId).map { it }
+
+    suspend fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
+        localBookDataSource.updateUserReadingData(id, update)
     }
 }

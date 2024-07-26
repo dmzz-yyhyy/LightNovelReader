@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
+import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -29,6 +30,13 @@ class ContentViewModel @Inject constructor(
                 _uiState.chapterContent = it
                 _uiState.isLoading = _uiState.chapterContent.id == -1
             }
+            bookRepository.updateUserReadingData(bookId) {
+                it.copy(
+                    lastReadTime = LocalDateTime.now(),
+                    lastReadChapterId = chapterId,
+                    lastReadChapterTitle = _uiState.chapterContent.title
+                )
+            }
         }
     }
 
@@ -51,6 +59,31 @@ class ContentViewModel @Inject constructor(
                 bookId = _bookId,
                 chapterId = _uiState.chapterContent.nextChapter
             )
+        }
+    }
+
+    fun changeChapterReadingProgress(bookId: Int, chapterId: Int, progress: Float) {
+        viewModelScope.launch {
+            bookRepository.updateUserReadingData(bookId) {
+                it.copy(
+                    lastReadTime = LocalDateTime.now(),
+                    lastReadChapterId = chapterId,
+                    lastReadChapterTitle = _uiState.chapterContent.title,
+                    lastReadChapterProgress = progress
+                )
+            }
+        }
+    }
+
+    fun updateTotalReadingTime(bookId: Int, chapterId: Int, totalReadingTime: Int) {
+        viewModelScope.launch {
+            bookRepository.updateUserReadingData(bookId) {
+                it.copy(
+                    lastReadTime = LocalDateTime.now(),
+                    lastReadChapterId = chapterId,
+                    totalReadTime = it.totalReadTime + totalReadingTime
+                )
+            }
         }
     }
 }
