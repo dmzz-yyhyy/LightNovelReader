@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +30,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,6 +58,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -66,6 +72,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import java.text.DecimalFormat
@@ -85,39 +92,47 @@ fun ContentScreen(
     val activity = LocalContext.current as Activity
     val coroutineScope = rememberCoroutineScope()
     val contentLazyColumnState = rememberLazyListState()
-    val bottomSheetState = rememberModalBottomSheetState()
+    val settingsBottomSheetState = rememberModalBottomSheetState()
+    val chapterSelectorBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var isRunning by remember { mutableStateOf(false) }
-    var lastChapterId by remember { mutableStateOf(0) }
-    var chapterChanged by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
     var readingChapterProgress by remember { mutableStateOf(0.0f) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showSettingsBottomSheet by remember { mutableStateOf(false) }
+    var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
     var totalReadingTime by remember { mutableStateOf(0) }
 
     var fontSize by remember { mutableStateOf(16.0f) }
     var fontLineHeight by remember { mutableStateOf(0.0f) }
     var keepScreenOn by remember { mutableStateOf(false) }
 
-    if (lastChapterId != chapterId) {
-        lastChapterId = chapterId
+    LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
-        chapterChanged = true
         totalReadingTime = 0
-        if (lastChapterId == viewModel.uiState.userReadingData.lastReadChapterId) {
+        coroutineScope.launch {
+            contentLazyColumnState.scrollToItem(0, 0)
+        }
+    }
+    LaunchedEffect(viewModel.uiState.isLoading) {
+        if (viewModel.uiState.chapterContent.id == viewModel.uiState.userReadingData.lastReadChapterId && !viewModel.uiState.isLoading) {
             coroutineScope.launch {
-                contentLazyColumnState.scrollToItem(0, 0)
+                contentLazyColumnState.scrollToItem(
+                    0,
+                    ((contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height) *
+                            viewModel.uiState.userReadingData.lastReadChapterProgress).toInt()
+                )
             }
         }
     }
-    if (readingChapterProgress != contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-        (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height))
-        viewModel.changeChapterReadingProgress(
-            bookId,
-            chapterId,
-            contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-                (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height))
-    readingChapterProgress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-            (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height)
+    LaunchedEffect(contentLazyColumnState.firstVisibleItemScrollOffset) {
+        val visibleItemsHeight = contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size }
+        val viewportHeight = contentLazyColumnState.layoutInfo.viewportSize.height
+        val progress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
+                (visibleItemsHeight - viewportHeight)
+        if (readingChapterProgress != progress) {
+            viewModel.changeChapterReadingProgress(bookId, progress)
+            readingChapterProgress = progress
+        }
+    }
     topBar {
         AnimatedVisibility(
             visible = !isImmersive,
@@ -150,7 +165,8 @@ fun ContentScreen(
                         contentLazyColumnState.scrollToItem(0, 0)
                     }
                 },
-                onClickSettings = { showBottomSheet = true }
+                onClickSettings = { showSettingsBottomSheet = true },
+                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
             )
         }
     }
@@ -158,7 +174,7 @@ fun ContentScreen(
         isRunning = true
         onPauseOrDispose {
             isRunning = false
-            viewModel.updateTotalReadingTime(bookId, chapterId, totalReadingTime)
+            viewModel.updateTotalReadingTime(bookId, totalReadingTime)
         }
     }
 
@@ -208,16 +224,16 @@ fun ContentScreen(
             )
         }
     }
-    AnimatedVisibility(visible = showBottomSheet) {
+    AnimatedVisibility(visible = showSettingsBottomSheet) {
         SettingsBottomSheet(
-            state = bottomSheetState,
+            state = settingsBottomSheetState,
             onDismissRequest = {
-                coroutineScope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                    if (!bottomSheetState.isVisible) {
-                        showBottomSheet = false
+                coroutineScope.launch { settingsBottomSheetState.hide() }.invokeOnCompletion {
+                    if (!settingsBottomSheetState.isVisible) {
+                        showSettingsBottomSheet = false
                     }
                 }
-                showBottomSheet = false
+                showSettingsBottomSheet = false
             },
             fontSize = fontSize,
             onFontSizeSliderChange = {
@@ -237,15 +253,21 @@ fun ContentScreen(
             }
         )
     }
-    if (!viewModel.uiState.isLoading && chapterChanged) {
-        chapterChanged = false
-        coroutineScope.launch {
-            contentLazyColumnState.scrollToItem(
-                0,
-                ((contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height) *
-                        viewModel.uiState.userReadingData.lastReadChapterProgress).toInt()
-            )
-        }
+    AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
+        ChapterSelectorBottomSheet(
+            bookVolumes = viewModel.uiState.bookVolumes,
+            readingChapterId = viewModel.uiState.chapterContent.id,
+            state = chapterSelectorBottomSheetState,
+            onDismissRequest = {
+                coroutineScope.launch { chapterSelectorBottomSheetState.hide() }.invokeOnCompletion {
+                    if (!chapterSelectorBottomSheetState.isVisible) {
+                        showChapterSelectorBottomSheet = false
+                    }
+                }
+                showChapterSelectorBottomSheet = false
+            },
+            onClickChapter = { viewModel.changeChapter(it) }
+        )
     }
 }
 
@@ -279,8 +301,12 @@ private fun TopBar(
         },
         actions = {
             IconButton(
-                onClick = {}) {
-                Icon(painterResource(id = R.drawable.menu_24px), "menu")
+                onClick = {
+                    //TODO 全屏
+                }) {
+                Icon(
+                    painter = painterResource(R.drawable.fullscreen_24px),
+                    contentDescription = "fullscreen")
             }
         }
     )
@@ -292,7 +318,8 @@ private fun BottomBar(
     readingChapterProgress: Float,
     onClickLastChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
-    onClickSettings: () -> Unit
+    onClickSettings: () -> Unit,
+    onClickChapterSelector: () -> Unit
 ) {
     BottomAppBar {
         Box(Modifier.fillMaxHeight().width(12.dp))
@@ -312,16 +339,10 @@ private fun BottomBar(
                 painter = painterResource(R.drawable.outline_bookmark_24px),
                 contentDescription = "mark")
         }
-        IconButton(
-            onClick = {
-                //TODO 全屏
-            }) {
-            Icon(
-                painter = painterResource(R.drawable.fullscreen_24px),
-                contentDescription = "fullscreen")
+        IconButton(onClick = onClickChapterSelector) {
+            Icon(painterResource(id = R.drawable.menu_24px), "menu")
         }
-        IconButton(
-            onClick = onClickSettings) {
+        IconButton(onClick = onClickSettings) {
             Icon(
                 painter = painterResource(R.drawable.outline_settings_24px),
                 contentDescription = "setting")
@@ -461,7 +482,9 @@ fun SettingsSlider(
     onSlideChange: (Float) -> Unit,
     onSliderChangeFinished: () -> Unit
 ) {
-    FilledCard {
+    FilledCard(
+        shape = RoundedCornerShape(6.dp)
+    ) {
         Column(Modifier.padding(21.dp, 19.dp, 21.dp, 9.dp)) {
             Text(
                 text = describe,
@@ -502,7 +525,10 @@ fun SettingsSwitch(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
 ) {
-    FilledCard(Modifier.fillMaxWidth()) {
+    FilledCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(6.dp)
+    ) {
         Box(Modifier.fillMaxWidth().padding(21.dp, 10.dp, 19.dp, 12.dp)) {
             Column (Modifier.align(Alignment.CenterStart)) {
                 Text(
@@ -534,14 +560,161 @@ fun SettingsSwitch(
 @Composable
 fun FilledCard(
     modifier: Modifier = Modifier,
+    shape: Shape,
+    onClick: () -> Unit = {},
+    color: Color = MaterialTheme.colorScheme.surfaceVariant,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = color,
         ),
-        shape = RoundedCornerShape(6.dp),
+        shape = shape,
         modifier = modifier,
-        content = content
+        content = content,
+        onClick = onClick
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ChapterSelectorBottomSheet(
+    bookVolumes: BookVolumes,
+    readingChapterId: Int,
+    state: SheetState,
+    onDismissRequest: () -> Unit,
+    onClickChapter: (Int) -> Unit
+) {
+    var selectId by remember { mutableStateOf(0) }
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = state
+    ) {
+        LazyColumn (
+            modifier = Modifier.padding(18.dp, 0.dp, 18.dp, 28.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(9.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.read_more_24px),
+                        contentDescription = null
+                    )
+                    Text(
+                        text = "章节选择",
+                        style = MaterialTheme.typography.displayLarge,
+                        fontWeight = FontWeight.W700,
+                        fontSize = 18.sp,
+                        lineHeight = 32.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            items(bookVolumes.volumes) { volume ->
+                FilledCard(
+                    shape = RoundedCornerShape(12.dp),
+                    onClick = {
+                        if (selectId == volume.volumeId) {
+                            selectId = -1
+                            return@FilledCard
+                        }
+                        selectId = volume.volumeId
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(10.5.dp, 5.dp, 10.dp, 5.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = volume.volumeTitle,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.W600,
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ) {
+                            Text(
+                                text = volume.chapters.size.toString(),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W500
+                            )
+                        }
+                        Box(Modifier.weight(2f))
+                        Icon(
+                            modifier = Modifier
+                                .scale(0.75f, 0.75f)
+                                .rotate(if (selectId == volume.volumeId) -90f else 90f),
+                            painter = painterResource(R.drawable.arrow_forward_ios_24px),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            contentDescription = null
+                        )
+                    }
+                }
+                AnimatedVisibility(
+                    visible = selectId == volume.volumeId
+                ) {
+                    Column {
+                        volume.chapters.forEach { chapterInformation ->
+                            AnimatedVisibility(
+                                visible = readingChapterId != chapterInformation.id
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(7.5.dp, 2.dp)
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null
+                                        ) {
+                                        onClickChapter(chapterInformation.id)
+                                    },
+                                    text = chapterInformation.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.W400,
+                                    lineHeight = 28.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            AnimatedVisibility(
+                                visible = readingChapterId == chapterInformation.id
+                            ) {
+                                FilledCard(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                        alpha = 0.75f
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(7.5.dp, 2.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        Text(
+                                            text = chapterInformation.title,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.W400,
+                                            lineHeight = 28.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Box(Modifier.weight(2f))
+                                        Icon(
+                                            painter = painterResource(R.drawable.check_24px),
+                                            tint = MaterialTheme.colorScheme.outline,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

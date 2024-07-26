@@ -58,21 +58,19 @@ fun BookScreen(
                 route = Screen.Book.Content.route,
                 arguments = Screen.Book.Content.navArguments
             ) { navBackStackEntry ->
-                navBackStackEntry.arguments?.let {
+                navBackStackEntry.arguments?.let { bundle ->
                     ContentScreen(
                         onClickBackButton = {
-                            bottomBar = {}
-                            topBar = {}
                             navController.popBackStack()
                         },
                         topBar = {newTopBar ->
                             topBar = newTopBar
                         },
-                        bottomBar = {newbottomBar ->
-                            bottomBar = newbottomBar
+                        bottomBar = {newBottomBar ->
+                            bottomBar = newBottomBar
                         },
-                        id,
-                        it.getInt("chapterId")
+                        bookId = id,
+                        chapterId = bundle.getInt("chapterId")
                     )
                 }
             }

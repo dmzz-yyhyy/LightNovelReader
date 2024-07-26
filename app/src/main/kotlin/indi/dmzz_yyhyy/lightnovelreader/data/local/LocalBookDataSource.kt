@@ -38,13 +38,22 @@ class LocalBookDataSource @Inject constructor(
         )
     }
     suspend fun updateUserReadingData(id: Int, update: (UserReadingData) -> UserReadingData) {
-        getUserReadingData(id).collect { it ->
-            userReadingDataDao.update(update(it.copy(id = id)).let {
-                var data = it
-                if (it.readingProgress.isNaN()) data = data.copy(readingProgress = 0.0f)
-                if (it.lastReadChapterProgress.isNaN()) data = data.copy(lastReadChapterProgress = 0.0f)
-                return@let data
-            })
-        }
+        val userReadingData = userReadingDataDao.getEntityWithoutFlow(id)?.let {
+            UserReadingData(
+                it.id,
+                it.lastReadTime,
+                it.totalReadTime,
+                it.readingProgress,
+                it.lastReadChapterId,
+                it.lastReadChapterTitle,
+                it.lastReadChapterProgress
+            )
+        } ?: UserReadingData.empty().copy(id = id)
+        userReadingDataDao.update(update(userReadingData.copy(id = id)).let {
+            var data = it
+            if (it.readingProgress.isNaN()) data = data.copy(readingProgress = 0.0f)
+            if (it.lastReadChapterProgress.isNaN()) data = data.copy(lastReadChapterProgress = 0.0f)
+            return@let data
+        })
     }
 }

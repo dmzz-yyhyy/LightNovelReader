@@ -18,6 +18,18 @@ class ContentViewModel @Inject constructor(
     val uiState: ContentScreenUiState = _uiState
 
     fun init(bookId: Int, chapterId: Int) {
+        if (bookId != _bookId) {
+            viewModelScope.launch {
+                val bookVolumes = bookRepository.getBookVolumes(bookId)
+                _uiState.bookVolumes = bookVolumes.first()
+                viewModelScope.launch {
+                    bookVolumes.collect {
+                        if (it.volumes.isEmpty()) return@collect
+                        _uiState.bookVolumes = it
+                    }
+                }
+            }
+        }
         _bookId = bookId
         viewModelScope.launch {
             val chapterContent = bookRepository.getChapterContent(
@@ -25,17 +37,26 @@ class ContentViewModel @Inject constructor(
                 bookId = bookId)
             _uiState.chapterContent = chapterContent.first()
             _uiState.isLoading = _uiState.chapterContent.id == -1
-            chapterContent.collect {
-                if (it.id == -1) return@collect
-                _uiState.chapterContent = it
-                _uiState.isLoading = _uiState.chapterContent.id == -1
-            }
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(
                     lastReadTime = LocalDateTime.now(),
                     lastReadChapterId = chapterId,
-                    lastReadChapterTitle = _uiState.chapterContent.title
+                    lastReadChapterTitle = _uiState.chapterContent.title,
+                    lastReadChapterProgress = if (it.lastReadChapterId == chapterId) it.lastReadChapterProgress else 0f,
                 )
+            }
+            chapterContent.collect { content ->
+                if (content.id == -1) return@collect
+                _uiState.chapterContent = content
+                _uiState.isLoading = _uiState.chapterContent.id == -1
+                bookRepository.updateUserReadingData(bookId) {
+                    it.copy(
+                        lastReadTime = LocalDateTime.now(),
+                        lastReadChapterId = chapterId,
+                        lastReadChapterTitle = _uiState.chapterContent.title,
+                        lastReadChapterProgress = if (it.lastReadChapterId == chapterId) it.lastReadChapterProgress else 0f,
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -67,27 +88,33 @@ class ContentViewModel @Inject constructor(
         }
     }
 
-    fun changeChapterReadingProgress(bookId: Int, chapterId: Int, progress: Float) {
+    fun changeChapter(chapterId: Int) {
+        _uiState.isLoading = true
+        viewModelScope.launch {
+            init(
+                bookId = _bookId,
+                chapterId = chapterId
+            )
+        }
+    }
+
+    fun changeChapterReadingProgress(bookId: Int, progress: Float) {
         if (progress.isNaN() || progress == 0.0f) return
-        println("put the yuk on the bed and fuck him")
         viewModelScope.launch {
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(
                     lastReadTime = LocalDateTime.now(),
-                    lastReadChapterId = chapterId,
-                    lastReadChapterTitle = _uiState.chapterContent.title,
                     lastReadChapterProgress = progress
                 )
             }
         }
     }
 
-    fun updateTotalReadingTime(bookId: Int, chapterId: Int, totalReadingTime: Int) {
+    fun updateTotalReadingTime(bookId: Int, totalReadingTime: Int) {
         viewModelScope.launch {
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(
                     lastReadTime = LocalDateTime.now(),
-                    lastReadChapterId = chapterId,
                     totalReadTime = it.totalReadTime + totalReadingTime
                 )
             }

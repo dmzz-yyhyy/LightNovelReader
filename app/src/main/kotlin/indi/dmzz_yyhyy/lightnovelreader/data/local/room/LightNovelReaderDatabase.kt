@@ -21,7 +21,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
         ChapterInformationEntity::class,
         ChapterContentEntity::class,
         UserReadingDataEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {

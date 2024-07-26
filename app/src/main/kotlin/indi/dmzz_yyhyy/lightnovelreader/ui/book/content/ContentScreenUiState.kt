@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 
@@ -11,11 +12,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 interface ContentScreenUiState {
     val chapterContent: ChapterContent
     val userReadingData: UserReadingData
+    val bookVolumes: BookVolumes
     val isLoading: Boolean
 }
 
 class MutableContentScreenUiState: ContentScreenUiState {
     override var chapterContent by mutableStateOf(ChapterContent.empty())
     override var userReadingData by mutableStateOf(UserReadingData.empty())
+    override var bookVolumes by mutableStateOf(BookVolumes.empty())
     override var isLoading by mutableStateOf(true)
 }
