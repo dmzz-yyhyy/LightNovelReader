@@ -88,7 +88,7 @@ fun ContentScreen(
     val bottomSheetState = rememberModalBottomSheetState()
     var isRunning by remember { mutableStateOf(false) }
     var lastChapterId by remember { mutableStateOf(0) }
-    var changed by remember { mutableStateOf(false) }
+    var chapterChanged by remember { mutableStateOf(false) }
     var isImmersive by remember { mutableStateOf(false) }
     var readingChapterProgress by remember { mutableStateOf(0.0f) }
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -101,7 +101,7 @@ fun ContentScreen(
     if (lastChapterId != chapterId) {
         lastChapterId = chapterId
         viewModel.init(bookId, chapterId)
-        changed = true
+        chapterChanged = true
         totalReadingTime = 0
         if (lastChapterId == viewModel.uiState.userReadingData.lastReadChapterId) {
             coroutineScope.launch {
@@ -116,13 +116,17 @@ fun ContentScreen(
             chapterId,
             contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
                 (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height))
+    readingChapterProgress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
+            (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height)
     topBar {
         AnimatedVisibility(
             visible = !isImmersive,
             enter = expandVertically(),
             exit = shrinkVertically(),
         ) {
-            TopBar(onClickBackButton, viewModel.uiState.chapterContent.title)
+            TopBar(onClickBackButton = onClickBackButton,
+                title =  viewModel.uiState.chapterContent.title
+            )
         }
     }
     bottomBar {
@@ -131,8 +135,6 @@ fun ContentScreen(
             enter = expandVertically(expandFrom= Alignment.Top),
             exit = shrinkVertically(shrinkTowards = Alignment.Top)
         ) {
-                readingChapterProgress = contentLazyColumnState.firstVisibleItemScrollOffset.toFloat() /
-                        (contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height)
             BottomBar(
                 chapterContent = viewModel.uiState.chapterContent,
                 readingChapterProgress = readingChapterProgress,
@@ -234,6 +236,16 @@ fun ContentScreen(
                 keepScreenOn = it
             }
         )
+    }
+    if (!viewModel.uiState.isLoading && chapterChanged) {
+        chapterChanged = false
+        coroutineScope.launch {
+            contentLazyColumnState.scrollToItem(
+                0,
+                ((contentLazyColumnState.layoutInfo.visibleItemsInfo.sumOf { it.size } - contentLazyColumnState.layoutInfo.viewportSize.height) *
+                        viewModel.uiState.userReadingData.lastReadChapterProgress).toInt()
+            )
+        }
     }
 }
 
