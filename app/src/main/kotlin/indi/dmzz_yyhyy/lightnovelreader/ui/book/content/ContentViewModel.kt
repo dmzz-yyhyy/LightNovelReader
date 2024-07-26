@@ -38,6 +38,11 @@ class ContentViewModel @Inject constructor(
                 )
             }
         }
+        viewModelScope.launch {
+            bookRepository.getUserReadingData(bookId).collect {
+                _uiState.userReadingData = it
+            }
+        }
     }
 
     fun lastChapter() {
@@ -63,6 +68,8 @@ class ContentViewModel @Inject constructor(
     }
 
     fun changeChapterReadingProgress(bookId: Int, chapterId: Int, progress: Float) {
+        if (progress.isNaN() || progress == 0.0f) return
+        println("put the yuk on the bed and fuck him")
         viewModelScope.launch {
             bookRepository.updateUserReadingData(bookId) {
                 it.copy(
