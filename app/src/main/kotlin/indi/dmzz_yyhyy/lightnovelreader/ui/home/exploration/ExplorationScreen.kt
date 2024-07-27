@@ -63,7 +63,6 @@ fun ExplorationScreen(
         )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        println("fuck you")
         viewModel.init()
     }
     AnimatedVisibility(

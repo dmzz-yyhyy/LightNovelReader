@@ -101,6 +101,7 @@ private fun TopBar(
                 Text(
                     text = stringResource(R.string.nav_reading),
                     style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },

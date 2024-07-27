@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -31,7 +32,11 @@ fun BookScreen(
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { topBar(scrollBehavior) },
+        topBar = {
+            AnimatedContent(topBar, label = "TopBarAnimated") { topBar ->
+                topBar(scrollBehavior)
+            }
+         },
         bottomBar = bottomBar
     ) { paddingValues ->
         NavHost(
@@ -65,9 +70,6 @@ fun BookScreen(
                         },
                         topBar = {newTopBar ->
                             topBar = newTopBar
-                        },
-                        bottomBar = {newBottomBar ->
-                            bottomBar = newBottomBar
                         },
                         bookId = id,
                         chapterId = bundle.getInt("chapterId")
