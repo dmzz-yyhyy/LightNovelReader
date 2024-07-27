@@ -1,7 +1,30 @@
 package indi.dmzz_yyhyy.lightnovelreader
 
+import java.net.URLEncoder
+import java.nio.charset.Charset
 import org.jsoup.Connection
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+
+fun getExplorationBookRow(title: String, soup: Document): ExplorationBooksRow {
+    val idlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a")
+        .map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
+    val titleList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > b > a")
+        .map { it.text().split("(").getOrNull(0) ?: "" }
+    val coverUrlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a > img")
+        .map { it.attr("src") }
+    return ExplorationBooksRow(
+        title = title,
+        bookList = (0..5).map {
+            ExplorationDisplayBook(
+                id = idlList[it],
+                title = titleList[it],
+                coverUrl = coverUrlList[it],
+            )
+        },
+        expandable = false
+    )
+}
 
 
 fun Connection.wenku8Cookie(): Connection =
@@ -31,29 +54,21 @@ fun Connection.wenku8Cookie(): Connection =
 
 
 fun main() {
-    val soup = Jsoup
-        .connect("https://www.wenku8.net/modules/article/articlelist.php?fullflag=1")
+    val tagUrls = Jsoup
+        .connect("https://www.wenku8.cc/modules/article/tags.php")
         .wenku8Cookie()
         .get()
-    val title = "轻小说列表"
-    val idlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
-        .slice(0..5)
-        .map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
-    val titleList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
-        .slice(0..5)
-        .map { it.text().split("(").getOrNull(0) ?: "" }
-    val coverUrlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
-        .slice(0..5)
-        .map { it.attr("src") }
-    println(ExplorationBooksRow(
-        title = title,
-        bookList = idlList.indices.map {
-            ExplorationDisplayBook(
-                id = idlList[it],
-                title = titleList[it],
-                coverUrl = coverUrlList[it],
+        .select("a[href~=tags\\.php\\?t=.*]")
+        .slice(0..48)
+        .map { "https://www.wenku8.cc/modules/article/" + it.attr("href") }
+        .map {
+            getExplorationBookRow(
+                soup = Jsoup
+                    .connect(it.split("=")[0] + "=" + URLEncoder.encode(it.split("=")[1], Charset.forName("gb2312")))
+                    .wenku8Cookie()
+                    .get(),
+                title = it.split("=")[1]
             )
-        },
-        expandable = false
-    ))
+        }
+    println(tagUrls)
 }

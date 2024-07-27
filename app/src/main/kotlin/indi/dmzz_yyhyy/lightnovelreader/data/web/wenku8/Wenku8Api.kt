@@ -137,10 +137,11 @@ object Wenku8Api: WebBookDataSource {
     override suspend fun getExplorationPageMap(): Map<String, ExplorationPageDataSource> =
         mapOf(
             Pair("首页", Wenku8HomeExplorationPage),
-            Pair("全部", Wenku8AllExplorationPage)
+            Pair("全部", Wenku8AllExplorationPage),
+            Pair("分类", Wenku8TagsExplorationPage)
         )
 
-    override suspend fun getExplorationPageTitleList(): List<String> = listOf("首页", "全部")
+    override suspend fun getExplorationPageTitleList(): List<String> = listOf("首页", "全部", "分类")
 
     private fun getImages(bookId: Int, chapterId: Int): String {
         return Jsoup

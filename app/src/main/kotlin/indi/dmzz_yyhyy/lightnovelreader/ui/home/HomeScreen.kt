@@ -7,8 +7,6 @@ import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -109,8 +107,8 @@ fun HomeScreen(
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.Reading.route,
-                enterTransition = { fadeIn() + scaleIn(initialScale = 0.7f) },
-                exitTransition = { fadeOut() + scaleOut(targetScale = 0.7f) }
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
             ) {
                 composable(route = Screen.Home.Reading.route) {
                     selectedItem = 0
