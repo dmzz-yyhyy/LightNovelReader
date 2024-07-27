@@ -103,11 +103,6 @@ fun ContentScreen(
     var showChapterSelectorBottomSheet by remember { mutableStateOf(false) }
     var totalReadingTime by remember { mutableStateOf(0) }
 
-    var fontSize by remember { mutableStateOf(16.0f) }
-    var fontLineHeight by remember { mutableStateOf(0.0f) }
-    var keepScreenOn by remember { mutableStateOf(false) }
-
-
     topBar {
         AnimatedVisibility(
             visible = !isImmersive,
@@ -122,6 +117,9 @@ fun ContentScreen(
         }
     }
 
+    LaunchedEffect(bookId) {
+        viewModel.addToReadingBook(bookId)
+    }
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0
@@ -169,7 +167,7 @@ fun ContentScreen(
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
-    if (keepScreenOn)
+    if (viewModel.uiState.keepScreenOn)
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     else
         activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -206,8 +204,8 @@ fun ContentScreen(
                         },
                     state = contentLazyColumnState,
                     content = it,
-                    fontSize = fontSize,
-                    fontLineHeight = fontLineHeight
+                    fontSize = viewModel.uiState.fontSize,
+                    fontLineHeight = viewModel.uiState.fontLineHeight
                 )
             }
         }
@@ -249,14 +247,14 @@ fun ContentScreen(
                     }
                     showSettingsBottomSheet = false
                 },
-                fontSize = fontSize,
-                onFontSizeSliderChange = { fontSize = it },
-                onFontSizeSliderChangeFinished = {},
-                fontLineHeight = fontLineHeight,
-                onFontLineHeightSliderChange = { fontLineHeight = it },
-                onFontLineHeightSliderChangeFinished = {},
-                isKeepScreenOn = keepScreenOn,
-                onKeepScreenOnChange = { keepScreenOn = it }
+                fontSize = viewModel.uiState.fontSize,
+                onFontSizeSliderChange = { viewModel.changeFontSize(it) },
+                onFontSizeSliderChangeFinished = { viewModel.saveFontSize() },
+                fontLineHeight =  viewModel.uiState.fontLineHeight,
+                onFontLineHeightSliderChange = { viewModel.changeFontLineHeight(it) },
+                onFontLineHeightSliderChangeFinished = { viewModel.saveFontLineHeight() },
+                isKeepScreenOn = viewModel.uiState.keepScreenOn,
+                onKeepScreenOnChange = { viewModel.changeKeepScreenOn(it    ) }
             )
         }
         AnimatedVisibility(visible = showChapterSelectorBottomSheet) {

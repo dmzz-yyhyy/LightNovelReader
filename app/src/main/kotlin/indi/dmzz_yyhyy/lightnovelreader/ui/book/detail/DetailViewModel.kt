@@ -35,7 +35,6 @@ class DetailViewModel @Inject constructor(
                 bookVolumes.collect {
                     if (it.volumes.isEmpty()) return@collect
                     _uiState.bookVolumes = it
-                    println(it)
                     _uiState.isLoading = _uiState.bookVolumes.volumes.isEmpty()
                 }
             }

@@ -29,6 +29,9 @@ fun LightNovelReaderNavHost(
             HomeScreen(
                 onClickBook = {
                     navController.navigate(Screen.Book.createRoute(it))
+                },
+                onClickContinueReading = { bookId, chapterId ->
+                    navController.navigate(Screen.Book.createRoute(bookId, chapterId))
                 }
             )
         }
@@ -39,7 +42,8 @@ fun LightNovelReaderNavHost(
             it.arguments?.let { it1 ->
                 BookScreen(
                     onClickBackButton = { navController.popBackStack() },
-                    id = it1.getInt("bookId")
+                    bookId = it1.getInt("bookId"),
+                    chapterId = it1.getInt("chapterId"),
             ) }
         }
     }

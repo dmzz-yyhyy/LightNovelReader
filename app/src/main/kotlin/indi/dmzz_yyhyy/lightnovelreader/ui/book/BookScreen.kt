@@ -24,12 +24,15 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.DetailScreen
 @Composable
 fun BookScreen(
     onClickBackButton: () -> Unit,
-    id: Int) {
+    bookId: Int,
+    chapterId: Int
+) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable (TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf(@Composable {}) }
     var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var lastIncomingChapterId by remember { mutableStateOf(-1) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -48,6 +51,11 @@ fun BookScreen(
                 route = Screen.Book.Detail.route,
                 arguments = Screen.Book.Detail.navArguments
             ) {
+                if (chapterId != lastIncomingChapterId) {
+                    lastIncomingChapterId = chapterId
+                    if (chapterId != -1)
+                        navController.navigate(Screen.Book.Content.createRoute(chapterId))
+                }
                 DetailScreen(
                     onClickChapter = {
                         navController.navigate(Screen.Book.Content.createRoute(it))
@@ -55,7 +63,7 @@ fun BookScreen(
                     onClickBackButton = onClickBackButton,
                     topBar = { newTopBar -> topBar = newTopBar },
                     dialog = { newDialog -> dialog = newDialog },
-                    id = id,
+                    id = bookId,
                 )
                 bottomBar = {}
             }
@@ -71,7 +79,7 @@ fun BookScreen(
                         topBar = {newTopBar ->
                             topBar = newTopBar
                         },
-                        bookId = id,
+                        bookId = bookId,
                         chapterId = bundle.getInt("chapterId")
                     )
                 }
