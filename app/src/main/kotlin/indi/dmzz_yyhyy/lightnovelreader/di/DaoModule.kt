@@ -8,6 +8,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import javax.inject.Singleton
 
@@ -33,4 +34,9 @@ object DaoModule {
     @Provides
     fun provideUserReadingDataDao(db: LightNovelReaderDatabase): UserReadingDataDao =
         db.userReadingDataDao()
+
+    @Singleton
+    @Provides
+    fun provideUserDataDao(db: LightNovelReaderDatabase): UserDataDao =
+        db.userDataDao()
 }

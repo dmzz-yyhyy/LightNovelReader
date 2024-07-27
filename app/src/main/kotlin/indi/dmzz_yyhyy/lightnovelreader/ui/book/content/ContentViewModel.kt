@@ -4,20 +4,32 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.BookRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import java.time.LocalDateTime
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ContentViewModel @Inject constructor(
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val _uiState = MutableContentScreenUiState()
     private var _bookId: Int = -1
+    private val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
+    private val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
+    private val keepScreenOnUserData = userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
+    private val readingBookListUserData = userDataRepository.booleanUserData(UserDataPath.ReadingBooks.path)
     val uiState: ContentScreenUiState = _uiState
 
     fun init(bookId: Int, chapterId: Int) {
+        println(UserDataPath.Reader.FontSize.path)
+        println(UserDataPath.Reader.FontLineHeight.path)
+        println(UserDataPath.Reader.KeepScreenOn.path)
+        println(UserDataPath.ReadingBooks.path)
         if (bookId != _bookId) {
             viewModelScope.launch {
                 val bookVolumes = bookRepository.getBookVolumes(bookId)
@@ -63,6 +75,12 @@ class ContentViewModel @Inject constructor(
             bookRepository.getUserReadingData(bookId).collect {
                 _uiState.userReadingData = it
             }
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.fontSize = fontSizeUserData.getOrDefault(_uiState.fontSize)
+            _uiState.fontLineHeight = fontLineHeightUserData.getOrDefault(_uiState.fontLineHeight)
+            _uiState.keepScreenOn = keepScreenOnUserData.getOrDefault(_uiState.keepScreenOn)
         }
     }
 
@@ -119,5 +137,36 @@ class ContentViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun changeFontSize(size: Float) {
+        _uiState.fontSize = size
+    }
+
+    fun changeFontLineHeight(height: Float) {
+        _uiState.fontLineHeight = height
+    }
+
+    fun saveFontSize() {
+        viewModelScope.launch(Dispatchers.IO) {
+            fontSizeUserData.set(_uiState.fontSize)
+        }
+    }
+
+    fun saveFontLineHeight() {
+        viewModelScope.launch(Dispatchers.IO) {
+            fontLineHeightUserData.set(_uiState.fontLineHeight)
+        }
+    }
+
+    fun changeKeepScreenOn(keepScreenOn: Boolean) {
+        _uiState.keepScreenOn = keepScreenOn
+        viewModelScope.launch(Dispatchers.IO) {
+            keepScreenOnUserData.set(keepScreenOn)
+        }
+    }
+
+    fun addToReadingBook(bookId: Int) {
+
     }
 }

@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -55,7 +58,7 @@ val ReadingScreenInfo = NavItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadingScreen(
-    onOpenBook: (Int) -> Unit,
+    onClickBook: (Int) -> Unit,
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
     viewModel: ReadingViewModel = hiltViewModel()
 ) {
@@ -84,8 +87,13 @@ fun ReadingScreen(
             )
             LargeBookCard(readingBooks[0])
         }
-        items(readingBooks.subList(1, readingBooks.size - 1)) {
-            SimpleBookCard(it, onOpenBook)
+        items(readingBooks) {
+            SimpleBookCard(
+                book =  it,
+                onClicked = {
+                    onClickBook(it.id)
+                }
+            )
         }
     }
 
@@ -123,14 +131,21 @@ private fun TopBar(
 }
 
 @Composable
-private fun SimpleBookCard(book: ReadingBook, onOpenBook: (Int) -> Unit) {
+private fun SimpleBookCard(book: ReadingBook, onClicked: () -> Unit) {
     Row(Modifier
-        .fillMaxWidth().height(120.dp)) {
+        .fillMaxWidth()
+        .height(120.dp)
+        .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = onClicked
+        )
+    ) {
         Cover(81.dp, 120.dp, book.coverUrl)
         Column(Modifier.fillMaxSize().padding(16.dp, 0.dp, 0.dp, 0.dp)) {
             Column(Modifier.fillMaxWidth().height(96.dp)) {
                 Text(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 4.dp),
                     text = book.title,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.W600
@@ -178,14 +193,6 @@ private fun SimpleBookCard(book: ReadingBook, onOpenBook: (Int) -> Unit) {
                         ),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-                IconButton(
-                    modifier = Modifier.size(24.dp).align(Alignment.CenterEnd),
-                    onClick = {onOpenBook(book.id)}) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.arrow_forward_24px),
-                        contentDescription = "enter",
-                        tint = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }

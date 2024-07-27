@@ -7,10 +7,12 @@ import androidx.room.RoomDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookInformationDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.BookInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.ChapterInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
 
@@ -20,8 +22,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
         VolumeEntity::class,
         ChapterInformationEntity::class,
         ChapterContentEntity::class,
-        UserReadingDataEntity::class],
-    version = 5,
+        UserReadingDataEntity::class,
+        UserDataEntity::class,
+               ],
+    version = 6,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -29,6 +33,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun bookVolumesDao(): BookVolumesDao
     abstract fun chapterContentDao(): ChapterContentDao
     abstract fun userReadingDataDao(): UserReadingDataDao
+    abstract fun userDataDao(): UserDataDao
 
     companion object {
         @Volatile

@@ -113,7 +113,7 @@ fun HomeScreen(
                 composable(route = Screen.Home.Reading.route) {
                     selectedItem = 0
                     ReadingScreen(
-                        onOpenBook = onClickBook,
+                        onClickBook = onClickBook,
                         topBar = {newTopBar -> topBar = newTopBar}
                     )
                 }
