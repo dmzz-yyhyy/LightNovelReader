@@ -68,7 +68,7 @@ fun ReadingScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
     viewModel: ReadingViewModel = hiltViewModel()
 ) {
-    val readingBooks = viewModel.uiState.recentReadingBooks
+    val readingBooks = viewModel.uiState.recentReadingBooks.reversed()
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.update()
     }

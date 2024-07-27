@@ -116,7 +116,13 @@ fun HomeScreen(
                     ReadingScreen(
                         onClickBook = onClickBook,
                         onClickContinueReading = onClickContinueReading,
-                        onClickJumpToExploration = { navController.navigate(Screen.Home.Exploration.route) },
+                        onClickJumpToExploration = { navController.navigate(Screen.Home.Exploration.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        } },
                         topBar = { newTopBar -> topBar = newTopBar }
                     )
                 }
