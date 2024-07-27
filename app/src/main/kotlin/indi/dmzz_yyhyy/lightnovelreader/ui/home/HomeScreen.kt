@@ -44,7 +44,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
 @OptIn(ExperimentalAnimationGraphicsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onClickBook: (Int) -> Unit
+    onClickBook: (Int) -> Unit,
+    onClickContinueReading: (Int, Int) -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -114,7 +115,9 @@ fun HomeScreen(
                     selectedItem = 0
                     ReadingScreen(
                         onClickBook = onClickBook,
-                        topBar = {newTopBar -> topBar = newTopBar}
+                        onClickContinueReading = onClickContinueReading,
+                        onClickJumpToExploration = { navController.navigate(Screen.Home.Exploration.route) },
+                        topBar = { newTopBar -> topBar = newTopBar }
                     )
                 }
                 composable(route = Screen.Home.Bookshelf.route) {

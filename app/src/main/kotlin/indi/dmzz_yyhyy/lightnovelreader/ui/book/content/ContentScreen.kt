@@ -117,6 +117,9 @@ fun ContentScreen(
         }
     }
 
+    LaunchedEffect(bookId) {
+        viewModel.addToReadingBook(bookId)
+    }
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
         totalReadingTime = 0

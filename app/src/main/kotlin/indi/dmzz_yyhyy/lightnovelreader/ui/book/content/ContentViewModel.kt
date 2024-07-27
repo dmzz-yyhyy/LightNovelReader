@@ -22,14 +22,10 @@ class ContentViewModel @Inject constructor(
     private val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
     private val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
     private val keepScreenOnUserData = userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
-    private val readingBookListUserData = userDataRepository.booleanUserData(UserDataPath.ReadingBooks.path)
+    private val readingBookListUserData = userDataRepository.intListUserData(UserDataPath.ReadingBooks.path)
     val uiState: ContentScreenUiState = _uiState
 
     fun init(bookId: Int, chapterId: Int) {
-        println(UserDataPath.Reader.FontSize.path)
-        println(UserDataPath.Reader.FontLineHeight.path)
-        println(UserDataPath.Reader.KeepScreenOn.path)
-        println(UserDataPath.ReadingBooks.path)
         if (bookId != _bookId) {
             viewModelScope.launch {
                 val bookVolumes = bookRepository.getBookVolumes(bookId)
@@ -167,6 +163,14 @@ class ContentViewModel @Inject constructor(
     }
 
     fun addToReadingBook(bookId: Int) {
-
+        viewModelScope.launch(Dispatchers.IO) {
+            readingBookListUserData.update {
+                val newList = it.toMutableList()
+                if (it.contains(bookId))
+                    newList.remove(bookId)
+                newList.add(bookId)
+                return@update newList
+            }
+        }
     }
 }

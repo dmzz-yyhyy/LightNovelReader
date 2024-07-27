@@ -257,7 +257,7 @@ private fun BookCard(
             Cover(110.dp, 165.dp, bookInformation.coverUrl)
         }
         Column {
-            Column(Modifier.fillMaxSize().height(114.dp)) {
+            Column(Modifier.fillMaxSize().height(123.dp)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = bookInformation.title,

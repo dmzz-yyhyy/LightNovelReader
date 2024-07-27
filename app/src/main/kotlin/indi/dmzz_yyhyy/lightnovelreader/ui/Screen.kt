@@ -15,12 +15,14 @@ sealed class Screen(
         data object Settings : Screen("home_settings")
     }
     data object Book : Screen(
-        route = "book/{bookId}",
-        navArguments = listOf(navArgument("bookId") {
-            type = NavType.IntType
-        })
+        route = "book/{bookId}/{chapterId}",
+        navArguments = listOf(
+            navArgument("bookId") { type = NavType.IntType },
+            navArgument("chapterId") { type = NavType.IntType }
+        )
     ) {
-        fun createRoute(bookId: Int) = "book/${bookId}"
+        fun createRoute(bookId: Int) = "book/${bookId}/${-1}"
+        fun createRoute(bookId: Int, chapterId: Int) = "book/${bookId}/${chapterId}"
 
         data object Detail: Screen("detail")
         data object Content : Screen(
