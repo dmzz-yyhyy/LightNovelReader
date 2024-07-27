@@ -202,7 +202,7 @@ fun ContentScreen(
         Loading()
     }
     AnimatedVisibility(
-        visible = !viewModel.uiState.isLoading ,
+        visible = !viewModel.uiState.isLoading,
         enter = fadeIn() + scaleIn(initialScale = 0.7f),
         exit = fadeOut() + scaleOut(targetScale = 0.7f)
     ) {

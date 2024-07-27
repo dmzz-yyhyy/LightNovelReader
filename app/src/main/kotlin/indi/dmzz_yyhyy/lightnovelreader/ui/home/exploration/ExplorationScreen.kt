@@ -3,6 +3,8 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -71,27 +73,30 @@ fun ExplorationScreen(
     ) {
         Loading()
     }
-    AnimatedVisibility(
-        visible =  !viewModel.uiState.isLoading
-    ) {
-        Column {
-            PrimaryTabRow(selectedTabIndex = primaryTabRowSelected) {
-                viewModel.uiState.pageTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = primaryTabRowSelected == index,
-                        onClick = {
-                            primaryTabRowSelected = index
-                            viewModel.changePage(index)
-                        },
-                        text = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                    )
-                }
+    Column {
+        PrimaryTabRow(selectedTabIndex = primaryTabRowSelected) {
+            viewModel.uiState.pageTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = primaryTabRowSelected == index,
+                    onClick = {
+                        primaryTabRowSelected = index
+                        viewModel.changePage(index)
+                    },
+                    text = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                )
             }
+        }
+        AnimatedVisibility(
+            visible =  !viewModel.uiState.isLoading,
+            enter = fadeIn() + scaleIn(initialScale = 0.7f),
+            exit = fadeOut() + scaleOut(targetScale = 0.7f)
+            ) {
             LazyColumn {
                 items(viewModel.uiState.explorationPage.rows) { explorationBooksRow ->
                     Column {
                         Row(
-                            modifier = Modifier.fillMaxWidth().height(48.dp).padding(horizontal = 16.dp),
+                            modifier = Modifier.fillMaxWidth().height(48.dp)
+                                .padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
@@ -112,9 +117,10 @@ fun ExplorationScreen(
                             }
                         }
                         LazyRow(
-                            modifier = Modifier.fillMaxWidth().padding(bottom = 11.dp, start = 8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(bottom = 11.dp, start = 8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
+                        ) {
                             items(explorationBooksRow.bookList) { explorationDisplayBook ->
                                 Column(
                                     modifier = Modifier.clickable(
@@ -150,6 +156,7 @@ fun ExplorationScreen(
             }
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
