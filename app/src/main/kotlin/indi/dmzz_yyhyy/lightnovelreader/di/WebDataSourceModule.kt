@@ -5,7 +5,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
-import indi.dmzz_yyhyy.lightnovelreader.data.web.Wenku8Api
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api
 import javax.inject.Singleton
 
 @Module

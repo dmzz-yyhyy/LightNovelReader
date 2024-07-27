@@ -71,10 +71,9 @@ fun DetailScreen(
     },
     onClickMore: () -> Unit = {
     },
-    topBar: (@Composable () -> Unit) -> Unit,
+    topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
     dialog: (@Composable () -> Unit) -> Unit,
-    id: Int,
-    scrollBehavior: TopAppBarScrollBehavior
+    id: Int
 ) {
     var isShowDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState
@@ -82,7 +81,7 @@ fun DetailScreen(
         onClickBackButton = onClickBackButton,
         onClickBookMark = onClickBookMark,
         onClickMore = onClickMore,
-        scrollBehavior = scrollBehavior,
+        scrollBehavior = it,
         title = uiState.bookInformation.title
     ) }
 

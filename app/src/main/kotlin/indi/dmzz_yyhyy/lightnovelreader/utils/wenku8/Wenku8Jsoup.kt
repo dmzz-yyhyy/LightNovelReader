@@ -1,7 +1,6 @@
-package indi.dmzz_yyhyy.lightnovelreader
+package indi.dmzz_yyhyy.lightnovelreader.utils.wenku8
 
 import org.jsoup.Connection
-import org.jsoup.Jsoup
 
 
 fun Connection.wenku8Cookie(): Connection =
@@ -28,32 +27,3 @@ fun Connection.wenku8Cookie(): Connection =
         .cookie(" Hm_lvt_d72896ddbf8d27c750e3b365ea2fc902", "")
         .cookie(" Hm_lpvt_d72896ddbf8d27c750e3b365ea2fc902", "1721745932")
         .cookie(" _clsk", "1xyg0vc%7C1721745933282%7C2%7C1%7Co.clarity.ms%2Fcollect")
-
-
-fun main() {
-    val soup = Jsoup
-        .connect("https://www.wenku8.net/modules/article/articlelist.php?fullflag=1")
-        .wenku8Cookie()
-        .get()
-    val title = "轻小说列表"
-    val idlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
-        .slice(0..5)
-        .map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
-    val titleList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
-        .slice(0..5)
-        .map { it.text().split("(").getOrNull(0) ?: "" }
-    val coverUrlList = soup.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
-        .slice(0..5)
-        .map { it.attr("src") }
-    println(ExplorationBooksRow(
-        title = title,
-        bookList = idlList.indices.map {
-            ExplorationDisplayBook(
-                id = idlList[it],
-                title = titleList[it],
-                coverUrl = coverUrlList[it],
-            )
-        },
-        expandable = false
-    ))
-}
