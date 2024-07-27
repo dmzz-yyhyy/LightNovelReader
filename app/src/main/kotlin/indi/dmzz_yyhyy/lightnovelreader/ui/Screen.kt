@@ -10,8 +10,8 @@ sealed class Screen(
 ) {
     data object Home : Screen("home") {
         data object Reading : Screen("home_reading")
-        data object Exploration : Screen("home_exploration")
         data object Bookshelf : Screen("home_bookshelf")
+        data object Exploration : Screen("home_exploration")
         data object Settings : Screen("home_settings")
     }
     data object Book : Screen(

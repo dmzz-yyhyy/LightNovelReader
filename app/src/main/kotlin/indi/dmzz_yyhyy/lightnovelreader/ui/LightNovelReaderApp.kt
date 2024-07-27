@@ -27,7 +27,7 @@ fun LightNovelReaderNavHost(
     ) {
         composable(route = Screen.Home.route) {
             HomeScreen(
-                onOpenBook = {
+                onClickBook = {
                     navController.navigate(Screen.Book.createRoute(it))
                 }
             )

@@ -1,10 +1,14 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.graphics.ExperimentalAnimationGraphicsApi
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -13,6 +17,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -32,21 +37,29 @@ import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
 
 @OptIn(ExperimentalAnimationGraphicsApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    onOpenBook: (Int) -> Unit
+    onClickBook: (Int) -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
-    var topBar : @Composable () -> Unit by remember { mutableStateOf( @Composable {}) }
+    var topBar : @Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf( @Composable { _, _ -> }) }
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = topBar,
+        modifier = Modifier
+            .nestedScroll(enterAlwaysScrollBehavior.nestedScrollConnection)
+            .nestedScroll(pinnedScrollBehavior.nestedScrollConnection),
+        topBar = {
+            AnimatedContent(topBar, label = "TopBarAnimated") { topBar ->
+                topBar(enterAlwaysScrollBehavior, pinnedScrollBehavior)
+            }
+        },
         bottomBar = {
             val entry by navController.currentBackStackEntryAsState()
             val destination = entry?.destination
@@ -91,26 +104,37 @@ fun HomeScreen(
         }
     ) {
         Box(Modifier.padding(it).padding(top = 4.dp)) {
-            NavHost(navController = navController, startDestination = Screen.Home.Reading.route) {
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.Reading.route,
+                enterTransition = { fadeIn() },
+                exitTransition = { fadeOut() }
+            ) {
                 composable(route = Screen.Home.Reading.route) {
                     selectedItem = 0
                     ReadingScreen(
-                        onOpenBook = onOpenBook,
-                        topBar = {newTopBar -> topBar = newTopBar},
-                        scrollBehavior = scrollBehavior
+                        onOpenBook = onClickBook,
+                        topBar = {newTopBar -> topBar = newTopBar}
                     )
                 }
                 composable(route = Screen.Home.Bookshelf.route) {
                     selectedItem = 1
-                    Text("书架·施工中")
+                    Box(Modifier.fillMaxSize()) {
+                        Text("书架·施工中")
+                    }
                 }
                 composable(route = Screen.Home.Exploration.route) {
                     selectedItem = 2
-                    Text("探索·施工中")
+                    ExplorationScreen(
+                        topBar = {newTopBar -> topBar = newTopBar},
+                        onClickBook = onClickBook
+                    )
                 }
                 composable(route = Screen.Home.Settings.route) {
                     selectedItem = 3
-                    Text("设置·施工中")
+                    Box(Modifier.fillMaxSize()) {
+                        Text("设置·施工中")
+                    }
                 }
             }
         }

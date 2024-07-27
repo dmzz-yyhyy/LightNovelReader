@@ -47,6 +47,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -77,16 +78,15 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import java.text.DecimalFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentScreen(
     onClickBackButton: () -> Unit,
-    topBar: (@Composable () -> Unit) -> Unit,
-    bottomBar: (@Composable () -> Unit) -> Unit,
+    topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
     bookId: Int,
     chapterId: Int,
     viewModel: ContentViewModel = hiltViewModel()
@@ -106,6 +106,21 @@ fun ContentScreen(
     var fontSize by remember { mutableStateOf(16.0f) }
     var fontLineHeight by remember { mutableStateOf(0.0f) }
     var keepScreenOn by remember { mutableStateOf(false) }
+
+
+    topBar {
+        AnimatedVisibility(
+            visible = !isImmersive,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            TopBar(
+                onClickBackButton = onClickBackButton,
+                title = viewModel.uiState.chapterContent.title,
+                it
+            )
+        }
+    }
 
     LaunchedEffect(chapterId) {
         viewModel.init(bookId, chapterId)
@@ -158,7 +173,13 @@ fun ContentScreen(
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     else
         activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
+    AnimatedVisibility(
+        visible =  viewModel.uiState.isLoading,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Loading()
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = viewModel.uiState.isLoading,
@@ -172,7 +193,6 @@ fun ContentScreen(
             enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut() + scaleOut(targetScale = 0.7f)
         ) {
-            topBar {}
             AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {
                 ContentTextComponent(
                     modifier = Modifier
@@ -190,18 +210,6 @@ fun ContentScreen(
                     fontLineHeight = fontLineHeight
                 )
             }
-        }
-        AnimatedVisibility(
-            visible = !isImmersive,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-        ) {
-            TopBar(onClickBackButton = onClickBackButton,
-                title = viewModel.uiState.chapterContent.title
-            )
         }
         AnimatedVisibility(
             visible = !isImmersive,
@@ -274,7 +282,8 @@ fun ContentScreen(
 @Composable
 private fun TopBar(
     onClickBackButton: () -> Unit,
-    title: String
+    title: String,
+    scrollBehavior: TopAppBarScrollBehavior
 ) {
     TopAppBar(
         windowInsets = WindowInsets(0, 0, 0, 0),
@@ -308,7 +317,8 @@ private fun TopBar(
                     painter = painterResource(R.drawable.fullscreen_24px),
                     contentDescription = "fullscreen")
             }
-        }
+        },
+        scrollBehavior = scrollBehavior
     )
 }
 

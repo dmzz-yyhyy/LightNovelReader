@@ -1,9 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,12 +27,16 @@ fun BookScreen(
     id: Int) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
-    var topBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+    var topBar : @Composable (TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf(@Composable {}) }
     var bottomBar : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = topBar,
+        topBar = {
+            AnimatedContent(topBar, label = "TopBarAnimated") { topBar ->
+                topBar(scrollBehavior)
+            }
+         },
         bottomBar = bottomBar
     ) { paddingValues ->
         NavHost(
@@ -49,7 +55,6 @@ fun BookScreen(
                     onClickBackButton = onClickBackButton,
                     topBar = { newTopBar -> topBar = newTopBar },
                     dialog = { newDialog -> dialog = newDialog },
-                    scrollBehavior = scrollBehavior,
                     id = id,
                 )
                 bottomBar = {}
@@ -65,9 +70,6 @@ fun BookScreen(
                         },
                         topBar = {newTopBar ->
                             topBar = newTopBar
-                        },
-                        bottomBar = {newBottomBar ->
-                            bottomBar = newBottomBar
                         },
                         bookId = id,
                         chapterId = bundle.getInt("chapterId")

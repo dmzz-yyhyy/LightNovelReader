@@ -16,7 +16,7 @@ android {
         minSdk = 24
         targetSdk = 34
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*100+debug版本号(开发需要时迭代, 两位数)
-        versionCode = 4_00_000
+        versionCode = 4_00_001
         versionName = "0.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -68,11 +68,11 @@ dependencies {
     // android lib
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-runtime-compose-android:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     // compose
-    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.activity:activity-compose:1.9.1")
     implementation("androidx.compose.animation:animation-graphics-android:1.6.8")
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation("androidx.compose.ui:ui")

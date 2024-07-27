@@ -27,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -57,12 +56,13 @@ val ReadingScreenInfo = NavItem(
 @Composable
 fun ReadingScreen(
     onOpenBook: (Int) -> Unit,
-    topBar: (@Composable () -> Unit) -> Unit,
-    viewModel: ReadingViewModel = hiltViewModel(),
-    scrollBehavior: TopAppBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    viewModel: ReadingViewModel = hiltViewModel()
 ) {
     val readingBooks = viewModel.uiState.recentReadingBooks
-    topBar { TopBar(scrollBehavior) }
+    topBar { _, pinnedScrollBehavior ->
+        TopBar(pinnedScrollBehavior)
+    }
     if (viewModel.uiState.isLoading) {
         Loading()
         return
@@ -101,6 +101,7 @@ private fun TopBar(
                 Text(
                     text = stringResource(R.string.nav_reading),
                     style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },
