@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -74,10 +75,11 @@ import coil.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import java.text.DecimalFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,43 +135,6 @@ fun ContentScreen(
             readingChapterProgress = progress
         }
     }
-    topBar {
-        AnimatedVisibility(
-            visible = !isImmersive,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-        ) {
-            TopBar(onClickBackButton = onClickBackButton,
-                title =  viewModel.uiState.chapterContent.title
-            )
-        }
-    }
-    bottomBar {
-        AnimatedVisibility(
-            visible = !isImmersive,
-            enter = expandVertically(expandFrom= Alignment.Top),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top)
-        ) {
-            BottomBar(
-                chapterContent = viewModel.uiState.chapterContent,
-                readingChapterProgress = readingChapterProgress,
-                onClickLastChapter = {
-                    viewModel.lastChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
-                },
-                onClickNextChapter = {
-                    viewModel.nextChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
-                },
-                onClickSettings = { showSettingsBottomSheet = true },
-                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
-            )
-        }
-    }
     LifecycleResumeEffect(Unit) {
         isRunning = true
         onPauseOrDispose {
@@ -193,81 +158,115 @@ fun ContentScreen(
         activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     else
         activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    AnimatedVisibility(
-        visible =  viewModel.uiState.isLoading,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Loading()
-    }
-    AnimatedVisibility(
-        visible = !viewModel.uiState.isLoading ,
-        enter = fadeIn() + scaleIn(initialScale = 0.7f),
-        exit = fadeOut() + scaleOut(targetScale = 0.7f)
-    ) {
-        AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {
-            ContentTextComponent(
-                modifier = Modifier
-                    .animateContentSize()
-                    .fillMaxSize()
-                    .clickable(
-                        interactionSource =
-                        remember { MutableInteractionSource() },
-                        indication = null
-                    ) {
-                        isImmersive = !isImmersive
-                    },
-                state = contentLazyColumnState,
-                content = it,
-                fontSize = fontSize,
-                fontLineHeight = fontLineHeight
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = viewModel.uiState.isLoading,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Loading()
+        }
+        AnimatedVisibility(
+            visible = !viewModel.uiState.isLoading,
+            enter = fadeIn() + scaleIn(initialScale = 0.7f),
+            exit = fadeOut() + scaleOut(targetScale = 0.7f)
+        ) {
+            topBar {}
+            AnimatedContent(viewModel.uiState.chapterContent.content, label = "ContentAnimate") {
+                ContentTextComponent(
+                    modifier = Modifier
+                        .animateContentSize()
+                        .fillMaxSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
+                            isImmersive = !isImmersive
+                        },
+                    state = contentLazyColumnState,
+                    content = it,
+                    fontSize = fontSize,
+                    fontLineHeight = fontLineHeight
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = !isImmersive,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+        ) {
+            TopBar(onClickBackButton = onClickBackButton,
+                title = viewModel.uiState.chapterContent.title
             )
         }
-    }
-    AnimatedVisibility(visible = showSettingsBottomSheet) {
-        SettingsBottomSheet(
-            state = settingsBottomSheetState,
-            onDismissRequest = {
-                coroutineScope.launch { settingsBottomSheetState.hide() }.invokeOnCompletion {
-                    if (!settingsBottomSheetState.isVisible) {
-                        showSettingsBottomSheet = false
+        AnimatedVisibility(
+            visible = !isImmersive,
+            enter = expandVertically(expandFrom = Alignment.Top),
+            exit = shrinkVertically(shrinkTowards = Alignment.Top),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+        ) {
+            BottomBar(
+                chapterContent = viewModel.uiState.chapterContent,
+                readingChapterProgress = readingChapterProgress,
+                onClickLastChapter = {
+                    viewModel.lastChapter()
+                    coroutineScope.launch {
+                        contentLazyColumnState.scrollToItem(0, 0)
                     }
-                }
-                showSettingsBottomSheet = false
-            },
-            fontSize = fontSize,
-            onFontSizeSliderChange = {
-                fontSize = it
-            },
-            onFontSizeSliderChangeFinished = {
-            },
-            fontLineHeight = fontLineHeight,
-            onFontLineHeightSliderChange = {
-                fontLineHeight = it
-            },
-            onFontLineHeightSliderChangeFinished = {
-            },
-            isKeepScreenOn = keepScreenOn,
-            onKeepScreenOnChange = {
-                keepScreenOn = it
-            }
-        )
-    }
-    AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
-        ChapterSelectorBottomSheet(
-            bookVolumes = viewModel.uiState.bookVolumes,
-            readingChapterId = viewModel.uiState.chapterContent.id,
-            state = chapterSelectorBottomSheetState,
-            onDismissRequest = {
-                coroutineScope.launch { chapterSelectorBottomSheetState.hide() }.invokeOnCompletion {
-                    if (!chapterSelectorBottomSheetState.isVisible) {
-                        showChapterSelectorBottomSheet = false
+                },
+                onClickNextChapter = {
+                    viewModel.nextChapter()
+                    coroutineScope.launch {
+                        contentLazyColumnState.scrollToItem(0, 0)
                     }
-                }
-                showChapterSelectorBottomSheet = false
-            },
-            onClickChapter = { viewModel.changeChapter(it) }
-        )
+                },
+                onClickSettings = { showSettingsBottomSheet = true },
+                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
+            )
+        }
+        AnimatedVisibility(visible = showSettingsBottomSheet) {
+            SettingsBottomSheet(
+                state = settingsBottomSheetState,
+                onDismissRequest = {
+                    coroutineScope.launch { settingsBottomSheetState.hide() }.invokeOnCompletion {
+                        if (!settingsBottomSheetState.isVisible) {
+                            showSettingsBottomSheet = false
+                        }
+                    }
+                    showSettingsBottomSheet = false
+                },
+                fontSize = fontSize,
+                onFontSizeSliderChange = { fontSize = it },
+                onFontSizeSliderChangeFinished = {},
+                fontLineHeight = fontLineHeight,
+                onFontLineHeightSliderChange = { fontLineHeight = it },
+                onFontLineHeightSliderChangeFinished = {},
+                isKeepScreenOn = keepScreenOn,
+                onKeepScreenOnChange = { keepScreenOn = it }
+            )
+        }
+        AnimatedVisibility(visible = showChapterSelectorBottomSheet) {
+            ChapterSelectorBottomSheet(
+                bookVolumes = viewModel.uiState.bookVolumes,
+                readingChapterId = viewModel.uiState.chapterContent.id,
+                state = chapterSelectorBottomSheetState,
+                onDismissRequest = {
+                    coroutineScope.launch { chapterSelectorBottomSheetState.hide() }.invokeOnCompletion {
+                        if (!chapterSelectorBottomSheetState.isVisible) {
+                            showChapterSelectorBottomSheet = false
+                        }
+                    }
+                    showChapterSelectorBottomSheet = false
+                },
+                onClickChapter = { viewModel.changeChapter(it) }
+            )
+        }
     }
 }
 
@@ -278,6 +277,7 @@ private fun TopBar(
     title: String
 ) {
     TopAppBar(
+        windowInsets = WindowInsets(0, 0, 0, 0),
         navigationIcon = {
             IconButton(
                 onClick = onClickBackButton) {
@@ -321,7 +321,9 @@ private fun BottomBar(
     onClickSettings: () -> Unit,
     onClickChapterSelector: () -> Unit
 ) {
-    BottomAppBar {
+    BottomAppBar(
+        windowInsets = WindowInsets(0, 0, 0, 0)
+    ) {
         Box(Modifier.fillMaxHeight().width(12.dp))
         IconButton(
             onClick = onClickLastChapter,
@@ -355,14 +357,13 @@ private fun BottomBar(
                         .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                         .padding(24.dp, 11.5.dp)
                 ) {
-                    Text(
+                    AnimatedText(
                         modifier = Modifier.align(Alignment.Center),
-                        text = "${(readingChapterProgress * 100).toInt()}% / 100%",
+                        text = "${(readingChapterProgress * 100).toInt()}%",
                         style = MaterialTheme.typography.labelLarge.copy(
                             fontWeight = FontWeight.W500
                         ),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

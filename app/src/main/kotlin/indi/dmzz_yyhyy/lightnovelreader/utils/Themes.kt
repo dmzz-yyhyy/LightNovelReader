@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.theme
+package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.app.Activity
 import android.graphics.drawable.ColorDrawable
