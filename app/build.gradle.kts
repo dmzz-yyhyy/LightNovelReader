@@ -66,6 +66,7 @@ dependencies {
     // desugaring support
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     // android lib
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation ("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
@@ -120,6 +121,9 @@ dependencies {
     implementation("androidx.room:room-paging:$roomVersion")
     // Splash API
     implementation("androidx.core:core-splashscreen:1.0.1")
+    val appCenterSdkVersion = "5.0.4"
+    implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
+    implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 }
 
 kapt {
