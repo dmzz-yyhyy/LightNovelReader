@@ -12,16 +12,8 @@ sealed class Screen(
         data object Reading : Screen("home_reading")
         data object Bookshelf : Screen("home_bookshelf")
         data object Exploration : Screen("home_exploration") {
-            data object Home : Screen("home")
-            data object Search : Screen(
-                route = "home_exploration_search/{searchType}/{keyword}",
-                navArguments = listOf(
-                    navArgument("searchType") { type = NavType.StringType },
-                    navArgument("keyword") { type = NavType.StringType }
-                )
-            ) {
-                fun creatRoute(searchType: String, keyword: String): String = "home_exploration_search/${searchType}/${keyword}"
-            }
+            data object Home : Screen("home_exploration_home")
+            data object Search : Screen( "home_exploration_search")
         }
         data object Settings : Screen("home_settings")
     }

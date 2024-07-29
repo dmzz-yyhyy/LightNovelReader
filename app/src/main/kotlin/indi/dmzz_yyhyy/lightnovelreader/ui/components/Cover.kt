@@ -17,10 +17,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
 @Composable
-fun Cover(width: Dp, height: Dp, url: String) {
+fun Cover(width: Dp, height: Dp, url: String, rounded: Dp = 14.dp) {
     Box(modifier = Modifier
         .size(width, height)
-        .clip(RoundedCornerShape(14.dp))) {
+        .clip(RoundedCornerShape(rounded))) {
         Box(
             Modifier
             .size(width, height)

@@ -49,6 +49,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -72,8 +73,10 @@ fun ReadingScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         viewModel.update()
     }
-    topBar { _, pinnedScrollBehavior ->
-        TopBar(pinnedScrollBehavior)
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        topBar { _, pinnedScrollBehavior ->
+            TopBar(pinnedScrollBehavior)
+        }
     }
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp),
@@ -125,31 +128,11 @@ fun ReadingScreen(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        Box(Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.align(Alignment.Center),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.empty_90dp),
-                    tint = MaterialTheme.colorScheme.secondary,
-                    contentDescription = null
-                )
-                Box(Modifier.height(50.dp))
-                Text(
-                    text = "没有内容",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.W400,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Box(Modifier.height(12.dp))
-                Text(
-                    text = "阅读一些书本之后，它们将显示在此处。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.W400,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Box(Modifier.height(35.dp))
+        EmptyPage(
+            painter = painterResource(R.drawable.empty_90dp),
+            title = "没有内容",
+            description = "阅读一些书本之后，它们将显示在此处。",
+            button = {
                 Button(
                     onClick = onClickJumpToExploration
                 ) {
@@ -161,7 +144,7 @@ fun ReadingScreen(
                     )
                 }
             }
-        }
+        )
     }
 }
 

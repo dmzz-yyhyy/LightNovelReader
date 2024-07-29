@@ -13,4 +13,8 @@ interface WebBookDataSource {
     suspend fun getExplorationPageMap(): Map<String, ExplorationPageDataSource>
     suspend fun getExplorationPageTitleList(): List<String>
     fun search(searchType: String, keyword: String): Flow<List<BookInformation>>
+    fun getSearchTypeMap(): Map<String, String>
+    fun getSearchTipMap(): Map<String, String>
+    fun getSearchTypeNameList(): List<String>
+    fun stopAllSearch()
 }

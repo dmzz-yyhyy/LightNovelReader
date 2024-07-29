@@ -28,4 +28,5 @@ data class BookInformation(
                 false
             )
     }
+    fun isEmpty() = id == -1
 }

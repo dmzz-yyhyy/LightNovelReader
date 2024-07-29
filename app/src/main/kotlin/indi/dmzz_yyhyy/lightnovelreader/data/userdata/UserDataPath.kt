@@ -11,4 +11,7 @@ sealed class UserDataPath(
         data object KeepScreenOn : UserDataPath("keepScreenOn", Reader)
     }
     data object ReadingBooks : UserDataPath("reading_books")
+    data object Search: UserDataPath("search") {
+        data object History : UserDataPath("history", Search)
+    }
 }

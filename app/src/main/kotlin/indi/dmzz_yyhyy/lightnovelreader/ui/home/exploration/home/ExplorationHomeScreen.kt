@@ -53,22 +53,25 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 fun ExplorationHomeScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
     onClickBook: (Int) -> Unit,
-    explorationHomeUiState: ExplorationHomeUiState,
+    uiState: ExplorationHomeUiState,
     init: () -> Unit,
     changePage: (Int) -> Unit,
-
-) {
+    onClickSearch: () -> Unit
+    ) {
     var primaryTabRowSelected by remember { mutableStateOf(0) }
-    topBar { enterAlwaysScrollBehavior, _ ->
-        TopBar(
-            scrollBehavior = enterAlwaysScrollBehavior
-        )
-    }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        topBar { enterAlwaysScrollBehavior, _ ->
+            TopBar(
+                scrollBehavior = enterAlwaysScrollBehavior,
+                onClickSearch = onClickSearch
+            )
+        }
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         init()
     }
     AnimatedVisibility(
-        visible = explorationHomeUiState.isLoading,
+        visible = uiState.isLoading,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -76,7 +79,7 @@ fun ExplorationHomeScreen(
     }
     Column {
         PrimaryTabRow(selectedTabIndex = primaryTabRowSelected) {
-            explorationHomeUiState.pageTitles.forEachIndexed { index, title ->
+            uiState.pageTitles.forEachIndexed { index, title ->
                 Tab(
                     selected = primaryTabRowSelected == index,
                     onClick = {
@@ -88,12 +91,12 @@ fun ExplorationHomeScreen(
             }
         }
         AnimatedVisibility(
-            visible = !explorationHomeUiState.isLoading,
+            visible = !uiState.isLoading,
             enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut() + scaleOut(targetScale = 0.7f)
             ) {
             LazyColumn {
-                items(explorationHomeUiState.explorationPage.rows) { explorationBooksRow ->
+                items(uiState.explorationPage.rows) { explorationBooksRow ->
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth().height(48.dp)
@@ -163,7 +166,8 @@ fun ExplorationHomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    scrollBehavior: TopAppBarScrollBehavior
+    scrollBehavior: TopAppBarScrollBehavior,
+    onClickSearch: () -> Unit
 ) {
     MediumTopAppBar(
         title = {
@@ -186,7 +190,7 @@ fun TopBar(
             }
         },
         actions = {
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(onClick = onClickSearch) {
                 Icon(
                     painter = painterResource(id = R.drawable.search_24px),
                     contentDescription = "search"

@@ -34,12 +34,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookShelfScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfScreenInfo
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.Exploration
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationScreenInfo
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsScreenInfo
 
 @OptIn(ExperimentalAnimationGraphicsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +132,7 @@ fun HomeScreen(
                 composable(route = Screen.Home.Bookshelf.route) {
                     selectedItem = 1
                     Box(Modifier.fillMaxSize()) {
-                        Text("书架·施工中")
+                        BookShelfScreen { newTopBar -> topBar = newTopBar }
                     }
                 }
                 composable(route = Screen.Home.Exploration.route) {
@@ -142,28 +145,10 @@ fun HomeScreen(
                 composable(route = Screen.Home.Settings.route) {
                     selectedItem = 3
                     Box(Modifier.fillMaxSize()) {
-                        Text("设置·施工中")
+                        SettingsScreen { newTopBar -> topBar = newTopBar }
                     }
                 }
             }
         }
     }
 }
-
-val BookshelfScreenInfo = NavItem (
-    route = Screen.Home.Bookshelf.route,
-    drawable = R.drawable.animated_bookshelf,
-    label = R.string.nav_bookshelf
-)
-
-val ExplorationScreenInfo = NavItem (
-    route = Screen.Home.Exploration.route,
-    drawable = R.drawable.animated_exploration,
-    label = R.string.nav_exploration
-)
-
-val SettingsScreenInfo = NavItem (
-    route = Screen.Home.Settings.route,
-    drawable = R.drawable.animated_settings,
-    label = R.string.nav_settings
-)
