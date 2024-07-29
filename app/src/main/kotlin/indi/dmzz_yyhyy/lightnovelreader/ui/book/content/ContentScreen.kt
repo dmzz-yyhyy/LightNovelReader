@@ -203,7 +203,7 @@ fun ContentScreen(
                             isImmersive = !isImmersive
                         },
                     state = contentLazyColumnState,
-                    content = it,
+                        content = it,
                     fontSize = viewModel.uiState.fontSize,
                     fontLineHeight = viewModel.uiState.fontLineHeight
                 )
@@ -350,7 +350,10 @@ private fun BottomBar(
                 contentDescription = "mark")
         }
         IconButton(onClick = onClickChapterSelector) {
-            Icon(painterResource(id = R.drawable.menu_24px), "menu")
+            Icon(
+                modifier = Modifier.scale(0.9f, 1f),
+                painter = painterResource(id = R.drawable.menu_24px),
+                contentDescription =  "menu")
         }
         IconButton(onClick = onClickSettings) {
             Icon(
