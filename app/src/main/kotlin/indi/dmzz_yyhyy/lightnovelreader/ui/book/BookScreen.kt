@@ -39,7 +39,7 @@ fun BookScreen(
             AnimatedContent(topBar, label = "TopBarAnimated") { topBar ->
                 topBar(scrollBehavior)
             }
-         },
+        },
         bottomBar = bottomBar
     ) { paddingValues ->
         NavHost(
@@ -76,8 +76,11 @@ fun BookScreen(
                         onClickBackButton = {
                             navController.popBackStack()
                         },
-                        topBar = {newTopBar ->
+                        topBar = { newTopBar ->
                             topBar = newTopBar
+                        },
+                        bottomBar = { newBottomBar ->
+                            bottomBar = newBottomBar
                         },
                         bookId = bookId,
                         chapterId = bundle.getInt("chapterId")
