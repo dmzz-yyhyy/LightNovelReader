@@ -10,8 +10,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
+import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import org.jsoup.Jsoup
 
 object Wenku8Api: WebBookDataSource {
@@ -150,5 +155,60 @@ object Wenku8Api: WebBookDataSource {
             .get()
             .select("#content > div > a > img")
             .joinToString("\n") { "[image]${it.attr("src")}[/image]" }
+    }
+
+    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+        val searchResult = MutableStateFlow(emptyList<BookInformation>())
+        val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
+        Jsoup
+            .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}")
+            .wenku8Cookie()
+            .get()
+            .selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
+                (0..<maxPage).map{ index ->
+                    searchResult.update {
+                        it + Jsoup
+                            .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}&page=$index")
+                            .wenku8Cookie()
+                            .get()
+                            .select("#content > table > tbody > tr > td > div")
+                            .map { element ->
+                                BookInformation(
+                                    id = element.selectFirst("div > div:nth-child(1) > a")
+                                        ?.attr("href")
+                                        ?.replace("/book/", "")
+                                        ?.replace(".htm", "")
+                                        ?.toInt() ?: -1,
+                                    title = element.selectFirst("div > div:nth-child(1) > a")
+                                        ?.attr("title") ?: "",
+                                    coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                                        ?.attr("src") ?: "",
+                                    author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                                        ?.text()?.split("/")?.getOrNull(0)
+                                        ?.split(":")?.getOrNull(1) ?: "",
+                                    description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                                        ?.text()?.replace("简介:", "") ?: "",
+                                    publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                                        ?.text()?.split("/")?.getOrNull(1)
+                                        ?.split(":")?.getOrNull(1) ?: "",
+                                    wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                        ?.text()?.split("/")?.getOrNull(1)
+                                        ?.split(":")?.getOrNull(1)
+                                        ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                                    lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                        ?.text()?.split("/")?.getOrNull(0)
+                                        ?.split(":")?.getOrNull(1)
+                                        ?.let {
+                                            LocalDate.parse(it, DATA_TIME_FORMATTER)
+                                        }
+                                        ?.atStartOfDay() ?: LocalDateTime.MIN,
+                                    isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                        ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                                )
+                            }
+                    }
+                }
+            }
+        return searchResult
     }
 }
