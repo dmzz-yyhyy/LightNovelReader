@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,15 +77,16 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
-import java.text.DecimalFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentScreen(
     onClickBackButton: () -> Unit,
     topBar: (@Composable (TopAppBarScrollBehavior) -> Unit) -> Unit,
+    bottomBar: (@Composable () -> Unit) -> Unit,
     bookId: Int,
     chapterId: Int,
     viewModel: ContentViewModel = hiltViewModel()
@@ -113,6 +113,33 @@ fun ContentScreen(
                 onClickBackButton = onClickBackButton,
                 title = viewModel.uiState.chapterContent.title,
                 it
+            )
+        }
+    }
+
+    bottomBar {
+        AnimatedVisibility(
+            visible = !isImmersive,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            BottomBar(
+                chapterContent = viewModel.uiState.chapterContent,
+                readingChapterProgress = readingChapterProgress,
+                onClickLastChapter = {
+                    viewModel.lastChapter()
+                    coroutineScope.launch {
+                        contentLazyColumnState.scrollToItem(0, 0)
+                    }
+                },
+                onClickNextChapter = {
+                    viewModel.nextChapter()
+                    coroutineScope.launch {
+                        contentLazyColumnState.scrollToItem(0, 0)
+                    }
+                },
+                onClickSettings = { showSettingsBottomSheet = true },
+                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
             )
         }
     }
@@ -203,38 +230,11 @@ fun ContentScreen(
                             isImmersive = !isImmersive
                         },
                     state = contentLazyColumnState,
-                        content = it,
+                    content = it,
                     fontSize = viewModel.uiState.fontSize,
                     fontLineHeight = viewModel.uiState.fontLineHeight
                 )
             }
-        }
-        AnimatedVisibility(
-            visible = !isImmersive,
-            enter = expandVertically(expandFrom = Alignment.Top),
-            exit = shrinkVertically(shrinkTowards = Alignment.Top),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-        ) {
-            BottomBar(
-                chapterContent = viewModel.uiState.chapterContent,
-                readingChapterProgress = readingChapterProgress,
-                onClickLastChapter = {
-                    viewModel.lastChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
-                },
-                onClickNextChapter = {
-                    viewModel.nextChapter()
-                    coroutineScope.launch {
-                        contentLazyColumnState.scrollToItem(0, 0)
-                    }
-                },
-                onClickSettings = { showSettingsBottomSheet = true },
-                onClickChapterSelector = { showChapterSelectorBottomSheet = true },
-            )
         }
         AnimatedVisibility(visible = showSettingsBottomSheet) {
             SettingsBottomSheet(
@@ -284,7 +284,6 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior
 ) {
     TopAppBar(
-        windowInsets = WindowInsets(0, 0, 0, 0),
         navigationIcon = {
             IconButton(
                 onClick = onClickBackButton) {
@@ -329,10 +328,11 @@ private fun BottomBar(
     onClickSettings: () -> Unit,
     onClickChapterSelector: () -> Unit
 ) {
-    BottomAppBar(
-        windowInsets = WindowInsets(0, 0, 0, 0)
-    ) {
-        Box(Modifier.fillMaxHeight().width(12.dp))
+    BottomAppBar {
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .width(12.dp))
         IconButton(
             onClick = onClickLastChapter,
             enabled = chapterContent.hasLastChapter()
@@ -350,17 +350,17 @@ private fun BottomBar(
                 contentDescription = "mark")
         }
         IconButton(onClick = onClickChapterSelector) {
-            Icon(
-                modifier = Modifier.scale(0.9f, 1f),
-                painter = painterResource(id = R.drawable.menu_24px),
-                contentDescription =  "menu")
+            Icon(painterResource(id = R.drawable.menu_24px), "menu")
         }
         IconButton(onClick = onClickSettings) {
             Icon(
                 painter = painterResource(R.drawable.outline_settings_24px),
                 contentDescription = "setting")
         }
-        Box(Modifier.padding(9.dp, 12.dp).weight(2f)) {
+        Box(
+            Modifier
+                .padding(9.dp, 12.dp)
+                .weight(2f)) {
             Box(Modifier.clip(ButtonDefaults.shape)) {
                 Box(
                     Modifier
@@ -387,7 +387,10 @@ private fun BottomBar(
                 painter = painterResource(R.drawable.arrow_forward_24px),
                 contentDescription = "nextChapter")
         }
-        Box(Modifier.fillMaxHeight().width(12.dp))
+        Box(
+            Modifier
+                .fillMaxHeight()
+                .width(12.dp))
     }
 }
 
@@ -405,9 +408,9 @@ fun ContentTextComponent(
     ) {
         items(
             content
-            .replace("[image]", "ImageSplitMark[image]")
-            .replace("[/image]", "ImageSplitMark")
-            .split("ImageSplitMark")
+                .replace("[image]", "ImageSplitMark[image]")
+                .replace("[/image]", "ImageSplitMark")
+                .split("ImageSplitMark")
         ) {
             if (it.startsWith("[image]"))
                 AsyncImage(
@@ -541,7 +544,10 @@ fun SettingsSwitch(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(6.dp)
     ) {
-        Box(Modifier.fillMaxWidth().padding(21.dp, 10.dp, 19.dp, 12.dp)) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .padding(21.dp, 10.dp, 19.dp, 12.dp)) {
             Column (Modifier.align(Alignment.CenterStart)) {
                 Text(
                     text = title,
@@ -637,7 +643,9 @@ fun ChapterSelectorBottomSheet(
                     }
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(10.5.dp, 5.dp, 10.dp, 5.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.5.dp, 5.dp, 10.dp, 5.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -685,8 +693,8 @@ fun ChapterSelectorBottomSheet(
                                             interactionSource = remember { MutableInteractionSource() },
                                             indication = null
                                         ) {
-                                        onClickChapter(chapterInformation.id)
-                                    },
+                                            onClickChapter(chapterInformation.id)
+                                        },
                                     text = chapterInformation.title,
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.W400,
