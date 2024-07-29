@@ -54,21 +54,11 @@ fun Connection.wenku8Cookie(): Connection =
 
 
 fun main() {
-    val tagUrls = Jsoup
-        .connect("https://www.wenku8.cc/modules/article/tags.php")
+    val keyword = "我"
+    val searchType = "articlename"
+    val soup = Jsoup
+        .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${URLEncoder.encode(keyword, Charset.forName("gb2312"))}")
         .wenku8Cookie()
         .get()
-        .select("a[href~=tags\\.php\\?t=.*]")
-        .slice(0..48)
-        .map { "https://www.wenku8.cc/modules/article/" + it.attr("href") }
-        .map {
-            getExplorationBookRow(
-                soup = Jsoup
-                    .connect(it.split("=")[0] + "=" + URLEncoder.encode(it.split("=")[1], Charset.forName("gb2312")))
-                    .wenku8Cookie()
-                    .get(),
-                title = it.split("=")[1]
-            )
-        }
-    println(tagUrls)
+    println(soup)
 }
