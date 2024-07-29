@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -51,10 +50,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExplorationScreen(
+fun ExplorationHomeScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
-    viewModel: ExplorationViewModel = hiltViewModel(),
     onClickBook: (Int) -> Unit,
+    explorationHomeUiState: ExplorationHomeUiState,
+    init: () -> Unit,
+    changePage: (Int) -> Unit,
+
 ) {
     var primaryTabRowSelected by remember { mutableStateOf(0) }
     topBar { enterAlwaysScrollBehavior, _ ->
@@ -63,10 +65,10 @@ fun ExplorationScreen(
         )
     }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
-        viewModel.init()
+        init()
     }
     AnimatedVisibility(
-        visible =  viewModel.uiState.isLoading,
+        visible = explorationHomeUiState.isLoading,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
@@ -74,24 +76,24 @@ fun ExplorationScreen(
     }
     Column {
         PrimaryTabRow(selectedTabIndex = primaryTabRowSelected) {
-            viewModel.uiState.pageTitles.forEachIndexed { index, title ->
+            explorationHomeUiState.pageTitles.forEachIndexed { index, title ->
                 Tab(
                     selected = primaryTabRowSelected == index,
                     onClick = {
                         primaryTabRowSelected = index
-                        viewModel.changePage(index)
+                        changePage(index)
                     },
                     text = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 )
             }
         }
         AnimatedVisibility(
-            visible =  !viewModel.uiState.isLoading,
+            visible = !explorationHomeUiState.isLoading,
             enter = fadeIn() + scaleIn(initialScale = 0.7f),
             exit = fadeOut() + scaleOut(targetScale = 0.7f)
             ) {
             LazyColumn {
-                items(viewModel.uiState.explorationPage.rows) { explorationBooksRow ->
+                items(explorationHomeUiState.explorationPage.rows) { explorationBooksRow ->
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth().height(48.dp)

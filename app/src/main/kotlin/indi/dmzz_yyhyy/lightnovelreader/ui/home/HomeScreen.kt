@@ -37,7 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.Screen
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.NavItem
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationScreen
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.Exploration
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.ReadingScreenInfo
 
@@ -134,8 +134,8 @@ fun HomeScreen(
                 }
                 composable(route = Screen.Home.Exploration.route) {
                     selectedItem = 2
-                    ExplorationScreen(
-                        topBar = {newTopBar -> topBar = newTopBar},
+                    Exploration(
+                        topBar = { newTopBar -> topBar = newTopBar },
                         onClickBook = onClickBook
                     )
                 }
