@@ -1,7 +1,5 @@
 name: DebugApkBuild
 on:
-  push:
-    branches: [master, refactoring]
   pull_request:
     branches: [master, refactoring]
 
