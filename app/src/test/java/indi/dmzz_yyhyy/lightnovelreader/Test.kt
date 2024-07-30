@@ -2,30 +2,13 @@ package indi.dmzz_yyhyy.lightnovelreader
 
 import java.net.URLEncoder
 import java.nio.charset.Charset
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import org.jsoup.Connection
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-
-fun getExplorationBookRow(title: String, soup: Document): ExplorationBooksRow {
-    val idlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a")
-        .map { it.attr("href").replace("/book/", "").replace(".htm", "").toInt() }
-    val titleList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > b > a")
-        .map { it.text().split("(").getOrNull(0) ?: "" }
-    val coverUrlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a > img")
-        .map { it.attr("src") }
-    return ExplorationBooksRow(
-        title = title,
-        bookList = (0..5).map {
-            ExplorationDisplayBook(
-                id = idlList[it],
-                title = titleList[it],
-                coverUrl = coverUrlList[it],
-            )
-        },
-        expandable = false
-    )
-}
-
 
 fun Connection.wenku8Cookie(): Connection =
     this.cookie("__51uvsct__1xtyjOqSZ75DRXC0", "1")
@@ -52,13 +35,59 @@ fun Connection.wenku8Cookie(): Connection =
         .cookie(" Hm_lpvt_d72896ddbf8d27c750e3b365ea2fc902", "1721745932")
         .cookie(" _clsk", "1xyg0vc%7C1721745933282%7C2%7C1%7Co.clarity.ms%2Fcollect")
 
+private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 fun main() {
+    val searchResult = MutableStateFlow(emptyList<BookInformation>())
     val keyword = "我"
     val searchType = "articlename"
-    val soup = Jsoup
+    Jsoup
         .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${URLEncoder.encode(keyword, Charset.forName("gb2312"))}")
         .wenku8Cookie()
         .get()
-    println(soup)
+        .selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
+            (0..<maxPage).map{ index ->
+                searchResult.update {
+                    it + Jsoup
+                        .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${URLEncoder.encode(keyword, Charset.forName("gb2312"))}&page=$index")
+                        .wenku8Cookie()
+                        .get()
+                        .select("#content > table > tbody > tr > td > div")
+                        .map { element ->
+                            BookInformation(
+                                id = element.selectFirst("div > div:nth-child(1) > a")
+                                    ?.attr("href")
+                                    ?.replace("/book/", "")
+                                    ?.replace(".htm", "")
+                                    ?.toInt() ?: -1,
+                                title = element.selectFirst("div > div:nth-child(1) > a")
+                                    ?.attr("title") ?: "",
+                                coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                                    ?.attr("src") ?: "",
+                                author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                                    ?.text()?.split("/")?.getOrNull(0)
+                                    ?.split(":")?.getOrNull(1) ?: "",
+                                description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                                    ?.text()?.replace("简介:", "") ?: "",
+                                publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                                    ?.text()?.split("/")?.getOrNull(1)
+                                    ?.split(":")?.getOrNull(1) ?: "",
+                                wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                    ?.text()?.split("/")?.getOrNull(1)
+                                    ?.split(":")?.getOrNull(1)
+                                    ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                                lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                    ?.text()?.split("/")?.getOrNull(0)
+                                    ?.split(":")?.getOrNull(1)
+                                    ?.let {
+                                        LocalDate.parse(it, DATA_TIME_FORMATTER)
+                                    }
+                                    ?.atStartOfDay() ?: LocalDateTime.MIN,
+                                isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                                    ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                            )
+                        }
+                }
+            }
+        }
 }

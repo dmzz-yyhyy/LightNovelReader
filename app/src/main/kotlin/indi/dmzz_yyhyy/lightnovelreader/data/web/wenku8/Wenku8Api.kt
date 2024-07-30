@@ -10,15 +10,28 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
+import java.lang.Thread.sleep
+import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 
 object Wenku8Api: WebBookDataSource {
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val BOOK_INFORMATION_URL = update("eNpb85aBtYTBNKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknFUZn5qXl6xVkFNhnptgCAJkrFgQ").toString()
     private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
     private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private var isStopSearch = false
+    private var runningSearchCount = 0
 
     override suspend fun getBookInformation(id: Int): BookInformation {
         val soup = Jsoup.connect(BOOK_INFORMATION_URL +id).get()
@@ -151,4 +164,119 @@ object Wenku8Api: WebBookDataSource {
             .select("#content > div > a > img")
             .joinToString("\n") { "[image]${it.attr("src")}[/image]" }
     }
+
+    private fun getSearchResult(document: Document): List<BookInformation> = document
+            .select("#content > table > tbody > tr > td > div")
+            .map { element ->
+                BookInformation(
+                    id = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("href")
+                        ?.replace("/book/", "")
+                        ?.replace(".htm", "")
+                        ?.toInt() ?: -1,
+                    title = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("title") ?: "",
+                    coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                        ?.attr("src") ?: "",
+                    author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                        ?.text()?.split("/")?.getOrNull(0)
+                        ?.split(":")?.getOrNull(1) ?: "",
+                    description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                        ?.text()?.replace("简介:", "") ?: "",
+                    publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                        ?.text()?.split("/")?.getOrNull(1)
+                        ?.split(":")?.getOrNull(1) ?: "",
+                    wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(1)
+                        ?.split(":")?.getOrNull(1)
+                        ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                    lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(0)
+                        ?.split(":")?.getOrNull(1)
+                        ?.let {
+                            LocalDate.parse(it, DATA_TIME_FORMATTER)
+                        }
+                        ?.atStartOfDay() ?: LocalDateTime.MIN,
+                    isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                )
+            }
+
+    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+        val searchResult = MutableStateFlow(emptyList<BookInformation>())
+        val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
+        Jsoup
+            .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}")
+            .wenku8Cookie()
+            .get()
+            .let {
+                if (it.text().contains("错误原因：对不起，两次搜索的间隔时间不得少于 5 秒")) {
+                    sleep(1000)
+                    return search(searchType, keyword)
+                }
+                it
+            }
+            .let {
+                searchResult.update { oldList ->
+                    val pageContent = getSearchResult(it)
+                    if (isStopSearch) {
+                        runningSearchCount--
+                        return@let it
+                    }
+                    return@update (oldList + pageContent)
+                }
+                it
+            }
+            .let { document ->
+                coroutineScope.launch {
+                    runningSearchCount++
+                    document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
+                        (2..maxPage).map{ index ->
+                            sleep(5000)
+                            searchResult.update { oldList ->
+                                val pageContent = Jsoup
+                                    .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}&page=$index")
+                                    .wenku8Cookie()
+                                    .get()
+                                    .let { getSearchResult(it) }
+                                if (isStopSearch) {
+                                    runningSearchCount--
+                                    return@launch
+                                }
+                                return@update (oldList + pageContent)
+                            }
+                        }
+                    }
+                    searchResult.update {
+                        it + listOf(BookInformation.empty())
+                    }
+                    runningSearchCount--
+                }
+            }
+        return searchResult
+    }
+
+    override fun stopAllSearch() {
+        isStopSearch = true
+        coroutineScope.launch {
+            while (runningSearchCount > 0) { //
+            }
+            isStopSearch = false
+        }
+    }
+
+    override fun getSearchTypeNameList(): List<String> =
+        listOf("按书名搜索", "按作者名搜索")
+
+    override fun getSearchTypeMap(): Map<String, String> =
+        mapOf(
+            Pair("按书名搜索", "articlename"),
+            Pair("按作者名搜索", "author"),
+        )
+
+    override fun getSearchTipMap(): Map<String, String> =
+        mapOf(
+            Pair("articlename", "请输入书本名称"),
+            Pair("author", "请输入作者名称"),
+        )
 }
