@@ -7,6 +7,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageData
 import kotlinx.coroutines.flow.Flow
 
 interface WebBookDataSource {
+    suspend fun getIsOffLineFlow(): Flow<Boolean>
     suspend fun getBookInformation(id: Int): BookInformation?
     suspend fun getBookVolumes(id: Int): BookVolumes?
     suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent?
