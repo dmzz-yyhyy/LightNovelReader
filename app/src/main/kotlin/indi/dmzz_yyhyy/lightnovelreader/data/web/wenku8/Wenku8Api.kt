@@ -17,8 +17,10 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
@@ -30,10 +32,28 @@ object Wenku8Api: WebBookDataSource {
     private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
     private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val isOffLineFlow = flow {
+        while(true) {
+            emit(isOffLine())
+            delay(2500)
+        }
+    }
     private var isStopSearch = false
     private var runningSearchCount = 0
 
+    private fun isOffLine(): Boolean {
+        try {
+            Jsoup.connect("https://www.wenku8.cc/").get()
+            return false
+        } catch (_: Exception) {
+            return true
+        }
+    }
+
+    override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
+
     override suspend fun getBookInformation(id: Int): BookInformation {
+        if (isOffLine()) return BookInformation.empty()
         val soup = Jsoup.connect(BOOK_INFORMATION_URL +id).get()
         return BookInformation(
             id,
@@ -59,6 +79,7 @@ object Wenku8Api: WebBookDataSource {
     }
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
+        if (isOffLine()) return BookVolumes.empty()
         val soup = Jsoup.connect(BOOK_VOLUMES_URL +id).get()
         val totalPage = soup.text().split("[1/")[1].split("]")[0].toInt()
         val elements: MutableList<String> = mutableListOf()
@@ -103,6 +124,7 @@ object Wenku8Api: WebBookDataSource {
     }
 
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
+        if (isOffLine()) return ChapterContent.empty()
         val pageRegex = Regex("[0-9]/(.*)]<input")
         val contentRegex = Regex("</anchor><b.*>([\\s\\S]*)<br.*>\n*?.*?<input name=\"page\" format=\".*N\"")
         val soup = Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}").get()
@@ -202,8 +224,9 @@ object Wenku8Api: WebBookDataSource {
                 )
             }
 
-    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+    override  fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
+        if (isOffLine()) return searchResult
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
         Jsoup
             .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}")
