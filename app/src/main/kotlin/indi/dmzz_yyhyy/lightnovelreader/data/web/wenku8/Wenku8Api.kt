@@ -17,6 +17,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -252,20 +253,15 @@ object Wenku8Api: WebBookDataSource {
             }
             .let { document ->
                 coroutineScope.launch {
-                    runningSearchCount++
                     document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
                         (2..maxPage).map{ index ->
-                            sleep(5000)
+                            sleep(6000)
                             searchResult.update { oldList ->
                                 val pageContent = Jsoup
                                     .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}&page=$index")
                                     .wenku8Cookie()
                                     .get()
                                     .let { getSearchResult(it) }
-                                if (isStopSearch) {
-                                    runningSearchCount--
-                                    return@launch
-                                }
                                 return@update (oldList + pageContent)
                             }
                         }
@@ -273,19 +269,13 @@ object Wenku8Api: WebBookDataSource {
                     searchResult.update {
                         it + listOf(BookInformation.empty())
                     }
-                    runningSearchCount--
                 }
             }
         return searchResult
     }
 
     override fun stopAllSearch() {
-        isStopSearch = true
-        coroutineScope.launch {
-            while (runningSearchCount > 0) { //
-            }
-            isStopSearch = false
-        }
+        coroutineScope.cancel()
     }
 
     override fun getSearchTypeNameList(): List<String> =
