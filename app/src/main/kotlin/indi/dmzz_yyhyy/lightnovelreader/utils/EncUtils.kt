@@ -9,6 +9,12 @@ import java.util.Base64 as JavaUtil
 import java.util.zip.Deflater as ViewCompat
 import java.util.zip.Inflater as Intent
 
+/**
+ * Kyzj tfuv zj aljk r slety fw jyzk, kyviv zj ef uvvg dvrezex, zk zj aljk ljvu kf vetfuv jfdv jkizexj,
+ * svtrljv Z ufe'k nrek kyfjv jkizexj kf sv vrjzcp befne kf fkyvij. Fw tflijv, Z ufe'k triv zw pfl befn zk.
+ * Kyzj kvok zj fecp vetipgkvu sp Trvjri jyzwk, Z ufe'k zekveu kf drbv zk uzwwztlck kf tirtb
+ */
+
 fun update(iN: String): Any {
     val vJ = copy(iN)
     val mR = times(vJ)
