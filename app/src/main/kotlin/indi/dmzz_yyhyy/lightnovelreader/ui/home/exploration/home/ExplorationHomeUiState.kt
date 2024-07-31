@@ -4,19 +4,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.android.material.bottomsheet.BottomSheetBehavior.State
-import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 
 @State
 interface ExplorationHomeUiState {
-    val isLoading: Boolean
     val pageTitles: List<String>
     val selectedPage: Int
-    val explorationPage: ExplorationPage
+    val explorationPageTitle: String
+    val explorationPageBooksRawList: List<ExplorationBooksRow>
 }
 
 class MutableExplorationHomeUiState : ExplorationHomeUiState {
-    override var isLoading: Boolean by mutableStateOf(true)
     override var pageTitles: MutableList<String> by mutableStateOf(mutableListOf())
     override var selectedPage: Int by mutableStateOf(0)
-    override var explorationPage: ExplorationPage by mutableStateOf(ExplorationPage.empty())
+    override var explorationPageTitle: String by mutableStateOf("")
+    override var explorationPageBooksRawList: List<ExplorationBooksRow> by mutableStateOf(mutableListOf())
 }

@@ -188,6 +188,7 @@ fun DetailScreen(
                 items(bookVolume.chapters) {
                     Text(
                         modifier = Modifier
+                            .animateItem()
                             .padding(vertical = 4.dp)
                             .clickable(
                                 interactionSource =
