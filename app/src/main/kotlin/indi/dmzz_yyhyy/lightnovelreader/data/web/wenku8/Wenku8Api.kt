@@ -23,12 +23,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 object Wenku8Api: WebBookDataSource {
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private val BOOK_INFORMATION_URL = update("eNpb85aBtYTBNKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknFUZn5qXl6xVkFNhnptgCAJkrFgQ").toString()
     private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
     private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
@@ -225,7 +226,7 @@ object Wenku8Api: WebBookDataSource {
                 )
             }
 
-    override  fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
         if (isOffLine()) return searchResult
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
@@ -255,14 +256,16 @@ object Wenku8Api: WebBookDataSource {
                 coroutineScope.launch {
                     document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
                         (2..maxPage).map{ index ->
-                            sleep(6000)
+                            delay(6000)
                             searchResult.update { oldList ->
                                 val pageContent = Jsoup
                                     .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}&page=$index")
                                     .wenku8Cookie()
                                     .get()
                                     .let { getSearchResult(it) }
-                                return@update (oldList + pageContent)
+                                if (isActive)
+                                    return@update (oldList + pageContent)
+                                else return@launch
                             }
                         }
                     }
@@ -276,6 +279,7 @@ object Wenku8Api: WebBookDataSource {
 
     override fun stopAllSearch() {
         coroutineScope.cancel()
+        coroutineScope = CoroutineScope(Dispatchers.IO)
     }
 
     override fun getSearchTypeNameList(): List<String> =

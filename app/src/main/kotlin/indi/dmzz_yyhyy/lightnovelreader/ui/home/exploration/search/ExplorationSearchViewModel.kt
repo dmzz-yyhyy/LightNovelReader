@@ -63,10 +63,10 @@ class ExplorationSearchViewModel @Inject constructor(
     }
 
     fun search(keyword: String) {
+        explorationRepository.stopAllSearch()
         _uiState.isLoading = true
         _uiState.isLoadingComplete = false
         _uiState.searchResult = mutableListOf()
-        explorationRepository.stopAllSearch()
         viewModelScope.launch(Dispatchers.IO) {
             explorationRepository.search(_uiState.searchType, keyword).collect {
                 _uiState.isLoading = false
