@@ -8,7 +8,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import java.net.URLEncoder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -16,11 +15,13 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 object Wenku8TagsExplorationPage: ExplorationPageDataSource {
-    override fun getExplorationPage(): Flow<ExplorationPage>  {
-        val explorationPage: MutableStateFlow<ExplorationPage> = MutableStateFlow(ExplorationPage.empty())
-        CoroutineScope(Dispatchers.Default).launch {
-            explorationPage.update{ ExplorationPage(
-                "首页",
+    private var lock = false
+    private val explorationBooksRows: MutableStateFlow<List<ExplorationBooksRow>> = MutableStateFlow(emptyList())
+
+    override fun getExplorationPage(): ExplorationPage  {
+        if (!lock) {
+            lock = true
+            CoroutineScope(Dispatchers.IO).launch {
                 Jsoup
                     .connect("https://www.wenku8.cc/modules/article/tags.php")
                     .wenku8Cookie()
@@ -28,19 +29,24 @@ object Wenku8TagsExplorationPage: ExplorationPageDataSource {
                     .select("a[href~=tags\\.php\\?t=.*]")
                     .slice(0..48)
                     .map { "https://www.wenku8.cc/modules/article/" + it.attr("href") }
-                    .map {
-                        getExplorationBookRow(
-                            soup = Jsoup
-                                .connect(it.split("=")[0] + "=" + URLEncoder.encode(it.split("=")[1], "gb2312"))
-                                .wenku8Cookie()
-                                .get(),
-                            title = it.split("=")[1]
-                        )
+                    .map {url ->
+                        val soup = Jsoup
+                            .connect(url.split("=")[0] + "=" +
+                                    URLEncoder.encode(url.split("=")[1],
+                                        "gb2312"))
+                            .wenku8Cookie()
+                            .get()
+                        explorationBooksRows.update {
+                            it + getExplorationBookRow(
+                                soup = soup,
+                                title = url.split("=")[1]
+                            )
+                        }
                     }
-                )
             }
         }
-        return explorationPage
+
+        return ExplorationPage("分类", explorationBooksRows)
     }
 
     private fun getExplorationBookRow(title: String, soup: Document): ExplorationBooksRow {

@@ -7,7 +7,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageData
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -15,23 +14,34 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
 object Wenku8AllExplorationPage: ExplorationPageDataSource {
-    override fun getExplorationPage(): Flow<ExplorationPage>  {
-        val explorationPage: MutableStateFlow<ExplorationPage> = MutableStateFlow(ExplorationPage.empty())
-        CoroutineScope(Dispatchers.Default).launch {
-            explorationPage.update{ ExplorationPage(
-                "首页",
-                    listOf(
-                        getAllBookBooksRow(),
-                        getTopListBookBooksRow("热门轻小说", "allvisit"),
-                        getTopListBookBooksRow("动画化作品", "anime"),
-                        getTopListBookBooksRow("今日更新", "lastupdate"),
-                        getTopListBookBooksRow("新书一览", "postdate"),
-                        getCompletedBooksRow()
-                    )
-                )
+    private var lock = false
+    private val explorationBooksRows: MutableStateFlow<List<ExplorationBooksRow>> = MutableStateFlow(emptyList())
+
+    override fun getExplorationPage(): ExplorationPage  {
+        if (!lock) {
+            lock = true
+            CoroutineScope(Dispatchers.IO).launch {
+                explorationBooksRows.update {
+                    it + getAllBookBooksRow()
+                }
+                explorationBooksRows.update {
+                    it + getTopListBookBooksRow("热门轻小说", "allvisit")
+                }
+                explorationBooksRows.update {
+                    it + getTopListBookBooksRow("动画化作品", "anime")
+                }
+                explorationBooksRows.update {
+                    it + getTopListBookBooksRow("今日更新", "lastupdate")
+                }
+                explorationBooksRows.update {
+                    it + getTopListBookBooksRow("新书一览", "postdate")
+                }
+                explorationBooksRows.update {
+                    it + getCompletedBooksRow()
+                }
             }
         }
-        return explorationPage
+        return ExplorationPage("首页", explorationBooksRows)
     }
 
     private fun getCompletedBooksRow(): ExplorationBooksRow {

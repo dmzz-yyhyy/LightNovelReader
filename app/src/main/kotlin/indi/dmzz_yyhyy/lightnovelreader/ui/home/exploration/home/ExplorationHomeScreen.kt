@@ -1,10 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.home
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -30,10 +31,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -45,10 +43,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ExplorationHomeScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
@@ -58,7 +57,6 @@ fun ExplorationHomeScreen(
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit
     ) {
-    var primaryTabRowSelected by remember { mutableStateOf(0) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         topBar { enterAlwaysScrollBehavior, _ ->
             TopBar(
@@ -70,20 +68,12 @@ fun ExplorationHomeScreen(
     LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
         init()
     }
-    AnimatedVisibility(
-        visible = uiState.isLoading,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Loading()
-    }
     Column {
-        PrimaryTabRow(selectedTabIndex = primaryTabRowSelected) {
+        PrimaryTabRow(selectedTabIndex = uiState.selectedPage) {
             uiState.pageTitles.forEachIndexed { index, title ->
                 Tab(
-                    selected = primaryTabRowSelected == index,
+                    selected = uiState.selectedPage == index,
                     onClick = {
-                        primaryTabRowSelected = index
                         changePage(index)
                     },
                     text = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) }
@@ -91,76 +81,26 @@ fun ExplorationHomeScreen(
             }
         }
         AnimatedVisibility(
-            visible = !uiState.isLoading,
-            enter = fadeIn() + scaleIn(initialScale = 0.7f),
-            exit = fadeOut() + scaleOut(targetScale = 0.7f)
-            ) {
-            LazyColumn {
-                items(uiState.explorationPage.rows) { explorationBooksRow ->
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                modifier = Modifier.weight(2f),
-                                text = explorationBooksRow.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.W700,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            if (explorationBooksRow.expandable) {
-                                IconButton(onClick = { /* do something */ }) {
-                                    Icon(
-                                        modifier = Modifier.scale(2f, 2f),
-                                        painter = painterResource(id = R.drawable.arrow_forward_24px),
-                                        contentDescription = "expand"
-                                    )
-                                }
-                            }
-                        }
-                        LazyRow(
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(bottom = 11.dp, start = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(explorationBooksRow.bookList) { explorationDisplayBook ->
-                                Column(
-                                    modifier = Modifier.clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null
-                                    ) {
-                                        onClickBook(explorationDisplayBook.id)
-                                    }
-                                ) {
-                                    Cover(
-                                        width = 88.dp,
-                                        height = 125.dp,
-                                        url = explorationDisplayBook.coverUrl
-                                    )
-                                    Text(
-                                        modifier = Modifier.width(88.dp),
-                                        text = explorationDisplayBook.title,
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.W500,
-                                        fontSize = 12.sp,
-                                        lineHeight = 14.sp,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                }
-                            }
-                        }
-                        Box(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 0.dp)) {
-                            HorizontalDivider()
-                        }
-                    }
-                }
-            }
+            visible = uiState.explorationPageBooksRawList.isEmpty(),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Loading()
+        }
+        AnimatedContent(
+            targetState = uiState.explorationPageBooksRawList,
+            contentKey = { uiState.selectedPage },
+            transitionSpec = {
+                    (fadeIn(initialAlpha = 0.7f)).togetherWith(fadeOut(targetAlpha = 0.7f))
+                },
+            label = "ExplorationPageBooksRawsAnime"
+        ) {
+            ExplorationPage(
+                explorationPageBooksRawList = uiState.explorationPageBooksRawList,
+                onClickBook = onClickBook
+            )
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -199,4 +139,76 @@ fun TopBar(
         },
         scrollBehavior = scrollBehavior,
     )
+}
+
+@Composable
+fun ExplorationPage(
+    explorationPageBooksRawList: List<ExplorationBooksRow>,
+    onClickBook: (Int) -> Unit
+) {
+    LazyColumn {
+        items(explorationPageBooksRawList) { explorationBooksRow ->
+            Column(
+                modifier = Modifier.animateItem()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.weight(2f),
+                        text = explorationBooksRow.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.W700,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (explorationBooksRow.expandable) {
+                        IconButton(onClick = { /* do something */ }) {
+                            Icon(
+                                modifier = Modifier.scale(2f, 2f),
+                                painter = painterResource(id = R.drawable.arrow_forward_24px),
+                                contentDescription = "expand"
+                            )
+                        }
+                    }
+                }
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(bottom = 11.dp, start = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(explorationBooksRow.bookList) { explorationDisplayBook ->
+                        Column(
+                            modifier = Modifier.clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) {
+                                onClickBook(explorationDisplayBook.id)
+                            }
+                        ) {
+                            Cover(
+                                width = 88.dp,
+                                height = 125.dp,
+                                url = explorationDisplayBook.coverUrl
+                            )
+                            Text(
+                                modifier = Modifier.width(88.dp),
+                                text = explorationDisplayBook.title,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.W500,
+                                fontSize = 12.sp,
+                                lineHeight = 14.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+                Box(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 0.dp)) {
+                    HorizontalDivider()
+                }
+            }
+        }
+    }
 }

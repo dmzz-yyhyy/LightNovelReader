@@ -77,9 +77,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import java.text.DecimalFormat
+import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -182,7 +183,12 @@ fun ContentScreen(
             viewModel.updateTotalReadingTime(bookId, totalReadingTime)
         }
     }
-
+    LaunchedEffect(viewModel.uiState.keepScreenOn) {
+        if (viewModel.uiState.keepScreenOn)
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    }
     LaunchedEffect(isRunning) {
         while (isRunning) {
             totalReadingTime += 1
@@ -194,10 +200,6 @@ fun ContentScreen(
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
-    if (viewModel.uiState.keepScreenOn)
-        activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-    else
-        activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     AnimatedVisibility(
         visible =  viewModel.uiState.isLoading,
         enter = fadeIn(),
@@ -522,12 +524,11 @@ fun SettingsSlider(
                 modifier = Modifier.fillMaxWidth(),
                 value = value,
                 valueRange = valueRange,
-                onValueChange = onSlideChange,
+                onValueChange = { onSlideChange((it*2).roundToInt().toFloat()/2) },
                 onValueChangeFinished = onSliderChangeFinished,
                 colors = SliderDefaults.colors(
                     inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
                 ),
-                steps = ((valueRange.endInclusive - valueRange.start)*2-1).toInt()
             )
         }
     }

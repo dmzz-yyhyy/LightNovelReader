@@ -2,11 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.search
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -277,21 +274,12 @@ fun ExplorationSearchScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            items(uiState.searchResult) { bookInformation ->
-                AnimatedContent(
-                    targetState = bookInformation,
-                    transitionSpec = {
-                        (expandVertically(expandFrom = Alignment.Top)).togetherWith(
-                            shrinkVertically(shrinkTowards = Alignment.Top)
-                        )
-                    },
-                    label = "BookCardAnime",
-                ) {
-                    BookCard(
-                        bookInformation = bookInformation,
-                        onClickBook = onClickBook
-                    )
-                }
+            items(uiState.searchResult) {
+                BookCard(
+                    modifier = Modifier.animateItem(),
+                    bookInformation = it,
+                    onClickBook = onClickBook
+                )
             }
             item {AnimatedVisibility(
                 visible = !uiState.isLoadingComplete,
@@ -309,11 +297,12 @@ fun ExplorationSearchScreen(
 
 @Composable
 fun BookCard(
+    modifier: Modifier = Modifier,
     bookInformation: BookInformation,
     onClickBook: (Int) -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .height(125.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

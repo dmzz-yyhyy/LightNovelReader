@@ -13,14 +13,12 @@ interface DetailUiState {
     val bookInformation: BookInformation
     val bookVolumes: BookVolumes
     val userReadingData: UserReadingData
-    val isLoading: Boolean
 }
 
 class MutableDetailUiState: DetailUiState {
     override var bookInformation: BookInformation by mutableStateOf(BookInformation.empty())
     override var bookVolumes: BookVolumes by mutableStateOf(BookVolumes.empty())
     override var userReadingData: UserReadingData by mutableStateOf(UserReadingData.empty())
-    override var isLoading = true
 }
 
 

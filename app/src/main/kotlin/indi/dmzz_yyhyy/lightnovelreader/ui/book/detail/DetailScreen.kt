@@ -1,6 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -29,8 +32,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +45,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
@@ -77,38 +82,45 @@ fun DetailScreen(
 ) {
     var isShowDialog by remember { mutableStateOf(false) }
     val uiState = viewModel.uiState
-    topBar { TopBar(
-        onClickBackButton = onClickBackButton,
-        onClickBookMark = onClickBookMark,
-        onClickMore = onClickMore,
-        scrollBehavior = it,
-        title = uiState.bookInformation.title
-    ) }
 
-    var bookId by remember { mutableIntStateOf(0) }
-    if (bookId != id) {
-        bookId = id
-        viewModel.init(bookId)
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        topBar { TopBar(
+            onClickBackButton = onClickBackButton,
+            onClickBookMark = onClickBookMark,
+            onClickMore = onClickMore,
+            scrollBehavior = it,
+            title = uiState.bookInformation.title
+        ) }
+        dialog {
+            if (isShowDialog) ReadFromStartDialog(
+                onConfirmation = {
+                    isShowDialog = false
+                    onClickReadFromStart()
+                },
+                onDismissRequest = {
+                    isShowDialog = false
+                }
+            )
+        }
     }
-    if (uiState.isLoading) {
-        Loading()
-        return
+    LaunchedEffect(id) {
+        viewModel.init(id)
     }
-
-    dialog {
-        if (isShowDialog) ReadFromStartDialog(
-            onConfirmation = {
-                isShowDialog = false
-                onClickReadFromStart()
-            },
-            onDismissRequest = {
-                isShowDialog = false
-            }
-        )
-    }
-    LazyColumn (
-        Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 0.dp).fillMaxSize()
+    AnimatedVisibility(
+        visible =  viewModel.uiState.bookInformation.isEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut()
     ) {
+        Loading()
+    }
+    AnimatedVisibility(
+        visible =  !viewModel.uiState.bookInformation.isEmpty(),
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        LazyColumn(
+            Modifier.padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 0.dp).fillMaxSize()
+        ) {
             item {
                 BookCard(
                     bookInformation = uiState.bookInformation,
@@ -118,12 +130,14 @@ fun DetailScreen(
                             onClickReadFromStart()
                         else isShowDialog = true
                     },
-                    onClickContinueReading = onClickContinueReading)
+                    onClickContinueReading = onClickContinueReading
+                )
             }
             item {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
                         text = "介绍",
                         style = MaterialTheme.typography.headlineLarge.copy(
@@ -151,6 +165,15 @@ fun DetailScreen(
             item {
                 Box(Modifier.fillMaxWidth().height(18.dp))
             }
+            item {
+                AnimatedVisibility(
+                    visible =  viewModel.uiState.bookVolumes.volumes.isEmpty(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Loading()
+                }
+            }
             for (bookVolume in uiState.bookVolumes.volumes) {
                 item {
                     Text(
@@ -165,6 +188,7 @@ fun DetailScreen(
                 items(bookVolume.chapters) {
                     Text(
                         modifier = Modifier
+                            .animateItem()
                             .padding(vertical = 4.dp)
                             .clickable(
                                 interactionSource =
@@ -182,18 +206,19 @@ fun DetailScreen(
                 }
             }
         }
-    Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
-        ExtendedFloatingActionButton(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            onClick = onClickContinueReading,
-            icon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.filled_menu_book_24px),
-                    contentDescription = null
-                )
-            },
-            text = { Text(text = "继续阅读") },
-        )
+        Box(Modifier.fillMaxSize().padding(end = 31.dp, bottom = 54.dp)) {
+            ExtendedFloatingActionButton(
+                modifier = Modifier.align(Alignment.BottomEnd),
+                onClick = onClickContinueReading,
+                icon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filled_menu_book_24px),
+                        contentDescription = null
+                    )
+                },
+                text = { Text(text = "继续阅读") },
+            )
+        }
     }
 }
 
