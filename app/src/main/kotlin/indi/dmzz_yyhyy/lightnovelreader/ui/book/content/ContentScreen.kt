@@ -406,18 +406,13 @@ fun ContentTextComponent(
     ) {
         items(
             content
-                .replace("[image]", "ImageSplitMark[image]")
-                .replace("[/image]", "ImageSplitMark")
-                .split("ImageSplitMark")
+                .split("[image]")
         ) {
-            if (it.startsWith("[image]"))
+            if (it.startsWith("http://") || it.startsWith("https://"))
                 AsyncImage(
                     modifier = Modifier.fillMaxWidth(),
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(it
-                            .replace("[image]", "")
-                            .replace("\n", "")
-                        )
+                        .data(it)
                         .crossfade(true)
                         .build(),
                     contentDescription = null

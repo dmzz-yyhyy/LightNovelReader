@@ -9,9 +9,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
-import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
-import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
-import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.AllBookExpandPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
@@ -20,6 +17,7 @@ import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -35,9 +33,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 
 object Wenku8Api: WebBookDataSource {
-    private val BOOK_INFORMATION_URL = update("eNpb85aBtYTBNKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknFUZn5qXl6xVkFNhnptgCAJkrFgQ").toString()
-    private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
-    private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
+    private var allBookChapterListCacheId: Int = -1
+    private var allBookChapterListCache: List<ChapterInformation> = emptyList()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val isOffLineFlow = flow {
         while(true) {
@@ -50,123 +47,97 @@ object Wenku8Api: WebBookDataSource {
     private var isStopSearch = false
     private var runningSearchCount = 0
 
+    private fun isOffLine(): Boolean {
+        try {
+            Jsoup.connect("http://app.wenku8.com/").get()
+            return false
+        } catch (_: Exception) {
+            return true
+        }
+    }
+
     override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
 
+    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun getBookInformation(id: Int): BookInformation {
         if (isOffLine()) return BookInformation.empty()
-        val soup = Jsoup.connect(BOOK_INFORMATION_URL +id).get()
-        return BookInformation(
-            id,
-            soup.select("wml > card")[0].attr("title").split("(")[0],
-            soup.select("img")[0].attr("src"),
-            soup.select("anchor")[0].text(),
-            soup.select("card")[0].toString()
-                .split("[作品简介]<br>\n")[1]
-                .split("<br></p>")[0].replace("<br>", ""),
-            soup.select("a")[10].text(),
-            soup.select("card")[0].toString()
-                .split("字数:")[1]
-                .split("字<br>")[0].toInt(),
-            LocalDate.parse("20"+soup.select("card")[0].toString()
-                .split("更新:")[1]
-                .split("<br>")[0],
-                DATA_TIME_FORMATTER
-            ).atStartOfDay(),
-                soup.select("card")[0].toString()
-                    .split("状态:")[1]
-                    .split("<br>")[0] != "连载中"
-        )
+        return wenku8Api("action=book&do=meta&aid=$id&t=0").let {
+            BookInformation(
+                id = id,
+                title = it.selectFirst("[name=Title]")?.text() ?: "",
+                coverUrl = "https://img.wenku8.com/image/${id/1000}/$id/${id}s.jpg",
+                author = it.selectFirst("[name=Author]")?.attr("value") ?: "",
+                description = wenku8Api("action=book&do=intro&aid=$id&t=0").text(),
+                tags = it.selectFirst("[name=Tags]")?.attr("value")?.split(" ") ?: emptyList(),
+                publishingHouse = it.selectFirst("[name=PressId]")?.attr("value") ?: "",
+                wordCount = it.selectFirst("[name=BookLength]")?.attr("value")?.toInt() ?: -1,
+                lastUpdated = LocalDate.parse(it.selectFirst("[name=LastUpdate]")?.attr("value")).atStartOfDay(),
+                isComplete = it.selectFirst("[name=BookStatus]")?.attr("value") == "已完成"
+            )
+        }
     }
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
         if (isOffLine()) return BookVolumes.empty()
-        val soup = Jsoup.connect(BOOK_VOLUMES_URL +id).get()
-        val totalPage = soup.text().split("[1/")[1].split("]")[0].toInt()
-        val elements: MutableList<String> = mutableListOf()
-        for (volume in 1..totalPage) {
-            elements += Jsoup.connect("$BOOK_VOLUMES_URL$id&page=$volume").get().toString()
-                .split("作者").drop(1).joinToString()
-                .split("\n", limit = 2)[1]
-                .split("到第")[0]
-                .replace("<br>", "")
-                .replace("      ", "")
-                .replace(", ", "")
-                .replace("</a>", "")
-                .replace("〖", "")
-                .split("\n")
-                .filter { it.isNotEmpty() }
-        }
-        val volumes: MutableList<Volume> = mutableListOf()
-        var title = ""
-        val chapters: MutableList<ChapterInformation> = mutableListOf()
-        var index = 0
-        for (element in elements) {
-            if (element.endsWith("〗")) {
-                if (index != 0)
-                    volumes.add(Volume(id*100000+index, title, chapters.toList()))
-                title = element.replace("〗", "")
-                chapters.clear()
-                index++
-                continue
-            }
-            chapters.add(
-                ChapterInformation(
-                    element
-                        .split("cid=")[1]
-                        .split("\">")[0]
-                        .toInt(),
-                    element.split(">")[1]
+        return BookVolumes(wenku8Api("action=book&do=list&aid=$id&t=0")
+            .select("volume")
+            .map { element ->
+                Volume(
+                    volumeId = element.attr("vid").toInt(),
+                    volumeTitle = element.ownText(),
+                    chapters = element.select("volume > chapter")
+                        .map {
+                            ChapterInformation(
+                                id = it.attr("cid").toInt(),
+                                title = it.text(),
+                            )
+                        }
                 )
-            )
-        }
-        volumes.add(Volume(id*100000+index, title, chapters.toList()))
-        return BookVolumes(volumes)
+            }
+        )
     }
 
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         if (isOffLine()) return ChapterContent.empty()
-        val pageRegex = Regex("[0-9]/(.*)]<input")
-        val contentRegex = Regex("</anchor><b.*>([\\s\\S]*)<br.*>\n*?.*?<input name=\"page\" format=\".*N\"")
-        val soup = Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}").get()
-        var title: String
-        var content = ""
-        val lastChapter = soup.select("a[title=\"链接\"]").toList()
-            .filter { it.text().equals("上章") }.let {
-                if (it.isEmpty())
-                    -1
-                else it[0].attr("href")
-                    .split("=").last().toInt()
+        if (allBookChapterListCacheId != bookId) {
+            allBookChapterListCacheId = bookId
+            allBookChapterListCache = getBookVolumes(bookId).let { bookVolumes ->
+                var list = emptyList<ChapterInformation>()
+                bookVolumes.volumes.forEach {
+                    list = list + it.chapters
+                }
+                return@let list
             }
-        val nextChapter = soup.select("a[title=\"链接\"]").toList()
-            .filter { it.text().equals("下章") }.let {
-                if (it.isEmpty())
-                    -1
-                else it[0].attr("href")
-                    .split("=").last().toInt()
-            }
-        soup.let { document ->
-            title = document.selectFirst("card")?.attr("title") ?: ""
-            val page = pageRegex.find(document.toString())?.let {
-                it.groups[1]?.value?.toInt() ?: 0
-            } ?: 0
-            content = (1..page).map { pageIndex ->
-                contentRegex.find(Jsoup.connect("$CHAPTER_CONTENT_URL${bookId}&cid=${chapterId}&page=$pageIndex").get().toString())
-                    ?.let { result ->
-                        (result.groups[1]?.value ?: "")
-                            .replace("      ", "")
-                            .replace("&nbsp;", " ")
-                            .replace("<br><br>", "\n")
-                            .let {
-                                if (it.startsWith("\n"))
-                                    it.replaceFirst("\n", "")
-                                else it
-                            }.replace("<br>", "\n")
-                    }
-            }.joinToString("")
         }
-        if (content.contains("本章节是纯图片内容，请访问文库电脑版网页浏览！"))
-            content = getImages(bookId, chapterId)
-        return ChapterContent(chapterId, title, content, lastChapter, nextChapter)
+        return wenku8Api("action=book&do=text&aid=$bookId&cid=$chapterId&t=0")
+            .let { document ->
+                document
+                    .toString()
+                    .replace("<html><head></head><body>\n\n", "")
+                    .replace("\n \n</body></html>", "")
+                    .let { s ->
+                        println(allBookChapterListCache)
+                        ChapterContent(
+                            id = chapterId,
+                            title = s.split("\n\n \n  \n \n\n \n    \n    \n    \n \n\n\n \n \n")[0],
+                            content = s
+                                .split("\n\n \n  \n \n\n \n    \n    \n    \n \n\n\n \n \n")[1]
+                                .replace("<!--image-->", "[image]")
+                                .replace("       <!--image-->", "\n[image]")
+                            ,
+                            lastChapter = allBookChapterListCache
+                                .indexOfFirst { it.id == chapterId }
+                                .let {
+                                    if (it == -1) it else allBookChapterListCache.getOrNull(it - 1)?.id ?: -1
+                                },
+                            nextChapter = allBookChapterListCache
+                                .indexOfFirst { it.id == chapterId }
+                                .let {
+                                    if (it == -1) it else allBookChapterListCache.getOrNull(it + 1)?.id ?: -1
+                                }
+                        )
+                    }
+            }
     }
 
     override suspend fun getExplorationPageMap(): Map<String, ExplorationPageDataSource> =
@@ -184,50 +155,21 @@ object Wenku8Api: WebBookDataSource {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
         if (isOffLine()) return searchResult
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
-        Jsoup
-            .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}")
-            .wenku8Cookie()
-            .get()
-            .let {
-                if (it.text().contains("错误原因：对不起，两次搜索的间隔时间不得少于 5 秒")) {
-                    sleep(1000)
-                    return search(searchType, keyword)
-                }
-                it
-            }
-            .let {
-                searchResult.update { oldList ->
-                    val pageContent = getSearchResult(it)
-                    if (isStopSearch) {
-                        runningSearchCount--
-                        return@let it
+        coroutineScope.launch {
+            delay(1)
+            wenku8Api("action=search&searchtype=$searchResult&searchkey=${URLEncoder.encode(encodedKeyword, "utf-8")}")
+                .select("item")
+                .forEach { element ->
+                    searchResult.update {
+                        it + listOf(getBookInformation(element.attr("aid").toInt()))
                     }
-                    return@update (oldList + pageContent)
                 }
-                it
-            }
-            .let { document ->
-                coroutineScope.launch {
-                    document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
-                        (2..maxPage).map{ index ->
-                            delay(6000)
-                            searchResult.update { oldList ->
-                                val pageContent = Jsoup
-                                    .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${encodedKeyword}&page=$index")
-                                    .wenku8Cookie()
-                                    .get()
-                                    .let { getSearchResult(it) }
-                                if (isActive)
-                                    return@update (oldList + pageContent)
-                                else return@launch
-                            }
-                        }
-                    }
+                .let {
                     searchResult.update {
                         it + listOf(BookInformation.empty())
                     }
                 }
-            }
+        }
         return searchResult
     }
 
@@ -250,24 +192,6 @@ object Wenku8Api: WebBookDataSource {
             Pair("articlename", "请输入书本名称"),
             Pair("author", "请输入作者名称"),
         )
-
-    private fun isOffLine(): Boolean {
-        try {
-            Jsoup.connect("https://www.wenku8.cc/").get()
-            return false
-        } catch (_: Exception) {
-            return true
-        }
-    }
-
-    private fun getImages(bookId: Int, chapterId: Int): String {
-        return Jsoup
-            .connect("https://www.wenku8.net/novel/${bookId/1000}/${bookId}/${chapterId}.htm")
-            .wenku8Cookie()
-            .get()
-            .select("#content > div > a > img")
-            .joinToString("\n") { "[image]${it.attr("src")}[/image]" }
-    }
 
     private fun getSearchResult(document: Document): List<BookInformation> = document
         .select("#content > table > tbody > tr > td > div")

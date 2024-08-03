@@ -1,6 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils.wenku8
 
+import indi.dmzz_yyhyy.lightnovelreader.utils.update
+import java.time.Instant
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import org.jsoup.Connection
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 
 
 fun Connection.wenku8Cookie(): Connection =
@@ -27,3 +33,18 @@ fun Connection.wenku8Cookie(): Connection =
         .cookie(" Hm_lvt_d72896ddbf8d27c750e3b365ea2fc902", "")
         .cookie(" Hm_lpvt_d72896ddbf8d27c750e3b365ea2fc902", "1721745932")
         .cookie(" _clsk", "1xyg0vc%7C1721745933282%7C2%7C1%7Co.clarity.ms%2Fcollect")
+
+@OptIn(ExperimentalEncodingApi::class)
+fun wenku8Api(request: String): Document =
+    Jsoup
+        .connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString())
+        .data(
+            "request", Base64.encode(request.toByteArray()),
+            "timetoken", Instant.now().toEpochMilli().toString(),
+            "appver", "1.21"
+        )
+        .post()
+        .outputSettings(Document.OutputSettings()
+            .prettyPrint(false)
+            .syntax(Document.OutputSettings.Syntax.xml)
+        )
