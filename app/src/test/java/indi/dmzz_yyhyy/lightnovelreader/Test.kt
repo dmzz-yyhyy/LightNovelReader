@@ -1,12 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader
 
-import java.net.URLEncoder
-import java.nio.charset.Charset
-import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 
@@ -38,56 +32,97 @@ fun Connection.wenku8Cookie(): Connection =
 private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
 fun main() {
-    val searchResult = MutableStateFlow(emptyList<BookInformation>())
-    val keyword = "我"
-    val searchType = "articlename"
-    Jsoup
-        .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${URLEncoder.encode(keyword, Charset.forName("gb2312"))}")
-        .wenku8Cookie()
-        .get()
-        .selectFirst("#pagelink > a.last")?.text()?.toInt()?.let { maxPage ->
-            (0..<maxPage).map{ index ->
-                searchResult.update {
-                    it + Jsoup
-                        .connect("https://www.wenku8.net/modules/article/search.php?searchtype=$searchType&searchkey=${URLEncoder.encode(keyword, Charset.forName("gb2312"))}&page=$index")
-                        .wenku8Cookie()
-                        .get()
-                        .select("#content > table > tbody > tr > td > div")
-                        .map { element ->
-                            BookInformation(
-                                id = element.selectFirst("div > div:nth-child(1) > a")
-                                    ?.attr("href")
-                                    ?.replace("/book/", "")
-                                    ?.replace(".htm", "")
-                                    ?.toInt() ?: -1,
-                                title = element.selectFirst("div > div:nth-child(1) > a")
-                                    ?.attr("title") ?: "",
-                                coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
-                                    ?.attr("src") ?: "",
-                                author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                                    ?.text()?.split("/")?.getOrNull(0)
-                                    ?.split(":")?.getOrNull(1) ?: "",
-                                description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
-                                    ?.text()?.replace("简介:", "") ?: "",
-                                publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                                    ?.text()?.split("/")?.getOrNull(1)
-                                    ?.split(":")?.getOrNull(1) ?: "",
-                                wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                                    ?.text()?.split("/")?.getOrNull(1)
-                                    ?.split(":")?.getOrNull(1)
-                                    ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
-                                lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                                    ?.text()?.split("/")?.getOrNull(0)
-                                    ?.split(":")?.getOrNull(1)
-                                    ?.let {
-                                        LocalDate.parse(it, DATA_TIME_FORMATTER)
-                                    }
-                                    ?.atStartOfDay() ?: LocalDateTime.MIN,
-                                isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                                    ?.text()?.split("/")?.getOrNull(2) == "已完结"
-                            )
-                        }
-                }
-            }
+    println(Jsoup.parse("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+            "<package>\n" +
+            "<volume vid=\"139289\"><![CDATA[第一卷]]>\n" +
+            "<chapter cid=\"139290\"><![CDATA[序幕 相当微小的，宛如梦境的美丽记忆]]></chapter>\n" +
+            "<chapter cid=\"139291\"><![CDATA[第一章 从社畜超越时空回到那个时候]]></chapter>\n" +
+            "<chapter cid=\"139292\"><![CDATA[第二章 重新开始第二次的青春]]></chapter>\n" +
+            "<chapter cid=\"139293\"><![CDATA[第三章 放学后与憧憬的少女一起]]></chapter>\n" +
+            "<chapter cid=\"139294\"><![CDATA[幕间休息 紫条院春华的呢喃]]></chapter>\n" +
+            "<chapter cid=\"139295\"><![CDATA[第四章 校园阶层等级上升中]]></chapter>\n" +
+            "<chapter cid=\"139296\"><![CDATA[第五章 社畜的简报]]></chapter>\n" +
+            "<chapter cid=\"139297\"><![CDATA[第六章 能者多劳]]></chapter>\n" +
+            "<chapter cid=\"139298\"><![CDATA[第七章 春华的挑战与情书]]></chapter>\n" +
+            "<chapter cid=\"139299\"><![CDATA[第八章 与你共度校庆]]></chapter>\n" +
+            "<chapter cid=\"139300\"><![CDATA[第九章 修罗般的现场才是社畜的勋章]]></chapter>\n" +
+            "<chapter cid=\"139301\"><![CDATA[第十章 对功劳者说声「谢谢」]]></chapter>\n" +
+            "<chapter cid=\"139302\"><![CDATA[第十一章 恶梦与腿枕]]></chapter>\n" +
+            "<chapter cid=\"139303\"><![CDATA[终幕 走过这奇迹般的日子]]></chapter>\n" +
+            "<chapter cid=\"139304\"><![CDATA[后记]]></chapter>\n" +
+            "<chapter cid=\"140986\"><![CDATA[电子书特典〈毫无防备的紫条院同学〉]]></chapter>\n" +
+            "<chapter cid=\"140987\"><![CDATA[插图]]></chapter>\n" +
+            "</volume>\n" +
+            "<volume vid=\"139559\"><![CDATA[第二卷]]>\n" +
+            "<chapter cid=\"139560\"><![CDATA[序幕 校庆当晚的紫条院家]]></chapter>\n" +
+            "<chapter cid=\"139561\"><![CDATA[第一章 校园阶层顶端的自大型帅哥来找碴]]></chapter>\n" +
+            "<chapter cid=\"139924\"><![CDATA[第二章 现正用功中！]]></chapter>\n" +
+            "<chapter cid=\"140202\"><![CDATA[第三章 考试比赛的结局]]></chapter>\n" +
+            "<chapter cid=\"140237\"><![CDATA[第四章 无关胜负的必然结果]]></chapter>\n" +
+            "<chapter cid=\"140344\"><![CDATA[第五章 前往紫条院家的招待]]></chapter>\n" +
+            "<chapter cid=\"141121\"><![CDATA[第六章 落得必须向心仪女孩的妈妈告白心意的下场]]></chapter>\n" +
+            "<chapter cid=\"141658\"><![CDATA[第七章 社长VS社畜]]></chapter>\n" +
+            "<chapter cid=\"141975\"><![CDATA[第八章 在那个女孩的房里举行茶会]]></chapter>\n" +
+            "<chapter cid=\"142024\"><![CDATA[终幕1 战果报告后妹妹的腹肌坏死]]></chapter>\n" +
+            "<chapter cid=\"142030\"><![CDATA[终幕2 脚步稍微前进，夏天即将到来]]></chapter>\n" +
+            "<chapter cid=\"142031\"><![CDATA[后记]]></chapter>\n" +
+            "<chapter cid=\"145515\"><![CDATA[电子书特典〈明明只是问个信箱而已〉]]></chapter>\n" +
+            "<chapter cid=\"145516\"><![CDATA[插图]]></chapter>\n" +
+            "</volume>\n" +
+            "<volume vid=\"143962\"><![CDATA[第三卷]]>\n" +
+            "<chapter cid=\"143963\"><![CDATA[序幕 传简讯给那个女孩]]></chapter>\n" +
+            "<chapter cid=\"145305\"><![CDATA[第一章 球技大会的记忆与运动白痴的奋斗]]></chapter>\n" +
+            "<chapter cid=\"145444\"><![CDATA[第二章 拼尽全力而香汗淋漓的天使]]></chapter>\n" +
+            "<chapter cid=\"145532\"><![CDATA[第三章 现在这个时候只需要热血]]></chapter>\n" +
+            "<chapter cid=\"145603\"><![CDATA[幕间 暑假开始]]></chapter>\n" +
+            "<chapter cid=\"145694\"><![CDATA[第四章 这次绝对不背叛妹妹的笑容]]></chapter>\n" +
+            "<chapter cid=\"146252\"><![CDATA[第五章 紫条院春华的嫉妒]]></chapter>\n" +
+            "<chapter cid=\"146328\"><![CDATA[第六章 春华与香奈子]]></chapter>\n" +
+            "<chapter cid=\"146487\"><![CDATA[第七章 春华受到新滨家的欢迎]]></chapter>\n" +
+            "<chapter cid=\"147858\"><![CDATA[第八章 可以住下来吗？]]></chapter>\n" +
+            "<chapter cid=\"148203\"><![CDATA[第九章 深夜的茶会与完事后的早晨]]></chapter>\n" +
+            "<chapter cid=\"148864\"><![CDATA[终幕1 在夏日的早晨面临暂时的离别]]></chapter>\n" +
+            "<chapter cid=\"148981\"><![CDATA[终幕2 同一时刻，回想过去的那一夜]]></chapter>\n" +
+            "<chapter cid=\"148982\"><![CDATA[后记]]></chapter>\n" +
+            "<chapter cid=\"149010\"><![CDATA[电子书特典〈春华与香奈子的睡衣派对〉]]></chapter>\n" +
+            "<chapter cid=\"149011\"><![CDATA[插图]]></chapter>\n" +
+            "<chapter cid=\"148994\"><![CDATA[电子书特典《早晨回家的大小姐的留宿报告》]]></chapter>\n" +
+            "</volume>\n" +
+            "<volume vid=\"149012\"><![CDATA[第四卷]]>\n" +
+            "<chapter cid=\"149013\"><![CDATA[序幕 在这个灼热的夏天创造最后的回忆]]></chapter>\n" +
+            "<chapter cid=\"149488\"><![CDATA[第一章 克服前往海边之前的难关]]></chapter>\n" +
+            "<chapter cid=\"150172\"><![CDATA[第二章 海边的天使]]></chapter>\n" +
+            "<chapter cid=\"151437\"><![CDATA[第三章 在摇摇晃晃的海洋上]]></chapter>\n" +
+            "<chapter cid=\"152106\"><![CDATA[第四章 宴会也将近尾声但情况一片混乱]]></chapter>\n" +
+            "<chapter cid=\"152161\"><![CDATA[终幕1 闪亮炫目的海边回忆]]></chapter>\n" +
+            "<chapter cid=\"152489\"><![CDATA[终幕2 夏天结束，新的季节与阶段的开始]]></chapter>\n" +
+            "<chapter cid=\"152490\"><![CDATA[后记]]></chapter>\n" +
+            "<chapter cid=\"153764\"><![CDATA[插图]]></chapter>\n" +
+            "<chapter cid=\"152591\"><![CDATA[电子书特典《背着醉倒的天使》]]></chapter>\n" +
+            "<chapter cid=\"152592\"><![CDATA[BOOK☆WALKER特典《守护海边天使的方法》]]></chapter>\n" +
+            "</volume>\n" +
+            "<volume vid=\"152720\"><![CDATA[第五卷]]>\n" +
+            "<chapter cid=\"152721\"><![CDATA[序章 直呼名字的新手们]]></chapter>\n" +
+            "<chapter cid=\"152722\"><![CDATA[第一章 来面试打工的男高中生有点奇怪]]></chapter>\n" +
+            "<chapter cid=\"152789\"><![CDATA[第二章 重回职场的社畜与光明的白色企业]]></chapter>\n" +
+            "<chapter cid=\"152945\"><![CDATA[第三章 社长千金的决心]]></chapter>\n" +
+            "<chapter cid=\"153041\"><![CDATA[第四章 请多指教，新滨前辈！]]></chapter>\n" +
+            "<chapter cid=\"153162\"><![CDATA[第五章 过度保护的社长的秘密视察]]></chapter>\n" +
+            "<chapter cid=\"153616\"><![CDATA[第六章 打工人与社长的经营战略会议]]></chapter>\n" +
+            "<chapter cid=\"153819\"><![CDATA[第七章 噩梦与咖啡馆约会]]></chapter>\n" +
+            "<chapter cid=\"154187\"><![CDATA[第八章 春华的成长]]></chapter>\n" +
+            "<chapter cid=\"154369\"><![CDATA[第九章 在橘色浸染的世界里携手]]></chapter>\n" +
+            "<chapter cid=\"154370\"><![CDATA[插图]]></chapter>\n" +
+            "<chapter cid=\"154392\"><![CDATA[BOOK☆WALKER特典《夏末的线香烟花》]]></chapter>\n" +
+            "</volume>\n" +
+            "<volume vid=\"154616\"><![CDATA[第六卷]]>\n" +
+            "<chapter cid=\"154617\"><![CDATA[第一章 幸福的庆生宴]]></chapter>\n" +
+            "<chapter cid=\"154885\"><![CDATA[第二章 我从一开始就知道这种现象的名字]]></chapter>\n" +
+            "</volume>\n" +
+            "</package>")
+        .select("volume")
+        .map {
+            println(it.ownText())
         }
+    )
 }
