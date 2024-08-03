@@ -4,9 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.IntListConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 
-@TypeConverters(IntListConverter::class)
+@TypeConverters(ListConverter::class)
 @Entity(tableName = "volume")
 data class VolumeEntity(
     @ColumnInfo(name = "book_id")

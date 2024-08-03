@@ -7,12 +7,12 @@ import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.IntListConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.eneity.VolumeEntity
 
 @Dao
 interface BookVolumesDao {
-    @TypeConverters(IntListConverter::class)
+    @TypeConverters(ListConverter::class)
     @Query("replace into volume (book_id, volume_id, volume_title, chapter_id_list)" +
             " values (:bookId, :volumeId, :volumeTitle, :chapterIds)")
     suspend fun update(bookId: Int, volumeId: Int, volumeTitle: String, chapterIds: String)
