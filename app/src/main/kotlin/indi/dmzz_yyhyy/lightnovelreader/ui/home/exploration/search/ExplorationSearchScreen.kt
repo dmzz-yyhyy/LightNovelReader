@@ -46,18 +46,16 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,13 +121,9 @@ fun ExplorationSearchScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             ) },
                             leadingIcon = {
-                                if (searchBarExpanded) {
-                                    IconButton(onClick = onCLickBack) {
-                                        Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
+                                IconButton(onClick = onCLickBack) {
+                                Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
                                     }
-                                } else IconButton(onClick = onCLickBack) {
-                                    Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
-                                }
                             },
                             trailingIcon = {
                                 if (searchBarExpanded) {
@@ -275,7 +269,7 @@ fun ExplorationSearchScreen(
                 )
             }
             items(uiState.searchResult) {
-                BookCard(
+                ExplorationBookCard(
                     modifier = Modifier.animateItem(),
                     bookInformation = it,
                     onClickBook = onClickBook
@@ -291,68 +285,6 @@ fun ExplorationSearchScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun BookCard(
-    modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
-    onClickBook: (Int) -> Unit
-) {
-    Row(
-        modifier = modifier
-            .height(125.dp)
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null
-            ) {
-                onClickBook(bookInformation.id)
-            }
-    ) {
-        Cover(
-            width = 82.dp,
-            height = 125.dp,
-            url = bookInformation.coverUrl,
-            rounded = 8.dp
-        )
-        Column (
-            modifier = Modifier.fillMaxWidth().padding(8.dp, 5.dp, 14.dp, 5.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = bookInformation.title,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.W700,
-                    fontSize = 15.sp,
-                    lineHeight = 18.sp,
-                    maxLines = 2
-                )
-                Box(modifier = Modifier.weight(2f))
-                IconButton(onClick = {}) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.outline_bookmark_24px),
-                        contentDescription = "mark"
-                    )
-                }
-            }
-            Text(
-                text =
-                "作者: ${bookInformation.author} / 文库: ${bookInformation.publishingHouse}\n" +
-                        "更新: ${bookInformation.lastUpdated.year}-${bookInformation.lastUpdated.month}-${bookInformation.lastUpdated.dayOfMonth}" +
-                        " / 数字: ${bookInformation.wordCount}" +
-                        " / ${if (bookInformation.isComplete) "已完结" else "连载中"}\n" +
-                        "简介: ${bookInformation.description}",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.W700,
-                fontSize = 11.sp,
-                lineHeight = 16.sp,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }

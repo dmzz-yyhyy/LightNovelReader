@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8
+package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration
 
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook

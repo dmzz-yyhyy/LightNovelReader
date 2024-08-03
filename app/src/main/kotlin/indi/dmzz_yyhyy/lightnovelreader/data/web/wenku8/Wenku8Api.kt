@@ -7,7 +7,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.AllBookExpandPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import java.lang.Thread.sleep
@@ -27,9 +32,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import org.jsoup.select.Elements
 
 object Wenku8Api: WebBookDataSource {
-    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private val BOOK_INFORMATION_URL = update("eNpb85aBtYTBNKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknFUZn5qXl6xVkFNhnptgCAJkrFgQ").toString()
     private val BOOK_VOLUMES_URL = update("eNpb85aBtYTBOKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElKT8_W68go8A-MTPFFgBq4hUa").toString()
     private val CHAPTER_CONTENT_URL = update("eNpb85aBtYTBLKOkpKDYSl-_vLxcrzw1L7vUQi85Wb88sUA_sagkMzknVb8oNTElOSOxoCS1SK8go8A-MTPFFgCu1BZZ").toString()
@@ -40,17 +45,10 @@ object Wenku8Api: WebBookDataSource {
             delay(2500)
         }
     }
+    private val explorationExpandedPageDataSourceMap = mutableMapOf<String, ExplorationExpandedPageDataSource>()
+    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private var isStopSearch = false
     private var runningSearchCount = 0
-
-    private fun isOffLine(): Boolean {
-        try {
-            Jsoup.connect("https://www.wenku8.cc/").get()
-            return false
-        } catch (_: Exception) {
-            return true
-        }
-    }
 
     override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
 
@@ -180,51 +178,7 @@ object Wenku8Api: WebBookDataSource {
 
     override suspend fun getExplorationPageTitleList(): List<String> = listOf("首页", "全部", "分类")
 
-    private fun getImages(bookId: Int, chapterId: Int): String {
-        return Jsoup
-            .connect("https://www.wenku8.net/novel/${bookId/1000}/${bookId}/${chapterId}.htm")
-            .wenku8Cookie()
-            .get()
-            .select("#content > div > a > img")
-            .joinToString("\n") { "[image]${it.attr("src")}[/image]" }
-    }
-
-    private fun getSearchResult(document: Document): List<BookInformation> = document
-            .select("#content > table > tbody > tr > td > div")
-            .map { element ->
-                BookInformation(
-                    id = element.selectFirst("div > div:nth-child(1) > a")
-                        ?.attr("href")
-                        ?.replace("/book/", "")
-                        ?.replace(".htm", "")
-                        ?.toInt() ?: -1,
-                    title = element.selectFirst("div > div:nth-child(1) > a")
-                        ?.attr("title") ?: "",
-                    coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
-                        ?.attr("src") ?: "",
-                    author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                        ?.text()?.split("/")?.getOrNull(0)
-                        ?.split(":")?.getOrNull(1) ?: "",
-                    description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
-                        ?.text()?.replace("简介:", "") ?: "",
-                    publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                        ?.text()?.split("/")?.getOrNull(1)
-                        ?.split(":")?.getOrNull(1) ?: "",
-                    wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(1)
-                        ?.split(":")?.getOrNull(1)
-                        ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
-                    lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(0)
-                        ?.split(":")?.getOrNull(1)
-                        ?.let {
-                            LocalDate.parse(it, DATA_TIME_FORMATTER)
-                        }
-                        ?.atStartOfDay() ?: LocalDateTime.MIN,
-                    isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(2) == "已完结"
-                )
-            }
+    override fun getExplorationExpandedPageDataSourceMap(): Map<String, ExplorationExpandedPageDataSource> = explorationExpandedPageDataSourceMap
 
     override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
@@ -296,4 +250,70 @@ object Wenku8Api: WebBookDataSource {
             Pair("articlename", "请输入书本名称"),
             Pair("author", "请输入作者名称"),
         )
+
+    private fun isOffLine(): Boolean {
+        try {
+            Jsoup.connect("https://www.wenku8.cc/").get()
+            return false
+        } catch (_: Exception) {
+            return true
+        }
+    }
+
+    private fun getImages(bookId: Int, chapterId: Int): String {
+        return Jsoup
+            .connect("https://www.wenku8.net/novel/${bookId/1000}/${bookId}/${chapterId}.htm")
+            .wenku8Cookie()
+            .get()
+            .select("#content > div > a > img")
+            .joinToString("\n") { "[image]${it.attr("src")}[/image]" }
+    }
+
+    private fun getSearchResult(document: Document): List<BookInformation> = document
+        .select("#content > table > tbody > tr > td > div")
+        .let { getBookInformationListFromBookCards(it) }
+
+    fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+        elements
+            .map { element ->
+                BookInformation(
+                    id = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("href")
+                        ?.replace("/book/", "")
+                        ?.replace(".htm", "")
+                        ?.toInt() ?: -1,
+                    title = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("title") ?: "",
+                    coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                        ?.attr("src") ?: "",
+                    author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                        ?.text()?.split("/")?.getOrNull(0)
+                        ?.split(":")?.getOrNull(1) ?: "",
+                    description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                        ?.text()?.replace("简介:", "") ?: "",
+                    publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                        ?.text()?.split("/")?.getOrNull(1)
+                        ?.split(":")?.getOrNull(1) ?: "",
+                    wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(1)
+                        ?.split(":")?.getOrNull(1)
+                        ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                    lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(0)
+                        ?.split(":")?.getOrNull(1)
+                        ?.let {
+                            LocalDate.parse(it, DATA_TIME_FORMATTER)
+                        }
+                        ?.atStartOfDay() ?: LocalDateTime.MIN,
+                    isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                        ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                )
+            }
+
+    private fun registerExplorationExpandedPageDataSource(id: String, expandedPageDataSource: ExplorationExpandedPageDataSource) =
+            explorationExpandedPageDataSourceMap.put(id, expandedPageDataSource)
+
+    init {
+        registerExplorationExpandedPageDataSource("allBook", AllBookExpandPageDataSource)
+    }
 }
