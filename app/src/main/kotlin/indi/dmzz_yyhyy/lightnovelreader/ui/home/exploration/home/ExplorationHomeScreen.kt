@@ -34,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +50,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 @Composable
 fun ExplorationHomeScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    onClickExpand: (String) -> Unit,
     onClickBook: (Int) -> Unit,
     uiState: ExplorationHomeUiState,
     init: () -> Unit,
@@ -97,6 +97,7 @@ fun ExplorationHomeScreen(
         ) {
             ExplorationPage(
                 explorationPageBooksRawList = uiState.explorationPageBooksRawList,
+                onClickExpand = onClickExpand,
                 onClickBook = onClickBook
             )
         }
@@ -144,6 +145,7 @@ fun TopBar(
 @Composable
 fun ExplorationPage(
     explorationPageBooksRawList: List<ExplorationBooksRow>,
+    onClickExpand: (String) -> Unit,
     onClickBook: (Int) -> Unit
 ) {
     LazyColumn {
@@ -153,7 +155,7 @@ fun ExplorationPage(
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth().height(48.dp)
-                        .padding(horizontal = 16.dp),
+                        .padding(start = 16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -164,9 +166,8 @@ fun ExplorationPage(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     if (explorationBooksRow.expandable) {
-                        IconButton(onClick = { /* do something */ }) {
+                        IconButton(onClick = { explorationBooksRow.expandedPageDataSourceId?.let { onClickExpand(it) } }) {
                             Icon(
-                                modifier = Modifier.scale(2f, 2f),
                                 painter = painterResource(id = R.drawable.arrow_forward_24px),
                                 contentDescription = "expand"
                             )

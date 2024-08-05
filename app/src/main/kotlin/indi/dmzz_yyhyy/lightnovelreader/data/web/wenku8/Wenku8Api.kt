@@ -7,10 +7,20 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.IsCompletedSwitchFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.HomeBookExpandPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.FirstLetterSingleChoiceFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.PublishingHouseSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Api
 import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +32,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.select.Elements
 
 object Wenku8Api: WebBookDataSource {
-    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private var allBookChapterListCacheId: Int = -1
     private var allBookChapterListCache: List<ChapterInformation> = emptyList()
     private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -34,6 +44,8 @@ object Wenku8Api: WebBookDataSource {
             delay(2500)
         }
     }
+    private val explorationExpandedPageDataSourceMap = mutableMapOf<String, ExplorationExpandedPageDataSource>()
+    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     private fun isOffLine(): Boolean {
         try {
@@ -148,6 +160,8 @@ object Wenku8Api: WebBookDataSource {
 
     override suspend fun getExplorationPageTitleList(): List<String> = listOf("首页", "全部", "分类")
 
+    override fun getExplorationExpandedPageDataSourceMap(): Map<String, ExplorationExpandedPageDataSource> = explorationExpandedPageDataSourceMap
+
     override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         val searchResult = MutableStateFlow(emptyList<BookInformation>())
         if (isOffLine()) return searchResult
@@ -189,4 +203,175 @@ object Wenku8Api: WebBookDataSource {
             Pair("articlename", "请输入书本名称"),
             Pair("author", "请输入作者名称"),
         )
+
+    suspend fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+        elements
+            .map { element ->
+                if (element.text().contains("因版权问题"))
+                    getBookInformation(element
+                        .selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("href")
+                        ?.replace("/book/", "")
+                        ?.replace(".htm", "")
+                        ?.toInt() ?: -1
+                    )
+                else
+                    BookInformation(
+                        id = element.selectFirst("div > div:nth-child(1) > a")
+                            ?.attr("href")
+                            ?.replace("/book/", "")
+                            ?.replace(".htm", "")
+                            ?.toInt() ?: -1,
+                        title = element.selectFirst("div > div:nth-child(1) > a")
+                            ?.attr("title") ?: "",
+                        coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                            ?.attr("src") ?: "",
+                        author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                            ?.text()?.split("/")?.getOrNull(0)
+                            ?.split(":")?.getOrNull(1) ?: "",
+                        description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                            ?.text()?.replace("简介:", "") ?: "",
+                        tags = element.selectFirst("div > div:nth-child(2) > p:nth-child(4) > span")
+                            ?.text()?.split(" ") ?: emptyList(),
+                        publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                            ?.text()?.split("/")?.getOrNull(1)
+                            ?.split(":")?.getOrNull(1) ?: "",
+                        wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(1)
+                            ?.split(":")?.getOrNull(1)
+                            ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                        lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(0)
+                            ?.split(":")?.getOrNull(1)
+                            ?.let {
+                                LocalDate.parse(it, DATA_TIME_FORMATTER)
+                            }
+                            ?.atStartOfDay() ?: LocalDateTime.MIN,
+                        isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                    )
+            }
+
+    private fun registerExplorationExpandedPageDataSource(id: String, expandedPageDataSource: ExplorationExpandedPageDataSource) =
+            explorationExpandedPageDataSourceMap.put(id, expandedPageDataSource)
+
+    init {
+        registerExplorationExpandedPageDataSource(
+            id = "allBook",
+            expandedPageDataSource = HomeBookExpandPageDataSource(
+                title = "轻小说列表",
+                filtersBuilder = {
+                    val choicesMap = mapOf(
+                        Pair("任意", ""),
+                        Pair("0~9", "1")
+                    )
+                    listOf(
+                        IsCompletedSwitchFilter { this.refresh() },
+                        FirstLetterSingleChoiceFilter {
+                            this.arg = choicesMap[it.trim()] ?: it.trim()
+                            if (this.arg != "") this.arg += "&initial="
+                            this.refresh()
+                        },
+                        PublishingHouseSingleChoiceFilter { this.refresh() }
+                    )
+                }
+            )
+        )
+        registerExplorationExpandedPageDataSource(
+            id = "allCompletedBook",
+            expandedPageDataSource = HomeBookExpandPageDataSource(
+                title = "完结全本",
+                filtersBuilder = {
+                    val choicesMap = mapOf(
+                        Pair("任意", ""),
+                        Pair("0~9", "1")
+                    )
+                    listOf(
+                        IsCompletedSwitchFilter { this.refresh() },
+                        FirstLetterSingleChoiceFilter {
+                            this.arg = choicesMap[it.trim()] ?: it.trim()
+                            if (this.arg != "") this.arg += "&initial="
+                            this.refresh()
+                        },
+                        PublishingHouseSingleChoiceFilter { this.refresh() }
+                    )
+                },
+                extendedParameters = "&fullflag=1"
+            )
+        )
+        listOf("allvisit", "anime", "lastupdate", "postdate").forEach { id ->
+            val nameMap = mapOf(
+                Pair("allvisit", "热门轻小说"),
+                Pair("anime", "动画化作品"),
+                Pair("lastupdate", "今日更新"),
+                Pair("postdate", "新书一览"),
+            )
+            registerExplorationExpandedPageDataSource(
+                id = "${id}Book",
+                expandedPageDataSource = HomeBookExpandPageDataSource(
+                    baseUrl = "https://www.wenku8.net/modules/article/toplist.php",
+                    title = nameMap[id] ?: "",
+                    filtersBuilder = {
+                        val choicesMap = mapOf(
+                            Pair("任意", ""),
+                            Pair("0~9", "1")
+                        )
+                        listOf(
+                            IsCompletedSwitchFilter { this.refresh() },
+                            FirstLetterSingleChoiceFilter {
+                                this.arg = choicesMap[it.trim()] ?: it.trim()
+                                if (this.arg != "") this.arg += "&initial="
+                                this.refresh()
+                            },
+                            PublishingHouseSingleChoiceFilter { this.refresh() }
+                        )
+                    },
+                    extendedParameters = "&sort=$id",
+                    contentSelector = "#content > table > tbody > tr > td > div"
+                )
+            )
+        }
+        listOf("校园", "青春", "恋爱", "治愈", "群像",
+                "竞技", "音乐", "美食", "旅行", "欢乐向",
+                "经营", "职场", "斗智", "脑洞", "宅文化",
+                "穿越", "奇幻", "魔法", "异能", "战斗",
+                "科幻", "机战", "战争", "冒险", "龙傲天",
+                "悬疑", "犯罪", "复仇", "黑暗", "猎奇",
+                "惊悚", "间谍", "末日", "游戏", "大逃杀",
+                "青梅竹马", "妹妹", "女儿", "JK", "JC",
+                "大小姐", "性转", "伪娘", "人外",
+                "后宫", "百合", "耽美", "NTR", "女性视角").forEach { tag ->
+            registerExplorationExpandedPageDataSource(
+                id = tag,
+                expandedPageDataSource = HomeBookExpandPageDataSource(
+                    baseUrl = "https://www.wenku8.net/modules/article/tags.php",
+                    title = tag,
+                    filtersBuilder = {
+                        val choicesMap = mapOf(
+                            Pair("默认", ""),
+                            Pair("按更新时间排序", ""),
+                            Pair("按热度排序", "&v=1"),
+                            Pair("仅动画化", "&v=3")
+                        )
+                        listOf(
+                            IsCompletedSwitchFilter { this.refresh() },
+                            SingleChoiceFilter(
+                                title = "排序",
+                                dialogTitle = "排序顺序",
+                                description = "书本排序的依据。",
+                                choices = listOf("默认", "按更新时间排序", "按热度排序", "仅动画化"),
+                                defaultChoice = "默认"
+                            ) {
+                                this.arg = choicesMap[it.trim()] ?: ""
+                                this.refresh()
+                            },
+                            PublishingHouseSingleChoiceFilter { this.refresh() }
+                        )
+                    },
+                    extendedParameters = "&t=${URLEncoder.encode(tag, "gb2312")}",
+                    contentSelector = "#content > table > tbody > tr:nth-child(2) > td > div"
+                )
+            )
+        }
+    }
 }

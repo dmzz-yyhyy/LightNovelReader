@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8
+package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration
 
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
@@ -32,8 +32,7 @@ object Wenku8TagsExplorationPage: ExplorationPageDataSource {
                     .map {url ->
                         val soup = Jsoup
                             .connect(url.split("=")[0] + "=" +
-                                    URLEncoder.encode(url.split("=")[1],
-                                        "gb2312"))
+                                    URLEncoder.encode(url.split("=")[1], "gb2312"))
                             .wenku8Cookie()
                             .get()
                         explorationBooksRows.update {
@@ -65,7 +64,8 @@ object Wenku8TagsExplorationPage: ExplorationPageDataSource {
                     coverUrl = coverUrlList[it],
                 )
             },
-            expandable = false
+            expandable = true,
+            expandedPageDataSourceId = title
         )
     }
 }

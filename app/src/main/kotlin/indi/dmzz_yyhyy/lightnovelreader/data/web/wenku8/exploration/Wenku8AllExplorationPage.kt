@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8
+package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration
 
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
@@ -22,7 +22,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
             lock = true
             CoroutineScope(Dispatchers.IO).launch {
                 explorationBooksRows.update {
-                    it + getAllBookBooksRow()
+                    it + getAllBookBooksRow().copy(expandable = true, expandedPageDataSourceId = "allBook")
                 }
                 explorationBooksRows.update {
                     it + getTopListBookBooksRow("热门轻小说", "allvisit")
@@ -37,7 +37,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
                     it + getTopListBookBooksRow("新书一览", "postdate")
                 }
                 explorationBooksRows.update {
-                    it + getCompletedBooksRow()
+                    it + getCompletedBooksRow().copy(expandable = true, expandedPageDataSourceId = "allCompletedBook")
                 }
             }
         }
@@ -49,7 +49,10 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
             .connect("https://www.wenku8.cc/modules/article/articlelist.php?fullflag=1")
             .wenku8Cookie()
             .get()
-        return getBooksRow(soup, "完结全本")
+        return getBooksRow(soup, "完结全本").copy(
+            expandable = true,
+            expandedPageDataSourceId = "allBook"
+        )
     }
 
     private fun getTopListBookBooksRow(title: String, sort: String): ExplorationBooksRow {
@@ -57,7 +60,10 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
             .connect("https://www.wenku8.cc/modules/article/toplist.php?sort=$sort")
             .wenku8Cookie()
             .get()
-        return getBooksRow(soup, title)
+        return getBooksRow(soup, title).copy(
+            expandable = true,
+            expandedPageDataSourceId = "${sort}Book"
+        )
     }
 
     private fun getAllBookBooksRow(): ExplorationBooksRow {

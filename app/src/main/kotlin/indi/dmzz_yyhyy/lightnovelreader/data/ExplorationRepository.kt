@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data
 
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -20,6 +21,8 @@ class ExplorationRepository @Inject constructor(
 
     suspend fun getExplorationPageMap() = webBookDataSource.getExplorationPageMap()
     suspend fun getExplorationPageTitleList() = webBookDataSource.getExplorationPageTitleList()
+    fun getExplorationExpandedPageDataSource(expandedPageDataSourceId: String): ExplorationExpandedPageDataSource? =
+        webBookDataSource.getExplorationExpandedPageDataSourceMap()[expandedPageDataSourceId]
 
     fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
         searchResultCacheMap[searchType + keyword]?.let { searchResult ->

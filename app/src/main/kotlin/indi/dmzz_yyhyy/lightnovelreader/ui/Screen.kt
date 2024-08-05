@@ -14,6 +14,14 @@ sealed class Screen(
         data object Exploration : Screen("home_exploration") {
             data object Home : Screen("home_exploration_home")
             data object Search : Screen( "home_exploration_search")
+            data object Expanded : Screen(
+                route = "home_exploration_expanded/{expandedPageDataSourceId}",
+                navArguments = listOf(
+                    navArgument("expandedPageDataSourceId") { type = NavType.StringType },
+                )
+            ) {
+                fun createRoute(expandedPageDataSourceId: String) = "home_exploration_expanded/${expandedPageDataSourceId}"
+            }
         }
         data object Settings : Screen("home_settings")
     }
