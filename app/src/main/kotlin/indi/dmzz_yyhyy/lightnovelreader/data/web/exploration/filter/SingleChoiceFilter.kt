@@ -1,15 +1,17 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter
 
-abstract class SingleChoiceFilter(
+class SingleChoiceFilter(
     private val title: String,
+    val dialogTitle: String,
+    val description: String,
     private val choices: List<String>,
     private val defaultChoice: String,
-    private var onChange: () -> Unit
+    private var onChange: (String) -> Unit
 ): Filter() {
-    var choice: String = ""
+    var choice: String = defaultChoice
         set(choice) {
             field = choice
-            onChange.invoke()
+            onChange.invoke(choice)
         }
 
     override fun getType(): FilterTypes = FilterTypes.SINGLE_CHOICE

@@ -37,6 +37,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.ExplorationBookCard
 @Composable
 fun ExpandedPageScreen(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
     expandedPageDataSourceId: String,
     uiState: ExpandedPageUiState,
     init: (String) -> Unit,
@@ -66,9 +67,12 @@ fun ExpandedPageScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {
-            LazyRow(Modifier.padding(start = 12.dp)) {
+            LazyRow(
+                modifier = Modifier.padding(start = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 items(uiState.filters) {
-                    it.Component()
+                    it.Component(dialog)
                 }
             }
             Box(Modifier.height(3.dp))

@@ -9,6 +9,6 @@ interface ExplorationExpandedPageDataSource {
     fun getFilters(): List<Filter>
     fun getResultFlow(): Flow<List<BookInformation>>
     fun refresh()
-    fun loadMore()
+    suspend fun loadMore()
     fun hasMore(): Boolean
 }

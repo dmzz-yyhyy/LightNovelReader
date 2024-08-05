@@ -56,6 +56,7 @@ val ExplorationScreenInfo = NavItem (
 @Composable
 fun Exploration(
     topBar: (@Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit) -> Unit,
+    dialog: (@Composable () -> Unit) -> Unit,
     onClickBook: (Int) -> Unit,
     explorationViewModel: ExplorationViewModel = hiltViewModel(),
     explorationHomeViewModel: ExplorationHomeViewModel = hiltViewModel(),
@@ -114,6 +115,7 @@ fun Exploration(
                 navBackStackEntry.arguments?.getString("expandedPageDataSourceId")?.let { expandedPageDataSourceId ->
                     ExpandedPageScreen(
                         topBar = topBar,
+                        dialog = dialog,
                         expandedPageDataSourceId = expandedPageDataSourceId,
                         uiState = expandedPageViewModel.uiState,
                         init = { expandedPageViewModel.init(it) },

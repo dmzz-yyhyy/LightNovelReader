@@ -9,15 +9,15 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.AllBookExpandPageDataSource
-import indi.dmzz_yyhyy.lightnovelreader.utils.update
-import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
-import java.lang.Thread.sleep
+import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Api
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -26,10 +26,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 
 object Wenku8Api: WebBookDataSource {
@@ -44,8 +42,6 @@ object Wenku8Api: WebBookDataSource {
     }
     private val explorationExpandedPageDataSourceMap = mutableMapOf<String, ExplorationExpandedPageDataSource>()
     private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
-    private var isStopSearch = false
-    private var runningSearchCount = 0
 
     private fun isOffLine(): Boolean {
         try {
@@ -58,7 +54,6 @@ object Wenku8Api: WebBookDataSource {
 
     override suspend fun getIsOffLineFlow(): Flow<Boolean> = isOffLineFlow
 
-    @OptIn(ExperimentalEncodingApi::class)
     override suspend fun getBookInformation(id: Int): BookInformation {
         if (isOffLine()) return BookInformation.empty()
         return wenku8Api("action=book&do=meta&aid=$id&t=0").let {
@@ -193,45 +188,52 @@ object Wenku8Api: WebBookDataSource {
             Pair("author", "请输入作者名称"),
         )
 
-    private fun getSearchResult(document: Document): List<BookInformation> = document
-        .select("#content > table > tbody > tr > td > div")
-        .let { getBookInformationListFromBookCards(it) }
-
-    fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+    suspend fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
         elements
             .map { element ->
-                BookInformation(
-                    id = element.selectFirst("div > div:nth-child(1) > a")
+                if (element.text().contains("因版权问题"))
+                    getBookInformation(element
+                        .selectFirst("div > div:nth-child(1) > a")
                         ?.attr("href")
                         ?.replace("/book/", "")
                         ?.replace(".htm", "")
-                        ?.toInt() ?: -1,
-                    title = element.selectFirst("div > div:nth-child(1) > a")
-                        ?.attr("title") ?: "",
-                    coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
-                        ?.attr("src") ?: "",
-                    author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                        ?.text()?.split("/")?.getOrNull(0)
-                        ?.split(":")?.getOrNull(1) ?: "",
-                    description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
-                        ?.text()?.replace("简介:", "") ?: "",
-                    publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
-                        ?.text()?.split("/")?.getOrNull(1)
-                        ?.split(":")?.getOrNull(1) ?: "",
-                    wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(1)
-                        ?.split(":")?.getOrNull(1)
-                        ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
-                    lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(0)
-                        ?.split(":")?.getOrNull(1)
-                        ?.let {
-                            LocalDate.parse(it, DATA_TIME_FORMATTER)
-                        }
-                        ?.atStartOfDay() ?: LocalDateTime.MIN,
-                    isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
-                        ?.text()?.split("/")?.getOrNull(2) == "已完结"
-                )
+                        ?.toInt() ?: -1
+                    )
+                else
+                    BookInformation(
+                        id = element.selectFirst("div > div:nth-child(1) > a")
+                            ?.attr("href")
+                            ?.replace("/book/", "")
+                            ?.replace(".htm", "")
+                            ?.toInt() ?: -1,
+                        title = element.selectFirst("div > div:nth-child(1) > a")
+                            ?.attr("title") ?: "",
+                        coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                            ?.attr("src") ?: "",
+                        author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                            ?.text()?.split("/")?.getOrNull(0)
+                            ?.split(":")?.getOrNull(1) ?: "",
+                        description = element.selectFirst("div > div:nth-child(2) > p:nth-child(5)")
+                            ?.text()?.replace("简介:", "") ?: "",
+                        tags = element.selectFirst("div > div:nth-child(2) > p:nth-child(4) > span")
+                            ?.text()?.split(" ") ?: emptyList(),
+                        publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
+                            ?.text()?.split("/")?.getOrNull(1)
+                            ?.split(":")?.getOrNull(1) ?: "",
+                        wordCount = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(1)
+                            ?.split(":")?.getOrNull(1)
+                            ?.replace("K", "")?.toInt()?.times(1000) ?: -1,
+                        lastUpdated = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(0)
+                            ?.split(":")?.getOrNull(1)
+                            ?.let {
+                                LocalDate.parse(it, DATA_TIME_FORMATTER)
+                            }
+                            ?.atStartOfDay() ?: LocalDateTime.MIN,
+                        isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
+                            ?.text()?.split("/")?.getOrNull(2) == "已完结"
+                    )
             }
 
     private fun registerExplorationExpandedPageDataSource(id: String, expandedPageDataSource: ExplorationExpandedPageDataSource) =

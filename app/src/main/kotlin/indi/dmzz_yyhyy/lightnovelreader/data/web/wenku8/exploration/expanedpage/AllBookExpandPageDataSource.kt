@@ -5,6 +5,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpanded
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.IsCompletedSwitchFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.LocalFilter
+import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api.getBookInformationListFromBookCards
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import kotlinx.coroutines.flow.Flow
@@ -13,11 +14,36 @@ import kotlinx.coroutines.flow.update
 import org.jsoup.Jsoup
 
 object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
+    private val choicesMap = mapOf(
+        Pair("任意", ""),
+        Pair("0~9", "1")
+    )
     private val result = MutableStateFlow(listOf<BookInformation>())
     private val filters =
         listOf(
-            IsCompletedSwitchFilter { this.refresh() }
+            IsCompletedSwitchFilter { this.refresh() },
+            SingleChoiceFilter(
+                title = "首字母",
+                dialogTitle = "首字母筛选",
+                description = "根据小说标题的拼音首字母筛选。",
+                choices = listOf("任意", "0~9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"),
+                defaultChoice = "任意"
+            ) {
+                arg = choicesMap[it] ?: it
+                this.refresh()
+            },
+            SingleChoiceFilter(
+                title = "文库",
+                dialogTitle = "首字母筛选",
+                description = "根据小说标题的拼音首字母筛选。",
+                choices = listOf("任意", "0~9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"),
+                defaultChoice = "任意"
+            ) {
+                arg = choicesMap[it] ?: it
+                this.refresh()
+            }
         )
+    private var arg = ""
     private var cache = emptyList<BookInformation>()
     private var pageIndex = 1
     private var hasMore = true
@@ -35,7 +61,7 @@ object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
         result.update { emptyList() }
     }
 
-    override fun loadMore() {
+    override suspend fun loadMore() {
         result.update { bookInformationList ->
             if (cache.isEmpty()) bookInformationList + getBooks(pageIndex)
             else bookInformationList + cache
@@ -45,15 +71,16 @@ object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
 
     override fun hasMore(): Boolean = hasMore
 
-    private fun getBooks(
+    private suspend fun getBooks(
         pageIndex: Int,
         min: Int = 10
     ): List<BookInformation> =
         Jsoup
-            .connect("https://www.wenku8.cc/modules/article/articlelist.php?page=$pageIndex")
+            .connect("https://www.wenku8.cc/modules/article/articlelist.php?page=$pageIndex&initial=$arg")
             .wenku8Cookie()
             .get()
             .let { document ->
+                println("https://www.wenku8.cc/modules/article/articlelist.php?page=$pageIndex&initial=$arg")
                 document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let {
                     if (it == pageIndex) hasMore = false
                 }
@@ -71,6 +98,6 @@ object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
                     .all { it.filter(bookInformation) }
             }
             .let {
-                if (it.size <= min) it + getBooks(AllBookExpandPageDataSource.pageIndex, min - it.size) else it
+                if (it.size <= min && hasMore) it + getBooks(AllBookExpandPageDataSource.pageIndex, min - it.size) else it
             }
 }

@@ -54,6 +54,7 @@ fun HomeScreen(
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = rememberNavController()
     var topBar : @Composable (TopAppBarScrollBehavior, TopAppBarScrollBehavior) -> Unit by remember { mutableStateOf( @Composable { _, _ -> }) }
+    var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
     var selectedItem by remember { mutableIntStateOf(0) }
     Scaffold(
         modifier = Modifier
@@ -139,6 +140,7 @@ fun HomeScreen(
                     selectedItem = 2
                     Exploration(
                         topBar = { newTopBar -> topBar = newTopBar },
+                        dialog = { newDialog -> dialog = newDialog },
                         onClickBook = onClickBook
                     )
                 }
@@ -151,4 +153,5 @@ fun HomeScreen(
             }
         }
     }
+    dialog.invoke()
 }
