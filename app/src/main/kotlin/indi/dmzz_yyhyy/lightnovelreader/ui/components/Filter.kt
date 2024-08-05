@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +48,9 @@ fun Filter.Component(dialog: (@Composable () -> Unit) -> Unit) {
     when (this) {
         is SwitchFilter -> {
             var enable by remember { mutableStateOf(this.enable) }
+            LaunchedEffect(this.enable) {
+                enable = this@Component.enable
+            }
             BaseFilter(
                 title = this.getTitle(),
                 selected = enable,
@@ -62,6 +64,11 @@ fun Filter.Component(dialog: (@Composable () -> Unit) -> Unit) {
             var enable by remember { mutableStateOf(this.choice != this.getDefaultChoice()) }
             var displayDialog by remember { mutableStateOf(false) }
             var selected by remember { mutableStateOf(this.choice) }
+            LaunchedEffect(this.choice) {
+                enable = this@Component.choice != this@Component.getDefaultChoice()
+                displayDialog = false
+                selected = this@Component.choice
+            }
             LaunchedEffect(displayDialog) {
                 if (displayDialog)
                     dialog {
@@ -160,13 +167,12 @@ fun BaseDialog(
         ) {
             Card(
                 modifier = Modifier
-                    .width(312.dp)
-                    .height(IntrinsicSize.Min),
+                    .width(312.dp),
                 shape = RoundedCornerShape(28.dp),
             ) {
                 Box(Modifier.height(8.dp))
                 Column(
-                    modifier = Modifier.weight(2f).padding(top = 14.dp),
+                    modifier = Modifier.padding(top = 14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -255,8 +261,9 @@ fun FilterChipsDialog(
         onConfirmation = onConfirmation,
     ) {
         FlowRow(
-            modifier =  Modifier.padding(horizontal = 33.dp),
-            verticalArrangement = Arrangement.spacedBy((-4).dp)
+            modifier =  Modifier
+                .padding(horizontal = 33.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             choices.forEach { choice ->
                 FilterChip(

@@ -1,6 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter
 
-class SingleChoiceFilter(
+open class SingleChoiceFilter(
     private val title: String,
     val dialogTitle: String,
     val description: String,

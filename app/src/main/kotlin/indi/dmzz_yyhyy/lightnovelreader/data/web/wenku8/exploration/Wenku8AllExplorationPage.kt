@@ -37,7 +37,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
                     it + getTopListBookBooksRow("新书一览", "postdate")
                 }
                 explorationBooksRows.update {
-                    it + getCompletedBooksRow()
+                    it + getCompletedBooksRow().copy(expandable = true, expandedPageDataSourceId = "allCompletedBook")
                 }
             }
         }
@@ -60,7 +60,10 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
             .connect("https://www.wenku8.cc/modules/article/toplist.php?sort=$sort")
             .wenku8Cookie()
             .get()
-        return getBooksRow(soup, title)
+        return getBooksRow(soup, title).copy(
+            expandable = true,
+            expandedPageDataSourceId = "${sort}Book"
+        )
     }
 
     private fun getAllBookBooksRow(): ExplorationBooksRow {

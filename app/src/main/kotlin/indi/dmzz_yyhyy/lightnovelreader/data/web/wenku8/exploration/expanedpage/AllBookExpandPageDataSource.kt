@@ -3,9 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.Filter
-import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.IsCompletedSwitchFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.LocalFilter
-import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.Wenku8Api.getBookInformationListFromBookCards
 import indi.dmzz_yyhyy.lightnovelreader.utils.wenku8.wenku8Cookie
 import kotlinx.coroutines.flow.Flow
@@ -13,44 +11,23 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import org.jsoup.Jsoup
 
-object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
-    private val choicesMap = mapOf(
-        Pair("任意", ""),
-        Pair("0~9", "1")
-    )
+class HomeBookExpandPageDataSource(
+    private val baseUrl: String = "https://www.wenku8.cc/modules/article/articlelist.php",
+    private val extendedParameters: String = "",
+    private val title: String,
+    filtersBuilder: HomeBookExpandPageDataSource.() -> List<Filter>,
+    private val contentSelector: String = "#content > table.grid > tbody > tr > td > div"
+): ExplorationExpandedPageDataSource {
     private val result = MutableStateFlow(listOf<BookInformation>())
-    private val filters =
-        listOf(
-            IsCompletedSwitchFilter { this.refresh() },
-            SingleChoiceFilter(
-                title = "首字母",
-                dialogTitle = "首字母筛选",
-                description = "根据小说标题的拼音首字母筛选。",
-                choices = listOf("任意", "0~9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"),
-                defaultChoice = "任意"
-            ) {
-                arg = choicesMap[it] ?: it
-                this.refresh()
-            },
-            SingleChoiceFilter(
-                title = "文库",
-                dialogTitle = "首字母筛选",
-                description = "根据小说标题的拼音首字母筛选。",
-                choices = listOf("任意", "0~9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"),
-                defaultChoice = "任意"
-            ) {
-                arg = choicesMap[it] ?: it
-                this.refresh()
-            }
-        )
-    private var arg = ""
+    private val filter = filtersBuilder(this)
     private var cache = emptyList<BookInformation>()
     private var pageIndex = 1
     private var hasMore = true
+    var arg = ""
 
-    override fun getTitle(): String = "轻小说列表"
+    override fun getTitle(): String = title
 
-    override fun getFilters(): List<Filter> = filters
+    override fun getFilters(): List<Filter> = filter
 
     override fun getResultFlow(): Flow<List<BookInformation>> = result
 
@@ -76,19 +53,19 @@ object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
         min: Int = 10
     ): List<BookInformation> =
         Jsoup
-            .connect("https://www.wenku8.cc/modules/article/articlelist.php?page=$pageIndex&initial=$arg")
+            .connect("${baseUrl}?page=$pageIndex$arg$extendedParameters")
             .wenku8Cookie()
             .get()
             .let { document ->
-                println("https://www.wenku8.cc/modules/article/articlelist.php?page=$pageIndex&initial=$arg")
+                println("$baseUrl?page=$pageIndex$arg$extendedParameters")
                 document.selectFirst("#pagelink > a.last")?.text()?.toInt()?.let {
                     if (it == pageIndex) hasMore = false
                 }
                 return@let document
             }
-            .select("#content > table.grid > tbody > tr > td > div")
+            .select(contentSelector)
             .let {
-                AllBookExpandPageDataSource.pageIndex++
+                this.pageIndex++
                 getBookInformationListFromBookCards(it)
             }
             .filter { bookInformation ->
@@ -98,6 +75,6 @@ object AllBookExpandPageDataSource: ExplorationExpandedPageDataSource {
                     .all { it.filter(bookInformation) }
             }
             .let {
-                if (it.size <= min && hasMore) it + getBooks(AllBookExpandPageDataSource.pageIndex, min - it.size) else it
+                if (it.size <= min && hasMore) it + getBooks(this.pageIndex, min - it.size) else it
             }
 }
