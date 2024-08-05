@@ -11,7 +11,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpanded
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.IsCompletedSwitchFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.filter.SingleChoiceFilter
-import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8AllExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8HomeExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.Wenku8TagsExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.HomeBookExpandPageDataSource
@@ -22,6 +21,7 @@ import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 
 object Wenku8Api: WebBookDataSource {
@@ -70,7 +71,7 @@ object Wenku8Api: WebBookDataSource {
                 tags = it.selectFirst("[name=Tags]")?.attr("value")?.split(" ") ?: emptyList(),
                 publishingHouse = it.selectFirst("[name=PressId]")?.attr("value") ?: "",
                 wordCount = it.selectFirst("[name=BookLength]")?.attr("value")?.toInt() ?: -1,
-                lastUpdated = LocalDate.parse(it.selectFirst("[name=LastUpdate]")?.attr("value")).atStartOfDay(),
+                lastUpdated = LocalDate.parse(it.selectFirst("[name=LastUpdate]")?.attr("value"), DATA_TIME_FORMATTER).atStartOfDay(),
                 isComplete = it.selectFirst("[name=BookStatus]")?.attr("value") == "已完成"
             )
         }
@@ -111,18 +112,30 @@ object Wenku8Api: WebBookDataSource {
         return wenku8Api("action=book&do=text&aid=$bookId&cid=$chapterId&t=0")
             .let { document ->
                 document
-                    .toString()
-                    .replace("<html><head></head><body>\n\n", "")
-                    .replace("\n \n</body></html>", "")
+                    .wholeText()
                     .let { s ->
-                        println(allBookChapterListCache)
+                        var title = ""
+                        var content = ""
+                        s.split("\n").forEachIndexed { index, line ->
+                            if (content != "") return@forEachIndexed
+                            if (title == "" && line.any { !it.isWhitespace() }) {
+                                title = line.trim()
+                                return@forEachIndexed
+                            }
+                            if (title != "" && line.any { !it.isWhitespace() }) {
+                                content = s.split("\n").drop(index).joinToString("\n")
+                                return@forEachIndexed
+                            }
+                        }
+                        val images = Regex("(<!--image-->)(.*?)(<!--image-->)")
+                            .findAll(document.toString())
+                            .map { it.groups[2]?.value ?: "" }
+                            .toList()
                         ChapterContent(
                             id = chapterId,
-                            title = s.split("\n\n \n  \n \n\n \n    \n    \n    \n \n\n\n \n \n")[0],
-                            content = s
-                                .split("\n\n \n  \n \n\n \n    \n    \n    \n \n\n\n \n \n")[1]
-                                .replace("<!--image-->", "[image]")
-                                .replace("       <!--image-->", "\n[image]")
+                            title = title,
+                            content =
+                                if (images.isEmpty()) content else images.joinToString { "[image]$it[image]" }.replace(", ", "")
                             ,
                             lastChapter = allBookChapterListCache
                                 .indexOfFirst { it.id == chapterId }
