@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Looper
 import android.widget.Toast
 import androidx.hilt.work.HiltWorker
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -13,9 +13,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
 
 @HiltWorker
 class CacheBookWork @AssistedInject constructor(
@@ -24,10 +21,9 @@ class CacheBookWork @AssistedInject constructor(
     private val localBookDataSource: LocalBookDataSource,
     private val webBookDataSource: WebBookDataSource,
     private val downloadProgressRepository: DownloadProgressRepository
-) : Worker(appContext, workerParams) {
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+) : CoroutineWorker(appContext, workerParams) {
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         val bookId = inputData.getInt("bookId", -1)
         if (bookId < 0) return Result.failure()
         val downloadItem = MutableDownloadItem(DownloadType.CACHE, bookId)
@@ -61,10 +57,5 @@ class CacheBookWork @AssistedInject constructor(
         count ++
         downloadItem.progress = 1f
         return Result.success()
-    }
-
-    override fun onStopped() {
-        coroutineScope.cancel()
-        super.onStopped()
     }
 }

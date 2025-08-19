@@ -37,7 +37,7 @@ class FormattingViewModel @Inject constructor(
                 }
                 for (group in formattingGroups) {
                     if (group.id == -1) continue
-                    bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id)
+                    bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id, viewModelScope)
                 }
             }
         }

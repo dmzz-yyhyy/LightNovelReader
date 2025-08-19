@@ -35,10 +35,10 @@ class ReadingHomeViewModel @Inject constructor(
             recentReadingBookIds = readingBooksUserData.getOrDefault(emptyList()).reversed()
                 .mapNotNull { if (it == -1) null else it  }
             recentReadingBookIds.forEach {
-                _recentReadingBookInformationMap[it] = bookRepository.getStateBookInformation(it)
+                _recentReadingBookInformationMap[it] = bookRepository.getStateBookInformation(it, viewModelScope)
             }
             recentReadingBookIds.forEach {
-                _recentReadingUserReadingDataMap[it] = bookRepository.getStateUserReadingData(it)
+                _recentReadingUserReadingDataMap[it] = bookRepository.getStateUserReadingData(it, viewModelScope)
             }
         }
     }

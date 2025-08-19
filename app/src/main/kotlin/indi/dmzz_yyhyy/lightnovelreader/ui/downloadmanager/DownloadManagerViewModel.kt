@@ -28,7 +28,7 @@ class DownloadManagerViewModel @Inject constructor(
                     if (_bookInformationMap.containsKey(downloadItem.bookId))
                          return@forEach
                     viewModelScope.launch(Dispatchers.IO) {
-                        bookRepository.getBookInformationFlow(downloadItem.bookId).collect {
+                        bookRepository.getBookInformationFlow(downloadItem.bookId, viewModelScope).collect {
                             _bookInformationMap[it.id] = it
                         }
                     }

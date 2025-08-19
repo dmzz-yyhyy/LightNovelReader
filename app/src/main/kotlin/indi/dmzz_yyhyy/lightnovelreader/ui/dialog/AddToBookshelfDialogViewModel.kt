@@ -61,7 +61,7 @@ class AddToBookshelfDialogViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
             viewModelScope.launch(Dispatchers.IO) {
-                bookRepository.getBookInformationFlow(bookId).collect { bookInformation ->
+                bookRepository.getBookInformationFlow(bookId, viewModelScope).collect { bookInformation ->
                     if (bookInformation.isEmpty()) return@collect
                     _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
                         coroutineScope.launch(Dispatchers.IO) {

@@ -70,7 +70,7 @@ interface WebBookDataSource {
      * @param id 书本id
      * @return 经过格式化后的书本元数据, getBookInformation.empty()
      */
-    fun getBookInformation(id: Int): BookInformation
+    suspend fun getBookInformation(id: Int): BookInformation
 
     /**
      * 此函数无需保证主线程安全性, 为阻塞函数, 获取到数据前应当保持阻塞
@@ -79,7 +79,7 @@ interface WebBookDataSource {
      * @param id 书本id
      * @return 经过格式化后的书本章节目录数据, 如未找到改书则返回BookVolumes.empty
      */
-    fun getBookVolumes(id: Int): BookVolumes
+    suspend fun getBookVolumes(id: Int): BookVolumes
 
     /**
      * 此函数无需保证主线程安全性, 为阻塞函数, 获取到数据前应当保持阻塞
@@ -89,7 +89,7 @@ interface WebBookDataSource {
      * @param bookId 章节所属书本id
      * @return 经过格式化后的书本章节类容录数据, 如未找到改书则返回ChapterContent.empty()
      */
-    fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent
+    suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent
 
     /**
      * 执行搜索任务

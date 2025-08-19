@@ -78,7 +78,7 @@ class FlipPageContentViewModel(
         }
         notRecoveredProgress = 0f
         uiState.readingProgress = 0f
-        uiState.readingChapterContent = bookRepository.getStateChapterContent(id, uiState.bookId)
+        uiState.readingChapterContent = bookRepository.getStateChapterContent(id, uiState.bookId, coroutineScope)
         uiState.readingChapterContent
         coroutineScope.launch(Dispatchers.IO) {
             snapshotFlow { uiState.readingChapterContent.title }.collect { title ->
@@ -98,7 +98,8 @@ class FlipPageContentViewModel(
                 if (uiState.readingChapterContent.hasNextChapter()) {
                     bookRepository.getChapterContentFlow(
                         chapterId = it,
-                        bookId = uiState.bookId
+                        bookId = uiState.bookId,
+                        coroutineScope
                     )
                 }
             }

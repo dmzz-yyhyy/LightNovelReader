@@ -50,7 +50,7 @@ class HomeBookExpandPageDataSource(
 
     override fun hasMore(): Boolean = hasMore
 
-    private fun getBooks(
+    private suspend fun getBooks(
         pageIndex: Int,
         min: Int = 10
     ): List<BookInformation> =

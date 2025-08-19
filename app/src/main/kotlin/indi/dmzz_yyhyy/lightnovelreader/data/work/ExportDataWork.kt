@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toFile
 import androidx.hilt.work.HiltWorker
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -13,13 +13,17 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.UserReadingData
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.Bookshelf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfBookMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJsonBuilder
+import indi.dmzz_yyhyy.lightnovelreader.data.json.FormattingRuleData
 import indi.dmzz_yyhyy.lightnovelreader.data.json.toJsonData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -34,10 +38,11 @@ class ExportDataWork @AssistedInject constructor(
     private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
     private val statsRepository: StatsRepository,
+    private val formatRepository: FormatRepository,
     private val userDataDao: UserDataDao
-) : Worker(appContext, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
         val exportBookshelf = inputData.getBoolean("exportBookshelf", false)
         val exportReadingData = inputData.getBoolean("exportReadingData",false)
@@ -52,12 +57,24 @@ class ExportDataWork @AssistedInject constructor(
         }
     }
 
-    private fun buildJson(
+    private suspend fun buildJson(
         exportBookshelf: Boolean,
         exportReadingData: Boolean,
         exportSetting: Boolean
-    ): String {
-        return AppUserDataJsonBuilder()
+    ): String = withContext(Dispatchers.IO) {
+        val formattingRules = formatRepository
+            .getAllRules()
+            .map {
+                FormattingRuleData(
+                    bookId = it.bookId,
+                    name = it.name,
+                    isRegex = it.isRegex,
+                    match = it.match,
+                    replacement = it.replacement,
+                    isEnabled = it.isEnabled
+                )
+            }
+        return@withContext AppUserDataJsonBuilder()
             .data {
                 webDataSourceId(webBookDataSource.id)
                 if (exportBookshelf) {
@@ -78,6 +95,7 @@ class ExportDataWork @AssistedInject constructor(
                         ?.let(::userData)
                     statsRepository.getAllReadingStats()
                         .forEach(::dailyReadingData)
+                    formattingRules.forEach(::formattingRule)
                 }
                 if (exportSetting) {
                     userDataDao.getGroupValues(UserDataPath.Reader.path)

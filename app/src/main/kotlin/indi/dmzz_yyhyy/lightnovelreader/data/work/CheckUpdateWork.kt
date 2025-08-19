@@ -10,7 +10,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -25,11 +25,11 @@ class CheckUpdateWork @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val webBookDataSource: WebBookDataSource,
     private val bookshelfRepository: BookshelfRepository
-) : Worker(appContext, workerParams) {
-    override fun doWork(): Result {
+) : CoroutineWorker(appContext, workerParams) {
+    override suspend fun doWork(): Result {
         val reminderBookMap = mutableMapOf<Int, BookInformation>()
         bookshelfRepository.getAllBookshelfBooksMetadata().forEach { bookshelfBookMetadata ->
-            val bookInformation = webBookDataSource.getBookInformation(bookshelfBookMetadata.id) ?: return@forEach
+            val bookInformation = webBookDataSource.getBookInformation(bookshelfBookMetadata.id)
             val webBookLastUpdate = bookInformation.lastUpdated
             if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
                 bookshelfBookMetadata.bookShelfIds.forEach {

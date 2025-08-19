@@ -4,12 +4,15 @@ import android.util.Log
 import indi.dmzz_yyhyy.lightnovelreader.utils.UserAgentGenerator
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionPost
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
+import kotlinx.coroutines.delay
 import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.time.Instant
 import kotlin.io.encoding.Base64
+import kotlin.random.Random
 
+private var requestCount = 0
 
 fun Connection.wenku8Cookie(): Connection =
     this
@@ -29,8 +32,13 @@ fun Connection.wenku8Cookie(): Connection =
         .cookie(" Hm_lvt_d72896ddbf8d27c750e3b365ea2fc902", "1739294365,1739294389,1739294442,1739294467")
         .cookie(" Hm_lpvt_d72896ddbf8d27c750e3b365ea2fc902", "1739294503")
 
-fun wenku8Api(request: String): Document? {
+suspend fun wenku8Api(request: String): Document? {
+    while (requestCount > 3) {
+        delay(500)
+    }
+    requestCount++
     Log.i("Wenku8API", "require to wenku8 with $request")
+    delay(Random.Default.nextLong(500, 800))
     return Jsoup
         .connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString())
         .data(
@@ -43,5 +51,8 @@ fun wenku8Api(request: String): Document? {
             Document.OutputSettings()
                 .prettyPrint(false)
                 .syntax(Document.OutputSettings.Syntax.xml)
-        )
+        ).also {
+            if (it == null) delay(10000)
+            requestCount--
+        }
 }

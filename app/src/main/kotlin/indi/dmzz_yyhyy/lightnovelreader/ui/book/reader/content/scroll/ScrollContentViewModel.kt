@@ -100,7 +100,8 @@ class ScrollContentViewModel(
                             0,
                             bookRepository.getStateChapterContent(
                                 uiState.readingChapterContent.lastChapter,
-                                uiState.bookId
+                                uiState.bookId,
+                                coroutineScope
                             )
                         )
                     bookRepository.updateUserReadingData(uiState.bookId) {
@@ -126,7 +127,8 @@ class ScrollContentViewModel(
                         uiState.contentList.add(
                             bookRepository.getStateChapterContent(
                                 uiState.readingChapterContent.nextChapter,
-                                uiState.bookId
+                                uiState.bookId,
+                                coroutineScope
                             )
                         )
                     bookRepository.updateUserReadingData(uiState.bookId) {
@@ -186,7 +188,7 @@ class ScrollContentViewModel(
         coroutineScope.launch(Dispatchers.IO) {
             val isUsingContinuousScrollingUserData =
                 settingState.isUsingContinuousScrollingUserData.getOrDefault(false)
-            bookRepository.getChapterContentFlow(id, uiState.bookId).collect { chapterContent ->
+            bookRepository.getChapterContentFlow(id, uiState.bookId, coroutineScope).collect { chapterContent ->
                 if (chapterContent.isEmpty()) return@collect
                 if (chapterContent.id != uiState.readingContentId) return@collect
                 if (
@@ -200,7 +202,8 @@ class ScrollContentViewModel(
                     uiState.contentList.add(
                         bookRepository.getStateChapterContent(
                             chapterContent.lastChapter,
-                            uiState.bookId
+                            uiState.bookId,
+                            coroutineScope
                         )
                     )
                 }
@@ -209,7 +212,8 @@ class ScrollContentViewModel(
                     uiState.contentList.add(
                         bookRepository.getStateChapterContent(
                             chapterContent.nextChapter,
-                            uiState.bookId
+                            uiState.bookId,
+                            coroutineScope
                         )
                     )
                 } else if (chapterContent.hasNextChapter()) {

@@ -34,7 +34,7 @@ class DetailViewModel @Inject constructor(
 
     fun init(bookId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookInformationFlow(bookId).collect {
+            bookRepository.getBookInformationFlow(bookId, viewModelScope).collect {
                 if (it.id == -1) return@collect
                 _uiState.bookInformation = it
                 val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@collect
@@ -45,7 +45,7 @@ class DetailViewModel @Inject constructor(
             }
         }
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookVolumes(bookId).collect {
+            bookRepository.getBookVolumesFlow(bookId, viewModelScope).collect {
                 if (it.volumes.isEmpty()) return@collect
                 _uiState.bookVolumes = it
             }

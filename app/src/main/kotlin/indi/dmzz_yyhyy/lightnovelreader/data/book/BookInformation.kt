@@ -23,8 +23,9 @@ interface BookInformation {
     val isComplete: Boolean
 
     companion object {
-        fun empty(): BookInformation = MutableBookInformation(
-            -1,
+        fun empty(): BookInformation = empty(-1)
+        fun empty(id: Int): BookInformation = MutableBookInformation(
+            id,
             "",
             "",
             "",

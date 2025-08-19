@@ -42,7 +42,7 @@ object TypesExplorationPageDataSource : ExplorationPageDataSource {
         return explorationPage
     }
 
-    private fun getAllTypes(): List<TagTypeItem> = Jsoup
+    private suspend fun getAllTypes(): List<TagTypeItem> = Jsoup
         .connect(HOST + "/app/v1/comic/filter/category?source=1&channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
         .autoReconnectionGetJsonText()
         .let {
@@ -56,7 +56,7 @@ object TypesExplorationPageDataSource : ExplorationPageDataSource {
 
     private data class CateList<T> (@SerializedName("cateList") val cateList: List<T>)
 
-    private fun getTagBooks(tagId: Int) = Jsoup
+    private suspend fun getTagBooks(tagId: Int) = Jsoup
         .connect(HOST + "/app/v1/comic/filter/list?tagId=$tagId&status=0&sortType=1&page=1&size=20&channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
         .autoReconnectionGetJsonText()
         .let {

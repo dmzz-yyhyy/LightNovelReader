@@ -48,7 +48,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         return ExplorationPage("首页", explorationBooksRows)
     }
 
-    private fun getCompletedBooksRow(): ExplorationBooksRow {
+    private suspend fun getCompletedBooksRow(): ExplorationBooksRow {
         val soup = Jsoup
             .connect("$host/modules/article/articlelist.php?fullflag=1")
             .wenku8Cookie()
@@ -59,7 +59,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         )
     }
 
-    private fun getTopListBookBooksRow(title: String, sort: String): ExplorationBooksRow {
+    private suspend fun getTopListBookBooksRow(title: String, sort: String): ExplorationBooksRow {
         val soup = Jsoup
             .connect("$host/modules/article/toplist.php?sort=$sort")
             .wenku8Cookie()
@@ -70,7 +70,7 @@ object Wenku8AllExplorationPage: ExplorationPageDataSource {
         )
     }
 
-    private fun getAllBookBooksRow(): ExplorationBooksRow {
+    private suspend fun getAllBookBooksRow(): ExplorationBooksRow {
         val soup = Jsoup
             .connect("$host/modules/article/articlelist.php")
             .wenku8Cookie()

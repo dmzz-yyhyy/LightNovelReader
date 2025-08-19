@@ -6,6 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
+import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessor
@@ -183,4 +184,32 @@ class FormatRepository @Inject constructor(
     override fun processChapterContent(bookId: Int, chapterContent: ChapterContent): ChapterContent = chapterContent.toMutable().apply {
         this.content = processText(bookId, content)
     }
+
+    suspend fun importFormattingRules(data: AppUserDataContent) {
+        data.formattingRuleData?.forEach { formattingRuleData ->
+            formattingRuleDao.insertRuleEntity(
+                FormattingRuleEntity(
+                    bookId = formattingRuleData.bookId,
+                    name = formattingRuleData.name,
+                    isRegex = formattingRuleData.isRegex,
+                    match = formattingRuleData.match,
+                    replacement = formattingRuleData.replacement,
+                    isEnabled = formattingRuleData.isEnabled
+                )
+            )
+        }
+    }
+
+    suspend fun getAllRules() = formattingRuleDao
+        .getAllBookRuleEntity()
+        .map {
+            FormattingRuleEntity(
+                bookId = it.bookId,
+                name = it.name,
+                isRegex = it.isRegex,
+                match = it.match,
+                replacement = it.replacement,
+                isEnabled = it.isEnabled
+            )
+        }
 }

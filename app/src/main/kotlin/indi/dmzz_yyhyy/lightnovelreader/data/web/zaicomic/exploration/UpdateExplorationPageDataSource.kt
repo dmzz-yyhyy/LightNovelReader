@@ -55,7 +55,7 @@ object UpdateExplorationPageDataSource : ExplorationPageDataSource {
         return explorationPage
     }
 
-    private fun getUpdateBooks(channel: Int) = Jsoup
+    private suspend fun getUpdateBooks(channel: Int) = Jsoup
         .connect(HOST + "/app/v1/comic/update/list/$channel/1?channel=android&timestamp=${(System.currentTimeMillis() / 1000)}")
         .autoReconnectionGetJsonText()
         .let {

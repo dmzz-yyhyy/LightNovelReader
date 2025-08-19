@@ -87,7 +87,7 @@ object ZaiComic : WebBookDataSource {
     override val id: Int
         get() = "ZaiComic".hashCode()
 
-    private fun getComicDetail(id: Int): DetailData? = if (comicDetailCacheMap.contains(id))
+    private suspend fun getComicDetail(id: Int): DetailData? = if (comicDetailCacheMap.contains(id))
         comicDetailCacheMap[id]
     else
         Jsoup
@@ -100,12 +100,12 @@ object ZaiComic : WebBookDataSource {
             .data
             .data
 
-    override fun getBookInformation(id: Int): BookInformation {
+    override suspend fun getBookInformation(id: Int): BookInformation {
         val detailData = getComicDetail(id)
         return detailData?.toBookInformation() ?: BookInformation.empty()
     }
 
-    override fun getBookVolumes(id: Int): BookVolumes {
+    override suspend fun getBookVolumes(id: Int): BookVolumes {
         val detailData = getComicDetail(id)
         return detailData?.toBookVolumes()
             ?.let {
@@ -114,7 +114,7 @@ object ZaiComic : WebBookDataSource {
             } ?: BookVolumes.empty(id)
     }
 
-    override fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
+    override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         val volumes =
             if (comicVolumesCacheMap.contains(bookId))
                 comicVolumesCacheMap[bookId] ?: return ChapterContent.empty()

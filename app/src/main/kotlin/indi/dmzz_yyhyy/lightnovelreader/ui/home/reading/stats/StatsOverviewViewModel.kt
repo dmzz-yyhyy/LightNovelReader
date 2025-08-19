@@ -59,7 +59,7 @@ class StatsOverviewViewModel @Inject constructor(
 
             allBookIds.fastForEach { id ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    bookRepository.getBookInformationFlow(id).collect {
+                    bookRepository.getBookInformationFlow(id, viewModelScope).collect {
                         _uiState.bookInformationMap[it.id] = it
                     }
                 }

@@ -116,7 +116,7 @@ object Wenku8Api: WebBookDataSource {
 
     override val id: Int = "wenku8".hashCode()
 
-    override fun getBookInformation(id: Int): BookInformation {
+    override suspend fun getBookInformation(id: Int): BookInformation {
         return wenku8Api("action=book&do=meta&aid=$id&t=0")?.let {
             val titleGroup = it
                 .selectFirst("[name=Title]")?.text()
@@ -145,7 +145,7 @@ object Wenku8Api: WebBookDataSource {
         } ?: BookInformation.empty()
     }
 
-    override fun getBookVolumes(id: Int): BookVolumes {
+    override suspend fun getBookVolumes(id: Int): BookVolumes {
         return BookVolumes(
             id,
             wenku8Api("action=book&do=list&aid=$id&t=0")
@@ -166,7 +166,7 @@ object Wenku8Api: WebBookDataSource {
         )
     }
 
-    override fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
+    override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         if (allBookChapterListCacheId != bookId) {
             allBookChapterListCacheId = bookId
             allBookChapterListCache = getBookVolumes(bookId).let { bookVolumes ->
@@ -270,7 +270,7 @@ object Wenku8Api: WebBookDataSource {
             Pair("author", "请输入作者名称"),
         )
 
-    fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+    suspend fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
         elements
             .map { element ->
                 if (element.text().contains("因版权问题"))

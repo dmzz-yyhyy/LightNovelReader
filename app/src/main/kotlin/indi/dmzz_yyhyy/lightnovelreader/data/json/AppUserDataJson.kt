@@ -16,7 +16,7 @@ data class AppUserDataJson(
     val id: Int? = null,
     @SerializedName("data")
     val data: List<AppUserDataContent>
-      ) {
+) {
     companion object {
         val gson: Gson = GsonBuilder()
             .serializeSpecialFloatingPointValues()
@@ -27,7 +27,8 @@ data class AppUserDataJson(
             .registerTypeAdapter(Count::class.java, CountBase64TypeAdapter)
             .create()
 
-        fun fromJson(json: String): AppUserDataJson = gson.fromJson(json, AppUserDataJson::class.java)
+        fun fromJson(json: String): AppUserDataJson =
+            gson.fromJson(json, AppUserDataJson::class.java)
     }
 
     fun toJson(): String = gson.toJson(this)
@@ -45,12 +46,15 @@ data class AppUserDataContent(
     @SerializedName("user_data")
     val userData: List<UserDataData>? = null,
     @SerializedName("reading_stats_data")
-    val readingStatsData: List<DailyReadingStats>? = null
+    val readingStatsData: List<DailyReadingStats>? = null,
+    @SerializedName("format_data")
+    val formattingRuleData: List<FormattingRuleData>? = null
 )
 
 class AppUserDataJsonBuilder {
     @SerializedName("id")
     private var id: Int? = null
+
     @SerializedName("data")
     private var data: MutableList<AppUserDataContent> = mutableListOf()
 
@@ -72,13 +76,14 @@ class AppUserDataJsonBuilder {
     }
 }
 
-class AppUserDataContentBuilder() {
+class AppUserDataContentBuilder {
     private var webDataSourceId: Int? = null
     private var bookUserData: MutableList<BookUserData> = mutableListOf()
     private var bookshelf: MutableList<BookshelfData> = mutableListOf()
     private var bookShelfBookMetadata: MutableList<BookShelfBookMetadataData> = mutableListOf()
     private var userData: MutableList<UserDataData> = mutableListOf()
     private var readingStatsData: MutableList<DailyReadingStats> = mutableListOf()
+    private var formattingRuleData: MutableList<FormattingRuleData> = mutableListOf()
 
     fun build(): AppUserDataContent {
         if (webDataSourceId == null) {
@@ -90,7 +95,8 @@ class AppUserDataContentBuilder() {
             bookshelf = bookshelf.ifEmpty { null },
             bookShelfBookMetadata = bookShelfBookMetadata.ifEmpty { null },
             userData = userData.ifEmpty { null },
-            readingStatsData = readingStatsData.ifEmpty { null }
+            readingStatsData = readingStatsData.ifEmpty { null },
+            formattingRuleData = formattingRuleData.ifEmpty { null }
         )
     }
 
@@ -121,6 +127,11 @@ class AppUserDataContentBuilder() {
 
     fun dailyReadingData(dailyReadingStats: DailyReadingStats): AppUserDataContentBuilder {
         this.readingStatsData.add(dailyReadingStats)
+        return this
+    }
+
+    fun formattingRule(formattingRuleData: FormattingRuleData): AppUserDataContentBuilder {
+        this.formattingRuleData.add(formattingRuleData)
         return this
     }
 }

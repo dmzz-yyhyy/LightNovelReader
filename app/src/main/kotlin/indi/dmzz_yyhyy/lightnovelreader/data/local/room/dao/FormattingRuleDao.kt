@@ -15,6 +15,9 @@ interface FormattingRuleDao {
     @Query("select * from formatting_rule")
     fun getAllBookRuleEntityFlow(): Flow<List<FormattingRuleEntity>>
 
+    @Query("select * from formatting_rule")
+    suspend fun getAllBookRuleEntity(): List<FormattingRuleEntity>
+
     @Query("select * from formatting_rule where book_id = :bookId")
     fun getBookRuleEntityFlow(bookId: Int): Flow<List<FormattingRuleEntity>>
 

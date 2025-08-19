@@ -4,13 +4,14 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.hilt.work.HiltWorker
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.JsonSyntaxException
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJson
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
@@ -29,9 +30,10 @@ class ImportDataWork @AssistedInject constructor(
     private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
     private val userDataRepository: UserDataRepository,
-    private val statsRepository: StatsRepository
-) : Worker(appContext, workerParams) {
-    override fun doWork(): Result {
+    private val statsRepository: StatsRepository,
+    private val formatRepository: FormatRepository
+) : CoroutineWorker(appContext, workerParams) {
+    override suspend fun doWork(): Result {
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
         val ignoreDataIdCheck  = inputData.getBoolean("ignoreDataIdCheck", false)
         var jsonText: String? = null
@@ -76,6 +78,7 @@ class ImportDataWork @AssistedInject constructor(
         bookRepository.importUserReadingData(data)
         userDataRepository.importUserData(data)
         statsRepository.importReadingStats(data)
+        formatRepository.importFormattingRules(data)
         return Result.success()
     }
 }

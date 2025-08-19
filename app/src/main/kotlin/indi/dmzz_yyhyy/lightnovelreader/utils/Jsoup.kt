@@ -2,133 +2,80 @@ package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.util.Log
 import io.nightfish.potatoautoproxy.ProxyPool
+import kotlinx.coroutines.delay
 import org.jsoup.Connection
 import org.jsoup.HttpStatusException
 import org.jsoup.nodes.Document
 import java.io.IOException
-import java.lang.Thread.sleep
 import java.net.SocketException
 import javax.net.ssl.SSLHandshakeException
 
-fun Connection.autoReconnectionGet(lastReconnectTimes: Int = 3, lastReconnectTime: Int = 250, isUesProxy: Boolean = false): Document? {
+suspend fun Connection.autoReconnectionGet(reconnectTime: Int = 3, reconnectDelay: Long = 250, isUesProxy: Boolean = false): Document? =
+    autoReconnection(
+        reconnectTime,
+        reconnectDelay,
+        isUesProxy,
+        { this.get() },
+        { this@autoReconnectionGet.proxyGet() }
+    )
+
+suspend fun Connection.autoReconnectionPost(reconnectTime: Int = 3, reconnectDelay: Long = 250, isUesProxy: Boolean = false): Document? =
+    autoReconnection(
+        reconnectTime,
+        reconnectDelay,
+        isUesProxy,
+        { this.post() },
+        { this@autoReconnectionPost.proxyPost() }
+    )
+
+private suspend fun autoReconnection(
+    reconnectTime: Int = 3,
+    reconnectDelay: Long = 250,
+    isUesProxy: Boolean = false,
+    block: suspend () -> Document?,
+    block2: suspend ProxyPool.() -> Document?
+): Document? {
     try {
         if (ProxyPool.enable && isUesProxy)
             ProxyPool.apply {
-                return this@autoReconnectionGet.proxyGet()
+                return block2.invoke(this)
             }
-        else return this.get()
+        else return block.invoke()
     } catch (e: HttpStatusException) {
-        Log.e("Network", "failed to get data from ${e.url}")
+        Log.e("Network", "failed to get data from ${e.url}, last reconnection times: $reconnectTime")
         e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionGet(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
+        retry(reconnectTime, reconnectDelay) {
+            autoReconnection(reconnectTime - 1, reconnectDelay, isUesProxy, block, block2)
+        }
     } catch (e: SocketException) {
-        Log.e("Network", "failed to get data")
+        Log.e("Network", "failed to get data, last reconnection times: $reconnectTime")
         e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionGet(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
+        retry(reconnectTime, reconnectDelay) {
+            autoReconnection(reconnectTime - 1, reconnectDelay, isUesProxy, block, block2)
+        }
     } catch (e: SSLHandshakeException) {
-        Log.e("Network", "failed to get data")
+        Log.e("Network", "failed to get data, last reconnection times: $reconnectTime")
         e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionGet(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
+        retry(reconnectTime, reconnectDelay) {
+            autoReconnection(reconnectTime - 1, reconnectDelay, isUesProxy, block, block2)
+        }
     } catch (e: IOException) {
-        Log.e("Network", "failed to get data")
+        Log.e("Network", "failed to get data, last reconnection times:  $reconnectTime")
         e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionGet(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
+        retry(reconnectTime, reconnectDelay) {
+            autoReconnection(reconnectTime - 1, reconnectDelay, isUesProxy, block, block2)
+        }
     }
     return null
 }
 
-fun Connection.autoReconnectionPost(lastReconnectTimes: Int = 3, lastReconnectTime: Int = 250, isUesProxy: Boolean = false): Document? {
-    try {
-        if (ProxyPool.enable && isUesProxy)
-            ProxyPool.apply {
-                return this@autoReconnectionPost.proxyPost()
-            }
-        else return this.post()
-    } catch (e: HttpStatusException) {
-        Log.e("Network", "failed to get data from ${e.url}")
-        e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionPost(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
-    } catch (e: SocketException) {
-        Log.e("Network", "failed to get data")
-        e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionPost(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
-    } catch (e: SSLHandshakeException) {
-        Log.e("Network", "failed to get data")
-        e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionPost(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
-    } catch (e: IOException) {
-        Log.e("Network", "failed to get data")
-        e.printStackTrace()
-        if (lastReconnectTime > 1) {
-            sleep(lastReconnectTime.toLong())
-            this.autoReconnectionPost(
-                lastReconnectTimes - 1,
-                (lastReconnectTime * 1.3).toInt(),
-                isUesProxy = true
-            )
-        } else
-            return null
-    }
-    return null
+private suspend fun retry(reconnectTimes: Int, reconnectDelay: Long, block: suspend () -> Document?): Document? {
+    if (reconnectTimes < 1) return null
+    delay(reconnectDelay)
+    return block.invoke()
 }
 
-fun Connection.autoReconnectionGetJsonText(): String? =
+suspend fun Connection.autoReconnectionGetJsonText(): String? =
     this.ignoreContentType(true)
         .autoReconnectionGet()
         ?.outputSettings(

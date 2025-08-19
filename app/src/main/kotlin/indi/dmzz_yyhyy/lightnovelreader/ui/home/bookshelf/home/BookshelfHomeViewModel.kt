@@ -54,14 +54,14 @@ class BookshelfHomeViewModel @Inject constructor(
                 mutableBookshelf.updatedBookIds = oldMutableBookshelf.updatedBookIds
                 oldMutableBookshelf.allBookIds.forEach {
                     viewModelScope.launch(Dispatchers.IO) {
-                        bookRepository.getBookInformationFlow(it).collect {
+                        bookRepository.getBookInformationFlow(it, viewModelScope).collect {
                             _uiState.bookInformationMap[it.id] = it
                         }
                     }
                 }
                 oldMutableBookshelf.updatedBookIds.forEach { bookId ->
                     viewModelScope.launch(Dispatchers.IO) {
-                        bookRepository.getBookVolumes(bookId).collect {
+                        bookRepository.getBookVolumesFlow(bookId, viewModelScope).collect {
                             if (it.volumes.isNotEmpty())
                                 _uiState.bookLastChapterTitleMap[bookId] = "${it.volumes.last().volumeTitle} ${it.volumes.last().chapters.last().title}"
                         }
