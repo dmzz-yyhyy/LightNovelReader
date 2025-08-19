@@ -40,13 +40,27 @@ class ExpandedPageViewModel @Inject constructor(
                 _uiState.filters.clear()
                 _uiState.filters.addAll(explorationExpandedPageDataSource.getFilters())
                 explorationExpandedPageDataSource.getResultFlow().collect { result ->
-                    _uiState.bookList.clear()
-                    _uiState.bookList.addAll(
-                        result.map {
+
+                    if (result.isEmpty()) {
+                        explorationExpandedPageDataSource.loadMore() }
+                    else{
+                        val resultList = result.map {
                             textProcessingRepository.processBookInformation { it }
                         }
-                    )
-                    if (result.isEmpty()) { explorationExpandedPageDataSource.loadMore() }
+                        val differentElements = resultList.filterNot {
+                            _uiState.bookList.contains(it)
+                        }
+                        _uiState.bookList.addAll(differentElements)
+
+                    }
+
+//                    _uiState.bookList.clear()
+//                    _uiState.bookList.addAll(
+//                        result.map {
+//                            textProcessingRepository.processBookInformation { it }
+//                        }
+//                    )
+//                    if (result.isEmpty()) { explorationExpandedPageDataSource.loadMore() }
                 }
             }
         }
