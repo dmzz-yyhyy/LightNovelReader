@@ -43,7 +43,7 @@
 
     <!-- Настройки -->
     <string name="theme_settings">Тема</string>
-
+    <string name="app_settings">Приложение</string>
     <string name="app_updates">Обновления</string>
     <string name="settings_auto_check_updates">Авто-проверка обновлений</string>
     <string name="settings_auto_check_updates_desc">Включить автоматическую проверку обновлений при запуске</string>

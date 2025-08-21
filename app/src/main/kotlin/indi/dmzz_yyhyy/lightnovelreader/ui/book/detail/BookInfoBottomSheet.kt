@@ -40,6 +40,69 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.time.format.DateTimeFormatter
 
+@Composable
+fun InfoItem(
+    title: String? = "",
+    content: String,
+    titleStyle: TextStyle,
+    contentStyle: TextStyle,
+    icon: Painter? = null
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.weight(3f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            icon?.let {
+                Icon(
+                    painter = it,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+            Text(
+                text = title!!,
+                style = titleStyle
+            )
+        }
+
+        Row(
+            modifier = Modifier.weight(7f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val context = LocalContext.current
+            val clipboard = LocalClipboard.current
+
+            Text(
+                text = content,
+                style = contentStyle,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            coroutineScope.launch {
+                                val clipData = ClipData.newPlainText("content", content)
+                                val clipEntry = ClipEntry(clipData = clipData)
+                                clipboard.setClipEntry(clipEntry = clipEntry)
+                                Toast.makeText(context, "内容已复制", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        },
+                    )
+            )
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun BookInfoBottomSheet(
@@ -49,69 +112,6 @@ fun BookInfoBottomSheet(
     isVisible: Boolean,
     onDismissRequest: () -> Unit,
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
-    @Composable
-    fun InfoItem(
-        title: String? = "",
-        content: String,
-        titleStyle: TextStyle,
-        contentStyle: TextStyle,
-        icon: Painter? = null
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                modifier = Modifier.weight(3f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                icon?.let {
-                    Icon(
-                        painter = it,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-                Text(
-                    text = title!!,
-                    style = titleStyle
-                )
-            }
-
-            Row(
-                modifier = Modifier.weight(7f),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val context = LocalContext.current
-                val clipboard = LocalClipboard.current
-
-                Text(
-                    text = content,
-                    style = contentStyle,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .combinedClickable(
-                            onClick = {},
-                            onLongClick = {
-                                coroutineScope.launch {
-                                    val clipData = ClipData.newPlainText("content", content)
-                                    val clipEntry = ClipEntry(clipData = clipData)
-                                    clipboard.setClipEntry(clipEntry = clipEntry)
-                                    Toast.makeText(context, "内容已复制", Toast.LENGTH_SHORT)
-                                        .show()
-                                }
-                            },
-                        )
-                )
-            }
-        }
-    }
-
     AnimatedVisibility(visible = isVisible) {
         ModalBottomSheet(
             onDismissRequest = onDismissRequest,

@@ -42,7 +42,7 @@
     <!-- Settings -->
     <string name="reading_settings">閲讀</string>
     <string name="theme_settings">主題</string>
-
+    <string name="app_settings">應用程式</string>
     <string name="app_updates">更新</string>
     <string name="settings_auto_check_updates">自動檢查更新</string>
     <string name="settings_auto_check_updates_desc">應用程式啟動後自動檢查更新</string>

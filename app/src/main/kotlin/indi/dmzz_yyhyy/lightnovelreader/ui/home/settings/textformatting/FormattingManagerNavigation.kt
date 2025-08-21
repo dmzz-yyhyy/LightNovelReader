@@ -53,7 +53,7 @@ fun NavController.navigateToEditTextFormattingRuleDialog(bookId: Int, ruleId: In
 }
 
 fun NavGraphBuilder.settingsTextFormattingNavigation() {
-    navigation<Route.Main.Reading.Stats>(
+    navigation<Route.Main.Settings.TextFormatting>(
         startDestination = Route.Main.Settings.TextFormatting.Manager
     ) {
         settingsTextFormattingManagerDestination()

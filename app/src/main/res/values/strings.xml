@@ -45,7 +45,7 @@
     <!-- Settings -->
     <string name="reading_settings">Reading</string>
     <string name="theme_settings">Theme</string>
-
+    <string name="app_settings">App</string>
     <string name="app_updates">Updates</string>
     <string name="settings_auto_check_updates">Auto Check for Updates</string>
     <string name="settings_auto_check_updates_desc">Enable automatic update checks upon app launch</string>

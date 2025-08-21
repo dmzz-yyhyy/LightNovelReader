@@ -27,8 +27,6 @@ import kotlinx.coroutines.launch
 fun DataSettingsList(
     onClickChangeSource: () -> Unit,
     onClickExportUserData: () -> Unit,
-    onClickLogcat: () -> Unit,
-    settingState: SettingState,
     importData: (Uri) -> OneTimeWorkRequest,
 ) {
     val context = LocalContext.current
@@ -104,27 +102,7 @@ fun DataSettingsList(
         description = stringResource(R.string.settings_select_data_source_desc),
         onClick = onClickChangeSource
     )
-    SettingsSwitchEntry(
-        iconRes = R.drawable.wifi_proxy_24px,
-        title = "自动代理",
-        description = "自动从网络上获取代理ip, **但这将导致您所浏览的书本数据可能会被截获**",
-        checked = settingState.isUseProxy,
-        booleanUserData = settingState.isUseProxyUserData
-    )
-    SettingsClickableEntry(
-        iconRes = R.drawable.bug_report_24px,
-        title = stringResource(R.string.settings_app_logs),
-        description = stringResource(R.string.settings_app_logs_desc),
-        onClick = onClickLogcat
-    )
-    SettingsMenuEntry(
-        iconRes = R.drawable.bug_report_24px,
-        title = stringResource(R.string.settings_app_log_level),
-        description = stringResource(R.string.settings_app_log_level_desc),
-        options = MenuOptions.LogLevelOptions,
-        selectedOptionKey = settingState.logLevelKey,
-        onOptionChange = settingState.logLevelKeyUserData::asynchronousSet
-    )
+
 }
 
 fun selectDataFile(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {

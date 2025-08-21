@@ -42,7 +42,7 @@
     <!-- Settings -->
     <string name="reading_settings">阅读</string>
     <string name="theme_settings">主题</string>
-
+    <string name="app_settings">应用</string>
     <string name="app_updates">更新</string>
     <string name="settings_auto_check_updates">自动检查更新</string>
     <string name="settings_auto_check_updates_desc">应用启动后自动检查更新</string>
