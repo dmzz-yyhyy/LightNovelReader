@@ -19,9 +19,16 @@ android {
         applicationId = "indi.dmzz_yyhyy.lightnovelreader"
         minSdk = 24
         targetSdk = 36
-        // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_01_02_000
-        versionName = "1.1.1"
+    // If the version number is x.y.z, then versionCode is x*1000000 + y*10000 + z*1000 + debug version number (for development iteration, three digits)
+    // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
+    val versionNameStr = "1.1.1"
+    val debugNumber = 0 // Change this for each debug iteration (three digits)
+    val versionParts = versionNameStr.split(".").map { it.toIntOrNull() ?: 0 }
+    val major = versionParts.getOrNull(0) ?: 0
+    val minor = versionParts.getOrNull(1) ?: 0
+    val patch = versionParts.getOrNull(2) ?: 0
+    versionCode = major * 1_000_000 + minor * 10_000 + patch * 1_000 + debugNumber
+    versionName = versionNameStr
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
