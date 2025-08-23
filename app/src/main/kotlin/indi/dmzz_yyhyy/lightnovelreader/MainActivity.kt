@@ -26,6 +26,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionInitializer
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.LogUtils
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var updateCheckRepository: UpdateCheckRepository
     @Inject lateinit var workManager: WorkManager
     @Inject lateinit var repositoryInitializer: RepositoryInitializer
+    @Inject lateinit var extensionInitializer: ExtensionInitializer
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
     private var isUsingVolumeKeyFlip = false
 
@@ -77,6 +79,11 @@ class MainActivity : ComponentActivity() {
         // Initialize default repositories from Shosetsu
         coroutineScope.launch(Dispatchers.IO) {
             repositoryInitializer.initializeDefaultRepositories()
+        }
+        
+        // Initialize extensions
+        coroutineScope.launch(Dispatchers.IO) {
+            extensionInitializer.initializeExtensions()
         }
         coroutineScope.launch(Dispatchers.IO) {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
