@@ -55,7 +55,6 @@ import indi.dmzz_yyhyy.lightnovelreader.theme.AppTypography
 import indi.dmzz_yyhyy.lightnovelreader.ui.SharedContentKey
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeNavigateBar
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.ReadingSettingsList
@@ -75,7 +74,6 @@ fun SettingsScreen(
     onClickExportUserData: () -> Unit,
     onClickDebugMode: () -> Unit,
     onClickThemeSettings: () -> Unit,
-    onClickPluginManager: () -> Unit,
     onClickTextFormatting: () -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
@@ -136,20 +134,11 @@ fun SettingsScreen(
                     DataSettingsList(
                         onClickChangeSource = onClickChangeSource,
                         onClickExportUserData = onClickExportUserData,
-                        importData = importData,
-                    )
-                }
-                SettingsCategory(
-                    title = stringResource(R.string.app_settings),
-                    icon = ImageVector.vectorResource(R.drawable.settings_applications_24px)
-                ) {
-                    AppSettingsList(
                         settingState = settingState,
-                        onClickLogcat = onClickLogcat,
-                        onClickPluginManager = onClickPluginManager
+                        importData = importData,
+                        onClickLogcat = onClickLogcat
                     )
                 }
-
                 SettingsCategory(
                     title = stringResource(R.string.about_settings),
                     icon = ImageVector.vectorResource(R.drawable.info_24px)

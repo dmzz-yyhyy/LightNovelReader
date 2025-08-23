@@ -14,6 +14,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.InstalledExtensionDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.RepositoryDao
 import javax.inject.Singleton
 
 @Module
@@ -65,5 +68,23 @@ object DaoModule {
     @Singleton
     fun provideFormattingRuleDao(db: LightNovelReaderDatabase): FormattingRuleDao {
         return db.formattingRuleDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRepositoryDao(db: LightNovelReaderDatabase): RepositoryDao {
+        return db.repositoryDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideExtensionDao(db: LightNovelReaderDatabase): ExtensionDao {
+        return db.extensionDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideInstalledExtensionDao(db: LightNovelReaderDatabase): InstalledExtensionDao {
+        return db.installedExtensionDao()
     }
 }

@@ -38,8 +38,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug.navigateToSetting
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug.settingsDebugDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.logcat.navigateToSettingsLogcatDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.logcat.settingsLogcatDestination
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.navigateToSettingsPluginManagerHomeDestination
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.settingsPluginManagerNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.editTextFormattingRuleDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.navigateToSettingsTextFormattingManagerDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.settingsTextFormattingNavigation
@@ -72,7 +70,6 @@ fun NavGraphBuilder.settingsDestination(sharedTransitionScope: SharedTransitionS
             onClickExportUserData = navController::navigateToExportUserDataDialog,
             onClickLogcat = navController::navigateToSettingsLogcatDestination,
             onClickTextFormatting = navController::navigateToSettingsTextFormattingManagerDestination,
-            onClickPluginManager = navController::navigateToSettingsPluginManagerHomeDestination,
             onClickThemeSettings = navController::navigateToSettingsThemeDestination,
             animatedVisibilityScope = this,
             sharedTransitionScope = sharedTransitionScope
@@ -94,7 +91,6 @@ fun NavGraphBuilder.settingsNavigation(sharedTransitionScope: SharedTransitionSc
         settingsLogcatDestination()
         settingsThemeDestination()
         settingsTextFormattingNavigation()
-        settingsPluginManagerNavigation()
     }
 }
 

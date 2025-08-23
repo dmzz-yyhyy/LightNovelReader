@@ -60,18 +60,20 @@ object Route {
                 data class Rules(val bookId: Int)
             }
             @Serializable
-            object PluginManager {
-                @Serializable
-                object Home
-                @Serializable
-                data class Detail(
-                    val id: String
-                )
-            }
-            @Serializable
             object Debug
             @Serializable
             object Theme
+        }
+        @Serializable
+        object Extensions {
+            @Serializable
+            object Home
+            @Serializable
+            object Repositories
+            @Serializable
+            object Browse
+            @Serializable
+            object Installed
         }
         @Serializable
         object SourceChangeDialog

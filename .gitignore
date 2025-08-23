@@ -15,3 +15,7 @@
 .cxx
 local.properties
 .kotlin/
+proxy/build
+proxy/build/*
+.idea/*
+.idea
