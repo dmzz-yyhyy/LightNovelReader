@@ -9,6 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExampleExtension
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
@@ -41,8 +42,9 @@ object RepositoryModule {
         repositoryRepository: RepositoryRepository,
         extensionRepository: ExtensionRepository,
         remoteDataSource: indi.dmzz_yyhyy.lightnovelreader.data.repository.remote.RepositoryRemoteDataSource,
-        extensionLoader: ExtensionLoader
-    ): RepositoryService = RepositoryService(repositoryRepository, extensionRepository, remoteDataSource, extensionLoader)
+        extensionLoader: ExtensionLoader,
+        extensionInitializer: ExtensionInitializer
+    ): RepositoryService = RepositoryService(repositoryRepository, extensionRepository, remoteDataSource, extensionLoader, extensionInitializer)
 
     @Provides
     @Singleton
@@ -69,6 +71,13 @@ object RepositoryModule {
         extensionConverter: ExtensionConverter,
         extensionLoader: ExtensionLoader
     ): ExtensionReadingService = ExtensionReadingService(extensionManager, extensionConverter, extensionLoader)
+
+    @Provides
+    @Singleton
+    fun provideExtensionInitializer(
+        extensionLoader: ExtensionLoader,
+        extensionManager: ExtensionManager
+    ): ExtensionInitializer = ExtensionInitializer(extensionLoader, extensionManager)
 
     @Provides
     @Singleton
