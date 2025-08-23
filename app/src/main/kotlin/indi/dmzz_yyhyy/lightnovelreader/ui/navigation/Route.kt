@@ -74,6 +74,10 @@ object Route {
             object Browse
             @Serializable
             object Installed
+            @Serializable
+            object Exploration
+            @Serializable
+            object Search
         }
         @Serializable
         object SourceChangeDialog

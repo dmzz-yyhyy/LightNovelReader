@@ -76,8 +76,9 @@ object RepositoryModule {
     @Singleton
     fun provideExtensionInitializer(
         extensionLoader: ExtensionLoader,
-        extensionManager: ExtensionManager
-    ): ExtensionInitializer = ExtensionInitializer(extensionLoader, extensionManager)
+        extensionManager: ExtensionManager,
+        repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>
+    ): ExtensionInitializer = ExtensionInitializer(extensionLoader, extensionManager, repositoryServiceProvider)
 
     @Provides
     @Singleton
