@@ -15,6 +15,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.InstalledExtensionDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.RepositoryDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
@@ -26,6 +29,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatistics
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
 
 @Database(
     entities = [
@@ -39,9 +45,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
         BookshelfBookMetadataEntity::class,
         ReadingStatisticsEntity::class,
         BookRecordEntity::class,
-        FormattingRuleEntity::class
+        FormattingRuleEntity::class,
+        RepositoryEntity::class,
+        ExtensionEntity::class,
+        InstalledExtensionEntity::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -54,6 +63,9 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun readingStatisticsDao(): ReadingStatisticsDao
     abstract fun bookRecordDao(): BookRecordDao
     abstract fun formattingRuleDao(): FormattingRuleDao
+    abstract fun repositoryDao(): RepositoryDao
+    abstract fun extensionDao(): ExtensionDao
+    abstract fun installedExtensionDao(): InstalledExtensionDao
 
     companion object {
         @Volatile
@@ -67,7 +79,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         context.applicationContext,
                         LightNovelReaderDatabase::class.java,
                         "light_novel_reader_database")
-                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, Migration_12_13)
+                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, Migration_12_13, MIGRATION_13_14)
                         .allowMainThreadQueries()
                         .build()
                     INSTANCE = instance
@@ -193,6 +205,53 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                     replacement TEXT NOT NULL,
                     is_enabled INTEGER NOT NULL)
                 """)
+            }
+        }
+
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                CREATE TABLE repositories (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    isEnabled INTEGER NOT NULL DEFAULT 1,
+                    lastUpdated INTEGER NOT NULL)
+                """)
+
+                db.execSQL("""
+                CREATE TABLE repository_extensions (
+                    id INTEGER NOT NULL,
+                    repoId INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    fileName TEXT NOT NULL,
+                    imageURL TEXT NOT NULL,
+                    lang TEXT NOT NULL,
+                    version TEXT NOT NULL,
+                    md5 TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    description TEXT NOT NULL DEFAULT '',
+                    PRIMARY KEY(repoId, id),
+                    FOREIGN KEY(repoId) REFERENCES repositories(id) ON DELETE CASCADE)
+                """)
+
+                db.execSQL("""
+                CREATE TABLE installed_extensions (
+                    id INTEGER PRIMARY KEY,
+                    repoId INTEGER NOT NULL,
+                    name TEXT NOT NULL,
+                    fileName TEXT NOT NULL,
+                    imageURL TEXT NOT NULL,
+                    lang TEXT NOT NULL,
+                    version TEXT NOT NULL,
+                    md5 TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    description TEXT NOT NULL DEFAULT '',
+                    isEnabled INTEGER NOT NULL DEFAULT 1,
+                    installDate INTEGER NOT NULL)
+                """)
+
+                db.execSQL("CREATE INDEX index_repository_extensions_repoId ON repository_extensions(repoId)")
             }
         }
     }

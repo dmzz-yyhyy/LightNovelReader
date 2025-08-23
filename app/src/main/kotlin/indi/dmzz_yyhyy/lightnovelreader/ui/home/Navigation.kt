@@ -21,6 +21,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.bookshelfNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.explorationNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.readingNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.settingsNavigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.extensionsNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadeEnter
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadeExit
@@ -52,6 +53,7 @@ fun NavGraphBuilder.homeNavigation(sharedTransitionScope: SharedTransitionScope)
         explorationNavigation(sharedTransitionScope)
         bookshelfNavigation(sharedTransitionScope)
         settingsNavigation(sharedTransitionScope)
+        extensionsNavigation(sharedTransitionScope)
     }
 }
 
@@ -132,6 +134,27 @@ fun HomeNavigateBar(
             label = {
                 Text(
                     text = stringResource(R.string.nav_explore),
+                    maxLines = 1
+                )
+            }
+        )
+        NavigationBarItem(
+            selected = selectedRoute is Route.Main.Extensions,
+            onClick = {
+                if (selectedRoute !is Route.Main.Extensions) coverNavigate(Route.Main.Extensions)
+            },
+            icon = {
+                Icon(
+                    painter = rememberAnimatedVectorPainter(
+                        AnimatedImageVector.animatedVectorResource(R.drawable.animated_extensions),
+                        selectedRoute is Route.Main.Extensions
+                    ),
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(
+                    text = stringResource(R.string.nav_extensions),
                     maxLines = 1
                 )
             }

@@ -65,6 +65,17 @@ object Route {
             object Theme
         }
         @Serializable
+        object Extensions {
+            @Serializable
+            object Home
+            @Serializable
+            object Repositories
+            @Serializable
+            object Browse
+            @Serializable
+            object Installed
+        }
+        @Serializable
         object SourceChangeDialog
         @Serializable
         object ExportUserDataDialog

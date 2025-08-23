@@ -11,6 +11,7 @@
     <string name="nav_explore_homepage">Homepage</string>
     <string name="nav_explore_categories">Categories</string>
     <string name="nav_settings">Settings</string>
+    <string name="nav_extensions">Extensions</string>
     <string name="nav_statistics">Statistics</string>
 
     <!-- Operations -->
@@ -294,5 +295,45 @@
     <string name="dialog_select_data_source_text">Select the data source. This will clear the cache and switch the app\'s data source. Your current user data will remain intact and can be restored upon switching back.</string>
     <string name="dialog_slider_custom">Enter Value</string>
     <string name="dialog_slider_custom_illegal_value">Please enter a valid number.</string>
+
+    <!-- Extensions -->
+    <string name="extensions">Extensions</string>
+    <string name="repositories">Repositories</string>
+    <string name="repositories_description">Manage extension repositories</string>
+    <string name="repository_count">%d repositories</string>
+    <string name="browse_extensions">Browse Extensions</string>
+    <string name="browse_extensions_description">Discover and install extensions</string>
+    <string name="available_extensions_count">%d available</string>
+    <string name="installed_extensions">Installed Extensions</string>
+    <string name="installed_extensions_description">Manage your installed extensions</string>
+    <string name="installed_extensions_count">%d installed</string>
+    <string name="add_repository">Add Repository</string>
+    <string name="repository_name">Repository Name</string>
+    <string name="repository_url">Repository URL</string>
+    <string name="refresh">Refresh</string>
+    <string name="delete">Delete</string>
+    <string name="install">Install</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="update">Update</string>
+    <string name="extension_name">Extension Name</string>
+    <string name="extension_version">Version</string>
+    <string name="extension_language">Language</string>
+    <string name="extension_type">Type</string>
+    <string name="extension_description">Description</string>
+    <string name="no_extensions_available">No extensions available</string>
+    <string name="no_extensions_installed">No extensions installed</string>
+    <string name="extension_install_success">Extension installed successfully</string>
+    <string name="extension_install_failed">Failed to install extension</string>
+    <string name="extension_uninstall_success">Extension uninstalled successfully</string>
+    <string name="extension_uninstall_failed">Failed to uninstall extension</string>
+    <string name="repository_add_success">Repository added successfully</string>
+    <string name="repository_add_failed">Failed to add repository</string>
+    <string name="repository_delete_success">Repository deleted successfully</string>
+    <string name="repository_delete_failed">Failed to delete repository</string>
+    <string name="repository_refresh_success">Repository refreshed successfully</string>
+    <string name="repository_refresh_failed">Failed to refresh repository</string>
+    <string name="back">Back</string>
+    <string name="add">Add</string>
+    <string name="last_updated">Last updated: %d</string>
 
 </resources>
