@@ -341,5 +341,11 @@
     <string name="settings">Settings</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
+    <string name="add_default_repositories">Add Default Repositories</string>
+    <string name="no_repositories_message">No repositories added yet. Add the default Shosetsu repositories to get started!</string>
+    <string name="about_shosetsu_repositories">About Shosetsu Repositories</string>
+    <string name="shosetsu_main_description">• Shosetsu Main: Curated collection of high-quality extensions maintained by the Shosetsu team.</string>
+    <string name="shosetsu_universe_description">• Shosetsu Universe: Community-driven repository with extensions from various developers.</string>
+    <string name="repository_info_note">These repositories contain extensions that provide access to various novel sources and reading platforms.</string>
 
 </resources>

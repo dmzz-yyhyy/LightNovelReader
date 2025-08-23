@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,6 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.repositories.model.RepositoriesUI
+import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.components.RepositoryInfoDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +29,7 @@ fun RepositoriesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
+    var showInfoDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -37,6 +40,14 @@ fun RepositoriesScreen(
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = stringResource(R.string.back)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showInfoDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = stringResource(R.string.about_shosetsu_repositories)
                         )
                     }
                 }
@@ -55,6 +66,33 @@ fun RepositoriesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Show default repositories button if no repositories exist
+            if (uiState.repositories.isEmpty()) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(R.string.no_repositories_message),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.initializeDefaultRepositories() }
+                            ) {
+                                Text(stringResource(R.string.add_default_repositories))
+                            }
+                        }
+                    }
+                }
+            }
+            
             items(uiState.repositories) { repository ->
                 RepositoryItem(
                     repository = repository,
