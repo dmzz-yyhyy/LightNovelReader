@@ -19,6 +19,7 @@ fun ExtensionsHomeScreen(
     onNavigateToRepositories: () -> Unit,
     onNavigateToBrowse: () -> Unit,
     onNavigateToInstalled: () -> Unit,
+    onNavigateToExploration: () -> Unit,
     viewModel: ExtensionsHomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -42,7 +43,8 @@ fun ExtensionsHomeScreen(
                     uiState = uiState,
                     onNavigateToRepositories = onNavigateToRepositories,
                     onNavigateToBrowse = onNavigateToBrowse,
-                    onNavigateToInstalled = onNavigateToInstalled
+                    onNavigateToInstalled = onNavigateToInstalled,
+                    onNavigateToExploration = onNavigateToExploration
                 )
             }
         }
@@ -54,7 +56,8 @@ fun ExtensionsHomeContent(
     uiState: ExtensionsHomeUI,
     onNavigateToRepositories: () -> Unit,
     onNavigateToBrowse: () -> Unit,
-    onNavigateToInstalled: () -> Unit
+    onNavigateToInstalled: () -> Unit,
+    onNavigateToExploration: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -136,6 +139,33 @@ fun ExtensionsHomeContent(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = stringResource(R.string.installed_extensions_count, uiState.installedExtensionsCount),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
+        // Extension Exploration Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = onNavigateToExploration
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.extension_exploration),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.extension_exploration_description),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.explore_novels_from_extensions),
                     style = MaterialTheme.typography.bodySmall
                 )
             }

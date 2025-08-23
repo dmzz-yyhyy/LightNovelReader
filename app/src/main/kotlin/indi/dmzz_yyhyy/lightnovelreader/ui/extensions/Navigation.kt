@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.browse.browseNavigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.exploration.extensionExplorationNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.home.extensionsHomeNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.installed.installedNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.repositories.repositoriesNavigation
@@ -40,5 +41,6 @@ fun NavGraphBuilder.extensionsNavigation(sharedTransitionScope: SharedTransition
         repositoriesNavigation(sharedTransitionScope)
         browseNavigation(sharedTransitionScope)
         installedNavigation(sharedTransitionScope)
+        extensionExplorationNavigation(sharedTransitionScope)
     }
 }
