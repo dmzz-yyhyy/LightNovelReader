@@ -20,6 +20,9 @@ fun NavGraphBuilder.extensionsHomeNavigation(sharedTransitionScope: SharedTransi
             },
             onNavigateToInstalled = {
                 navController.navigate(Route.Main.Extensions.Installed)
+            },
+            onNavigateToExploration = {
+                navController.navigate(Route.Main.Extensions.Exploration)
             }
         )
     }

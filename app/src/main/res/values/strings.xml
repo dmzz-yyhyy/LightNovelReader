@@ -348,5 +348,16 @@
     <string name="shosetsu_universe_description">• Shosetsu Universe: Community-driven repository with extensions from various developers.</string>
     <string name="repository_info_note">These repositories contain extensions that provide access to various novel sources and reading platforms.</string>
     <string name="refresh_all_repositories">Refresh All Repositories</string>
+    <string name="extension_exploration">Extension Exploration</string>
+    <string name="extension_exploration_description">Browse and search novels from installed extensions</string>
+    <string name="explore_novels_from_extensions">Explore novels from extensions</string>
+    <string name="no_extensions_available_for_exploration">No extensions available for exploration</string>
+    <string name="install_extensions_to_explore">Install extensions to explore novels</string>
+    <string name="available_extensions">Available Extensions</string>
+    <string name="explore_novels">Explore Novels</string>
+    <string name="search_novels">Search Novels</string>
+    <string name="search_novels_placeholder">Search for novels...</string>
+    <string name="no_books_found">No books found</string>
+    <string name="author">Author: %s</string>
 
 </resources>

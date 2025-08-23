@@ -21,10 +21,18 @@ class ExtensionReadingService @Inject constructor(
     suspend fun searchBooks(query: String): List<BookInformationEntity> {
         val searchResults = extensionManager.searchAllExtensions(query)
         return searchResults.map { result ->
-            // For now, use a default extension ID. In a real implementation,
-            // you'd need to track which extension provided each result
-            extensionConverter.convertSearchResultToBookInfo(result, "default_extension")
+            // Create a book ID that includes extension information
+            // Format: "ext_${extensionId}_${originalBookId}"
+            val extensionId = "default_extension" // This should be tracked per result
+            val bookId = generateExtensionBookId(extensionId, result.id)
+            extensionConverter.convertSearchResultToBookInfo(result, extensionId).copy(id = bookId)
         }
+    }
+
+    private fun generateExtensionBookId(extensionId: String, originalBookId: String): Int {
+        // Create a hash-based ID that includes extension information
+        val combinedString = "${extensionId}_${originalBookId}"
+        return combinedString.hashCode().let { if (it < 0) -it else it }
     }
 
     suspend fun getBookFromExtension(bookId: Int): BookInformationEntity? {
