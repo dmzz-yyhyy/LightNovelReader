@@ -11,6 +11,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExampleExtension
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepositoryImpl
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryRepository
@@ -68,4 +69,10 @@ object RepositoryModule {
         extensionConverter: ExtensionConverter,
         extensionLoader: ExtensionLoader
     ): ExtensionReadingService = ExtensionReadingService(extensionManager, extensionConverter, extensionLoader)
+
+    @Provides
+    @Singleton
+    fun provideRepositoryInitializer(
+        repositoryService: RepositoryService
+    ): RepositoryInitializer = RepositoryInitializer(repositoryService)
 }

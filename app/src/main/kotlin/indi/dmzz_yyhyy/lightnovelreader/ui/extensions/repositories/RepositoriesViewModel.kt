@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.repositories.model.RepositoriesUI
 import kotlinx.coroutines.flow.*
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RepositoriesViewModel @Inject constructor(
-    private val repositoryService: RepositoryService
+    private val repositoryService: RepositoryService,
+    private val repositoryInitializer: RepositoryInitializer
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RepositoriesUI())
@@ -98,6 +100,21 @@ class RepositoriesViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Failed to update repository",
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    fun initializeDefaultRepositories() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+                repositoryInitializer.initializeDefaultRepositories()
+                // Repositories will be automatically loaded via the Flow
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Failed to initialize default repositories",
                     isLoading = false
                 )
             }
