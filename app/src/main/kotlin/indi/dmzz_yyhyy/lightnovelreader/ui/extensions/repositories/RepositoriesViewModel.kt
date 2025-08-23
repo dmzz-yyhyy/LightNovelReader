@@ -9,6 +9,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.repositories.model.RepositoriesUI
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @HiltViewModel
@@ -115,6 +116,31 @@ class RepositoriesViewModel @Inject constructor(
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     error = e.message ?: "Failed to initialize default repositories",
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    fun refreshAllRepositories() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+                val repositories = repositoryService.getAllRepositories().first()
+                repositories.forEach { repository ->
+                    if (repository.isEnabled) {
+                        try {
+                            repositoryService.refreshRepository(repository)
+                        } catch (e: Exception) {
+                            // Log error but continue with other repositories
+                            e.printStackTrace()
+                        }
+                    }
+                }
+                // Repositories will be automatically loaded via the Flow
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "Failed to refresh repositories",
                     isLoading = false
                 )
             }

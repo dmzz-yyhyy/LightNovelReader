@@ -43,9 +43,8 @@ class RepositoryService @Inject constructor(
         try {
             val repoData = remoteDataSource.downloadRepoData(repository)
             
-            // Update repository with new data
+            // Update repository with new data (keep existing name since RepoIndex doesn't have name)
             val updatedRepository = repository.copy(
-                name = repoData.name,
                 lastUpdated = System.currentTimeMillis()
             )
             repositoryRepository.updateRepository(updatedRepository)
@@ -53,7 +52,7 @@ class RepositoryService @Inject constructor(
             // Clear existing extensions and add new ones
             extensionRepository.deleteExtensionsByRepoId(repository.id)
             
-            repoData.extensions.forEach { repoExtension ->
+            repoData.scripts.forEach { repoExtension ->
                 val extension = ExtensionEntity(
                     id = repoExtension.id,
                     repoId = repository.id,
@@ -61,10 +60,10 @@ class RepositoryService @Inject constructor(
                     fileName = repoExtension.fileName,
                     imageURL = repoExtension.imageURL,
                     lang = repoExtension.lang,
-                    version = repoExtension.version,
+                    version = repoExtension.ver, // Use "ver" field from Shosetsu
                     md5 = repoExtension.md5,
                     type = repoExtension.type,
-                    description = repoExtension.description
+                    description = "" // Shosetsu doesn't have description field
                 )
                 extensionRepository.insertExtension(extension)
             }
