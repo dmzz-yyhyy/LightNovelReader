@@ -335,5 +335,10 @@
     <string name="back">Back</string>
     <string name="add">Add</string>
     <string name="last_updated">Last updated: %d</string>
+    <string name="search">Search</string>
+    <string name="installed">Installed</string>
+    <string name="settings">Settings</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
 
 </resources>
