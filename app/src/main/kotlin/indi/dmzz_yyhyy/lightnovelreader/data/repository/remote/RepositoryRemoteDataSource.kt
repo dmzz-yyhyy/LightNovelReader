@@ -29,7 +29,8 @@ class RepositoryRemoteDataSource @Inject constructor() {
         fileName: String
     ): ByteArray = withContext(Dispatchers.IO) {
         try {
-            val extensionUrl = "${repository.url.removeSuffix("/")}/$fileName"
+            // For Shosetsu repositories, extensions are typically .lua files
+            val extensionUrl = "${repository.url.removeSuffix("/")}/$fileName.lua"
             URL(extensionUrl).readBytes()
         } catch (e: Exception) {
             throw IOException("Failed to download extension $fileName from ${repository.url}", e)
