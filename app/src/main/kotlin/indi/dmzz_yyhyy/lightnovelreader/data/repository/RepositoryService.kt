@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.repository
 
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
@@ -13,7 +14,8 @@ import javax.inject.Singleton
 class RepositoryService @Inject constructor(
     private val repositoryRepository: RepositoryRepository,
     private val extensionRepository: ExtensionRepository,
-    private val remoteDataSource: RepositoryRemoteDataSource
+    private val remoteDataSource: RepositoryRemoteDataSource,
+    private val extensionLoader: ExtensionLoader
 ) {
 
     fun getAllRepositories(): Flow<List<RepositoryEntity>> =
@@ -98,12 +100,24 @@ class RepositoryService @Inject constructor(
             installDate = System.currentTimeMillis()
         )
         
+        // Save the extension file
+        extensionLoader.saveExtension(installedExtension, extensionData)
+        
+        // Insert into database
         extensionRepository.insertInstalledExtension(installedExtension)
         return extensionData
     }
 
     suspend fun uninstallExtension(extension: InstalledExtensionEntity) {
+        // Delete the extension file
+        extensionLoader.deleteExtension(extension)
+        
+        // Delete from database
         extensionRepository.deleteInstalledExtension(extension)
+    }
+
+    suspend fun updateInstalledExtension(extension: InstalledExtensionEntity) {
+        extensionRepository.updateInstalledExtension(extension)
     }
 
     fun getAllInstalledExtensions(): Flow<List<InstalledExtensionEntity>> =

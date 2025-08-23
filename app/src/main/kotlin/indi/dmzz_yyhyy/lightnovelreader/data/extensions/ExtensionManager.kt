@@ -77,4 +77,15 @@ class ExtensionManager @Inject constructor() {
             null
         }
     }
+
+    suspend fun getChaptersFromExtension(extensionId: String, bookId: String): List<ExtensionChapter>? {
+        val extension = getExtension(extensionId) ?: return null
+        
+        return try {
+            extension.getChapters(bookId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }
