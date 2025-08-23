@@ -8,7 +8,8 @@ import javax.inject.Singleton
 @Singleton
 class ExtensionInitializer @Inject constructor(
     private val extensionLoader: ExtensionLoader,
-    private val extensionManager: ExtensionManager
+    private val extensionManager: ExtensionManager,
+    private val repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>
 ) {
 
     /**
@@ -19,28 +20,28 @@ class ExtensionInitializer @Inject constructor(
             // For now, we'll create some example extensions for testing
             // In a real implementation, you would load the actual installed extensions
             
-            // Create example extensions for testing
-            val exampleExtensions = listOf(
-                ExampleExtension(),
-                SecondExampleExtension(),
-                // Add more example extensions as needed
-            )
+            // // Create example extensions for testing
+            // val exampleExtensions = listOf(
+            //     ExampleExtension(),
+            //     SecondExampleExtension(),
+            //     // Add more example extensions as needed
+            // )
             
             // Register all extensions
-            exampleExtensions.forEach { extension ->
-                extensionManager.registerExtension(extension)
-            }
+            // exampleExtensions.forEach { extension ->
+            //     extensionManager.registerExtension(extension)
+            // }
             
             // TODO: In the future, load actual installed extensions from the database
-            // val installedExtensions = repositoryService.getAllInstalledExtensions().first()
-            // installedExtensions.forEach { installedExtension ->
-            //     if (installedExtension.isEnabled) {
-            //         val extension = extensionLoader.loadExtension(installedExtension)
-            //         if (extension != null) {
-            //             extensionManager.registerExtension(extension)
-            //         }
-            //     }
-            // }
+            val installedExtensions = repositoryServiceProvider.get().getAllInstalledExtensions().first()
+            installedExtensions.forEach { installedExtension ->
+                if (installedExtension.isEnabled) {
+                    val extension = extensionLoader.loadExtension(installedExtension)
+                    if (extension != null) {
+                        extensionManager.registerExtension(extension)
+                    }
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -68,6 +69,6 @@ class ExtensionInitializer @Inject constructor(
      * Unload a specific extension
      */
     fun unloadExtension(extensionId: String) {
-        extensionManager.unregisterExtension(extensionId)
+    extensionManager.unregisterExtension(extensionId)
     }
 }
