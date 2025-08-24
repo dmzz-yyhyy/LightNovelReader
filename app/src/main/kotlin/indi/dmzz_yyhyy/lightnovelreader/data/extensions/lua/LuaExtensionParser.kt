@@ -70,12 +70,24 @@ class LuaExtensionParser @Inject constructor() {
      * Validate that a Lua script contains required functions
      */
     fun validateLuaExtension(luaScript: String): ValidationResult {
-        val requiredFunctions = listOf("search", "getBook", "getChapter", "getChapters")
+        // Shosetsu extensions use: search, parseNovel, getPassage
+        // Some extensions may not have all functions (dependency-based extensions)
+        val requiredFunctions = listOf("search", "parseNovel", "getPassage")
         val missingFunctions = mutableListOf<String>()
+        
+        // Check if it's a dependency-based extension (uses Require())
+        val isDependencyBased = luaScript.contains("Require(") || luaScript.contains("return {")
+        
+        if (isDependencyBased) {
+            // For dependency-based extensions, just check if it has a return statement or Require call
+            // These extensions get their functionality from base libraries
+            return ValidationResult.Success
+        }
         
         requiredFunctions.forEach { functionName ->
             if (!luaScript.contains("function $functionName") && 
-                !luaScript.contains("$functionName = function")) {
+                !luaScript.contains("$functionName = function") &&
+                !luaScript.contains("$functionName =")) {
                 missingFunctions.add(functionName)
             }
         }

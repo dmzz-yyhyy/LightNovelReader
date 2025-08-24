@@ -36,9 +36,14 @@ class ExtensionExplorationViewModel @Inject constructor(
     private fun loadAvailableExtensions() {
         viewModelScope.launch {
             try {
+                println("ExtensionExplorationViewModel: Loading available extensions...")
                 _homeUIState.value = _homeUIState.value.copy(isLoading = true)
+                
                 val enabledExtensions = extensionReadingService.getEnabledExtensions()
+                println("ExtensionExplorationViewModel: Got ${enabledExtensions.size} enabled extensions from service")
+                
                 val extensionInfos = enabledExtensions.map { extension ->
+                    println("ExtensionExplorationViewModel: Creating info for extension: ${extension.name}")
                     ExtensionInfo(
                         id = extension.id,
                         name = extension.name,
@@ -47,12 +52,15 @@ class ExtensionExplorationViewModel @Inject constructor(
                     )
                 }
                 
+                println("ExtensionExplorationViewModel: Setting UI state with ${extensionInfos.size} extension infos")
                 _homeUIState.value = _homeUIState.value.copy(
                     availableExtensions = extensionInfos,
                     isLoading = false,
                     error = null
                 )
             } catch (e: Exception) {
+                println("ExtensionExplorationViewModel: Error loading extensions: ${e.message}")
+                e.printStackTrace()
                 _homeUIState.value = _homeUIState.value.copy(
                     error = e.message ?: "Failed to load extensions",
                     isLoading = false

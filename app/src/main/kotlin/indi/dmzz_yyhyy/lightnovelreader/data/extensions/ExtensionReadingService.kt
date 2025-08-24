@@ -161,27 +161,39 @@ class ExtensionReadingService @Inject constructor(
     }
 
     suspend fun getEnabledExtensions(): List<Extension> {
+        println("ExtensionReadingService.getEnabledExtensions: Starting...")
+        
         val installedExtensions =
             repositoryServiceProvider.get().getAllInstalledExtensions().first()
+        println("ExtensionReadingService.getEnabledExtensions: Found ${installedExtensions.size} installed extensions")
+        
         val enabledExtensions = mutableListOf<Extension>()
 
         for (installedExtension in installedExtensions) {
+            println("ExtensionReadingService.getEnabledExtensions: Processing ${installedExtension.name} (Enabled: ${installedExtension.isEnabled})")
+            
             if (installedExtension.isEnabled) {
                 val extension =
                     extensionManager.getExtension(installedExtension.id.toString())
                 if (extension != null) {
                     enabledExtensions.add(extension)
+                    println("ExtensionReadingService.getEnabledExtensions: Found extension in manager: ${extension.name}")
                 } else {
+                    println("ExtensionReadingService.getEnabledExtensions: Extension not in manager, trying to load: ${installedExtension.name}")
                     // Try to load the extension if it's not in memory
                     val loadedExtension = extensionLoader.loadExtension(installedExtension)
                     if (loadedExtension != null) {
                         extensionManager.registerExtension(loadedExtension)
                         enabledExtensions.add(loadedExtension)
+                        println("ExtensionReadingService.getEnabledExtensions: Successfully loaded and registered: ${loadedExtension.name}")
+                    } else {
+                        println("ExtensionReadingService.getEnabledExtensions: Failed to load extension: ${installedExtension.name}")
                     }
                 }
             }
         }
 
+        println("ExtensionReadingService.getEnabledExtensions: Returning ${enabledExtensions.size} enabled extensions")
         return enabledExtensions
     }
 }

@@ -17,32 +17,30 @@ class ExtensionInitializer @Inject constructor(
      */
     suspend fun initializeExtensions() {
         try {
-            // For now, we'll create some example extensions for testing
-            // In a real implementation, you would load the actual installed extensions
+            println("ExtensionInitializer: Starting extension initialization...")
             
-            // // Create example extensions for testing
-            // val exampleExtensions = listOf(
-            //     ExampleExtension(),
-            //     SecondExampleExtension(),
-            //     // Add more example extensions as needed
-            // )
-            
-            // Register all extensions
-            // exampleExtensions.forEach { extension ->
-            //     extensionManager.registerExtension(extension)
-            // }
-            // TODO: In the future, load actual installed extensions from the database
-
             val installedExtensions = repositoryServiceProvider.get().getAllInstalledExtensions().first()
+            println("ExtensionInitializer: Found ${installedExtensions.size} installed extensions")
+            
             installedExtensions.forEach { installedExtension ->
+                println("ExtensionInitializer: Processing extension: ${installedExtension.name} (ID: ${installedExtension.id}, Enabled: ${installedExtension.isEnabled})")
+                
                 if (installedExtension.isEnabled) {
                     val extension = extensionLoader.loadExtension(installedExtension)
                     if (extension != null) {
                         extensionManager.registerExtension(extension)
+                        println("ExtensionInitializer: Successfully loaded and registered extension: ${extension.name}")
+                    } else {
+                        println("ExtensionInitializer: Failed to load extension: ${installedExtension.name}")
                     }
+                } else {
+                    println("ExtensionInitializer: Extension ${installedExtension.name} is disabled, skipping")
                 }
             }
+            
+            println("ExtensionInitializer: Extension initialization completed. Total registered: ${extensionManager.getAllExtensions().size}")
         } catch (e: Exception) {
+            println("ExtensionInitializer: Error during initialization: ${e.message}")
             e.printStackTrace()
         }
     }
