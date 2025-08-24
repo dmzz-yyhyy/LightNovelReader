@@ -6,7 +6,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
 import org.luaj.vm2.*
 import org.luaj.vm2.lib.jse.JsePlatform
-import java.io.File
 
 /**
  * Lua-based extension implementation
@@ -39,7 +38,7 @@ class LuaExtension(
                 val result = searchFunction.call(LuaValue.valueOf(query))
                 return parseLuaSearchResults(result)
             }
-            
+
             println("LuaExtension: No search function found for $name")
             emptyList()
         } catch (e: Exception) {
@@ -60,14 +59,14 @@ class LuaExtension(
                 )
                 return parseLuaBook(result)
             }
-            
+
             // Last fallback to getBook function (our style)
             val getBookFunction = globals.get("getBook")
             if (getBookFunction.isfunction()) {
                 val result = getBookFunction.call(LuaValue.valueOf(id))
                 return parseLuaBook(result)
             }
-            
+
             println("LuaExtension: No parseNovel or getBook function found for $name")
             null
         } catch (e: Exception) {
@@ -85,7 +84,7 @@ class LuaExtension(
                 val result = getPassageFunction.call(LuaValue.valueOf(chapterId))
                 return parseLuaChapter(result)
             }
-            
+
             // Last fallback to getChapter function (our style)
             val getChapterFunction = globals.get("getChapter")
             if (getChapterFunction.isfunction()) {
@@ -95,7 +94,7 @@ class LuaExtension(
                 )
                 return parseLuaChapter(result)
             }
-            
+
             println("LuaExtension: No getPassage or getChapter function found for $name")
             null
         } catch (e: Exception) {
@@ -110,7 +109,7 @@ class LuaExtension(
             // For Shosetsu extensions, chapters are typically returned by parseNovel
             // so we try to get them from there first
             val book = getBook(bookId)
-            book?.chapters ?: run {
+            book ?: run {
                 // Fallback to getChapters function if it exists
                 val getChaptersFunction = globals.get("getChapters")
                 if (getChaptersFunction.isfunction()) {
@@ -125,24 +124,20 @@ class LuaExtension(
             println("LuaExtension: getChapters failed for $name: ${e.message}")
             e.printStackTrace()
             null
-        }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        } as List<ExtensionChapter>?
     }
 
     private fun parseLuaSearchResults(luaValue: LuaValue): List<ExtensionSearchResult> {
         if (!luaValue.istable()) return emptyList()
-        
+
         val results = mutableListOf<ExtensionSearchResult>()
         val table = luaValue.checktable()
-        
+
         var i = 1
         while (true) {
             val entry = table.get(i)
             if (entry.isnil()) break
-            
+
             if (entry.istable()) {
                 val entryTable = entry.checktable()
                 val searchResult = ExtensionSearchResult(
@@ -158,13 +153,13 @@ class LuaExtension(
             }
             i++
         }
-        
+
         return results
     }
 
     private fun parseLuaBook(luaValue: LuaValue): ExtensionBook? {
         if (!luaValue.istable()) return null
-        
+
         val table = luaValue.checktable()
         return ExtensionBook(
             id = table.get("id").optjstring(""),
@@ -175,13 +170,14 @@ class LuaExtension(
             url = table.get("url").optjstring(""),
             genres = parseLuaStringList(table.get("genres")),
             status = table.get("status").optjstring(""),
-            lastUpdated = table.get("lastUpdated").optlong(0)
+            lastUpdated = table.get("lastUpdated").optlong(0),
+            chapters = parseLuaChapterList(table.get("chapters"))
         )
     }
 
     private fun parseLuaChapter(luaValue: LuaValue): ExtensionChapter? {
         if (!luaValue.istable()) return null
-        
+
         val table = luaValue.checktable()
         return ExtensionChapter(
             id = table.get("id").optjstring(""),
@@ -195,37 +191,37 @@ class LuaExtension(
 
     private fun parseLuaChapterList(luaValue: LuaValue): List<ExtensionChapter>? {
         if (!luaValue.istable()) return null
-        
+
         val chapters = mutableListOf<ExtensionChapter>()
         val table = luaValue.checktable()
-        
+
         var i = 1
         while (true) {
             val entry = table.get(i)
             if (entry.isnil()) break
-            
+
             parseLuaChapter(entry)?.let { chapters.add(it) }
             i++
         }
-        
+
         return chapters
     }
 
     private fun parseLuaStringList(luaValue: LuaValue): List<String> {
         if (!luaValue.istable()) return emptyList()
-        
+
         val list = mutableListOf<String>()
         val table = luaValue.checktable()
-        
+
         var i = 1
         while (true) {
             val entry = table.get(i)
             if (entry.isnil()) break
-            
+
             list.add(entry.optjstring(""))
             i++
         }
-        
+
         return list
     }
 }

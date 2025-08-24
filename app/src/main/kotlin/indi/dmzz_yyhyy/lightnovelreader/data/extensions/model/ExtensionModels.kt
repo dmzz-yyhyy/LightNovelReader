@@ -29,7 +29,8 @@ data class ExtensionBook(
     val url: String = "",
     val genres: List<String> = emptyList(),
     val status: String = "",
-    val lastUpdated: Long = 0
+    val lastUpdated: Long = 0,
+    val chapters: List<ExtensionChapter> = emptyList()
 )
 
 /**

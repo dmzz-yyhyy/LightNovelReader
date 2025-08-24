@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
-import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
 
@@ -63,14 +62,14 @@ class ExampleExtension : Extension {
     override suspend fun search(query: String): List<ExtensionSearchResult> {
         return sampleBooks.filter { book ->
             book.title.contains(query, ignoreCase = true) ||
-            book.author.contains(query, ignoreCase = true) ||
-            book.description.contains(query, ignoreCase = true)
+                    book.author.contains(query, ignoreCase = true) ||
+                    book.description.contains(query, ignoreCase = true)
         }
     }
 
     override suspend fun getBook(id: String): ExtensionBook? {
         val searchResult = sampleBooks.find { it.id == id } ?: return null
-        
+
         return ExtensionBook(
             id = searchResult.id,
             title = searchResult.title,
