@@ -24,16 +24,23 @@ class ExtensionLoader @Inject constructor(
     suspend fun loadExtension(extensionEntity: InstalledExtensionEntity): Extension? =
         withContext(Dispatchers.IO) {
             try {
-                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                val extensionFile = getExtensionFile(extensionEntity)
                 if (!extensionFile.exists()) {
                     return@withContext null
                 }
 
-                // For now, return the example extension as a placeholder
-                // In a real implementation, you would load the JAR file and instantiate the extension
-                when (extensionEntity.id) {
-                    1 -> ExampleExtension()
-                    else -> null
+                // Determine extension type and load accordingly
+                when (extensionEntity.type.lowercase()) {
+                    "lua" -> loadLuaExtension(extensionEntity, extensionFile)
+                    "jar" -> loadJarExtension(extensionEntity, extensionFile)
+                    else -> {
+                        // Fallback to example extensions for development
+                        when (extensionEntity.id) {
+                            1 -> ExampleExtension()
+                            2 -> SecondExampleExtension()
+                            else -> null
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -41,10 +48,36 @@ class ExtensionLoader @Inject constructor(
             }
         }
 
+    private suspend fun loadLuaExtension(extensionEntity: InstalledExtensionEntity, extensionFile: File): Extension? {
+        return try {
+            // TODO: Implement Lua extension loading
+            // For now, return example extensions based on ID
+            when (extensionEntity.id) {
+                1 -> ExampleExtension()
+                2 -> SecondExampleExtension()
+                else -> null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private suspend fun loadJarExtension(extensionEntity: InstalledExtensionEntity, extensionFile: File): Extension? {
+        return try {
+            // TODO: Implement JAR extension loading using ClassLoader
+            // This would involve loading the JAR file and instantiating the Extension class
+            null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     suspend fun saveExtension(extensionEntity: InstalledExtensionEntity, extensionData: ByteArray) =
         withContext(Dispatchers.IO) {
             try {
-                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                val extensionFile = getExtensionFile(extensionEntity)
                 extensionFile.writeBytes(extensionData)
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -55,7 +88,7 @@ class ExtensionLoader @Inject constructor(
     suspend fun deleteExtension(extensionEntity: InstalledExtensionEntity) =
         withContext(Dispatchers.IO) {
             try {
-                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                val extensionFile = getExtensionFile(extensionEntity)
                 if (extensionFile.exists()) {
                     extensionFile.delete()
                 }
@@ -66,6 +99,11 @@ class ExtensionLoader @Inject constructor(
         }
 
     fun getExtensionFile(extensionEntity: InstalledExtensionEntity): File {
-        return File(extensionsDir, "${extensionEntity.id}.lua")
+        val extension = when (extensionEntity.type.lowercase()) {
+            "lua" -> "lua"
+            "jar" -> "jar"
+            else -> "lua" // Default to lua
+        }
+        return File(extensionsDir, "${extensionEntity.id}.${extension}")
     }
 }
