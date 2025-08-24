@@ -4,6 +4,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.Extension
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 import org.luaj.vm2.Globals
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.Varargs
@@ -15,14 +22,6 @@ import org.luaj.vm2.lib.jse.JsePlatform
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.URL
-import java.net.HttpURLConnection
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Element
-import org.jsoup.select.Elements
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 
 /**
  * Lua-based extension implementation
@@ -48,11 +47,19 @@ class LuaExtension(
         // Load and compile the Lua script
         chunk = globals.load(luaScript)
         val result = chunk.call()
-        
+
         // Debug: Print available functions in the extension
         println("LuaExtension: Loaded extension $name")
         println("LuaExtension: Available functions:")
-        val functionsToCheck = listOf("search", "parseNovel", "getPassage", "listings", "latest", "getBook", "getChapter")
+        val functionsToCheck = listOf(
+            "search",
+            "parseNovel",
+            "getPassage",
+            "listings",
+            "latest",
+            "getBook",
+            "getChapter"
+        )
         functionsToCheck.forEach { funcName ->
             val func = globals.get(funcName)
             if (func.isfunction()) {
@@ -61,12 +68,19 @@ class LuaExtension(
                 println("LuaExtension: - $funcName: available (${func.typename()})")
             }
         }
-        
+
         // Check if result contains listings or other properties
         if (result.istable()) {
             println("LuaExtension: Extension returned table with properties:")
             val table = result.checktable()
-            val properties = listOf("listings", "search", "parseNovel", "getPassage", "hasSearch", "isSearchIncrementing")
+            val properties = listOf(
+                "listings",
+                "search",
+                "parseNovel",
+                "getPassage",
+                "hasSearch",
+                "isSearchIncrementing"
+            )
             properties.forEach { prop ->
                 val value = table.get(prop)
                 if (!value.isnil()) {
@@ -688,13 +702,13 @@ class LuaExtension(
             override fun call(selector: LuaValue): LuaValue {
                 val selectorString = selector.tojstring()
                 println("LuaExtension: Document.select called with: $selectorString")
-                
+
                 return try {
                     val elements = document.select(selectorString)
                     createLuaElements(elements)
                 } catch (e: Exception) {
                     println("LuaExtension: Error selecting '$selectorString': ${e.message}")
-                    LuaValue.tableOf()
+                    tableOf()
                 }
             }
         })
@@ -704,17 +718,17 @@ class LuaExtension(
             override fun call(selector: LuaValue): LuaValue {
                 val selectorString = selector.tojstring()
                 println("LuaExtension: Document.selectFirst called with: $selectorString")
-                
+
                 return try {
                     val element = document.selectFirst(selectorString)
                     if (element != null) {
                         createLuaElement(element)
                     } else {
-                        LuaValue.NIL
+                        NIL
                     }
                 } catch (e: Exception) {
                     println("LuaExtension: Error selecting first '$selectorString': ${e.message}")
-                    LuaValue.NIL
+                    NIL
                 }
             }
         })
@@ -724,18 +738,18 @@ class LuaExtension(
 
     private fun createLuaElements(elements: Elements): LuaValue {
         val list = LuaValue.tableOf()
-        
+
         elements.forEachIndexed { index, element ->
             list.set(index + 1, createLuaElement(element))
         }
-        
+
         // Add size method
         list.set("size", object : ZeroArgFunction() {
             override fun call(): LuaValue {
-                return LuaValue.valueOf(elements.size)
+                return valueOf(elements.size)
             }
         })
-        
+
         return list
     }
 
@@ -745,7 +759,7 @@ class LuaExtension(
         // Add text method
         luaElement.set("text", object : ZeroArgFunction() {
             override fun call(): LuaValue {
-                return LuaValue.valueOf(element.text())
+                return valueOf(element.text())
             }
         })
 
@@ -753,7 +767,7 @@ class LuaExtension(
         luaElement.set("attr", object : OneArgFunction() {
             override fun call(attrName: LuaValue): LuaValue {
                 val attrValue = element.attr(attrName.tojstring())
-                return LuaValue.valueOf(attrValue)
+                return valueOf(attrValue)
             }
         })
 
@@ -772,7 +786,7 @@ class LuaExtension(
                 return if (foundElement != null) {
                     createLuaElement(foundElement)
                 } else {
-                    LuaValue.NIL
+                    NIL
                 }
             }
         })
@@ -782,7 +796,7 @@ class LuaExtension(
             override fun call(content: LuaValue): LuaValue {
                 // For extensions that modify content - just log for now
                 println("LuaExtension: Element.prepend called with: ${content.tojstring()}")
-                return LuaValue.NIL
+                return NIL
             }
         })
 
@@ -790,7 +804,7 @@ class LuaExtension(
         luaElement.set("remove", object : ZeroArgFunction() {
             override fun call(): LuaValue {
                 element.remove()
-                return LuaValue.NIL
+                return NIL
             }
         })
 
@@ -810,19 +824,19 @@ class LuaExtension(
                     selectorStr.contains("div.c-tabs-item__content") -> createMockNovelList()
                     selectorStr.contains("section.book-card-item") -> createMockNovelList()
                     selectorStr.contains("div[style=\"display: flex;\"]") -> createMockNovelList()
-                    
+
                     // Chapter selectors
                     selectorStr.contains("li.wp-manga-chapter") -> createMockChapterList()
                     selectorStr.contains("ul.g0") -> createMockChapterList()
                     selectorStr.contains("div.w800_m") -> createMockChapterList()
-                    
+
                     // Genre/metadata selectors
                     selectorStr.contains(".gnres > a") -> createMockGenreList()
                     selectorStr.contains("div.post-content_item") -> createMockContentList()
-                    
+
                     // Pagination
                     selectorStr.contains(".c-pager__item--last") -> createMockPager()
-                    
+
                     // Default fallback
                     else -> createMockNovelList()
                 }
@@ -838,33 +852,44 @@ class LuaExtension(
                     selectorStr.contains("h2.bookname") -> createMockElement("Sample Novel Title")
                     selectorStr.contains("div.post-title") -> createMockElement("Sample Novel Title")
                     selectorStr.contains("p-novel__title") -> createMockElement("Sample Novel")
-                    
+
                     // Author selectors
                     selectorStr.contains(".author_link") -> createMockElement("Sample Author")
                     selectorStr.contains("p-novel__author") -> createMockElement("Sample Author")
-                    
+
                     // Description selectors
                     selectorStr.contains("#bann_full") -> createMockElement("This is a sample novel description.")
                     selectorStr.contains("#bann_short") -> createMockElement("Short description.")
                     selectorStr.contains("div.summary__content") -> createMockElement("Novel summary content.")
                     selectorStr.contains("div.manga-excerpt") -> createMockElement("Novel excerpt.")
-                    
+
                     // Image selectors
-                    selectorStr.contains("img.shadow") -> createMockElement("", src = "/sample-cover.jpg")
-                    selectorStr.contains("div.summary_image img") -> createMockElement("", src = "/sample-cover.jpg")
-                    
+                    selectorStr.contains("img.shadow") -> createMockElement(
+                        "",
+                        src = "/sample-cover.jpg"
+                    )
+
+                    selectorStr.contains("div.summary_image img") -> createMockElement(
+                        "",
+                        src = "/sample-cover.jpg"
+                    )
+
                     // Status selectors
                     selectorStr.contains(".tech_decription") -> createMockElement("Пишется")
                     selectorStr.contains("div.post-status") -> createMockStatusElement()
-                    
+
                     // Button/link selectors
-                    selectorStr.contains("read_button") -> createMockElement("", href = "/novel/sample")
+                    selectorStr.contains("read_button") -> createMockElement(
+                        "",
+                        href = "/novel/sample"
+                    )
+
                     selectorStr.contains("a.txt") -> createMockElement("", href = "/books/123")
-                    
+
                     // Chapter content
                     selectorStr.contains("div.c-blog-post") -> createMockChapterContent()
                     selectorStr.contains("div.text-left") -> createMockChapterContent()
-                    
+
                     // Default fallback
                     else -> createMockElement("Mock Text")
                 }
@@ -884,42 +909,57 @@ class LuaExtension(
             Triple("Demo Novel 4", "/books/101", "Fourth demo novel"),
             Triple("Example Book 5", "/books/202", "Fifth example book")
         )
-        
-        sampleNovels.forEachIndexed { index, (title, link, desc) ->
+
+        sampleNovels.forEachIndexed { index, (title, link, _) ->
             val novel = LuaValue.tableOf()
-            
+
             novel.set("select", object : OneArgFunction() {
                 override fun call(selector: LuaValue): LuaValue {
                     val selectorStr = selector.tojstring()
                     return when {
-                        selectorStr.contains("span[itemprop=\"name\"]") -> createSingleElementList(title)
+                        selectorStr.contains("span[itemprop=\"name\"]") -> createSingleElementList(
+                            title
+                        )
+
                         selectorStr.contains("a.txt") -> createSingleElementList("", href = link)
-                        selectorStr.contains("img.shadow") -> createSingleElementList("", src = "/cover${index + 1}.jpg")
-                        else -> LuaValue.tableOf()
+                        selectorStr.contains("img.shadow") -> createSingleElementList(
+                            "",
+                            src = "/cover${index + 1}.jpg"
+                        )
+
+                        else -> tableOf()
                     }
                 }
             })
-            
+
             novel.set("selectFirst", object : OneArgFunction() {
                 override fun call(selector: LuaValue): LuaValue {
                     val selectorStr = selector.tojstring()
                     return when {
                         selectorStr.contains("span[itemprop=\"name\"]") -> createMockElement(title)
                         selectorStr.contains("a.txt") -> createMockElement("", href = link)
-                        selectorStr.contains("img.shadow") -> createMockElement("", src = "/cover${index + 1}.jpg")
+                        selectorStr.contains("img.shadow") -> createMockElement(
+                            "",
+                            src = "/cover${index + 1}.jpg"
+                        )
+
                         selectorStr.contains("a.chptitle") -> createMockElement(title, href = link)
                         selectorStr.contains("a") -> createMockElement(title, href = link)
                         else -> createMockElement(title)
                     }
                 }
             })
-            
+
             list.set(index + 1, novel)
         }
         return list
     }
-    
-    private fun createSingleElementList(text: String, href: String = "", src: String = ""): LuaValue {
+
+    private fun createSingleElementList(
+        text: String,
+        href: String = "",
+        src: String = ""
+    ): LuaValue {
         val list = LuaValue.tableOf()
         val element = createMockElement(text, href, src)
         list.set(1, element)
@@ -955,64 +995,68 @@ class LuaExtension(
         pager.set("attr", object : OneArgFunction() {
             override fun call(attrName: LuaValue): LuaValue {
                 return if (attrName.tojstring() == "href") {
-                    LuaValue.valueOf("?p=1")
+                    valueOf("?p=1")
                 } else {
-                    LuaValue.valueOf("")
+                    valueOf("")
                 }
             }
         })
         return pager
     }
 
-    private fun createMockElement(text: String = "", href: String = "", src: String = ""): LuaValue {
+    private fun createMockElement(
+        text: String = "",
+        href: String = "",
+        src: String = ""
+    ): LuaValue {
         val element = LuaValue.tableOf()
-        
+
         element.set("text", object : ZeroArgFunction() {
             override fun call(): LuaValue {
-                return LuaValue.valueOf(text)
+                return valueOf(text)
             }
         })
-        
+
         element.set("attr", object : OneArgFunction() {
             override fun call(attrName: LuaValue): LuaValue {
                 return when (attrName.tojstring()) {
-                    "href" -> LuaValue.valueOf(href)
-                    "src" -> LuaValue.valueOf(src)
-                    "title" -> LuaValue.valueOf(text)
-                    else -> LuaValue.valueOf("")
+                    "href" -> valueOf(href)
+                    "src" -> valueOf(src)
+                    "title" -> valueOf(text)
+                    else -> valueOf("")
                 }
             }
         })
-        
+
         element.set("prepend", object : OneArgFunction() {
             override fun call(content: LuaValue): LuaValue {
-                return LuaValue.NIL
+                return NIL
             }
         })
-        
+
         element.set("select", object : OneArgFunction() {
             override fun call(selector: LuaValue): LuaValue {
                 // Return empty list for any sub-selections
-                return LuaValue.tableOf()
+                return tableOf()
             }
         })
-        
+
         element.set("selectFirst", object : OneArgFunction() {
             override fun call(selector: LuaValue): LuaValue {
                 // Return self for any sub-selections
                 return element
             }
         })
-        
+
         element.set("remove", object : ZeroArgFunction() {
             override fun call(): LuaValue {
-                return LuaValue.NIL
+                return NIL
             }
         })
-        
+
         return element
     }
-    
+
     private fun createMockGenreList(): LuaValue {
         val list = LuaValue.tableOf()
         val genres = listOf("Fantasy", "Adventure", "Romance", "Action", "Drama")
@@ -1021,19 +1065,19 @@ class LuaExtension(
         }
         return list
     }
-    
+
     private fun createMockContentList(): LuaValue {
         val list = LuaValue.tableOf()
         list.set(1, createMockElement("Publishing"))
         return list
     }
-    
+
     private fun createMockStatusElement(): LuaValue {
         val statusElement = LuaValue.tableOf()
         statusElement.set("select", object : OneArgFunction() {
             override fun call(selector: LuaValue): LuaValue {
-                val list = LuaValue.tableOf()
-                val content = LuaValue.tableOf()
+                val list = tableOf()
+                val content = tableOf()
                 content.set("selectFirst", object : OneArgFunction() {
                     override fun call(subSelector: LuaValue): LuaValue {
                         return createMockElement("Publishing")
@@ -1051,7 +1095,7 @@ class LuaExtension(
         element.set("prepend", object : OneArgFunction() {
             override fun call(content: LuaValue): LuaValue {
                 // Mock prepend operation
-                return LuaValue.NIL
+                return NIL
             }
         })
         return element
@@ -1060,13 +1104,13 @@ class LuaExtension(
     override suspend fun search(query: String): List<ExtensionSearchResult> {
         return try {
             println("LuaExtension: Starting search for '$query' in extension $name")
-            
-            // If empty query, try to get latest/browse results
+
+            // Don't search with empty queries - return empty list
             if (query.isBlank() || query.isEmpty()) {
-                println("LuaExtension: Empty query, trying to get latest novels")
-                return getLatestNovels()
+                println("LuaExtension: Empty query provided, returning empty list")
+                return emptyList()
             }
-            
+
             // Try global search function (most common)
             val searchFunction = globals.get("search")
             if (searchFunction.isfunction()) {
@@ -1076,7 +1120,7 @@ class LuaExtension(
                 data.set(LuaValue.valueOf(1), LuaValue.valueOf(1))     // PAGE
                 data.set("QUERY", LuaValue.valueOf(query))
                 data.set("PAGE", LuaValue.valueOf(1))
-                
+
                 println("LuaExtension: Calling search function with data table")
                 val result = searchFunction.call(data)
                 val searchResults = parseLuaSearchResults(result)
@@ -1084,53 +1128,76 @@ class LuaExtension(
                 return searchResults
             }
 
-            println("LuaExtension: No search function found for $name, trying to return mock data")
-            return getLatestNovels()
+            println("LuaExtension: No search function found for $name")
+            return emptyList()
         } catch (e: Exception) {
             println("LuaExtension: Search failed for $name: ${e.message}")
             e.printStackTrace()
-            return getLatestNovels()
+            return emptyList()
         }
     }
-    
+
     private fun getLatestNovels(): List<ExtensionSearchResult> {
-        println("LuaExtension: Generating latest novels for $name")
-        // Return some mock data to test if the UI works
-        return listOf(
-            ExtensionSearchResult(
-                id = "latest1",
-                title = "Latest Novel 1 from $name",
-                author = "Test Author 1",
-                description = "This is a test novel to verify the extension system works",
-                imageUrl = "",
-                url = "/novel/latest1",
-                extensionId = this.id
-            ),
-            ExtensionSearchResult(
-                id = "latest2", 
-                title = "Latest Novel 2 from $name",
-                author = "Test Author 2",
-                description = "Another test novel from this extension",
-                imageUrl = "",
-                url = "/novel/latest2", 
-                extensionId = this.id
-            ),
-            ExtensionSearchResult(
-                id = "latest3",
-                title = "Popular Novel from $name", 
-                author = "Popular Author",
-                description = "A popular test novel to show multiple results",
-                imageUrl = "",
-                url = "/novel/popular1",
-                extensionId = this.id
-            )
-        )
+        return try {
+            println("LuaExtension: Trying to get latest novels from $name")
+
+            // Try latest function (Shosetsu style)
+            val latestFunction = globals.get("latest")
+            if (latestFunction.isfunction()) {
+                println("LuaExtension: Calling latest function")
+                val data = LuaValue.tableOf()
+                data.set("PAGE", LuaValue.valueOf(1))
+                val result = latestFunction.call(data)
+                val searchResults = parseLuaSearchResults(result)
+                println("LuaExtension: Latest function returned ${searchResults.size} results")
+                return searchResults
+            }
+
+            // Try listings function
+            val listingsFunction = globals.get("listings")
+            if (listingsFunction.isfunction()) {
+                println("LuaExtension: Calling listings function")
+                val result = listingsFunction.call()
+                if (result.istable()) {
+                    val listings = result.checktable()
+                    // Get first listing
+                    if (listings.length() > 0) {
+                        val firstListing = listings.get(1)
+                        if (firstListing.istable()) {
+                            val data = LuaValue.tableOf()
+                            data.set("PAGE", LuaValue.valueOf(1))
+                            val listingResult = firstListing.get("list").call(data)
+                            val searchResults = parseLuaSearchResults(listingResult)
+                            println("LuaExtension: Listings function returned ${searchResults.size} results")
+                            return searchResults
+                        }
+                    }
+                }
+            }
+
+            // Try browse function (our style)
+            val browseFunction = globals.get("browse")
+            if (browseFunction.isfunction()) {
+                println("LuaExtension: Calling browse function")
+                val result = browseFunction.call()
+                val searchResults = parseLuaSearchResults(result)
+                println("LuaExtension: Browse function returned ${searchResults.size} results")
+                return searchResults
+            }
+
+            println("LuaExtension: No latest/listings/browse function found for $name")
+            return emptyList()
+        } catch (e: Exception) {
+            println("LuaExtension: getLatestNovels failed for $name: ${e.message}")
+            e.printStackTrace()
+            return emptyList()
+        }
     }
 
     override suspend fun getBook(id: String): ExtensionBook? {
         return try {
             println("LuaExtension: Getting book with ID '$id' from extension $name")
-            
+
             // Try parseNovel function (Shosetsu style)
             val parseNovelFunction = globals.get("parseNovel")
             if (parseNovelFunction.isfunction()) {
@@ -1158,73 +1225,12 @@ class LuaExtension(
                 }
             }
 
-            println("LuaExtension: No parseNovel or getBook function found for $name, returning mock data")
-            
-            // Return mock data for our test books
-            when (id) {
-                "latest1" -> ExtensionBook(
-                    id = id,
-                    title = "Latest Novel 1 from $name",
-                    author = "Test Author 1",
-                    description = "This is a test novel to verify the extension system works. Click to see the full details of this amazing story.",
-                    imageUrl = "",
-                    url = "/novel/latest1",
-                    chapters = listOf(
-                        ExtensionChapter(
-                            id = "1",
-                            title = "Chapter 1: The Beginning",
-                            url = "/novel/latest1/chapter/1",
-                            content = "This is the first chapter of our test novel."
-                        ),
-                        ExtensionChapter(
-                            id = "2", 
-                            title = "Chapter 2: The Adventure Continues",
-                            url = "/novel/latest1/chapter/2",
-                            content = "The story continues in this exciting second chapter."
-                        )
-                    )
-                )
-                "latest2" -> ExtensionBook(
-                    id = id,
-                    title = "Latest Novel 2 from $name",
-                    author = "Test Author 2",
-                    description = "Another test novel from this extension. This one has a different plot and characters.",
-                    imageUrl = "",
-                    url = "/novel/latest2",
-                    chapters = listOf(
-                        ExtensionChapter(
-                            id = "1",
-                            title = "Chapter 1: A New Beginning",
-                            url = "/novel/latest2/chapter/1",
-                            content = "The first chapter of the second test novel."
-                        )
-                    )
-                )
-                "latest3" -> ExtensionBook(
-                    id = id,
-                    title = "Popular Novel from $name",
-                    author = "Popular Author",
-                    description = "A popular test novel to show multiple results. This is one of the most read novels on this extension.",
-                    imageUrl = "",
-                    url = "/novel/popular1",
-                    chapters = listOf(
-                        ExtensionChapter(
-                            id = "1",
-                            title = "Chapter 1: Fame and Fortune",
-                            url = "/novel/popular1/chapter/1",
-                            content = "The beginning of this popular story."
-                        )
-                    )
-                )
-                else -> {
-                    println("LuaExtension: Unknown book ID '$id', returning null")
-                    null
-                }
-            }
+            println("LuaExtension: No parseNovel or getBook function found for $name")
+            return null
         } catch (e: Exception) {
             println("LuaExtension: getBook failed for $name: ${e.message}")
             e.printStackTrace()
-            null
+            return null
         }
     }
 
@@ -1261,22 +1267,67 @@ class LuaExtension(
             // For Shosetsu extensions, chapters are typically returned by parseNovel
             // so we try to get them from there first
             val book = getBook(bookId)
-            book ?: run {
+            if (book != null) {
+                return book.chapters
+            } else {
                 // Fallback to getChapters function if it exists
                 val getChaptersFunction = globals.get("getChapters")
                 if (getChaptersFunction.isfunction()) {
                     val result = getChaptersFunction.call(LuaValue.valueOf(bookId))
-                    parseLuaChapterList(result)
+                    return parseLuaChapterList(result)
                 } else {
                     println("LuaExtension: No chapters found for $name")
-                    null
+                    return null
                 }
             }
         } catch (e: Exception) {
             println("LuaExtension: getChapters failed for $name: ${e.message}")
             e.printStackTrace()
-            null
-        } as List<ExtensionChapter>?
+            return null
+        }
+    }
+
+    override suspend fun getBrowseResults(): List<ExtensionSearchResult>? {
+        return try {
+            println("LuaExtension: Getting browse results from $name")
+
+            // Try latest function (Shosetsu style)
+            val latestFunction = globals.get("latest")
+            if (latestFunction.isfunction()) {
+                println("LuaExtension: Calling latest function")
+                val data = LuaValue.tableOf()
+                data.set("PAGE", LuaValue.valueOf(1))
+                val result = latestFunction.call(data)
+                return parseLuaSearchResults(result)
+            }
+
+            // Try listings function
+            val listingsFunction = globals.get("listings")
+            if (listingsFunction.isfunction()) {
+                println("LuaExtension: Calling listings function")
+                val data = LuaValue.tableOf()
+                data.set("PAGE", LuaValue.valueOf(1))
+                val result = listingsFunction.call(data)
+                return parseLuaSearchResults(result)
+            }
+
+            // Try browse function
+            val browseFunction = globals.get("browse")
+            if (browseFunction.isfunction()) {
+                println("LuaExtension: Calling browse function")
+                val data = LuaValue.tableOf()
+                data.set("PAGE", LuaValue.valueOf(1))
+                val result = browseFunction.call(data)
+                return parseLuaSearchResults(result)
+            }
+
+            println("LuaExtension: No browse/latest/listings function found for $name")
+            return null
+        } catch (e: Exception) {
+            println("LuaExtension: getBrowseResults failed for $name: ${e.message}")
+            e.printStackTrace()
+            return null
+        }
     }
 
     private fun parseLuaSearchResults(luaValue: LuaValue): List<ExtensionSearchResult> {
@@ -1296,7 +1347,7 @@ class LuaExtension(
 
             if (entry.istable()) {
                 val entryTable = entry.checktable()
-                
+
                 // Try different field names that Shosetsu extensions might use
                 val id = entryTable.get("link").optjstring(
                     entryTable.get("id").optjstring(
@@ -1312,7 +1363,7 @@ class LuaExtension(
                 val url = entryTable.get("link").optjstring(
                     entryTable.get("url").optjstring("")
                 )
-                
+
                 val searchResult = ExtensionSearchResult(
                     id = id,
                     title = title,

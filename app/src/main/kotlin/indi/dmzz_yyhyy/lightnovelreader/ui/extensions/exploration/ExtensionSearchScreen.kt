@@ -70,6 +70,16 @@ fun ExtensionSearchScreen(
                 ) {
                     CircularProgressIndicator()
                 }
+            } else if (searchQuery.isBlank()) {
+                // Show browsing UI when no search query
+                BrowseExtensionsContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    onBrowseExtension = { extensionId ->
+                        viewModel.browseExtension(extensionId)
+                    }
+                )
             } else if (uiState.books.isEmpty() && searchQuery.isNotBlank()) {
                 Box(
                     modifier = Modifier
@@ -142,6 +152,85 @@ fun BookCard(
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 3
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun BrowseExtensionsContent(
+    modifier: Modifier = Modifier,
+    onBrowseExtension: (String) -> Unit,
+    viewModel: ExtensionExplorationViewModel = hiltViewModel()
+) {
+    val homeUIState by viewModel.homeUIState.collectAsState()
+    
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = "Browse Extensions",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        }
+        
+        item {
+            Text(
+                text = "Select an extension to browse its latest novels:",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        
+        items(homeUIState.availableExtensions) { extension ->
+            ExtensionBrowseCard(
+                extension = extension,
+                onBrowse = { onBrowseExtension(extension.id) }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ExtensionBrowseCard(
+    extension: indi.dmzz_yyhyy.lightnovelreader.ui.extensions.exploration.model.ExtensionInfo,
+    onBrowse: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = extension.name,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                if (extension.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = extension.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 2
+                    )
+                }
+            }
+            
+            Button(
+                onClick = onBrowse,
+                modifier = Modifier.padding(start = 16.dp)
+            ) {
+                Text("Browse")
             }
         }
     }

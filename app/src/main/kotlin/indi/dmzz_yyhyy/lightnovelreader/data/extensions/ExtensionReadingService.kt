@@ -196,4 +196,52 @@ class ExtensionReadingService @Inject constructor(
         println("ExtensionReadingService.getEnabledExtensions: Returning ${enabledExtensions.size} enabled extensions")
         return enabledExtensions
     }
+
+    suspend fun browseExtension(extensionId: String): List<BookInformationEntity> {
+        return try {
+            println("ExtensionReadingService.browseExtension: Browsing extension $extensionId")
+            
+            val extension = extensionManager.getExtension(extensionId)
+            if (extension != null) {
+                // Try to get browse/latest results from the extension
+                val results = extension.getBrowseResults() ?: emptyList()
+                
+                val books = mutableListOf<BookInformationEntity>()
+                for (result in results) {
+                    try {
+                        val bookId = extensionBookIdManager.generateExtensionBookId(result.extensionId, result.id)
+                        
+                        val extensionBook = ExtensionBookEntity(
+                            internalBookId = bookId,
+                            extensionId = result.extensionId.toIntOrNull() ?: 0,
+                            originalBookId = result.id,
+                            title = result.title,
+                            author = result.author,
+                            description = result.description,
+                            imageUrl = result.imageUrl,
+                            url = result.url
+                        )
+                        
+                        extensionBookDao.insertExtensionBook(extensionBook)
+                        
+                        val bookInfo = extensionConverter.convertSearchResultToBookInfo(result, result.extensionId)
+                        books.add(bookInfo)
+                    } catch (e: Exception) {
+                        println("ExtensionReadingService.browseExtension: Error processing result: ${e.message}")
+                        e.printStackTrace()
+                    }
+                }
+                
+                println("ExtensionReadingService.browseExtension: Returning ${books.size} browse results")
+                return books
+            } else {
+                println("ExtensionReadingService.browseExtension: Extension $extensionId not found")
+                return emptyList()
+            }
+        } catch (e: Exception) {
+            println("ExtensionReadingService.browseExtension: Error browsing extension: ${e.message}")
+            e.printStackTrace()
+            return emptyList()
+        }
+    }
 }
