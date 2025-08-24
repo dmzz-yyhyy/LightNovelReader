@@ -39,7 +39,10 @@ fun BrowseScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Open search */ }) {
+                    IconButton(onClick = { 
+                        // Toggle search functionality
+                        viewModel.toggleSearch()
+                    }) {
                         Icon(Icons.Default.Search, contentDescription = stringResource(R.string.search))
                     }
                 }
