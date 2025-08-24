@@ -29,6 +29,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatistics
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionBookEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
@@ -48,9 +50,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
         FormattingRuleEntity::class,
         RepositoryEntity::class,
         ExtensionEntity::class,
-        InstalledExtensionEntity::class
+        InstalledExtensionEntity::class,
+        ExtensionBookEntity::class
     ],
-    version = 14,
+    version = 15,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -66,6 +69,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun repositoryDao(): RepositoryDao
     abstract fun extensionDao(): ExtensionDao
     abstract fun installedExtensionDao(): InstalledExtensionDao
+    abstract fun extensionBookDao(): ExtensionBookDao
 
     companion object {
         @Volatile
