@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
 import android.content.Context
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.jar.JarExtensionLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaExtensionParser
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,7 +12,9 @@ import javax.inject.Singleton
 
 @Singleton
 class ExtensionLoader @Inject constructor(
-    private val context: Context
+    private val context: Context,
+    private val luaExtensionParser: LuaExtensionParser,
+    private val jarExtensionLoader: JarExtensionLoader
 ) {
 
     private val extensionsDir = File(context.filesDir, "extensions")
@@ -50,12 +54,16 @@ class ExtensionLoader @Inject constructor(
 
     private suspend fun loadLuaExtension(extensionEntity: InstalledExtensionEntity, extensionFile: File): Extension? {
         return try {
-            // TODO: Implement Lua extension loading
-            // For now, return example extensions based on ID
-            when (extensionEntity.id) {
-                1 -> ExampleExtension()
-                2 -> SecondExampleExtension()
-                else -> null
+            // Validate the Lua script first
+            val luaScript = extensionFile.readText()
+            when (val validationResult = luaExtensionParser.validateLuaExtension(luaScript)) {
+                is LuaExtensionParser.ValidationResult.Success -> {
+                    luaExtensionParser.parseExtension(extensionFile, extensionEntity)
+                }
+                is LuaExtensionParser.ValidationResult.MissingFunctions -> {
+                    println("Lua extension validation failed. Missing functions: ${validationResult.functions}")
+                    null
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -65,9 +73,20 @@ class ExtensionLoader @Inject constructor(
 
     private suspend fun loadJarExtension(extensionEntity: InstalledExtensionEntity, extensionFile: File): Extension? {
         return try {
-            // TODO: Implement JAR extension loading using ClassLoader
-            // This would involve loading the JAR file and instantiating the Extension class
-            null
+            // Validate the JAR file first
+            when (val validationResult = jarExtensionLoader.validateJarExtension(extensionFile)) {
+                is JarExtensionLoader.ValidationResult.Success -> {
+                    jarExtensionLoader.loadExtension(extensionFile, extensionEntity)
+                }
+                is JarExtensionLoader.ValidationResult.NoExtensionClass -> {
+                    println("JAR extension validation failed: No extension class found")
+                    null
+                }
+                is JarExtensionLoader.ValidationResult.InvalidJar -> {
+                    println("JAR extension validation failed: ${validationResult.error}")
+                    null
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
