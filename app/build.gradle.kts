@@ -146,6 +146,10 @@ dependencies {
     implementation(project(":proxy"))
     // Telephoto
     implementation(libs.zoomable.image.coil)
+    // Lua for extensions
+    implementation("org.luaj:luaj-jse:3.0.1")
+    // JSoup for HTML parsing (useful for extensions)
+    implementation("org.jsoup:jsoup:1.16.1")
 }
 
 configurations.implementation{
