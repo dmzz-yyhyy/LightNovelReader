@@ -33,9 +33,4 @@ interface Extension {
      * Get chapter list for a book
      */
     suspend fun getChapters(bookId: String): List<ExtensionChapter>?
-
-    /**
-     * Get browse/latest results from the extension
-     */
-    suspend fun getBrowseResults(): List<ExtensionSearchResult>?
 }

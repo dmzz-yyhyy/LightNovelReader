@@ -11,7 +11,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.exploration.model.Extensio
 import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.exploration.model.ExtensionInfo
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,10 +27,6 @@ class ExtensionExplorationViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     private val _selectedExtensionId = MutableStateFlow<String?>(null)
-
-    companion object {
-        private const val SEARCH_DEBOUNCE_MS = 500L
-    }
 
     init {
         loadAvailableExtensions()
@@ -77,21 +72,21 @@ class ExtensionExplorationViewModel @Inject constructor(
     private fun observeSearchAndExtension() {
         viewModelScope.launch {
             combine(
-                _searchQuery.debounce(SEARCH_DEBOUNCE_MS),
+                _searchQuery,
                 _selectedExtensionId
             ) { searchQuery, selectedExtensionId ->
                 if (searchQuery.isNotBlank()) {
                     searchBooks(searchQuery)
                 } else {
-                    // When no search query, show empty state or browse content
-                    _uiState.value = _uiState.value.copy(
-                        books = emptyList(),
-                        searchQuery = searchQuery,
-                        selectedExtensionId = selectedExtensionId,
-                        isLoading = false
-                    )
+                    // When no search query, load latest/default content
+                    searchBooks("") // Empty query should trigger latest novels
                 }
             }.collect()
+        }
+        
+        // Also trigger an initial load when ViewModel is created
+        viewModelScope.launch {
+            searchBooks("")
         }
     }
 
@@ -118,32 +113,6 @@ class ExtensionExplorationViewModel @Inject constructor(
 
     fun setSelectedExtension(extensionId: String?) {
         _selectedExtensionId.value = extensionId
-    }
-
-    fun browseExtension(extensionId: String) {
-        viewModelScope.launch {
-            try {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = true,
-                    selectedExtensionId = extensionId
-                )
-                
-                // Use the new browse function
-                val books = extensionReadingService.browseExtension(extensionId)
-                
-                _uiState.value = _uiState.value.copy(
-                    books = books,
-                    isLoading = false,
-                    error = null,
-                    selectedExtensionId = extensionId
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message ?: "Failed to browse extension",
-                    isLoading = false
-                )
-            }
-        }
     }
 
     fun refreshExtensions() {
