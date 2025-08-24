@@ -265,23 +265,29 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
 
         private val MIGRATION_14_15 = object : Migration(14, 15) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Add extension_books table for managing extension book mappings
+                // The installed_extensions table already exists with the correct Shosetsu schema
+                // We just need to add our new extension_books table
+                
+                // Create extension_books table with correct schema matching ExtensionBookEntity
                 db.execSQL("""
                 CREATE TABLE extension_books (
-                    internalBookId INTEGER PRIMARY KEY,
+                    internalBookId INTEGER PRIMARY KEY NOT NULL,
                     extensionId INTEGER NOT NULL,
                     originalBookId TEXT NOT NULL,
                     title TEXT NOT NULL,
-                    author TEXT NOT NULL DEFAULT '',
-                    description TEXT NOT NULL DEFAULT '',
-                    imageUrl TEXT NOT NULL DEFAULT '',
-                    url TEXT NOT NULL DEFAULT '',
-                    createdAt INTEGER NOT NULL,
-                    updatedAt INTEGER NOT NULL)
+                    author TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    imageUrl TEXT NOT NULL,
+                    url TEXT NOT NULL,
+                    isInLibrary INTEGER NOT NULL,
+                    addedToLibraryDate INTEGER,
+                    lastUpdated INTEGER NOT NULL,
+                    FOREIGN KEY(extensionId) REFERENCES installed_extensions(id) ON DELETE CASCADE)
                 """)
 
                 db.execSQL("CREATE INDEX index_extension_books_extensionId ON extension_books(extensionId)")
-                db.execSQL("CREATE UNIQUE INDEX index_extension_books_mapping ON extension_books(extensionId, originalBookId)")
+                db.execSQL("CREATE INDEX index_extension_books_originalBookId ON extension_books(originalBookId)")
+                db.execSQL("CREATE UNIQUE INDEX index_extension_books_extensionId_originalBookId ON extension_books(extensionId, originalBookId)")
             }
         }
 
@@ -290,16 +296,20 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                 // Add extension_settings table for managing extension settings
                 db.execSQL("""
                 CREATE TABLE extension_settings (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                     extensionId INTEGER NOT NULL,
                     key TEXT NOT NULL,
                     value TEXT NOT NULL,
-                    createdAt INTEGER NOT NULL,
-                    updatedAt INTEGER NOT NULL,
-                    UNIQUE(extensionId, key))
+                    type TEXT NOT NULL,
+                    defaultValue TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    summary TEXT NOT NULL,
+                    isVisible INTEGER NOT NULL,
+                    FOREIGN KEY(extensionId) REFERENCES installed_extensions(id) ON DELETE CASCADE)
                 """)
 
                 db.execSQL("CREATE INDEX index_extension_settings_extensionId ON extension_settings(extensionId)")
+                db.execSQL("CREATE UNIQUE INDEX index_extension_settings_extensionId_key ON extension_settings(extensionId, key)")
             }
         }
     }

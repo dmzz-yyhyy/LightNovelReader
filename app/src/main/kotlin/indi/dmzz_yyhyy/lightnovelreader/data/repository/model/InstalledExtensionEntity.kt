@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Entity representing an installed extension
+ * Entity representing an installed extension - matches Shosetsu's schema
  */
 @Entity(tableName = "installed_extensions")
 data class InstalledExtensionEntity(
@@ -17,7 +17,7 @@ data class InstalledExtensionEntity(
     val lang: String,
     val version: String,
     val md5: String,
-    val type: String,
+    val type: String, // ExtensionType as string ("LuaScript", etc.)
     val description: String = "",
     val isEnabled: Boolean = true,
     val installDate: Long = System.currentTimeMillis()
