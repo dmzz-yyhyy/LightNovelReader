@@ -162,16 +162,16 @@ class ExtensionReadingService @Inject constructor(
 
     suspend fun getEnabledExtensions(): List<Extension> {
         println("ExtensionReadingService.getEnabledExtensions: Starting...")
-        
+
         val installedExtensions =
             repositoryServiceProvider.get().getAllInstalledExtensions().first()
         println("ExtensionReadingService.getEnabledExtensions: Found ${installedExtensions.size} installed extensions")
-        
+
         val enabledExtensions = mutableListOf<Extension>()
 
         for (installedExtension in installedExtensions) {
             println("ExtensionReadingService.getEnabledExtensions: Processing ${installedExtension.name} (Enabled: ${installedExtension.isEnabled})")
-            
+
             if (installedExtension.isEnabled) {
                 val extension =
                     extensionManager.getExtension(installedExtension.id.toString())
