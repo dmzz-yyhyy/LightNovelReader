@@ -23,6 +23,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.extensions.components.ErrorDialog
 @Composable
 fun InstalledScreen(
     onBack: () -> Unit,
+    onNavigateToSettings: (Int, String) -> Unit, // extensionId, extensionName
     viewModel: InstalledViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,8 +80,7 @@ fun InstalledScreen(
                             viewModel.toggleExtension(extension, enabled)
                         },
                         onSettings = { extension ->
-                            // TODO: Navigate to extension settings screen
-                            // This would open extension-specific configuration
+                            onNavigateToSettings(extension.id, extension.name)
                         }
                     )
                 }
