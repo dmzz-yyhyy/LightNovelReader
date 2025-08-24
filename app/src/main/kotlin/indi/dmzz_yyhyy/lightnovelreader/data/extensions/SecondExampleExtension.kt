@@ -19,31 +19,28 @@ class SecondExampleExtension : Extension {
             id = "book3",
             title = "Fantasy Adventure",
             author = "Fantasy Writer",
-            coverUrl = "",
+            imageUrl = "",
             description = "An epic fantasy adventure with magic and dragons.",
-            tags = listOf("Fantasy", "Magic", "Adventure"),
-            wordCount = 120000,
-            isComplete = false
+            url = "",
+            extensionId = id
         ),
         ExtensionSearchResult(
             id = "book4",
             title = "Mystery Detective",
             author = "Mystery Author",
-            coverUrl = "",
+            imageUrl = "",
             description = "A thrilling mystery novel with a brilliant detective.",
-            tags = listOf("Mystery", "Detective", "Thriller"),
-            wordCount = 80000,
-            isComplete = true
+            url = "",
+            extensionId = id
         ),
         ExtensionSearchResult(
             id = "book5",
             title = "Science Fiction Saga",
             author = "Sci-Fi Writer",
-            coverUrl = "",
+            imageUrl = "",
             description = "A science fiction saga set in the distant future.",
-            tags = listOf("Science Fiction", "Space", "Future"),
-            wordCount = 150000,
-            isComplete = false
+            url = "",
+            extensionId = id
         )
     )
 
@@ -90,8 +87,7 @@ class SecondExampleExtension : Extension {
         return sampleBooks.filter { book ->
             book.title.contains(query, ignoreCase = true) ||
             book.author.contains(query, ignoreCase = true) ||
-            book.description.contains(query, ignoreCase = true) ||
-            book.tags.any { it.contains(query, ignoreCase = true) }
+            book.description.contains(query, ignoreCase = true)
         }
     }
 
@@ -102,12 +98,12 @@ class SecondExampleExtension : Extension {
             id = searchResult.id,
             title = searchResult.title,
             author = searchResult.author,
-            coverUrl = searchResult.coverUrl,
+            imageUrl = searchResult.imageUrl,
             description = searchResult.description,
-            tags = searchResult.tags,
-            wordCount = searchResult.wordCount,
-            isComplete = searchResult.isComplete,
-            chapters = sampleChapters[id] ?: emptyList()
+            url = searchResult.url,
+            genres = emptyList(), // No genres in search result
+            status = "Unknown",
+            lastUpdated = System.currentTimeMillis()
         )
     }
 

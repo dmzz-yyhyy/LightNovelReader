@@ -12,6 +12,9 @@ fun NavGraphBuilder.installedNavigation(sharedTransitionScope: SharedTransitionS
         InstalledScreen(
             onBack = {
                 // Navigation will be handled by parent
+            },
+            onNavigateToSettings = { extensionId, extensionName ->
+                // Navigation to settings will be handled by parent
             }
         )
     }
