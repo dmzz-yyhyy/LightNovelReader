@@ -6,7 +6,8 @@ data class BrowseUI(
     val extensions: List<BrowseExtensionItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val showSearch: Boolean = false
 )
 
 data class BrowseExtensionItem(

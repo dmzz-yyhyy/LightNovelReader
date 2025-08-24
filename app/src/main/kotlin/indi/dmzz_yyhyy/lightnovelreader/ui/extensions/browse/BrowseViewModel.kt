@@ -91,6 +91,13 @@ class BrowseViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
+    fun toggleSearch() {
+        val currentState = _uiState.value
+        _uiState.value = currentState.copy(
+            showSearch = !currentState.showSearch
+        )
+    }
+
     fun installExtension(extension: ExtensionEntity) {
         viewModelScope.launch {
             try {
