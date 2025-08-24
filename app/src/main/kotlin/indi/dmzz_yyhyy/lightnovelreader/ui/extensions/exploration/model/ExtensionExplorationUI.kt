@@ -7,7 +7,8 @@ data class ExtensionExplorationUI(
     val isLoading: Boolean = false,
     val error: String? = null,
     val searchQuery: String = "",
-    val selectedExtensionId: String? = null
+    val selectedExtensionId: String? = null,
+    val searchResults: List<BookInformationEntity> = emptyList()
 )
 
 data class ExtensionExplorationHomeUI(
@@ -20,5 +21,7 @@ data class ExtensionInfo(
     val id: String,
     val name: String,
     val description: String,
+    val version: String = "",
+    val language: String = "",
     val isEnabled: Boolean = true
 )

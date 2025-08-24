@@ -92,7 +92,7 @@ fun BrowseScreen(
         uiState.error?.let { error ->
             ErrorDialog(
                 error = error,
-                onDismiss = { /* TODO: Clear error in ViewModel */ }
+                onDismiss = { viewModel.clearError() }
             )
         }
     }
