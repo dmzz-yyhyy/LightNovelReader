@@ -19,21 +19,19 @@ class ExampleExtension : Extension {
             id = "book1",
             title = "Sample Novel 1",
             author = "Sample Author",
-            coverUrl = "",
+            imageUrl = "",
             description = "This is a sample novel for demonstration purposes.",
-            tags = listOf("Fantasy", "Adventure"),
-            wordCount = 50000,
-            isComplete = false
+            url = "",
+            extensionId = id
         ),
         ExtensionSearchResult(
             id = "book2",
             title = "Sample Novel 2",
             author = "Another Author",
-            coverUrl = "",
+            imageUrl = "",
             description = "Another sample novel for demonstration.",
-            tags = listOf("Romance", "Drama"),
-            wordCount = 75000,
-            isComplete = true
+            url = "",
+            extensionId = id
         )
     )
 
@@ -77,12 +75,12 @@ class ExampleExtension : Extension {
             id = searchResult.id,
             title = searchResult.title,
             author = searchResult.author,
-            coverUrl = searchResult.coverUrl,
+            imageUrl = searchResult.imageUrl,
             description = searchResult.description,
-            tags = searchResult.tags,
-            wordCount = searchResult.wordCount,
-            isComplete = searchResult.isComplete,
-            chapters = sampleChapters[id] ?: emptyList()
+            url = searchResult.url,
+            genres = emptyList(), // No genres in search result
+            status = "Unknown",
+            lastUpdated = System.currentTimeMillis()
         )
     }
 

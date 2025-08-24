@@ -21,14 +21,14 @@ class ExtensionConverter @Inject constructor() {
             id = generateBookId(extensionId, searchResult.id),
             title = searchResult.title,
             subtitle = "",
-            coverUrl = searchResult.coverUrl,
+            coverUrl = searchResult.imageUrl,
             author = searchResult.author,
             description = searchResult.description,
-            tags = searchResult.tags,
+            tags = emptyList(), // ExtensionSearchResult doesn't have tags anymore
             publishingHouse = "",
-            wordCount = searchResult.wordCount,
+            wordCount = 0, // ExtensionSearchResult doesn't have wordCount anymore
             lastUpdated = LocalDateTime.now(),
-            isComplete = searchResult.isComplete
+            isComplete = false // ExtensionSearchResult doesn't have isComplete anymore
         )
     }
 
@@ -40,14 +40,14 @@ class ExtensionConverter @Inject constructor() {
             id = generateBookId(extensionId, book.id),
             title = book.title,
             subtitle = "",
-            coverUrl = book.coverUrl,
+            coverUrl = book.imageUrl,
             author = book.author,
             description = book.description,
-            tags = book.tags,
+            tags = book.genres, // Use genres instead of tags
             publishingHouse = "",
-            wordCount = book.wordCount,
+            wordCount = 0, // ExtensionBook doesn't have wordCount anymore
             lastUpdated = LocalDateTime.now(),
-            isComplete = book.isComplete
+            isComplete = book.status == "Complete" // Use status to determine completion
         )
     }
 
