@@ -31,8 +31,8 @@ class ExtensionInitializer @Inject constructor(
             // exampleExtensions.forEach { extension ->
             //     extensionManager.registerExtension(extension)
             // }
-            
             // TODO: In the future, load actual installed extensions from the database
+
             val installedExtensions = repositoryServiceProvider.get().getAllInstalledExtensions().first()
             installedExtensions.forEach { installedExtension ->
                 if (installedExtension.isEnabled) {

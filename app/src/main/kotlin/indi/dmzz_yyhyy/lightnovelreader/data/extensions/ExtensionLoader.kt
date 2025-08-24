@@ -21,48 +21,51 @@ class ExtensionLoader @Inject constructor(
         }
     }
 
-    suspend fun loadExtension(extensionEntity: InstalledExtensionEntity): Extension? = withContext(Dispatchers.IO) {
-        try {
-            val extensionFile = File(extensionsDir, "${extensionEntity.id}.jar")
-            if (!extensionFile.exists()) {
-                return@withContext null
-            }
+    suspend fun loadExtension(extensionEntity: InstalledExtensionEntity): Extension? =
+        withContext(Dispatchers.IO) {
+            try {
+                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                if (!extensionFile.exists()) {
+                    return@withContext null
+                }
 
-            // For now, return the example extension as a placeholder
-            // In a real implementation, you would load the JAR file and instantiate the extension
-            when (extensionEntity.id) {
-                1 -> ExampleExtension()
-                else -> null
+                // For now, return the example extension as a placeholder
+                // In a real implementation, you would load the JAR file and instantiate the extension
+                when (extensionEntity.id) {
+                    1 -> ExampleExtension()
+                    else -> null
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
-    }
 
-    suspend fun saveExtension(extensionEntity: InstalledExtensionEntity, extensionData: ByteArray) = withContext(Dispatchers.IO) {
-        try {
-            val extensionFile = File(extensionsDir, "${extensionEntity.id}.jar")
-            extensionFile.writeBytes(extensionData)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
-        }
-    }
-
-    suspend fun deleteExtension(extensionEntity: InstalledExtensionEntity) = withContext(Dispatchers.IO) {
-        try {
-            val extensionFile = File(extensionsDir, "${extensionEntity.id}.jar")
-            if (extensionFile.exists()) {
-                extensionFile.delete()
+    suspend fun saveExtension(extensionEntity: InstalledExtensionEntity, extensionData: ByteArray) =
+        withContext(Dispatchers.IO) {
+            try {
+                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                extensionFile.writeBytes(extensionData)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            throw e
         }
-    }
+
+    suspend fun deleteExtension(extensionEntity: InstalledExtensionEntity) =
+        withContext(Dispatchers.IO) {
+            try {
+                val extensionFile = File(extensionsDir, "${extensionEntity.id}.lua")
+                if (extensionFile.exists()) {
+                    extensionFile.delete()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                throw e
+            }
+        }
 
     fun getExtensionFile(extensionEntity: InstalledExtensionEntity): File {
-        return File(extensionsDir, "${extensionEntity.id}.jar")
+        return File(extensionsDir, "${extensionEntity.id}.lua")
     }
 }

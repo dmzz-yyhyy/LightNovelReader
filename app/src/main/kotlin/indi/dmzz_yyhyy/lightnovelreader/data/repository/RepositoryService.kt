@@ -44,7 +44,7 @@ class RepositoryService @Inject constructor(
     suspend fun refreshRepository(repository: RepositoryEntity) {
         try {
             val repoData = remoteDataSource.downloadRepoData(repository)
-            
+
             // Update repository with new data (keep existing name since RepoIndex doesn't have name)
             val updatedRepository = repository.copy(
                 lastUpdated = System.currentTimeMillis()
@@ -53,7 +53,7 @@ class RepositoryService @Inject constructor(
 
             // Clear existing extensions and add new ones
             extensionRepository.deleteExtensionsByRepoId(repository.id)
-            
+
             repoData.scripts.forEach { repoExtension ->
                 val extension = ExtensionEntity(
                     id = repoExtension.id,
@@ -84,8 +84,11 @@ class RepositoryService @Inject constructor(
         val repository = repositoryRepository.getRepositoryById(extension.repoId)
             ?: throw IOException("Repository not found")
 
-        val extensionData = remoteDataSource.downloadExtension(repository, extension.fileName)
-        
+        val extensionData = remoteDataSource.downloadExtension(
+            repository, extension.fileName,
+            extensionLang = extension.lang
+        )
+
         val installedExtension = InstalledExtensionEntity(
             id = extension.id,
             repoId = extension.repoId,
@@ -100,26 +103,26 @@ class RepositoryService @Inject constructor(
             isEnabled = true,
             installDate = System.currentTimeMillis()
         )
-        
+
         // Save the extension file
         extensionLoader.saveExtension(installedExtension, extensionData)
-        
+
         // Insert into database
         extensionRepository.insertInstalledExtension(installedExtension)
-        
+
         // Load the extension into the ExtensionManager
         extensionInitializer.loadExtension(installedExtension)
-        
+
         return extensionData
     }
 
     suspend fun uninstallExtension(extension: InstalledExtensionEntity) {
         // Delete the extension file
         extensionLoader.deleteExtension(extension)
-        
+
         // Unload from ExtensionManager
         extensionInitializer.unloadExtension(extension.id.toString())
-        
+
         // Delete from database
         extensionRepository.deleteInstalledExtension(extension)
     }
