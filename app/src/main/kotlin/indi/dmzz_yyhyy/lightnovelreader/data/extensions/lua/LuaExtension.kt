@@ -98,19 +98,30 @@ class LuaExtension(
             override fun call(arg: LuaValue): LuaValue {
                 val libName = arg.tojstring()
                 return try {
-                    when (libName) {
+                    val result = when (libName) {
                         "url" -> loadLibraryFromRemote("url")
                         "dkjson" -> loadLibraryFromRemote("dkjson")
                         "Madara" -> loadLibraryFromRemote("Madara")
                         "utf8" -> createUtf8Library()
                         "XenForo" -> loadLibraryFromRemote("XenForo")
+                        "novelvault" -> loadLibraryFromRemote("novelvault")
+                        "unhtml" -> loadLibraryFromRemote("unhtml")
                         else -> {
                             println("LuaExtension: Attempting to load library: $libName")
                             loadLibraryFromRemote(libName)
                         }
                     }
+
+                    // Ensure we never return nil
+                    if (result == null || result.isnil()) {
+                        println("LuaExtension: Library $libName returned nil, using fallback")
+                        createGenericLibrary()
+                    } else {
+                        result
+                    }
                 } catch (e: Exception) {
                     println("LuaExtension: Failed to load library $libName: ${e.message}")
+                    e.printStackTrace()
                     createGenericLibrary()
                 }
             }
@@ -177,6 +188,112 @@ class LuaExtension(
         novelStatus.set("PAUSED", LuaValue.valueOf(2))
         novelStatus.set("UNKNOWN", LuaValue.valueOf(3))
         globals.set("NovelStatus", novelStatus)
+
+        // Utility functions needed by libraries
+        globals.set("map", object : TwoArgFunction() {
+            override fun call(table: LuaValue, func: LuaValue): LuaValue {
+                if (!table.istable() || !func.isfunction()) {
+                    return LuaValue.tableOf()
+                }
+                val result = LuaValue.tableOf()
+                val inputTable = table.checktable()
+                var i = 1
+                while (true) {
+                    val item = inputTable.get(i)
+                    if (item.isnil()) break
+                    val mappedItem = func.call(item)
+                    if (!mappedItem.isnil()) {
+                        result.set(result.length() + 1, mappedItem)
+                    }
+                    i++
+                }
+                return result
+            }
+        })
+
+        globals.set("setmetatable", object : TwoArgFunction() {
+            override fun call(table: LuaValue, metatable: LuaValue): LuaValue {
+                return table
+            }
+        })
+
+        globals.set("type", object : OneArgFunction() {
+            override fun call(arg: LuaValue): LuaValue {
+                return LuaValue.valueOf(arg.typename())
+            }
+        })
+
+        globals.set("pairs", object : OneArgFunction() {
+            override fun call(table: LuaValue): LuaValue {
+                return LuaValue.tableOf()
+            }
+        })
+
+        globals.set("ipairs", object : OneArgFunction() {
+            override fun call(table: LuaValue): LuaValue {
+                return LuaValue.tableOf()
+            }
+        })
+
+        // Add table functions needed by libraries
+        globals.set("table", LuaValue.tableOf().apply {
+            set("insert", object : TwoArgFunction() {
+                override fun call(table: LuaValue, value: LuaValue): LuaValue {
+                    if (table.istable()) {
+                        val t = table.checktable()
+                        t.set(t.length() + 1, value)
+                    }
+                    return NIL
+                }
+            })
+            set("concat", object : TwoArgFunction() {
+                override fun call(table: LuaValue, sep: LuaValue): LuaValue {
+                    return LuaValue.valueOf("")
+                }
+            })
+            set("unpack", object : OneArgFunction() {
+                override fun call(table: LuaValue): LuaValue {
+                    return LuaValue.valueOf("")
+                }
+            })
+        })
+
+        // Add string functions needed by libraries
+        globals.set("string", LuaValue.tableOf().apply {
+            set("gmatch", object : TwoArgFunction() {
+                override fun call(str: LuaValue, pattern: LuaValue): LuaValue {
+                    return object : VarArgFunction() {
+                        override fun invoke(args: Varargs): LuaValue {
+                            return NIL
+                        }
+                    }
+                }
+            })
+            set("match", object : TwoArgFunction() {
+                override fun call(str: LuaValue, pattern: LuaValue): LuaValue {
+                    return LuaValue.valueOf("")
+                }
+            })
+            set("find", object : VarArgFunction() {
+                override fun invoke(args: Varargs): LuaValue {
+                    return LuaValue.valueOf(1)
+                }
+            })
+        })
+
+        // Add math functions needed by libraries
+        globals.set("math", LuaValue.tableOf().apply {
+            set("min", object : TwoArgFunction() {
+                override fun call(a: LuaValue, b: LuaValue): LuaValue {
+                    return if (a.todouble() < b.todouble()) a else b
+                }
+            })
+            set("max", object : TwoArgFunction() {
+                override fun call(a: LuaValue, b: LuaValue): LuaValue {
+                    return if (a.todouble() > b.todouble()) a else b
+                }
+            })
+        })
 
         // HTTP and Document functions
         globals.set("GETDocument", object : OneArgFunction() {
@@ -675,7 +792,37 @@ class LuaExtension(
     }
 
     private fun createGenericLibrary(): LuaValue {
-        return LuaValue.tableOf()
+        val lib = LuaValue.tableOf()
+
+        // Add common functions that libraries might use
+        lib.set("trim", object : OneArgFunction() {
+            override fun call(str: LuaValue): LuaValue {
+                return LuaValue.valueOf(str.tojstring().trim())
+            }
+        })
+
+        lib.set("HTMLToString", object : OneArgFunction() {
+            override fun call(element: LuaValue): LuaValue {
+                return LuaValue.valueOf("Mock HTML Content")
+            }
+        })
+
+        lib.set("querystring", LuaValue.tableOf().apply {
+            set("stringify", object : OneArgFunction() {
+                override fun call(table: LuaValue): LuaValue {
+                    return LuaValue.valueOf("param=value")
+                }
+            })
+        })
+
+        // Add any other commonly used functions
+        lib.set("selectWithFallback", object : VarArgFunction() {
+            override fun invoke(args: Varargs): LuaValue {
+                return createMockElement("Fallback Content")
+            }
+        })
+
+        return lib
     }
 
     // Real HTTP and Document functions
@@ -877,6 +1024,8 @@ class LuaExtension(
                     // Status selectors
                     selectorStr.contains(".tech_decription") -> createMockElement("Пишется")
                     selectorStr.contains("div.post-status") -> createMockStatusElement()
+                    selectorStr.contains(".info .text-primary") -> createMockElement("Ongoing")
+                    selectorStr.contains(".info") -> createMockInfoElement()
 
                     // Button/link selectors
                     selectorStr.contains("read_button") -> createMockElement(
@@ -1013,18 +1162,44 @@ class LuaExtension(
 
         element.set("text", object : ZeroArgFunction() {
             override fun call(): LuaValue {
-                return valueOf(text)
+                return valueOf(text.ifEmpty { "Mock Text" })
             }
         })
 
         element.set("attr", object : OneArgFunction() {
             override fun call(attrName: LuaValue): LuaValue {
                 return when (attrName.tojstring()) {
-                    "href" -> valueOf(href)
-                    "src" -> valueOf(src)
-                    "title" -> valueOf(text)
+                    "href" -> valueOf(href.ifEmpty { "/mock-url" })
+                    "src" -> valueOf(src.ifEmpty { "/mock-image.jpg" })
+                    "title" -> valueOf(text.ifEmpty { "Mock Title" })
+                    "data-novel-id" -> valueOf("123")
+                    "class" -> valueOf("mock-class")
                     else -> valueOf("")
                 }
+            }
+        })
+
+        element.set("hasText", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return valueOf(true)
+            }
+        })
+
+        element.set("isEmpty", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return valueOf(false)
+            }
+        })
+
+        element.set("hasAttr", object : OneArgFunction() {
+            override fun call(attrName: LuaValue): LuaValue {
+                return valueOf(true) // Always return true for mock
+            }
+        })
+
+        element.set("removeAttr", object : OneArgFunction() {
+            override fun call(attrName: LuaValue): LuaValue {
+                return element
             }
         })
 
@@ -1036,19 +1211,70 @@ class LuaExtension(
 
         element.set("select", object : OneArgFunction() {
             override fun call(selector: LuaValue): LuaValue {
-                // Return empty list for any sub-selections
-                return tableOf()
+                val selectorStr = selector.tojstring()
+                return when {
+                    selectorStr.contains("text-primary") -> createSingleElementList("Ongoing")
+                    selectorStr.contains("h3") -> createSingleElementList("Status")
+                    selectorStr.contains("a") -> createSingleElementList(
+                        "Link Text",
+                        href = "/mock-link"
+                    )
+
+                    else -> tableOf() // Return empty list for unknown selectors
+                }
             }
         })
 
         element.set("selectFirst", object : OneArgFunction() {
             override fun call(selector: LuaValue): LuaValue {
-                // Return self for any sub-selections
-                return element
+                val selectorStr = selector.tojstring()
+                return when {
+                    selectorStr.contains("text-primary") -> createMockElement("Ongoing")
+                    selectorStr.contains("h3") -> createMockElement("Status")
+                    selectorStr.contains("a") -> createMockElement("Link Text", href = "/mock-link")
+                    else -> createMockElement("Mock Element")
+                }
             }
         })
 
         element.set("remove", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return NIL
+            }
+        })
+
+        // Add JSoup element methods that novelvault library might use
+        element.set("tagName", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return valueOf("div")
+            }
+        })
+
+        element.set("id", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return valueOf("mock-id")
+            }
+        })
+
+        element.set("length", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return valueOf(1)
+            }
+        })
+
+        element.set("traverse", object : TwoArgFunction() {
+            override fun call(visitor: LuaValue, callback: LuaValue): LuaValue {
+                return NIL
+            }
+        })
+
+        element.set("previousElementSibling", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return NIL
+            }
+        })
+
+        element.set("nextElementSibling", object : ZeroArgFunction() {
             override fun call(): LuaValue {
                 return NIL
             }
@@ -1088,6 +1314,55 @@ class LuaExtension(
             }
         })
         return statusElement
+    }
+
+    private fun createMockInfoElement(): LuaValue {
+        val element = createMockElement()
+
+        element.set("selectFirst", object : OneArgFunction() {
+            override fun call(selector: LuaValue): LuaValue {
+                val selectorStr = selector.tojstring()
+                return when {
+                    selectorStr.contains("text-primary") -> createMockElement("Ongoing")
+                    selectorStr.contains("tatus") -> createMockElement("Publishing")
+                    selectorStr.contains("uthor") -> createMockElement("Sample Author")
+                    selectorStr.contains("enre") -> createMockElement("Fantasy")
+                    else -> createMockElement("Info Content")
+                }
+            }
+        })
+
+        element.set("select", object : OneArgFunction() {
+            override fun call(selector: LuaValue): LuaValue {
+                val selectorStr = selector.tojstring()
+                val list = tableOf()
+                when {
+                    selectorStr.contains("text-primary") -> {
+                        list.set(1, createMockElement("Ongoing"))
+                    }
+
+                    selectorStr.contains("tatus") -> {
+                        list.set(1, createMockElement("Publishing"))
+                    }
+
+                    selectorStr.contains("uthor") -> {
+                        list.set(1, createMockElement("Sample Author"))
+                    }
+
+                    selectorStr.contains("enre") -> {
+                        list.set(1, createMockElement("Fantasy"))
+                        list.set(2, createMockElement("Adventure"))
+                    }
+
+                    else -> {
+                        list.set(1, createMockElement("Info Content"))
+                    }
+                }
+                return list
+            }
+        })
+
+        return element
     }
 
     private fun createMockChapterContent(): LuaValue {
