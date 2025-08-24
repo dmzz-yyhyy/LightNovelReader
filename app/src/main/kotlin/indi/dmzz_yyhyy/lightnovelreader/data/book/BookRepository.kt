@@ -7,6 +7,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionBookIdManager
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.json.BookUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
@@ -31,13 +33,37 @@ class BookRepository @Inject constructor(
     private val localBookDataSource: LocalBookDataSource,
     private val bookshelfRepository: BookshelfRepository,
     private val textProcessingRepository: TextProcessingRepository,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val extensionReadingService: ExtensionReadingService,
+    private val extensionBookIdManager: ExtensionBookIdManager
 ) {
     fun getStateBookInformation(id: Int, coroutineScope: CoroutineScope): BookInformation =
         textProcessingRepository.processBookInformation {
             val bookInformation = MutableBookInformation.empty()
             bookInformation.id = id
             coroutineScope.launch(Dispatchers.IO) {
+                // Always try extension service first
+                println("BookRepository: Trying to fetch book ID $id from extension service")
+                try {
+                    val extensionBook = extensionReadingService.getBookFromExtension(id)
+                    if (extensionBook != null) {
+                        println("BookRepository: Got extension book: ${extensionBook.title}")
+                        bookInformation.title = extensionBook.title
+                        bookInformation.author = extensionBook.author
+                        bookInformation.description = extensionBook.description
+                        bookInformation.coverUrl = extensionBook.coverUrl
+                        bookInformation.lastUpdated = java.time.LocalDateTime.now()
+                        return@launch
+                    } else {
+                        println("BookRepository: No extension book found with ID $id, trying regular data sources")
+                    }
+                } catch (e: Exception) {
+                    println("BookRepository: Error fetching extension book: ${e.message}")
+                    e.printStackTrace()
+                }
+
+                // Fall back to regular book data sources
+                println("BookRepository: Using regular data sources for book ID $id")
                 localBookDataSource.getBookInformation(id)?.let(bookInformation::update)
                 webBookDataSource.getBookInformation(id).let {
                     if (it.isEmpty()) return@launch
@@ -52,6 +78,37 @@ class BookRepository @Inject constructor(
         val bookInformation: MutableStateFlow<BookInformation> =
             MutableStateFlow(BookInformation.empty(id))
         coroutineScope.launch(Dispatchers.IO) {
+            // Always try extension service first
+            println("BookRepository: Trying to fetch book ID $id from extension service")
+            try {
+                val extensionBook = extensionReadingService.getBookFromExtension(id)
+                if (extensionBook != null) {
+                    println("BookRepository: Got extension book: ${extensionBook.title}")
+                    val bookInfo = MutableBookInformation(
+                        id = extensionBook.id,
+                        title = extensionBook.title,
+                        subtitle = "",
+                        coverUrl = extensionBook.coverUrl,
+                        author = extensionBook.author,
+                        description = extensionBook.description,
+                        tags = listOf(),
+                        publishingHouse = "",
+                        wordCount = 0,
+                        lastUpdated = java.time.LocalDateTime.now(),
+                        isComplete = false
+                    )
+                    bookInformation.update { bookInfo }
+                    return@launch
+                } else {
+                    println("BookRepository: No extension book found with ID $id, trying regular data sources")
+                }
+            } catch (e: Exception) {
+                println("BookRepository: Error fetching extension book: ${e.message}")
+                e.printStackTrace()
+            }
+
+            // Fall back to regular book data sources
+            println("BookRepository: Using regular data sources for book ID $id")
             bookInformation.update {
                 localBookDataSource.getBookInformation(id) ?: BookInformation.empty(id)
             }
