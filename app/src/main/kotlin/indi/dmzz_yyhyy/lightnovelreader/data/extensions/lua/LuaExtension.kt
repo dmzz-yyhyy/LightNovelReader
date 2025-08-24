@@ -5,6 +5,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
 import org.luaj.vm2.*
+import org.luaj.vm2.lib.OneArgFunction
+import org.luaj.vm2.lib.TwoArgFunction
+import org.luaj.vm2.lib.VarArgFunction
+import org.luaj.vm2.lib.ZeroArgFunction
 import org.luaj.vm2.lib.jse.JsePlatform
 
 /**
@@ -25,9 +29,175 @@ class LuaExtension(
     private val chunk: LuaValue
 
     init {
+        // Set up Shosetsu-compatible Lua environment
+        setupShosetsuEnvironment()
+        
         // Load and compile the Lua script
         chunk = globals.load(luaScript)
         chunk.call()
+    }
+    
+    private fun setupShosetsuEnvironment() {
+        // Add Require function for dependency loading
+        globals.set("Require", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return object : OneArgFunction() {
+                    override fun call(arg: LuaValue): LuaValue {
+                        val libName = arg.tojstring()
+                        return when (libName) {
+                            "url" -> createUrlLibrary()
+                            "dkjson" -> createJsonLibrary()
+                            "utf8" -> createUtf8Library()
+                            else -> {
+                                // For Madara and other dependencies, return a mock object
+                                return object : OneArgFunction() {
+                                    override fun call(baseUrl: LuaValue): LuaValue {
+                                        return createMadaraExtension(baseUrl.tojstring())
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        
+        // Add HTML/Document functions
+        globals.set("GETDocument", object : OneArgFunction() {
+            override fun call(url: LuaValue): LuaValue {
+                // Mock document - in real implementation, this would fetch and parse HTML
+                return createMockDocument()
+            }
+        })
+        
+        // Add Shosetsu data types
+        globals.set("Novel", object : OneArgFunction() {
+            override fun call(table: LuaValue): LuaValue {
+                return table // Just return the table for now
+            }
+        })
+        
+        globals.set("NovelInfo", object : OneArgFunction() {
+            override fun call(table: LuaValue): LuaValue {
+                return table // Just return the table for now
+            }
+        })
+        
+        globals.set("NovelChapter", object : ZeroArgFunction() {
+            override fun call(): LuaValue {
+                return LuaValue.tableOf()
+            }
+        })
+        
+        // Add utility functions
+        globals.set("mapNotNil", object : TwoArgFunction() {
+            override fun call(list: LuaValue, func: LuaValue): LuaValue {
+                return LuaValue.tableOf() // Mock implementation
+            }
+        })
+        
+        globals.set("map", object : TwoArgFunction() {
+            override fun call(list: LuaValue, func: LuaValue): LuaValue {
+                return LuaValue.tableOf() // Mock implementation
+            }
+        })
+        
+        globals.set("AsList", object : OneArgFunction() {
+            override fun call(table: LuaValue): LuaValue {
+                return table
+            }
+        })
+        
+        globals.set("pageOfElem", object : TwoArgFunction() {
+            override fun call(element: LuaValue, flag: LuaValue): LuaValue {
+                return LuaValue.valueOf("") // Mock implementation
+            }
+        })
+        
+        globals.set("Listing", object : VarArgFunction() {
+            override fun invoke(args: Varargs): LuaValue {
+                return LuaValue.tableOf()
+            }
+        })
+        
+        // Add constants
+        val chapterType = LuaValue.tableOf()
+        chapterType.set("HTML", LuaValue.valueOf(0))
+        chapterType.set("STRING", LuaValue.valueOf(1))
+        globals.set("ChapterType", chapterType)
+        
+        // Add PAGE constant
+        globals.set("PAGE", LuaValue.valueOf(1))
+        
+        // Add NovelStatus constants
+        val novelStatus = LuaValue.tableOf()
+        novelStatus.set("PUBLISHING", LuaValue.valueOf(0))
+        novelStatus.set("COMPLETED", LuaValue.valueOf(1))
+        novelStatus.set("PAUSED", LuaValue.valueOf(2))
+        novelStatus.set("UNKNOWN", LuaValue.valueOf(3))
+        globals.set("NovelStatus", novelStatus)
+    }
+    
+    private fun createUrlLibrary(): LuaValue {
+        val urlLib = LuaValue.tableOf()
+        urlLib.set("encode", object : OneArgFunction() {
+            override fun call(arg: LuaValue): LuaValue {
+                return LuaValue.valueOf(java.net.URLEncoder.encode(arg.tojstring(), "UTF-8"))
+            }
+        })
+        return urlLib
+    }
+    
+    private fun createJsonLibrary(): LuaValue {
+        val jsonLib = LuaValue.tableOf()
+        jsonLib.set("GET", object : OneArgFunction() {
+            override fun call(url: LuaValue): LuaValue {
+                // Mock JSON response
+                return LuaValue.tableOf()
+            }
+        })
+        return jsonLib
+    }
+    
+    private fun createUtf8Library(): LuaValue {
+        val utf8Lib = LuaValue.tableOf()
+        utf8Lib.set("char", object : OneArgFunction() {
+            override fun call(codepoint: LuaValue): LuaValue {
+                return LuaValue.valueOf(String(Character.toChars(codepoint.toint())))
+            }
+        })
+        return utf8Lib
+    }
+    
+    private fun createMadaraExtension(baseUrl: String): LuaValue {
+        // Mock Madara extension
+        return LuaValue.tableOf()
+    }
+    
+    private fun createMockDocument(): LuaValue {
+        val doc = LuaValue.tableOf()
+        doc.set("select", object : OneArgFunction() {
+            override fun call(selector: LuaValue): LuaValue {
+                return LuaValue.tableOf()
+            }
+        })
+        doc.set("selectFirst", object : OneArgFunction() {
+            override fun call(selector: LuaValue): LuaValue {
+                val element = LuaValue.tableOf()
+                element.set("text", object : ZeroArgFunction() {
+                    override fun call(): LuaValue {
+                        return LuaValue.valueOf("Mock Text")
+                    }
+                })
+                element.set("attr", object : OneArgFunction() {
+                    override fun call(attrName: LuaValue): LuaValue {
+                        return LuaValue.valueOf("mock-attr")
+                    }
+                })
+                return element
+            }
+        })
+        return doc
     }
 
     override suspend fun search(query: String): List<ExtensionSearchResult> {
@@ -171,7 +341,7 @@ class LuaExtension(
             genres = parseLuaStringList(table.get("genres")),
             status = table.get("status").optjstring(""),
             lastUpdated = table.get("lastUpdated").optlong(0),
-            chapters = parseLuaChapterList(table.get("chapters"))
+            chapters = parseLuaChapterList(table.get("chapters")) ?: emptyList()
         )
     }
 

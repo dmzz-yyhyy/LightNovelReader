@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
 import javax.inject.Inject
