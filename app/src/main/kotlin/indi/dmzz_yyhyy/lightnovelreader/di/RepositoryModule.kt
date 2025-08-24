@@ -13,8 +13,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExampleExtension
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.jar.JarExtensionLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaExtensionParser
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.settings.ExtensionSettingsManager
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionSettingDao
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepositoryImpl
@@ -60,8 +64,24 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideExtensionLoader(
-        @ApplicationContext context: Context
-    ): ExtensionLoader = ExtensionLoader(context)
+        @ApplicationContext context: Context,
+        luaExtensionParser: LuaExtensionParser,
+        jarExtensionLoader: JarExtensionLoader
+    ): ExtensionLoader = ExtensionLoader(context, luaExtensionParser, jarExtensionLoader)
+
+    @Provides
+    @Singleton
+    fun provideLuaExtensionParser(): LuaExtensionParser = LuaExtensionParser()
+
+    @Provides
+    @Singleton
+    fun provideJarExtensionLoader(): JarExtensionLoader = JarExtensionLoader()
+
+    @Provides
+    @Singleton
+    fun provideExtensionSettingsManager(
+        extensionSettingDao: ExtensionSettingDao
+    ): ExtensionSettingsManager = ExtensionSettingsManager(extensionSettingDao)
 
     @Provides
     @Singleton
@@ -91,6 +111,11 @@ object RepositoryModule {
     @Singleton
     fun provideExtensionBookDao(database: LightNovelReaderDatabase): ExtensionBookDao = 
         database.extensionBookDao()
+
+    @Provides
+    @Singleton
+    fun provideExtensionSettingDao(database: LightNovelReaderDatabase): ExtensionSettingDao = 
+        database.extensionSettingDao()
 
     @Provides
     @Singleton
