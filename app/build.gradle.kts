@@ -149,7 +149,7 @@ dependencies {
     // Lua for extensions
     implementation("org.luaj:luaj-jse:3.0.1")
     // JSoup for HTML parsing (useful for extensions)
-    implementation("org.jsoup:jsoup:1.16.1")
+    implementation("org.jsoup:jsoup:1.21.1")
 }
 
 configurations.implementation{

@@ -75,12 +75,12 @@ fun InstalledScreen(
                 items(uiState.extensions) { item ->
                     InstalledExtensionCard(
                         item = item,
-                        onUninstall = { viewModel.uninstallExtension(it) },
-                        onToggleEnabled = { extension, enabled -> 
-                            viewModel.toggleExtension(extension, enabled)
+                        onUninstall = { viewModel.uninstallExtension(item.extension) },
+                        onToggleEnabled = { 
+                            viewModel.toggleExtensionEnabled(item.extension)
                         },
-                        onSettings = { extension ->
-                            onNavigateToSettings(extension.id, extension.name)
+                        onSettings = {
+                            onNavigateToSettings(item.extension.id, item.extension.name)
                         }
                     )
                 }
