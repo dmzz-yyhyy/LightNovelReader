@@ -69,8 +69,20 @@ object RepositoryModule {
     fun provideExtensionReadingService(
         extensionManager: ExtensionManager,
         extensionConverter: ExtensionConverter,
-        extensionLoader: ExtensionLoader
-    ): ExtensionReadingService = ExtensionReadingService(extensionManager, extensionConverter, extensionLoader)
+        extensionLoader: ExtensionLoader,
+        extensionBookIdManager: ExtensionBookIdManager,
+        extensionBookDao: ExtensionBookDao
+    ): ExtensionReadingService = ExtensionReadingService(
+        extensionManager, 
+        extensionConverter, 
+        extensionLoader,
+        extensionBookIdManager,
+        extensionBookDao
+    )
+
+    @Provides
+    @Singleton
+    fun provideExtensionBookIdManager(): ExtensionBookIdManager = ExtensionBookIdManager()
 
     @Provides
     @Singleton
