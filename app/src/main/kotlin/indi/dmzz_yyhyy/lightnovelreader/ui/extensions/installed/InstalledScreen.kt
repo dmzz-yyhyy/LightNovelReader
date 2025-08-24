@@ -132,7 +132,7 @@ fun InstalledExtensionCard(
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        text = stringResource(R.string.extension_language, item.extension.lang),
+                        text = stringResource(R.string.extension_author, item.extension.author),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

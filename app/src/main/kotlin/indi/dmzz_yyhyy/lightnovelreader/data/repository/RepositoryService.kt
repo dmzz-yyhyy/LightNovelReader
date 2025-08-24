@@ -90,18 +90,15 @@ class RepositoryService @Inject constructor(
         )
 
         val installedExtension = InstalledExtensionEntity(
-            id = extension.id,
-            repoId = extension.repoId,
+            extensionId = extension.fileName, // Use fileName as unique identifier
             name = extension.name,
-            fileName = extension.fileName,
-            imageURL = extension.imageURL,
-            lang = extension.lang,
             version = extension.version,
-            md5 = extension.md5,
-            type = extension.type,
+            author = "", // Repository extensions don't have author info
             description = extension.description,
             isEnabled = true,
-            installDate = System.currentTimeMillis()
+            installedDate = System.currentTimeMillis(),
+            lastUpdated = System.currentTimeMillis(),
+            filePath = extension.fileName
         )
 
         // Save the extension file

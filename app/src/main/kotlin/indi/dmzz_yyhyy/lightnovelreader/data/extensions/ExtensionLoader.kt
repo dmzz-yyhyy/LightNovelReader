@@ -33,9 +33,9 @@ class ExtensionLoader @Inject constructor(
                     return@withContext null
                 }
 
-                // Determine extension type and load accordingly
+                // Determine extension type based on file type
                 when (extensionEntity.type.lowercase()) {
-                    "lua" -> loadLuaExtension(extensionEntity, extensionFile)
+                    "luascript" -> loadLuaExtension(extensionEntity, extensionFile)
                     "jar" -> loadJarExtension(extensionEntity, extensionFile)
                     else -> {
                         // Fallback to example extensions for development
@@ -119,7 +119,7 @@ class ExtensionLoader @Inject constructor(
 
     fun getExtensionFile(extensionEntity: InstalledExtensionEntity): File {
         val extension = when (extensionEntity.type.lowercase()) {
-            "lua" -> "lua"
+            "luascript" -> "lua"
             "jar" -> "jar"
             else -> "lua" // Default to lua
         }
