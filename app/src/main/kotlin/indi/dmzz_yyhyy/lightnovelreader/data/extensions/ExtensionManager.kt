@@ -42,11 +42,8 @@ class ExtensionManager @Inject constructor() {
         getEnabledExtensions().forEach { extension ->
             try {
                 val searchResults = extension.search(query)
-                // Add extension ID to each result
-                val resultsWithExtensionId = searchResults.map { result ->
-                    result.copy(extensionId = extension.id)
-                }
-                results.addAll(resultsWithExtensionId)
+                // Extension should already set extensionId in results
+                results.addAll(searchResults)
             } catch (e: Exception) {
                 // Log error but continue with other extensions
                 e.printStackTrace()
