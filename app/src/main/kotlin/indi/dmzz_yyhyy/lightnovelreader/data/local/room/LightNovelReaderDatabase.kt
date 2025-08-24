@@ -30,8 +30,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionSettingDao
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionBookEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionSettingEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
 
@@ -51,9 +53,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.RepositoryEntity
         RepositoryEntity::class,
         ExtensionEntity::class,
         InstalledExtensionEntity::class,
-        ExtensionBookEntity::class
+        ExtensionBookEntity::class,
+        ExtensionSettingEntity::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -70,6 +73,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
     abstract fun extensionDao(): ExtensionDao
     abstract fun installedExtensionDao(): InstalledExtensionDao
     abstract fun extensionBookDao(): ExtensionBookDao
+    abstract fun extensionSettingDao(): ExtensionSettingDao
 
     companion object {
         @Volatile
