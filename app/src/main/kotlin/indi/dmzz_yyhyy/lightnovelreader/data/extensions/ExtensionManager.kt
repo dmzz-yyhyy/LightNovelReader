@@ -1,16 +1,13 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
-import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
-import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.InstalledExtensionEntity
-import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ExtensionManager @Inject constructor() {
-    
+
     private val extensions = mutableMapOf<String, Extension>()
 
     fun registerExtension(extension: Extension) {
@@ -35,7 +32,7 @@ class ExtensionManager @Inject constructor() {
 
     suspend fun searchAllExtensions(query: String): List<ExtensionSearchResult> {
         val results = mutableListOf<ExtensionSearchResult>()
-        
+
         getEnabledExtensions().forEach { extension ->
             try {
                 val searchResults = extension.search(query)
@@ -46,13 +43,13 @@ class ExtensionManager @Inject constructor() {
                 e.printStackTrace()
             }
         }
-        
+
         return results
     }
 
     suspend fun getBookFromExtension(extensionId: String, bookId: String): ExtensionBook? {
         val extension = getExtension(extensionId) ?: return null
-        
+
         return try {
             extension.getBook(bookId)
         } catch (e: Exception) {
@@ -67,7 +64,7 @@ class ExtensionManager @Inject constructor() {
         chapterId: String
     ): ExtensionChapter? {
         val extension = getExtension(extensionId) ?: return null
-        
+
         return try {
             extension.getChapter(bookId, chapterId)
         } catch (e: Exception) {
@@ -76,9 +73,12 @@ class ExtensionManager @Inject constructor() {
         }
     }
 
-    suspend fun getChaptersFromExtension(extensionId: String, bookId: String): List<ExtensionChapter>? {
+    suspend fun getChaptersFromExtension(
+        extensionId: String,
+        bookId: String
+    ): List<ExtensionChapter>? {
         val extension = getExtension(extensionId) ?: return null
-        
+
         return try {
             extension.getChapters(bookId)
         } catch (e: Exception) {

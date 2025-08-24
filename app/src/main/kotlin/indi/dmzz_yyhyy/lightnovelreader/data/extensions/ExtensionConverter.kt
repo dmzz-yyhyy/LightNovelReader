@@ -4,8 +4,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
