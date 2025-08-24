@@ -87,7 +87,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         context.applicationContext,
                         LightNovelReaderDatabase::class.java,
                         "light_novel_reader_database")
-                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, Migration_12_13, MIGRATION_13_14)
+                        .addMigrations(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, Migration_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
                         .allowMainThreadQueries()
                         .build()
                     INSTANCE = instance
@@ -260,6 +260,46 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                 """)
 
                 db.execSQL("CREATE INDEX index_repository_extensions_repoId ON repository_extensions(repoId)")
+            }
+        }
+
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add extension_books table for managing extension book mappings
+                db.execSQL("""
+                CREATE TABLE extension_books (
+                    internalBookId INTEGER PRIMARY KEY,
+                    extensionId INTEGER NOT NULL,
+                    originalBookId TEXT NOT NULL,
+                    title TEXT NOT NULL,
+                    author TEXT NOT NULL DEFAULT '',
+                    description TEXT NOT NULL DEFAULT '',
+                    imageUrl TEXT NOT NULL DEFAULT '',
+                    url TEXT NOT NULL DEFAULT '',
+                    createdAt INTEGER NOT NULL,
+                    updatedAt INTEGER NOT NULL)
+                """)
+
+                db.execSQL("CREATE INDEX index_extension_books_extensionId ON extension_books(extensionId)")
+                db.execSQL("CREATE UNIQUE INDEX index_extension_books_mapping ON extension_books(extensionId, originalBookId)")
+            }
+        }
+
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add extension_settings table for managing extension settings
+                db.execSQL("""
+                CREATE TABLE extension_settings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    extensionId INTEGER NOT NULL,
+                    key TEXT NOT NULL,
+                    value TEXT NOT NULL,
+                    createdAt INTEGER NOT NULL,
+                    updatedAt INTEGER NOT NULL,
+                    UNIQUE(extensionId, key))
+                """)
+
+                db.execSQL("CREATE INDEX index_extension_settings_extensionId ON extension_settings(extensionId)")
             }
         }
     }
