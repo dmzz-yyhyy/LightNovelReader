@@ -33,14 +33,17 @@ class LuaExtension(
 
     override suspend fun search(query: String): List<ExtensionSearchResult> {
         return try {
+            // Try global search function (most common)
             val searchFunction = globals.get("search")
             if (searchFunction.isfunction()) {
                 val result = searchFunction.call(LuaValue.valueOf(query))
-                parseLuaSearchResults(result)
-            } else {
-                emptyList()
+                return parseLuaSearchResults(result)
             }
+            
+            println("LuaExtension: No search function found for $name")
+            emptyList()
         } catch (e: Exception) {
+            println("LuaExtension: Search failed for $name: ${e.message}")
             e.printStackTrace()
             emptyList()
         }
@@ -48,14 +51,27 @@ class LuaExtension(
 
     override suspend fun getBook(id: String): ExtensionBook? {
         return try {
+            // Try parseNovel function (Shosetsu style)
+            val parseNovelFunction = globals.get("parseNovel")
+            if (parseNovelFunction.isfunction()) {
+                val result = parseNovelFunction.call(
+                    LuaValue.valueOf(id),
+                    LuaValue.TRUE // loadChapters = true
+                )
+                return parseLuaBook(result)
+            }
+            
+            // Last fallback to getBook function (our style)
             val getBookFunction = globals.get("getBook")
             if (getBookFunction.isfunction()) {
                 val result = getBookFunction.call(LuaValue.valueOf(id))
-                parseLuaBook(result)
-            } else {
-                null
+                return parseLuaBook(result)
             }
+            
+            println("LuaExtension: No parseNovel or getBook function found for $name")
+            null
         } catch (e: Exception) {
+            println("LuaExtension: getBook failed for $name: ${e.message}")
             e.printStackTrace()
             null
         }
@@ -63,17 +79,27 @@ class LuaExtension(
 
     override suspend fun getChapter(bookId: String, chapterId: String): ExtensionChapter? {
         return try {
+            // Try getPassage function (Shosetsu style)
+            val getPassageFunction = globals.get("getPassage")
+            if (getPassageFunction.isfunction()) {
+                val result = getPassageFunction.call(LuaValue.valueOf(chapterId))
+                return parseLuaChapter(result)
+            }
+            
+            // Last fallback to getChapter function (our style)
             val getChapterFunction = globals.get("getChapter")
             if (getChapterFunction.isfunction()) {
                 val result = getChapterFunction.call(
                     LuaValue.valueOf(bookId),
                     LuaValue.valueOf(chapterId)
                 )
-                parseLuaChapter(result)
-            } else {
-                null
+                return parseLuaChapter(result)
             }
+            
+            println("LuaExtension: No getPassage or getChapter function found for $name")
+            null
         } catch (e: Exception) {
+            println("LuaExtension: getChapter failed for $name: ${e.message}")
             e.printStackTrace()
             null
         }
@@ -81,13 +107,25 @@ class LuaExtension(
 
     override suspend fun getChapters(bookId: String): List<ExtensionChapter>? {
         return try {
-            val getChaptersFunction = globals.get("getChapters")
-            if (getChaptersFunction.isfunction()) {
-                val result = getChaptersFunction.call(LuaValue.valueOf(bookId))
-                parseLuaChapterList(result)
-            } else {
-                null
+            // For Shosetsu extensions, chapters are typically returned by parseNovel
+            // so we try to get them from there first
+            val book = getBook(bookId)
+            book?.chapters ?: run {
+                // Fallback to getChapters function if it exists
+                val getChaptersFunction = globals.get("getChapters")
+                if (getChaptersFunction.isfunction()) {
+                    val result = getChaptersFunction.call(LuaValue.valueOf(bookId))
+                    parseLuaChapterList(result)
+                } else {
+                    println("LuaExtension: No chapters found for $name")
+                    null
+                }
             }
+        } catch (e: Exception) {
+            println("LuaExtension: getChapters failed for $name: ${e.message}")
+            e.printStackTrace()
+            null
+        }
         } catch (e: Exception) {
             e.printStackTrace()
             null
