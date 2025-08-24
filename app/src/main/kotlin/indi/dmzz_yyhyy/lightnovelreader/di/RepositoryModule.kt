@@ -6,12 +6,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionBookIdManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExampleExtension
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepositoryImpl
@@ -83,6 +86,11 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideExtensionBookIdManager(): ExtensionBookIdManager = ExtensionBookIdManager()
+
+    @Provides
+    @Singleton
+    fun provideExtensionBookDao(database: LightNovelReaderDatabase): ExtensionBookDao = 
+        database.extensionBookDao()
 
     @Provides
     @Singleton
