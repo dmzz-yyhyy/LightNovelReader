@@ -193,9 +193,9 @@ class LuaExtension(
         globals.set("map", object : TwoArgFunction() {
             override fun call(table: LuaValue, func: LuaValue): LuaValue {
                 if (!table.istable() || !func.isfunction()) {
-                    return LuaValue.tableOf()
+                    return tableOf()
                 }
-                val result = LuaValue.tableOf()
+                val result = tableOf()
                 val inputTable = table.checktable()
                 var i = 1
                 while (true) {
@@ -219,19 +219,19 @@ class LuaExtension(
 
         globals.set("type", object : OneArgFunction() {
             override fun call(arg: LuaValue): LuaValue {
-                return LuaValue.valueOf(arg.typename())
+                return valueOf(arg.typename())
             }
         })
 
         globals.set("pairs", object : OneArgFunction() {
             override fun call(table: LuaValue): LuaValue {
-                return LuaValue.tableOf()
+                return tableOf()
             }
         })
 
         globals.set("ipairs", object : OneArgFunction() {
             override fun call(table: LuaValue): LuaValue {
-                return LuaValue.tableOf()
+                return tableOf()
             }
         })
 
@@ -248,12 +248,12 @@ class LuaExtension(
             })
             set("concat", object : TwoArgFunction() {
                 override fun call(table: LuaValue, sep: LuaValue): LuaValue {
-                    return LuaValue.valueOf("")
+                    return valueOf("")
                 }
             })
             set("unpack", object : OneArgFunction() {
                 override fun call(table: LuaValue): LuaValue {
-                    return LuaValue.valueOf("")
+                    return valueOf("")
                 }
             })
         })
@@ -271,12 +271,12 @@ class LuaExtension(
             })
             set("match", object : TwoArgFunction() {
                 override fun call(str: LuaValue, pattern: LuaValue): LuaValue {
-                    return LuaValue.valueOf("")
+                    return valueOf("")
                 }
             })
             set("find", object : VarArgFunction() {
                 override fun invoke(args: Varargs): LuaValue {
-                    return LuaValue.valueOf(1)
+                    return valueOf(1)
                 }
             })
         })
@@ -797,20 +797,20 @@ class LuaExtension(
         // Add common functions that libraries might use
         lib.set("trim", object : OneArgFunction() {
             override fun call(str: LuaValue): LuaValue {
-                return LuaValue.valueOf(str.tojstring().trim())
+                return valueOf(str.tojstring().trim())
             }
         })
 
         lib.set("HTMLToString", object : OneArgFunction() {
             override fun call(element: LuaValue): LuaValue {
-                return LuaValue.valueOf("Mock HTML Content")
+                return valueOf("Mock HTML Content")
             }
         })
 
         lib.set("querystring", LuaValue.tableOf().apply {
             set("stringify", object : OneArgFunction() {
                 override fun call(table: LuaValue): LuaValue {
-                    return LuaValue.valueOf("param=value")
+                    return valueOf("param=value")
                 }
             })
         })
@@ -1562,7 +1562,7 @@ class LuaExtension(
         }
     }
 
-    override suspend fun getBrowseResults(): List<ExtensionSearchResult>? {
+    suspend fun getBrowseResults(): List<ExtensionSearchResult>? {
         return try {
             println("LuaExtension: Getting browse results from $name")
 
