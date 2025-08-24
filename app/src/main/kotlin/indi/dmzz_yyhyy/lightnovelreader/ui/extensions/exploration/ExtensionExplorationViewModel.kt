@@ -78,13 +78,15 @@ class ExtensionExplorationViewModel @Inject constructor(
                 if (searchQuery.isNotBlank()) {
                     searchBooks(searchQuery)
                 } else {
-                    _uiState.value = _uiState.value.copy(
-                        books = emptyList(),
-                        searchQuery = searchQuery,
-                        selectedExtensionId = selectedExtensionId
-                    )
+                    // When no search query, load latest/default content
+                    searchBooks("") // Empty query should trigger latest novels
                 }
             }.collect()
+        }
+        
+        // Also trigger an initial load when ViewModel is created
+        viewModelScope.launch {
+            searchBooks("")
         }
     }
 
