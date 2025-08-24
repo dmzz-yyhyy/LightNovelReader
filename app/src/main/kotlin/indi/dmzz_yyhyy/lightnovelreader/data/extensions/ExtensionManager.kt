@@ -42,7 +42,11 @@ class ExtensionManager @Inject constructor() {
         getEnabledExtensions().forEach { extension ->
             try {
                 val searchResults = extension.search(query)
-                results.addAll(searchResults)
+                // Add extension ID to each result
+                val resultsWithExtensionId = searchResults.map { result ->
+                    result.copy(extensionId = extension.id)
+                }
+                results.addAll(resultsWithExtensionId)
             } catch (e: Exception) {
                 // Log error but continue with other extensions
                 e.printStackTrace()
