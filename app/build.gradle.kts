@@ -21,8 +21,8 @@ android {
         targetSdk = 36
     // If the version number is x.y.z, then versionCode is x*1000000 + y*10000 + z*1000 + debug version number (for development iteration, three digits)
     // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-    val versionNameStr = "1.2.1"
-    val debugNumber = 2 // Change this for each debug iteration (three digits)
+    val versionNameStr = "1.3.1"
+    val debugNumber = 0 // Change this for each debug iteration (three digits)
 
     val versionParts = versionNameStr.split(".").map { it.toIntOrNull() ?: 0 }
     val major = versionParts.getOrNull(0) ?: 0

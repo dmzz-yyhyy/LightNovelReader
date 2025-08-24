@@ -94,13 +94,15 @@ object RepositoryModule {
         extensionConverter: ExtensionConverter,
         extensionLoader: ExtensionLoader,
         extensionBookIdManager: ExtensionBookIdManager,
-        extensionBookDao: ExtensionBookDao
+        extensionBookDao: ExtensionBookDao,
+        repositoryServiceProvider: javax.inject.Provider<RepositoryService>
     ): ExtensionReadingService = ExtensionReadingService(
         extensionManager, 
         extensionConverter, 
         extensionLoader,
         extensionBookIdManager,
-        extensionBookDao
+        extensionBookDao,
+        repositoryServiceProvider
     )
 
     @Provides
