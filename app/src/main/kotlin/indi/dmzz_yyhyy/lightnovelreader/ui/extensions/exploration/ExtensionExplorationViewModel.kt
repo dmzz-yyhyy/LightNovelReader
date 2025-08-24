@@ -36,6 +36,7 @@ class ExtensionExplorationViewModel @Inject constructor(
     private fun loadAvailableExtensions() {
         viewModelScope.launch {
             try {
+                _homeUIState.value = _homeUIState.value.copy(isLoading = true)
                 val enabledExtensions = extensionReadingService.getEnabledExtensions()
                 val extensionInfos = enabledExtensions.map { extension ->
                     ExtensionInfo(

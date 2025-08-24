@@ -30,10 +30,7 @@ class ExtensionManager @Inject constructor() {
     }
 
     fun getEnabledExtensions(): List<Extension> {
-        return extensions.values.filter { extension ->
-            // TODO: Check if extension is enabled in database
-            true
-        }
+        return extensions.values.toList()
     }
 
     suspend fun searchAllExtensions(query: String): List<ExtensionSearchResult> {
