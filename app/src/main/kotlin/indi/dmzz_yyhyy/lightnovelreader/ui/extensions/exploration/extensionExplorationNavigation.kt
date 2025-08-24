@@ -16,8 +16,9 @@ fun NavGraphBuilder.extensionExplorationNavigation(sharedTransitionScope: Shared
             onBack = { navController.popBackStack() },
             onNavigateToSearch = { navController.navigate(Route.Main.Extensions.Search) },
             onNavigateToExtension = { extensionId ->
-                // For now, navigate to search with extension filter
+                // Navigate to search screen and browse the selected extension
                 navController.navigate(Route.Main.Extensions.Search)
+                // TODO: Pass extension ID to search screen for browsing
             }
         )
     }

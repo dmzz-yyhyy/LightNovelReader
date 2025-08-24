@@ -114,4 +114,8 @@ class SecondExampleExtension : Extension {
     override suspend fun getChapters(bookId: String): List<ExtensionChapter>? {
         return sampleChapters[bookId]
     }
+
+    override suspend fun getBrowseResults(): List<ExtensionSearchResult>? {
+        TODO("Not yet implemented")
+    }
 }
