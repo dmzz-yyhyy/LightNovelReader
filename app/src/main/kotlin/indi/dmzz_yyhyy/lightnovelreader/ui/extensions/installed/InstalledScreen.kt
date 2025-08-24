@@ -74,9 +74,14 @@ fun InstalledScreen(
                 items(uiState.extensions) { item ->
                     InstalledExtensionCard(
                         item = item,
-                        onUninstall = { viewModel.uninstallExtension(item.extension) },
-                        onToggleEnabled = { viewModel.toggleExtensionEnabled(item.extension) },
-                        onSettings = { /* TODO: Open extension settings */ }
+                        onUninstall = { viewModel.uninstallExtension(it) },
+                        onToggleEnabled = { extension, enabled -> 
+                            viewModel.toggleExtension(extension, enabled)
+                        },
+                        onSettings = { extension ->
+                            // TODO: Navigate to extension settings screen
+                            // This would open extension-specific configuration
+                        }
                     )
                 }
             }
