@@ -30,8 +30,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportUserDataDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SliderValueDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SourceChangeDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.wenku8ApiWebDataSourceItem
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.zaiComicWebDataSourceItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.SliderValueDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.UpdatesAvailableDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug.navigateToSettingsDebugDestination
@@ -114,7 +112,7 @@ private fun NavGraphBuilder.sourceChangeDialog() {
                 viewModel.changeWebSource(selectedWebDataSourceId, File(context.filesDir, "data"))
                 navController.popBackStack()
             },
-            webDataSourceItems = listOf(wenku8ApiWebDataSourceItem, zaiComicWebDataSourceItem),
+            webDataSourceItems = viewModel.getWebDataSourceItems(),
             selectedWebDataSourceId = selectedWebDataSourceId,
             onClickItem = {
                 selectedWebDataSourceId = it

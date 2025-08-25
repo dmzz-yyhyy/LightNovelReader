@@ -34,12 +34,45 @@ class SourceChangeDialogViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val workManager: WorkManager,
     private val webBookDataSource: WebBookDataSource,
+    private val allWebDataSources: List<WebBookDataSource>,
     private val localBookDataSource: LocalBookDataSource,
     private val bookshelfRepository: BookshelfRepository,
     private val statsRepository: StatsRepository
 ) : ViewModel() {
 
     val webBookDataSourceId = webBookDataSource.id
+    val availableDataSources = allWebDataSources
+
+    fun getWebDataSourceItems(): List<indi.dmzz_yyhyy.lightnovelreader.ui.components.WebDataSourceItem> {
+        return allWebDataSources.map { dataSource ->
+            indi.dmzz_yyhyy.lightnovelreader.ui.components.WebDataSourceItem(
+                id = dataSource.id,
+                name = when (dataSource.id) {
+                    "wenku8".hashCode() -> "Wenku8"
+                    "ZaiComic".hashCode() -> "ZaiComic"
+                    else -> {
+                        // For extensions, get the name from the adapter
+                        if (dataSource is indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionWebDataSourceAdapter) {
+                            dataSource.extensionName
+                        } else {
+                            "Unknown Source"
+                        }
+                    }
+                },
+                provider = when (dataSource.id) {
+                    "wenku8".hashCode() -> "LightNovelReader from wenku8.net"
+                    "ZaiComic".hashCode() -> "LightNovelReader from zaimanhua.com"
+                    else -> {
+                        if (dataSource is indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionWebDataSourceAdapter) {
+                            "Extension (${dataSource.extensionId})"
+                        } else {
+                            "Unknown Source"
+                        }
+                    }
+                }
+            )
+        }
+    }
 
     private fun exportToFile(uri: Uri, exportContext: ExportContext): OneTimeWorkRequest {
         val workRequest = OneTimeWorkRequestBuilder<ExportDataWork>()
