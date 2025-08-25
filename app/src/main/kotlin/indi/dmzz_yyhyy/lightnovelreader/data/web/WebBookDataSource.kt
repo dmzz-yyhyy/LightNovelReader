@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface WebBookDataSource {
     val id: Int
+
     /**
      * 获取当前软件整体是否处于离线状态
      */
@@ -114,7 +115,7 @@ interface WebBookDataSource {
     /**
      * 用于处理书本tag的点击跳转事件
      */
-    fun progressBookTagClick(tag: String, navController: NavController) {  }
+    fun progressBookTagClick(tag: String, navController: NavController) {}
 
     /**
      * 根据卷获取该卷封面的Url, 用于EPUB分卷导出

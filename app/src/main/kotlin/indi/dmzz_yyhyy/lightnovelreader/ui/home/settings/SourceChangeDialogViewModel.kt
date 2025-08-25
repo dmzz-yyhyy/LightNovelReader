@@ -34,7 +34,7 @@ class SourceChangeDialogViewModel @Inject constructor(
     private val userDataRepository: UserDataRepository,
     private val workManager: WorkManager,
     private val webBookDataSource: WebBookDataSource,
-    private val allWebDataSources: List<WebBookDataSource>,
+    private val allWebDataSources: @JvmSuppressWildcards List<WebBookDataSource>,
     private val localBookDataSource: LocalBookDataSource,
     private val bookshelfRepository: BookshelfRepository,
     private val statsRepository: StatsRepository

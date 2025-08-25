@@ -47,7 +47,7 @@ class ExtensionReadingService @Inject constructor(
 
                 // Convert to BookInformationEntity
                 val bookInfo =
-                    extensionConverter.convertSearchResultToBookInfo(result, result.extensionId)
+                    extensionConverter.convertSearchResultToBookInfoEntity(result, result.extensionId)
                         .copy(id = bookId)
                 books.add(bookInfo)
             } catch (e: Exception) {
@@ -68,7 +68,7 @@ class ExtensionReadingService @Inject constructor(
                 try {
                     val book = extension.getBook(extensionBook.originalBookId)
                     return book?.let {
-                        extensionConverter.convertExtensionBookToBookInfo(
+                        extensionConverter.convertExtensionBookToBookInfoEntity(
                             it,
                             extensionBook.extensionId.toString()
                         )
@@ -93,7 +93,7 @@ class ExtensionReadingService @Inject constructor(
                     val chapter =
                         extension.getChapter(extensionBook.originalBookId, chapterId.toString())
                     return chapter?.let {
-                        extensionConverter.convertExtensionChapterToChapterContent(it, bookId)
+                        extensionConverter.convertExtensionChapterToChapterContentEntity(it, bookId)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -111,7 +111,7 @@ class ExtensionReadingService @Inject constructor(
                 try {
                     val chapters = extension.getChapters(extensionBook.originalBookId)
                     return chapters?.map { chapter ->
-                        extensionConverter.convertExtensionChapterToChapterInfo(chapter, bookId)
+                        extensionConverter.convertExtensionChapterToChapterInfoEntity(chapter, bookId)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
