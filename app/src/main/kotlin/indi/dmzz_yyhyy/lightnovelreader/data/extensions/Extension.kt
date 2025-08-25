@@ -20,6 +20,11 @@ interface Extension {
     suspend fun search(query: String): List<ExtensionSearchResult>
 
     /**
+     * Browse/get latest novels (for homepage)
+     */
+    suspend fun getLatest(): List<ExtensionSearchResult>
+
+    /**
      * Get novel details
      */
     suspend fun getBook(id: String): ExtensionBook?

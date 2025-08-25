@@ -114,4 +114,9 @@ class SecondExampleExtension : Extension {
     override suspend fun getChapters(bookId: String): List<ExtensionChapter>? {
         return sampleChapters[bookId]
     }
+
+    override suspend fun getLatest(): List<ExtensionSearchResult> {
+        // Return some sample "latest" novels from this extension
+        return sampleBooks
+    }
 }
