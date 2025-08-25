@@ -1,26 +1,32 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
-import androidx.navigation.NavController
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
+import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
+import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
+import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationPage
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationExpandedPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.exploration.ExplorationPageDataSource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 /**
  * Adapter that wraps an Extension to implement the WebBookDataSource interface
  */
 class ExtensionWebDataSourceAdapter(
-    private val extension: Extension
+    private val extension: Extension,
+    private val extensionConverter: ExtensionConverter
 ) : WebBookDataSource {
 
     override val id: Int = extension.id.hashCode()
-    
+
     // Expose extension details for UI
     val extensionName: String = extension.name
     val extensionId: String = extension.id
@@ -34,10 +40,11 @@ class ExtensionWebDataSourceAdapter(
     override val explorationPageIdList: List<String> = listOf("latest")
 
     override val explorationPageDataSourceMap: Map<String, ExplorationPageDataSource> = mapOf(
-        "latest" to ExtensionExplorationPageDataSource(extension)
+        "latest" to ExtensionExplorationPageDataSource(extension, extensionConverter)
     )
 
-    override val explorationExpandedPageDataSourceMap: Map<String, ExplorationExpandedPageDataSource> = emptyMap()
+    override val explorationExpandedPageDataSourceMap: Map<String, ExplorationExpandedPageDataSource> =
+        emptyMap()
 
     override val searchTypeMap: Map<String, String> = mapOf("search" to "Search")
 
@@ -46,138 +53,124 @@ class ExtensionWebDataSourceAdapter(
     override val searchTypeIdList: List<String> = listOf("search")
 
     override suspend fun getBookInformation(id: Int): BookInformation {
-        val extensionBook = extension.getBook(id.toString())
-        return if (extensionBook != null) {
-            BookInformation(
-                id = id,
-                title = extensionBook.title,
-                author = extensionBook.author,
-                description = extensionBook.description,
-                coverUrl = extensionBook.imageUrl,
-                tags = extensionBook.genres,
-                status = extensionBook.status,
-                lastUpdated = extensionBook.lastUpdated?.let { 
-                    java.time.LocalDateTime.ofEpochSecond(it / 1000, 0, java.time.ZoneOffset.UTC)
-                } ?: java.time.LocalDateTime.now()
-            )
-        } else {
+        return try {
+            val book = extension.getBook(id.toString())
+            if (book != null) {
+                extensionConverter.convertExtensionBookToBookInfo(book, extension.id)
+            } else {
+                BookInformation.empty(id)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
             BookInformation.empty(id)
         }
     }
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
-        val chapters = extension.getChapters(id.toString())
-        return if (chapters != null) {
-            // Convert extension chapters to BookVolumes format
-            val volumes = listOf(
-                Volume(
-                    id = 1,
-                    title = "Volume 1", // Default volume title
-                    chapterIdList = chapters.mapIndexed { index, _ -> index + 1 }
+        return try {
+            val chapters = extension.getChapters(id.toString())
+            if (chapters != null) {
+                // Convert chapters to volumes
+                val volume = Volume(
+                    volumeId = 1,
+                    volumeTitle = "Volume 1",
+                    chapters = chapters.map { chapter ->
+                        ChapterInformation(
+                            id = chapter.id.toIntOrNull() ?: 0,
+                            title = chapter.title
+                        )
+                    }
                 )
-            )
-            BookVolumes(
-                bookId = id,
-                volumes = volumes,
-                chapters = chapters.mapIndexed { index, chapter ->
-                    indi.dmzz_yyhyy.lightnovelreader.data.book.Chapter(
-                        id = index + 1,
-                        title = chapter.title,
-                        bookId = id
-                    )
-                }
-            )
-        } else {
-            BookVolumes.empty(id)
+                BookVolumes(
+                    bookId = id,
+                    volumes = listOf(volume)
+                )
+            } else {
+                BookVolumes(id, emptyList())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            BookVolumes(id, emptyList())
         }
     }
 
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
-        val chapters = extension.getChapters(bookId.toString())
-        if (chapters != null && chapterId <= chapters.size && chapterId > 0) {
-            val chapter = chapters[chapterId - 1] // Convert to 0-based index
-            val extensionChapter = extension.getChapter(bookId.toString(), chapter.id)
-            return if (extensionChapter != null) {
-                ChapterContent(
-                    chapterId = chapterId,
-                    title = extensionChapter.title,
-                    content = extensionChapter.content
-                )
+        return try {
+            val chapter = extension.getChapter(bookId.toString(), chapterId.toString())
+            if (chapter != null) {
+                extensionConverter.convertExtensionChapterToChapterContent(chapter, chapterId)
             } else {
-                ChapterContent.empty(chapterId)
+                ChapterContent.empty()
             }
-        }
-        return ChapterContent.empty(chapterId)
-    }
-
-    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> = flow {
-        try {
-            val searchResults = extension.search(keyword)
-            val bookInfoList = searchResults.map { result ->
-                BookInformation(
-                    id = result.id.hashCode(), // Convert string ID to int
-                    title = result.title,
-                    author = result.author,
-                    description = result.description,
-                    coverUrl = result.imageUrl,
-                    tags = emptyList(), // Extensions don't typically provide tags in search results
-                    status = "Unknown",
-                    lastUpdated = java.time.LocalDateTime.now()
-                )
-            }
-            // Emit results with empty BookInformation at the end to signal completion
-            emit(bookInfoList + listOf(BookInformation.empty()))
         } catch (e: Exception) {
             e.printStackTrace()
-            emit(listOf(BookInformation.empty()))
+            ChapterContent.empty()
+        }
+    }
+
+    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+        return kotlinx.coroutines.flow.flow {
+            try {
+                val searchResults = extension.search(keyword)
+                val bookInfoList = searchResults.map { result ->
+                    extensionConverter.convertSearchResultToBookInfo(result, extension.id)
+                }
+                emit(bookInfoList)
+                // Emit empty list to signal end of search
+                emit(listOf(BookInformation.empty()))
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(emptyList())
+            }
         }
     }
 
     override fun stopAllSearch() {
-        // Extension searches are typically one-shot, so nothing to stop
+        // Extensions don't have ongoing search operations to stop
     }
-
-    override fun progressBookTagClick(tag: String, navController: NavController) {
-        // Default implementation - no special tag handling
-    }
-
-    override fun getCoverUrlInVolume(
-        bookId: Int,
-        volume: Volume,
-        volumeChapterContentMap: Map<Int, ChapterContent>
-    ): String? = null
 }
 
 /**
  * ExplorationPageDataSource implementation for extensions
  */
 class ExtensionExplorationPageDataSource(
-    private val extension: Extension
+    private val extension: Extension,
+    private val extensionConverter: ExtensionConverter
 ) : ExplorationPageDataSource {
 
-    override val id: String = "latest"
-    override val title: String = "Latest"
-    override val rowTitleList: List<String> = listOf("Latest Novels")
+    private var lock = false
+    private val explorationBooksRows: MutableStateFlow<List<ExplorationBooksRow>> =
+        MutableStateFlow(emptyList())
 
-    override suspend fun provide(): Map<String, List<BookInformation>> {
-        return try {
-            val latestNovels = extension.getLatest()
-            val bookInfoList = latestNovels.map { result ->
-                BookInformation(
-                    id = result.id.hashCode(), // Convert string ID to int
-                    title = result.title,
-                    author = result.author,
-                    description = result.description,
-                    coverUrl = result.imageUrl,
-                    tags = emptyList(),
-                    status = "Unknown",
-                    lastUpdated = java.time.LocalDateTime.now()
-                )
+    override val title = "${extension.name} Latest"
+
+    override fun getExplorationPage(): ExplorationPage {
+        if (!lock) {
+            lock = true
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val latestBooks = extension.getLatest()
+                    val explorationBooks = latestBooks.map { result ->
+                        ExplorationDisplayBook(
+                            id = result.id.toIntOrNull() ?: 0,
+                            title = result.title,
+                            author = result.author,
+                            coverUrl = result.imageUrl
+                        )
+                    }
+
+                    val booksRow = ExplorationBooksRow(
+                        title = "${extension.name} Latest",
+                        bookList = explorationBooks
+                    )
+
+                    explorationBooksRows.value = listOf(booksRow)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
-            mapOf("Latest Novels" to bookInfoList)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            mapOf("Latest Novels" to emptyList())
         }
+
+        return ExplorationPage(title, explorationBooksRows)
     }
 }

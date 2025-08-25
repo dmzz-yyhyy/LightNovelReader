@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionWebDataSourceAdapter
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
@@ -22,13 +23,14 @@ object WebDataSourceModule {
     @Provides
     fun provideWebDataSource(
         extensionManager: ExtensionManager,
+        extensionConverter: ExtensionConverter,
         userDataRepository: UserDataRepository
     ): WebBookDataSource {
         val webDataSourcesId = userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).get()
         
         // Get all available data sources (built-in + extensions)
         val allDataSources = webDataSources + extensionManager.getAllExtensions().map { extension ->
-            ExtensionWebDataSourceAdapter(extension)
+            ExtensionWebDataSourceAdapter(extension, extensionConverter)
         }
         
         return allDataSources.find { it.id == webDataSourcesId } ?: Wenku8Api
@@ -36,9 +38,12 @@ object WebDataSourceModule {
 
     @Singleton
     @Provides
-    fun provideAllWebDataSources(extensionManager: ExtensionManager): List<WebBookDataSource> {
+    fun provideAllWebDataSources(
+        extensionManager: ExtensionManager,
+        extensionConverter: ExtensionConverter
+    ): @JvmSuppressWildcards List<WebBookDataSource> {
         return webDataSources + extensionManager.getAllExtensions().map { extension ->
-            ExtensionWebDataSourceAdapter(extension)
+            ExtensionWebDataSourceAdapter(extension, extensionConverter)
         }
     }
 }

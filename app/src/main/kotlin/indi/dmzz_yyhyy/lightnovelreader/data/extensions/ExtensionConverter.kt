@@ -1,5 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.data.book.MutableBookInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.book.MutableChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchResult
@@ -13,7 +17,7 @@ import javax.inject.Singleton
 @Singleton
 class ExtensionConverter @Inject constructor() {
 
-    fun convertSearchResultToBookInfo(
+    fun convertSearchResultToBookInfoEntity(
         searchResult: ExtensionSearchResult,
         extensionId: String
     ): BookInformationEntity {
@@ -32,7 +36,7 @@ class ExtensionConverter @Inject constructor() {
         )
     }
 
-    fun convertExtensionBookToBookInfo(
+    fun convertExtensionBookToBookInfoEntity(
         book: ExtensionBook,
         extensionId: String
     ): BookInformationEntity {
@@ -51,7 +55,7 @@ class ExtensionConverter @Inject constructor() {
         )
     }
 
-    fun convertExtensionChapterToChapterInfo(
+    fun convertExtensionChapterToChapterInfoEntity(
         chapter: ExtensionChapter,
         bookId: Int
     ): ChapterInformationEntity {
@@ -61,7 +65,7 @@ class ExtensionConverter @Inject constructor() {
         )
     }
 
-    fun convertExtensionChapterToChapterContent(
+    fun convertExtensionChapterToChapterContentEntity(
         chapter: ExtensionChapter,
         bookId: Int
     ): ChapterContentEntity {
@@ -76,5 +80,57 @@ class ExtensionConverter @Inject constructor() {
 
     private fun generateBookId(extensionId: String, bookId: String): Int {
         return "$extensionId:$bookId".hashCode()
+    }
+
+    // Interface-returning methods for WebBookDataSource compatibility
+    fun convertSearchResultToBookInfo(
+        searchResult: ExtensionSearchResult,
+        extensionId: String
+    ): BookInformation {
+        return MutableBookInformation(
+            id = generateBookId(extensionId, searchResult.id),
+            title = searchResult.title,
+            subtitle = "",
+            coverUrl = searchResult.imageUrl,
+            author = searchResult.author,
+            description = searchResult.description,
+            tags = emptyList(),
+            publishingHouse = "",
+            wordCount = 0,
+            lastUpdated = LocalDateTime.now(),
+            isComplete = false
+        )
+    }
+
+    fun convertExtensionBookToBookInfo(
+        book: ExtensionBook,
+        extensionId: String
+    ): BookInformation {
+        return MutableBookInformation(
+            id = generateBookId(extensionId, book.id),
+            title = book.title,
+            subtitle = "",
+            coverUrl = book.imageUrl,
+            author = book.author,
+            description = book.description,
+            tags = book.genres,
+            publishingHouse = "",
+            wordCount = 0,
+            lastUpdated = LocalDateTime.now(),
+            isComplete = book.status == "Complete"
+        )
+    }
+
+    fun convertExtensionChapterToChapterContent(
+        chapter: ExtensionChapter,
+        chapterId: Int
+    ): ChapterContent {
+        return MutableChapterContent(
+            id = chapterId,
+            title = chapter.title,
+            content = chapter.content,
+            lastChapter = -1,
+            nextChapter = -1
+        )
     }
 }
