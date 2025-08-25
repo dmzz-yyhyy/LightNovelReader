@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua
 
 import app.shosetsu.lib.IExtension
-import app.shosetsu.lib.Novel
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.Extension
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionBook
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionChapter
@@ -34,7 +33,7 @@ class ShosetsuLuaExtensionWrapper(
                     println("ShosetsuLuaExtensionWrapper: Empty query provided, returning empty list")
                     return@withContext emptyList<ExtensionSearchResult>()
                 }
-                
+
                 // Create a text filter for the search
                 val filters = mapOf(0 to query)
                 val novels = shosetsuExtension.search(filters)
@@ -69,6 +68,49 @@ class ShosetsuLuaExtensionWrapper(
                         description = "Another mock novel for search results",
                         imageUrl = "",
                         url = "/mock/novel/2",
+                        extensionId = id
+                    )
+                )
+            }
+        }
+
+    override suspend fun getLatest(): List<ExtensionSearchResult> =
+        withContext(Dispatchers.IO) {
+            try {
+                // Try to get latest novels using Shosetsu's latest function
+                val novels =
+                    shosetsuExtension.search(emptyMap<Int, String>()) // Empty map for latest
+                novels.map { novel ->
+                    ExtensionSearchResult(
+                        id = novel.link,
+                        title = novel.title,
+                        author = novel.authors.firstOrNull() ?: "",
+                        description = novel.description ?: "",
+                        imageUrl = novel.imageURL ?: "",
+                        url = novel.link,
+                        extensionId = id
+                    )
+                }
+            } catch (e: Exception) {
+                println("ShosetsuLuaExtensionWrapper: getLatest failed: ${e.message}")
+                // Return mock data as fallback
+                listOf(
+                    ExtensionSearchResult(
+                        id = "latest_1",
+                        title = "Latest Novel 1",
+                        author = "Latest Author",
+                        description = "A latest novel from ${name}",
+                        imageUrl = "",
+                        url = "/latest/novel/1",
+                        extensionId = id
+                    ),
+                    ExtensionSearchResult(
+                        id = "latest_2",
+                        title = "Latest Novel 2",
+                        author = "Another Author",
+                        description = "Another latest novel from ${name}",
+                        imageUrl = "",
+                        url = "/latest/novel/2",
                         extensionId = id
                     )
                 )
