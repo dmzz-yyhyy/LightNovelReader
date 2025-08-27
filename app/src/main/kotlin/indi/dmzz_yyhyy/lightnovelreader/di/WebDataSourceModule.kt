@@ -26,54 +26,11 @@ object WebDataSourceModule {
         extensionConverter: ExtensionConverter,
         userDataRepository: UserDataRepository
     ): WebBookDataSource {
-        val webDataSourcesId = userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).get()
-        println("WebDataSourceModule: Looking for data source with ID: $webDataSourcesId")
-        
-        // First check built-in data sources
-        webDataSources.forEach { source ->
-            println("WebDataSourceModule: Built-in source: ${source.javaClass.simpleName} has ID: ${source.id}")
-        }
-        val builtInDataSource = webDataSources.find { it.id == webDataSourcesId }
-        if (builtInDataSource != null) {
-            println("WebDataSourceModule: Found built-in data source: ${builtInDataSource.javaClass.simpleName}")
-            return builtInDataSource
-        }
-        
-        // Then check extensions (only if built-in not found)
-        try {
-            val extensionList = extensionManager.getAllExtensions()
-            println("WebDataSourceModule: Found ${extensionList.size} extensions")
-            
-            if (extensionList.isNotEmpty()) {
-                val extensionDataSources = extensionList.map { extension ->
-                    ExtensionWebDataSourceAdapter(extension, extensionConverter)
-                }
-                
-                extensionDataSources.forEach { source ->
-                    if (source is ExtensionWebDataSourceAdapter) {
-                        println("WebDataSourceModule: Extension source: ${source.extensionName} has ID: ${source.id}")
-                    }
-                }
-                
-                val extensionDataSource = extensionDataSources.find { it.id == webDataSourcesId }
-                if (extensionDataSource != null) {
-                    println("WebDataSourceModule: Found extension data source: ${(extensionDataSource as ExtensionWebDataSourceAdapter).extensionName}")
-                    return extensionDataSource
-                }
-            } else {
-                println("WebDataSourceModule: Extensions not loaded yet, will fall back to Wenku8Api temporarily")
-                // Don't reset the user preference - just fall back temporarily
-                // The user's preference (webDataSourcesId) remains in UserData
-                // Once extensions load, the app should be able to find the right extension
-            }
-        } catch (e: Exception) {
-            // If extension loading fails, fall back to default
-            println("WebDataSourceModule: Failed to load extensions, falling back to Wenku8Api: ${e.message}")
-        }
-        
-        // Fall back to default if nothing found
-        println("WebDataSourceModule: No matching data source found for ID $webDataSourcesId, falling back to Wenku8Api")
-        return Wenku8Api
+        return indi.dmzz_yyhyy.lightnovelreader.data.web.DelegatingWebDataSource(
+            extensionManager,
+            extensionConverter,
+            userDataRepository
+        )
     }
 
     @Singleton
