@@ -19,3 +19,6 @@ proxy/build
 proxy/build/*
 .idea/*
 .idea
+/.idea/*
+bin/
+*/bin/
