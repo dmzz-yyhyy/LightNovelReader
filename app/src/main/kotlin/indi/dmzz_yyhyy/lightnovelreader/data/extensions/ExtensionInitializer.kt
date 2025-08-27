@@ -12,10 +12,17 @@ class ExtensionInitializer @Inject constructor(
     private val repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>
 ) {
 
+    private var isInitialized = false
+
     /**
      * Initialize all installed extensions by loading them into the ExtensionManager
      */
     suspend fun initializeExtensions() {
+        if (isInitialized) {
+            println("ExtensionInitializer: Extensions already initialized, skipping")
+            return
+        }
+        
         try {
             println("ExtensionInitializer: Starting extension initialization...")
             
@@ -39,6 +46,7 @@ class ExtensionInitializer @Inject constructor(
             }
             
             println("ExtensionInitializer: Extension initialization completed. Total registered: ${extensionManager.getAllExtensions().size}")
+            isInitialized = true
         } catch (e: Exception) {
             println("ExtensionInitializer: Error during initialization: ${e.message}")
             e.printStackTrace()

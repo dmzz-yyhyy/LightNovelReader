@@ -27,6 +27,14 @@ class ExtensionManager @Inject constructor() {
         return extensions.values.toList()
     }
 
+    fun hasExtensions(): Boolean {
+        return extensions.isNotEmpty()
+    }
+
+    fun isExtensionLoaded(extensionId: String): Boolean {
+        return extensions.containsKey(extensionId)
+    }
+
     fun getEnabledExtensions(): List<Extension> {
         return extensions.values.toList()
     }

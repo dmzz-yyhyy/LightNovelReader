@@ -44,6 +44,11 @@ class SourceChangeDialogViewModel @Inject constructor(
     val availableDataSources = allWebDataSources
 
     fun getWebDataSourceItems(): List<indi.dmzz_yyhyy.lightnovelreader.ui.components.WebDataSourceItem> {
+        println("SourceChangeDialogViewModel: Available data sources: ${allWebDataSources.size}")
+        allWebDataSources.forEachIndexed { index, dataSource ->
+            println("SourceChangeDialogViewModel: Data source $index: ${dataSource.javaClass.simpleName} ID: ${dataSource.id}")
+        }
+        
         return allWebDataSources.map { dataSource ->
             indi.dmzz_yyhyy.lightnovelreader.ui.components.WebDataSourceItem(
                 id = dataSource.id,

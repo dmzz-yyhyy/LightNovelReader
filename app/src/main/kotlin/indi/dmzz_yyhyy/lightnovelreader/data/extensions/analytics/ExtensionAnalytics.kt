@@ -34,7 +34,7 @@ class ExtensionAnalytics @Inject constructor() {
             val stats = getOrCreateStats(extensionId)
             stats.totalSearches++
             stats.totalSearchTime += duration
-            stats.averageSearchTime = stats.totalSearchTime / stats.totalSearches
+//            stats.averageSearchTime = stats.totalSearchTime / stats.totalSearches
             
             if (success) {
                 stats.successfulSearches++
@@ -59,7 +59,7 @@ class ExtensionAnalytics @Inject constructor() {
             val stats = getOrCreateStats(extensionId)
             stats.totalBookFetches++
             stats.totalBookFetchTime += duration
-            stats.averageBookFetchTime = stats.totalBookFetchTime / stats.totalBookFetches
+//            stats.averageBookFetchTime = stats.totalBookFetchTime / stats.totalBookFetches
             
             if (success) {
                 stats.successfulBookFetches++
@@ -82,7 +82,7 @@ class ExtensionAnalytics @Inject constructor() {
             val stats = getOrCreateStats(extensionId)
             stats.totalChapterFetches++
             stats.totalChapterFetchTime += duration
-            stats.averageChapterFetchTime = stats.totalChapterFetchTime / stats.totalChapterFetches
+//            stats.averageChapterFetchTime = stats.totalChapterFetchTime / stats.totalChapterFetches
             
             if (success) {
                 stats.successfulChapterFetches++
@@ -235,7 +235,7 @@ class ExtensionAnalytics @Inject constructor() {
 
     private fun calculateReliabilityScore(stats: ExtensionStats): Double {
         val totalOperations = stats.totalSearches + stats.totalBookFetches + stats.totalChapterFetches
-        if (totalOperations == 0) return 1.0
+//        if (totalOperations == 0) return 1.0
         
         val successfulOperations = stats.successfulSearches + stats.successfulBookFetches + stats.successfulChapterFetches
         return successfulOperations.toDouble() / totalOperations
