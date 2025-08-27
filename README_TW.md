@@ -46,6 +46,34 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 
 為了處理 epub 的匯出問題，我們單獨建立了一個 epub 處理模組，如果您感興趣，可以看[**這裡**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
 
+## 貢獻
+
+我們歡迎對 LightNovelReader 的貢獻！以下是如何參與：
+
+### 開始
+1. Fork 本倉庫。
+2. 克隆你的 fork：`git clone https://github.com/your-username/LightNovelReader.git`
+3. 為你的更改創建新分支：`git checkout -b feature/your-feature-name`
+4. 進行更改並測試。
+5. 按照下面的提交指南提交更改。
+6. 推送到你的 fork：`git push origin feature/your-feature-name`
+7. 向 `refactoring` 分支打開 Pull Request。
+
+### 提交指南
+- 使用約定式提交格式：`<type>(<scope>): <description>`
+  - 類型：`feat` (新功能), `fix` (錯誤修復), `docs` (文檔), `style` (格式化), `refactor` (代碼重構), `test` (測試), `chore` (維護)
+  - 示例：`feat: 添加暗色模式支持`
+- 保持提交原子化和描述性。
+- 如果你的更改影響版本，請在 `app/build.gradle.kts` 中更新。
+
+### 版本管理
+版本在 `app/build.gradle.kts` 中管理：
+- `versionNameStr`：公共版本（例如 "1.3.1"）。遵循語義化版本（major.minor.patch）。
+- `debugNumber`：開發構建時遞增（發布時為 0）。
+- `versionCode`：自動計算為 major*1000000 + minor*10000 + patch*1000 + debugNumber。
+
+發布時，更新 `versionNameStr` 並將 `debugNumber` 重置為 0。
+
 ## 授權條款
 
 ```

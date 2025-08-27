@@ -46,6 +46,34 @@ Download the latest release from [GitHub Releases](https://github.com/dmzz-yyhyy
 
 We’ve developed a dedicated module to handle EPUB export more effectively. If you're interested, check it out [**here**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
 
+## Contributing
+
+We welcome contributions to LightNovelReader! Here's how you can get involved:
+
+### Getting Started
+1. Fork the repository.
+2. Clone your fork: `git clone https://github.com/your-username/LightNovelReader.git`
+3. Create a new branch for your changes: `git checkout -b feature/your-feature-name`
+4. Make your changes and test them.
+5. Commit your changes following the commit guidelines below.
+6. Push to your fork: `git push origin feature/your-feature-name`
+7. Open a Pull Request to the `refactoring` branch.
+
+### Commit Guidelines
+- Use conventional commit format: `<type>(<scope>): <description>`
+  - Types: `feat` (new feature), `fix` (bug fix), `docs` (documentation), `style` (formatting), `refactor` (code restructuring), `test` (testing), `chore` (maintenance)
+  - Example: `feat: add dark mode support`
+- Keep commits atomic and descriptive.
+- If your change affects the version, update it in `app/build.gradle.kts`.
+
+### Version Management
+Versions are managed in `app/build.gradle.kts`:
+- `versionNameStr`: The public version (e.g., "1.3.1"). Follow semantic versioning (major.minor.patch).
+- `debugNumber`: Increment for development builds (0 for releases).
+- `versionCode`: Auto-calculated as major*1000000 + minor*10000 + patch*1000 + debugNumber.
+
+For releases, update `versionNameStr` and reset `debugNumber` to 0.
+
 ## License
 
 ```
