@@ -18,7 +18,9 @@ local.properties
 proxy/build
 proxy/build/*
 .idea/*
-.idea
 /.idea/*
 bin/
 */bin/
+.idea/misc.xml
+.idea/misc.xml
+.idea/gradle.xml
