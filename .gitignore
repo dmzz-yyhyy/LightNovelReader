@@ -21,6 +21,3 @@ proxy/build/*
 /.idea/*
 bin/
 */bin/
-.idea/misc.xml
-.idea/misc.xml
-.idea/gradle.xml
