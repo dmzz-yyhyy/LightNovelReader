@@ -78,7 +78,7 @@ class ExtensionConverter @Inject constructor() {
         )
     }
 
-    private fun generateBookId(extensionId: String, bookId: String): Int {
+    fun generateBookId(extensionId: String, bookId: String): Int {
         return "$extensionId:$bookId".hashCode()
     }
 

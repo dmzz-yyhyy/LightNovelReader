@@ -11,6 +11,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryInitializer
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSource
 import io.nightfish.potatoautoproxy.ProxyPool
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,7 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
                 println("LightNovelReaderApplication: Extension initialization completed")
                 
                 // Check if the delegating data source should switch to an extension
+                val webBookDataSource = webBookDataSourceProvider.get()
                 if (webBookDataSource is indi.dmzz_yyhyy.lightnovelreader.data.web.DelegatingWebDataSource) {
                     (webBookDataSource as indi.dmzz_yyhyy.lightnovelreader.data.web.DelegatingWebDataSource).checkAndSwitchToPreferred()
                     println("LightNovelReaderApplication: Checked data source preference after extension loading")

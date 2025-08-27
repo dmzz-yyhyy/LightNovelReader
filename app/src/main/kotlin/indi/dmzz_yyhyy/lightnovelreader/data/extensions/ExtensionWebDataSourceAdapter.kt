@@ -4,6 +4,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterInformation
+import indi.dmzz_yyhyy.lightnovelreader.data.book.MutableBookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.Volume
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationBooksRow
 import indi.dmzz_yyhyy.lightnovelreader.data.exploration.ExplorationDisplayBook
@@ -30,6 +31,21 @@ class ExtensionWebDataSourceAdapter(
     // Expose extension details for UI
     val extensionName: String = extension.name
     val extensionId: String = extension.id
+    
+    // Map to store the relationship between generated hashed IDs and original book IDs
+    private val bookIdMapping: MutableMap<Int, String> = mutableMapOf()
+    
+    // Helper function to generate and store book ID mapping
+    fun generateAndStoreBookId(originalBookId: String): Int {
+        val hashedId = extensionConverter.generateBookId(extension.id, originalBookId)
+        bookIdMapping[hashedId] = originalBookId
+        return hashedId
+    }
+    
+    // Helper function to get original book ID from hashed ID
+    private fun getOriginalBookId(hashedId: Int): String? {
+        return bookIdMapping[hashedId]
+    }
 
     override suspend fun isOffLine(): Boolean = false
 
@@ -37,10 +53,10 @@ class ExtensionWebDataSourceAdapter(
 
     override val isOffLineFlow: Flow<Boolean> = MutableStateFlow(false)
 
-    override val explorationPageIdList: List<String> = listOf("latest")
+    override val explorationPageIdList: List<String> = listOf("search-a")
 
     override val explorationPageDataSourceMap: Map<String, ExplorationPageDataSource> = mapOf(
-        "latest" to ExtensionExplorationPageDataSource(extension, extensionConverter)
+        "search-a" to ExtensionExplorationPageDataSource(extension, extensionConverter, this)
     )
 
     override val explorationExpandedPageDataSourceMap: Map<String, ExplorationExpandedPageDataSource> =
@@ -54,13 +70,22 @@ class ExtensionWebDataSourceAdapter(
 
     override suspend fun getBookInformation(id: Int): BookInformation {
         return try {
-            val book = extension.getBook(id.toString())
-            if (book != null) {
-                extensionConverter.convertExtensionBookToBookInfo(book, extension.id)
+            // Get the original book ID from our mapping
+            val originalBookId = getOriginalBookId(id)
+            if (originalBookId != null) {
+                val book = extension.getBook(originalBookId)
+                if (book != null) {
+                    extensionConverter.convertExtensionBookToBookInfo(book, extension.id)
+                } else {
+                    BookInformation.empty(id)
+                }
             } else {
+                // If we don't have the mapping, the ID might not be from this extension
+                println("ExtensionWebDataSourceAdapter: No mapping found for book ID $id")
                 BookInformation.empty(id)
             }
         } catch (e: Exception) {
+            println("ExtensionWebDataSourceAdapter: Error getting book info for ID $id: ${e.message}")
             e.printStackTrace()
             BookInformation.empty(id)
         }
@@ -113,7 +138,12 @@ class ExtensionWebDataSourceAdapter(
             try {
                 val searchResults = extension.search(keyword)
                 val bookInfoList = searchResults.map { result ->
-                    extensionConverter.convertSearchResultToBookInfo(result, extension.id)
+                    // Store the mapping between hashed ID and original book ID
+                    val hashedId = generateAndStoreBookId(result.id)
+                    extensionConverter.convertSearchResultToBookInfo(result, extension.id).apply {
+                        // Make sure the ID matches what we generated
+                        (this as? MutableBookInformation)?.id = hashedId
+                    }
                 }
                 emit(bookInfoList)
                 // Emit empty list to signal end of search
@@ -135,24 +165,27 @@ class ExtensionWebDataSourceAdapter(
  */
 class ExtensionExplorationPageDataSource(
     private val extension: Extension,
-    private val extensionConverter: ExtensionConverter
+    private val extensionConverter: ExtensionConverter,
+    private val parentAdapter: ExtensionWebDataSourceAdapter
 ) : ExplorationPageDataSource {
 
     private var lock = false
     private val explorationBooksRows: MutableStateFlow<List<ExplorationBooksRow>> =
         MutableStateFlow(emptyList())
 
-    override val title = "${extension.name} Latest"
+    override val title = "${extension.name} Books"
 
     override fun getExplorationPage(): ExplorationPage {
         if (!lock) {
             lock = true
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    val latestBooks = extension.getLatest()
-                    val explorationBooks = latestBooks.map { result ->
+                    // Instead of getLatest() which might fail, search for books starting with 'a'
+                    // This provides a better fallback and shows actual searchable content
+                    val searchResults = extension.search("a")
+                    val explorationBooks = searchResults.map { result ->
                         ExplorationDisplayBook(
-                            id = result.id.toIntOrNull() ?: 0,
+                            id = parentAdapter.generateAndStoreBookId(result.id),
                             title = result.title,
                             author = result.author,
                             coverUrl = result.imageUrl
@@ -160,13 +193,20 @@ class ExtensionExplorationPageDataSource(
                     }
 
                     val booksRow = ExplorationBooksRow(
-                        title = "${extension.name} Latest",
+                        title = "${extension.name} Books (Search: 'a')",
                         bookList = explorationBooks
                     )
 
                     explorationBooksRows.value = listOf(booksRow)
                 } catch (e: Exception) {
+                    println("ExtensionExplorationPageDataSource: Error loading books for ${extension.name}: ${e.message}")
                     e.printStackTrace()
+                    // Create an empty row if search fails
+                    val emptyRow = ExplorationBooksRow(
+                        title = "${extension.name} (Error loading books)",
+                        bookList = emptyList()
+                    )
+                    explorationBooksRows.value = listOf(emptyRow)
                 }
             }
         }

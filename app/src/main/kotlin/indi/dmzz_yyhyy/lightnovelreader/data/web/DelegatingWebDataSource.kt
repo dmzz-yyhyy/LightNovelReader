@@ -86,20 +86,51 @@ class DelegatingWebDataSource @Inject constructor(
     }
 
     // Delegate all WebBookDataSource methods to the current implementation
-    override val id: Int get() = currentDataSource.get().id
-    override suspend fun isOffLine(): Boolean = currentDataSource.get().isOffLine()
-    override val offLine: Boolean get() = currentDataSource.get().offLine
+    override val id: Int get() {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Getting id from ${current::class.simpleName}: ${current.id}")
+        return current.id
+    }
+    
+    override suspend fun isOffLine(): Boolean {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Checking isOffLine() from ${current::class.simpleName}")
+        return current.isOffLine()
+    }
+    
+    override val offLine: Boolean get() {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Getting offLine from ${current::class.simpleName}: ${current.offLine}")
+        return current.offLine
+    }
+    
     override val isOffLineFlow: Flow<Boolean> get() = currentDataSource.get().isOffLineFlow
-    override val explorationPageIdList: List<String> get() = currentDataSource.get().explorationPageIdList
+    override val explorationPageIdList: List<String> get() {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Getting explorationPageIdList from ${current::class.simpleName}: ${current.explorationPageIdList}")
+        return current.explorationPageIdList
+    }
+    
     override val explorationPageDataSourceMap: Map<String, ExplorationPageDataSource> get() = currentDataSource.get().explorationPageDataSourceMap
     override val explorationExpandedPageDataSourceMap: Map<String, ExplorationExpandedPageDataSource> get() = currentDataSource.get().explorationExpandedPageDataSourceMap
     override val searchTypeMap: Map<String, String> get() = currentDataSource.get().searchTypeMap
     override val searchTipMap: Map<String, String> get() = currentDataSource.get().searchTipMap
     override val searchTypeIdList: List<String> get() = currentDataSource.get().searchTypeIdList
     
-    override suspend fun getBookInformation(id: Int): BookInformation = currentDataSource.get().getBookInformation(id)
+    override suspend fun getBookInformation(id: Int): BookInformation {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Getting book information for ID $id from ${current::class.simpleName}")
+        return current.getBookInformation(id)
+    }
+    
     override suspend fun getBookVolumes(id: Int): BookVolumes = currentDataSource.get().getBookVolumes(id)
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent = currentDataSource.get().getChapterContent(chapterId, bookId)
-    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> = currentDataSource.get().search(searchType, keyword)
+    
+    override fun search(searchType: String, keyword: String): Flow<List<BookInformation>> {
+        val current = currentDataSource.get()
+        println("DelegatingWebDataSource: Searching '$keyword' with type '$searchType' from ${current::class.simpleName}")
+        return current.search(searchType, keyword)
+    }
+    
     override fun stopAllSearch() = currentDataSource.get().stopAllSearch()
 }
