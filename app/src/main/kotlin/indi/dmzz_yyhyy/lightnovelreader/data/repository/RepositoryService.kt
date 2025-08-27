@@ -131,6 +131,10 @@ class RepositoryService @Inject constructor(
         extensionRepository.updateInstalledExtension(extension)
     }
 
+    suspend fun insertInstalledExtension(extension: InstalledExtensionEntity): Long {
+        return extensionRepository.insertInstalledExtension(extension)
+    }
+
     fun getAllInstalledExtensions(): Flow<List<InstalledExtensionEntity>> =
         extensionRepository.getAllInstalledExtensions()
 
