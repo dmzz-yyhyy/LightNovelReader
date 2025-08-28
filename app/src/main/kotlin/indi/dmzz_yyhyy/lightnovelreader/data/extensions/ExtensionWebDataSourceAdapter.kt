@@ -101,20 +101,23 @@ class ExtensionWebDataSourceAdapter(
         return try {
             // Get the original book ID from our mapping
             val originalBookId = getOriginalBookId(id)
+            println("ExtensionWebDataSourceAdapter: Looking up book ID $id -> originalBookId: $originalBookId")
             if (originalBookId != null) {
+                println("ExtensionWebDataSourceAdapter: Calling extension.getBook($originalBookId)")
                 val book = extension.getBook(originalBookId)
                 if (book != null) {
+                    println("ExtensionWebDataSourceAdapter: Successfully got book: ${book.title}")
                     extensionConverter.convertExtensionBookToBookInfo(book, extension.id)
                 } else {
+                    println("ExtensionWebDataSourceAdapter: Extension.getBook returned null for $originalBookId")
                     BookInformation.empty(id)
                 }
             } else {
-                // If we don't have the mapping, the ID might not be from this extension
-                println("ExtensionWebDataSourceAdapter: No mapping found for book ID $id")
+                println("ExtensionWebDataSourceAdapter: No original book ID found for hashed ID $id")
                 BookInformation.empty(id)
             }
         } catch (e: Exception) {
-            println("ExtensionWebDataSourceAdapter: Error getting book info for ID $id: ${e.message}")
+            println("ExtensionWebDataSourceAdapter: Error getting book information: ${e.message}")
             e.printStackTrace()
             BookInformation.empty(id)
         }

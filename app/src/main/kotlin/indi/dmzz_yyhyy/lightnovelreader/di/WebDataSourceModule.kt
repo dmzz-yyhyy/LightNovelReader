@@ -25,12 +25,14 @@ object WebDataSourceModule {
     fun provideWebDataSource(
         extensionManager: ExtensionManager,
         extensionConverter: ExtensionConverter,
-        userDataRepository: UserDataRepository
+        userDataRepository: UserDataRepository,
+        extensionBookIdManager: ExtensionBookIdManager
     ): WebBookDataSource {
         return indi.dmzz_yyhyy.lightnovelreader.data.web.DelegatingWebDataSource(
             extensionManager,
             extensionConverter,
-            userDataRepository
+            userDataRepository,
+            extensionBookIdManager
         )
     }
 
