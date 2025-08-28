@@ -36,6 +36,9 @@ class ExtensionWebDataSourceAdapter(
     // Map to store the relationship between generated hashed IDs and original book IDs
     private val bookIdMapping: MutableMap<Int, String> = mutableMapOf()
     
+    // Map to store the relationship between chapter index and original chapter ID
+    private val chapterIdMapping: MutableMap<Pair<Int, Int>, String> = mutableMapOf() // (bookId, chapterIndex) -> originalChapterId
+    
     // Helper function to generate and store book ID mapping
     suspend fun generateAndStoreBookId(
         originalBookId: String,
@@ -138,13 +141,15 @@ class ExtensionWebDataSourceAdapter(
                 val chapters = extension.getChapters(originalBookId)
                 if (chapters != null) {
                     println("ExtensionWebDataSourceAdapter: Successfully got ${chapters.size} chapters")
-                    // Convert chapters to volumes
+                    // Convert chapters to volumes and store chapter ID mappings
                     val volume = Volume(
                         volumeId = 1,
                         volumeTitle = "Volume 1",
-                        chapters = chapters.map { chapter ->
+                        chapters = chapters.mapIndexed { index, chapter ->
+                            // Store the mapping between chapter index and original chapter ID
+                            chapterIdMapping[Pair(id, index)] = chapter.id
                             ChapterInformation(
-                                id = chapter.id.toIntOrNull() ?: 0,
+                                id = index, // Use index as chapter ID
                                 title = chapter.title
                             )
                         }
@@ -153,7 +158,7 @@ class ExtensionWebDataSourceAdapter(
                         bookId = id,
                         volumes = listOf(volume)
                     )
-                    println("ExtensionWebDataSourceAdapter: Created BookVolumes with ${volume.chapters.size} chapters")
+                    println("ExtensionWebDataSourceAdapter: Created BookVolumes with ${volume.chapters.size} chapters, stored chapter mappings")
                     bookVolumes
                 } else {
                     println("ExtensionWebDataSourceAdapter: Extension.getChapters returned null for $originalBookId")
@@ -174,17 +179,25 @@ class ExtensionWebDataSourceAdapter(
         return try {
             // Get the original book ID from our mapping
             val originalBookId = getOriginalBookId(bookId)
-            if (originalBookId != null) {
-                val chapter = extension.getChapter(originalBookId, chapterId.toString())
+            // Get the original chapter ID from our mapping
+            val originalChapterId = chapterIdMapping[Pair(bookId, chapterId)]
+            println("ExtensionWebDataSourceAdapter: Getting chapter content - chapterId: $chapterId, bookId: $bookId -> originalBookId: $originalBookId, originalChapterId: $originalChapterId")
+            if (originalBookId != null && originalChapterId != null) {
+                println("ExtensionWebDataSourceAdapter: Calling extension.getChapter($originalBookId, $originalChapterId)")
+                val chapter = extension.getChapter(originalBookId, originalChapterId)
                 if (chapter != null) {
+                    println("ExtensionWebDataSourceAdapter: Successfully got chapter: ${chapter.title}")
                     extensionConverter.convertExtensionChapterToChapterContent(chapter, chapterId)
                 } else {
+                    println("ExtensionWebDataSourceAdapter: Extension.getChapter returned null for bookId: $originalBookId, chapterId: $originalChapterId")
                     ChapterContent.empty()
                 }
             } else {
+                println("ExtensionWebDataSourceAdapter: Missing mapping - originalBookId: $originalBookId, originalChapterId: $originalChapterId")
                 ChapterContent.empty()
             }
         } catch (e: Exception) {
+            println("ExtensionWebDataSourceAdapter: Error getting chapter content: ${e.message}")
             e.printStackTrace()
             ChapterContent.empty()
         }
