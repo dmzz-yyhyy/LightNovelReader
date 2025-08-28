@@ -107,7 +107,12 @@ class ExtensionWebDataSourceAdapter(
                 val book = extension.getBook(originalBookId)
                 if (book != null) {
                     println("ExtensionWebDataSourceAdapter: Successfully got book: ${book.title}")
-                    extensionConverter.convertExtensionBookToBookInfo(book, extension.id)
+                    val convertedBook = extensionConverter.convertExtensionBookToBookInfo(book, extension.id).apply {
+                        // Override the generated ID with our expected hashed ID
+                        (this as? MutableBookInformation)?.id = id
+                    }
+                    println("ExtensionWebDataSourceAdapter: Converted book - ID: ${convertedBook.id}, Title: ${convertedBook.title}, Author: ${convertedBook.author}")
+                    convertedBook
                 } else {
                     println("ExtensionWebDataSourceAdapter: Extension.getBook returned null for $originalBookId")
                     BookInformation.empty(id)
@@ -127,9 +132,12 @@ class ExtensionWebDataSourceAdapter(
         return try {
             // Get the original book ID from our mapping
             val originalBookId = getOriginalBookId(id)
+            println("ExtensionWebDataSourceAdapter: Getting volumes for book ID $id -> originalBookId: $originalBookId")
             if (originalBookId != null) {
+                println("ExtensionWebDataSourceAdapter: Calling extension.getChapters($originalBookId)")
                 val chapters = extension.getChapters(originalBookId)
                 if (chapters != null) {
+                    println("ExtensionWebDataSourceAdapter: Successfully got ${chapters.size} chapters")
                     // Convert chapters to volumes
                     val volume = Volume(
                         volumeId = 1,
@@ -141,17 +149,22 @@ class ExtensionWebDataSourceAdapter(
                             )
                         }
                     )
-                    BookVolumes(
+                    val bookVolumes = BookVolumes(
                         bookId = id,
                         volumes = listOf(volume)
                     )
+                    println("ExtensionWebDataSourceAdapter: Created BookVolumes with ${volume.chapters.size} chapters")
+                    bookVolumes
                 } else {
+                    println("ExtensionWebDataSourceAdapter: Extension.getChapters returned null for $originalBookId")
                     BookVolumes(id, emptyList())
                 }
             } else {
+                println("ExtensionWebDataSourceAdapter: No original book ID found for hashed ID $id")
                 BookVolumes(id, emptyList())
             }
         } catch (e: Exception) {
+            println("ExtensionWebDataSourceAdapter: Error getting book volumes: ${e.message}")
             e.printStackTrace()
             BookVolumes(id, emptyList())
         }
