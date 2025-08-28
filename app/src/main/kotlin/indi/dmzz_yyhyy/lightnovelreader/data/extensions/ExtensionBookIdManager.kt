@@ -1,5 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
+import indi.dmzz_yyhyy.lightnovelreader.data.repository.model.ExtensionBookEntity
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -7,12 +10,55 @@ import javax.inject.Singleton
  * Handles encoding and decoding of book IDs that contain extension information
  */
 @Singleton
-class ExtensionBookIdManager @Inject constructor() {
+class ExtensionBookIdManager @Inject constructor(
+    private val extensionBookDao: ExtensionBookDao
+) {
 
     companion object {
         private const val EXTENSION_PREFIX = "ext_"
         private const val SEPARATOR = "_"
         private const val HASH_MULTIPLIER = 31
+    }
+
+    /**
+     * Generates a unique book ID that encodes extension information and stores the mapping
+     */
+    suspend fun generateAndStoreExtensionBookId(
+        extensionId: String, 
+        originalBookId: String,
+        bookTitle: String = "",
+        bookAuthor: String = "",
+        bookDescription: String = "",
+        bookImageUrl: String = ""
+    ): Int {
+        val hashedId = generateExtensionBookId(extensionId, originalBookId)
+        
+        // Check if this book mapping already exists
+        val existingBook = extensionBookDao.getExtensionBook(extensionId.hashCode(), originalBookId)
+        
+        if (existingBook == null) {
+            // Create new mapping in database
+            val extensionBookEntity = ExtensionBookEntity(
+                internalBookId = hashedId,
+                extensionId = extensionId.hashCode(),
+                originalBookId = originalBookId,
+                title = bookTitle,
+                author = bookAuthor,
+                description = bookDescription,
+                imageUrl = bookImageUrl,
+                isInLibrary = false
+            )
+            
+            try {
+                extensionBookDao.insertExtensionBook(extensionBookEntity)
+                println("ExtensionBookIdManager: Created mapping for book $hashedId -> $originalBookId in extension $extensionId")
+            } catch (e: Exception) {
+                println("ExtensionBookIdManager: Failed to store book mapping: ${e.message}")
+                e.printStackTrace()
+            }
+        }
+        
+        return hashedId
     }
 
     /**
@@ -28,22 +74,34 @@ class ExtensionBookIdManager @Inject constructor() {
     }
 
     /**
-     * Extracts extension information from a book ID
+     * Extracts extension information from a book ID using database lookup
      */
-    fun extractExtensionInfo(bookId: Int): ExtensionBookInfo? {
-        // Since we're using hash-based IDs, we need to store the mapping
-        // This is a limitation of the hash approach - we'll need a lookup table
-        // For now, return null indicating this is not an extension book
-        return null
+    suspend fun extractExtensionInfo(bookId: Int): ExtensionBookInfo? {
+        return try {
+            val extensionBook = extensionBookDao.getExtensionBookById(bookId)
+            if (extensionBook != null) {
+                ExtensionBookInfo(
+                    extensionId = extensionBook.extensionId.toString(),
+                    originalBookId = extensionBook.originalBookId
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            println("ExtensionBookIdManager: Error extracting extension info: ${e.message}")
+            null
+        }
     }
 
     /**
-     * Checks if a book ID represents an extension book
+     * Checks if a book ID represents an extension book by looking up in database
      */
-    fun isExtensionBook(bookId: Int): Boolean {
-        // This would require a lookup table to properly determine
-        // For now, we'll assume negative IDs or very large IDs are extension books
-        return bookId > 1_000_000
+    suspend fun isExtensionBook(bookId: Int): Boolean {
+        return try {
+            extensionBookDao.getExtensionBookById(bookId) != null
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /**

@@ -26,7 +26,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepositoryImpl
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryRepositoryImpl
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService
-import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -74,14 +73,13 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideLuaLibraryCache(
-        okHttpClient: okhttp3.OkHttpClient
-    ): indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache = 
-        indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache(okHttpClient)
+        @ApplicationContext context: Context
+    ): LuaLibraryCache = LuaLibraryCache(context)
 
     @Provides
     @Singleton
     fun provideLuaExtensionParser(
-        luaLibraryCache: indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache
+        luaLibraryCache: LuaLibraryCache
     ): LuaExtensionParser = LuaExtensionParser(luaLibraryCache)
 
     @Provides
@@ -118,7 +116,9 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideExtensionBookIdManager(): ExtensionBookIdManager = ExtensionBookIdManager()
+    fun provideExtensionBookIdManager(
+        extensionBookDao: ExtensionBookDao
+    ): ExtensionBookIdManager = ExtensionBookIdManager(extensionBookDao)
 
     @Provides
     @Singleton
@@ -133,10 +133,11 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideExtensionInitializer(
+        @ApplicationContext context: Context,
         extensionLoader: ExtensionLoader,
         extensionManager: ExtensionManager,
         repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>
-    ): ExtensionInitializer = ExtensionInitializer(extensionLoader, extensionManager, repositoryServiceProvider)
+    ): ExtensionInitializer = ExtensionInitializer(extensionLoader, extensionManager, repositoryServiceProvider, luaExtensionParser = provideLuaExtensionParser(provideLuaLibraryCache(context)))
 
     @Provides
     @Singleton

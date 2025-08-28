@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookVolumes
 import indi.dmzz_yyhyy.lightnovelreader.data.book.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionBookIdManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionWebDataSourceAdapter
@@ -25,7 +26,8 @@ import javax.inject.Singleton
 class DelegatingWebDataSource @Inject constructor(
     private val extensionManager: ExtensionManager,
     private val extensionConverter: ExtensionConverter,
-    private val userDataRepository: UserDataRepository
+    private val userDataRepository: UserDataRepository,
+    private val extensionBookIdManager: ExtensionBookIdManager
 ) : WebBookDataSource {
 
     private val webDataSources = listOf(ZaiComic, Wenku8Api)
@@ -66,7 +68,7 @@ class DelegatingWebDataSource @Inject constructor(
             
             if (extensionList.isNotEmpty()) {
                 val extensionDataSources = extensionList.map { extension ->
-                    ExtensionWebDataSourceAdapter(extension, extensionConverter)
+                    ExtensionWebDataSourceAdapter(extension, extensionConverter, extensionBookIdManager)
                 }
                 
                 val extensionDataSource = extensionDataSources.find { it.id == webDataSourcesId }

@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
  */
 class ExtensionWebDataSourceAdapter(
     private val extension: Extension,
-    private val extensionConverter: ExtensionConverter
+    private val extensionConverter: ExtensionConverter,
+    private val extensionBookIdManager: ExtensionBookIdManager? = null
 ) : WebBookDataSource {
 
     override val id: Int = extension.id.hashCode()
@@ -36,15 +37,43 @@ class ExtensionWebDataSourceAdapter(
     private val bookIdMapping: MutableMap<Int, String> = mutableMapOf()
     
     // Helper function to generate and store book ID mapping
-    fun generateAndStoreBookId(originalBookId: String): Int {
+    suspend fun generateAndStoreBookId(
+        originalBookId: String,
+        bookTitle: String = "",
+        bookAuthor: String = "",
+        bookDescription: String = "",
+        bookImageUrl: String = ""
+    ): Int {
         val hashedId = extensionConverter.generateBookId(extension.id, originalBookId)
         bookIdMapping[hashedId] = originalBookId
+        
+        // Also persist to database if manager is available
+        extensionBookIdManager?.let { manager ->
+            try {
+                manager.generateAndStoreExtensionBookId(
+                    extensionId = extension.id,
+                    originalBookId = originalBookId,
+                    bookTitle = bookTitle,
+                    bookAuthor = bookAuthor,
+                    bookDescription = bookDescription,
+                    bookImageUrl = bookImageUrl
+                )
+                println("ExtensionWebDataSourceAdapter: Persisted book mapping for $hashedId")
+            } catch (e: Exception) {
+                println("ExtensionWebDataSourceAdapter: Failed to persist book mapping: ${e.message}")
+            }
+        }
+        
         return hashedId
     }
     
     // Helper function to get original book ID from hashed ID
-    private fun getOriginalBookId(hashedId: Int): String? {
-        return bookIdMapping[hashedId]
+    private suspend fun getOriginalBookId(hashedId: Int): String? {
+        // First check memory cache
+        bookIdMapping[hashedId]?.let { return it }
+        
+        // Then check database via ExtensionBookIdManager
+        return extensionBookIdManager?.extractExtensionInfo(hashedId)?.originalBookId
     }
 
     override suspend fun isOffLine(): Boolean = false
@@ -93,23 +122,29 @@ class ExtensionWebDataSourceAdapter(
 
     override suspend fun getBookVolumes(id: Int): BookVolumes {
         return try {
-            val chapters = extension.getChapters(id.toString())
-            if (chapters != null) {
-                // Convert chapters to volumes
-                val volume = Volume(
-                    volumeId = 1,
-                    volumeTitle = "Volume 1",
-                    chapters = chapters.map { chapter ->
-                        ChapterInformation(
-                            id = chapter.id.toIntOrNull() ?: 0,
-                            title = chapter.title
-                        )
-                    }
-                )
-                BookVolumes(
-                    bookId = id,
-                    volumes = listOf(volume)
-                )
+            // Get the original book ID from our mapping
+            val originalBookId = getOriginalBookId(id)
+            if (originalBookId != null) {
+                val chapters = extension.getChapters(originalBookId)
+                if (chapters != null) {
+                    // Convert chapters to volumes
+                    val volume = Volume(
+                        volumeId = 1,
+                        volumeTitle = "Volume 1",
+                        chapters = chapters.map { chapter ->
+                            ChapterInformation(
+                                id = chapter.id.toIntOrNull() ?: 0,
+                                title = chapter.title
+                            )
+                        }
+                    )
+                    BookVolumes(
+                        bookId = id,
+                        volumes = listOf(volume)
+                    )
+                } else {
+                    BookVolumes(id, emptyList())
+                }
             } else {
                 BookVolumes(id, emptyList())
             }
@@ -121,9 +156,15 @@ class ExtensionWebDataSourceAdapter(
 
     override suspend fun getChapterContent(chapterId: Int, bookId: Int): ChapterContent {
         return try {
-            val chapter = extension.getChapter(bookId.toString(), chapterId.toString())
-            if (chapter != null) {
-                extensionConverter.convertExtensionChapterToChapterContent(chapter, chapterId)
+            // Get the original book ID from our mapping
+            val originalBookId = getOriginalBookId(bookId)
+            if (originalBookId != null) {
+                val chapter = extension.getChapter(originalBookId, chapterId.toString())
+                if (chapter != null) {
+                    extensionConverter.convertExtensionChapterToChapterContent(chapter, chapterId)
+                } else {
+                    ChapterContent.empty()
+                }
             } else {
                 ChapterContent.empty()
             }
@@ -138,8 +179,14 @@ class ExtensionWebDataSourceAdapter(
             try {
                 val searchResults = extension.search(keyword)
                 val bookInfoList = searchResults.map { result ->
-                    // Store the mapping between hashed ID and original book ID
-                    val hashedId = generateAndStoreBookId(result.id)
+                    // Store the mapping between hashed ID and original book ID with book details
+                    val hashedId = generateAndStoreBookId(
+                        originalBookId = result.id,
+                        bookTitle = result.title,
+                        bookAuthor = result.author,
+                        bookDescription = result.description,
+                        bookImageUrl = result.imageUrl
+                    )
                     extensionConverter.convertSearchResultToBookInfo(result, extension.id).apply {
                         // Make sure the ID matches what we generated
                         (this as? MutableBookInformation)?.id = hashedId
@@ -185,7 +232,13 @@ class ExtensionExplorationPageDataSource(
                     val searchResults = extension.search("a")
                     val explorationBooks = searchResults.map { result ->
                         ExplorationDisplayBook(
-                            id = parentAdapter.generateAndStoreBookId(result.id),
+                            id = parentAdapter.generateAndStoreBookId(
+                                originalBookId = result.id,
+                                bookTitle = result.title,
+                                bookAuthor = result.author, 
+                                bookDescription = result.description,
+                                bookImageUrl = result.imageUrl
+                            ),
                             title = result.title,
                             author = result.author,
                             coverUrl = result.imageUrl

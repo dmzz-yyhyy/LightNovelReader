@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionBookIdManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionManager
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionWebDataSourceAdapter
@@ -37,7 +38,8 @@ object WebDataSourceModule {
     @Provides
     fun provideAllWebDataSources(
         extensionManager: ExtensionManager,
-        extensionConverter: ExtensionConverter
+        extensionConverter: ExtensionConverter,
+        extensionBookIdManager: ExtensionBookIdManager
     ): @JvmSuppressWildcards List<WebBookDataSource> {
         println("WebDataSourceModule: provideAllWebDataSources called")
         return try {
@@ -47,7 +49,7 @@ object WebDataSourceModule {
             
             // Create WebBookDataSource instances for each extension
             val extensionDataSources = extensionList.map { extension ->
-                ExtensionWebDataSourceAdapter(extension, extensionConverter)
+                ExtensionWebDataSourceAdapter(extension, extensionConverter, extensionBookIdManager)
             }
             
             extensionDataSources.forEach { source ->
