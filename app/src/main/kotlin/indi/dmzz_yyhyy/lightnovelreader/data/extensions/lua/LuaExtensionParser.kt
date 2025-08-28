@@ -17,7 +17,9 @@ import javax.inject.Singleton
  * Parses and loads Lua-based extensions using Shosetsu's LuaExtension
  */
 @Singleton
-class LuaExtensionParser @Inject constructor() {
+class LuaExtensionParser @Inject constructor(
+    private val luaLibraryCache: LuaLibraryCache
+) {
 
     init {
         initializeShosetsuEnvironment()
@@ -66,25 +68,17 @@ class LuaExtensionParser @Inject constructor() {
         ShosetsuLuaLib.libLoader = { name ->
             println("LuaExtensionParser: Loading library: $name")
             try {
-                // Try to load actual library from Shosetsu's repository
-                val libraryCode = try {
-                    val url = URL("https://gitlab.com/shosetsuorg/extensions/-/raw/dev/lib/$name.lua")
-                    val connection = url.openConnection()
-                    connection.connectTimeout = 5000
-                    connection.readTimeout = 10000
-                    connection.getInputStream().bufferedReader().use { it.readText() }
-                } catch (e: Exception) {
-                    println("LuaExtensionParser: Failed to download library $name: ${e.message}")
-                    // Return a more comprehensive mock library based on common libraries
-                    generateMockLibrary(name)
+                // Use our caching system to get library code
+                kotlinx.coroutines.runBlocking {
+                    val libraryCode = luaLibraryCache.getLibraryCode(name)
+                    
+                    val globals = shosetsuGlobals()
+                    val chunk = globals.load(libraryCode, "lib($name)")
+                    val result = chunk.call()
+                    
+                    println("LuaExtensionParser: Successfully loaded library $name")
+                    result
                 }
-                
-                val globals = shosetsuGlobals()
-                val chunk = globals.load(libraryCode, "lib($name)")
-                val result = chunk.call()
-                
-                // Return the result of the chunk execution (which should be the library table)
-                result
             } catch (e: Exception) {
                 println("LuaExtensionParser: Error loading library $name: ${e.message}")
                 // Return a basic empty table as fallback
@@ -253,6 +247,13 @@ class LuaExtensionParser @Inject constructor() {
         } else {
             ValidationResult.MissingFunctions(missingFunctions)
         }
+    }
+    
+    /**
+     * Preload common libraries to avoid delays during extension usage
+     */
+    suspend fun preloadLibraries() {
+        luaLibraryCache.preloadCommonLibraries()
     }
 
     sealed class ValidationResult {

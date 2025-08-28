@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.extensions
 
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaExtensionParser
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -9,7 +10,8 @@ import javax.inject.Singleton
 class ExtensionInitializer @Inject constructor(
     private val extensionLoader: ExtensionLoader,
     private val extensionManager: ExtensionManager,
-    private val repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>
+    private val repositoryServiceProvider: javax.inject.Provider<indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService>,
+    private val luaExtensionParser: LuaExtensionParser
 ) {
 
     private var isInitialized = false
@@ -25,6 +27,10 @@ class ExtensionInitializer @Inject constructor(
         
         try {
             println("ExtensionInitializer: Starting extension initialization...")
+            
+            // Preload common Lua libraries first
+            println("ExtensionInitializer: Preloading Lua libraries...")
+            luaExtensionParser.preloadLibraries()
             
             val installedExtensions = repositoryServiceProvider.get().getAllInstalledExtensions().first()
             println("ExtensionInitializer: Found ${installedExtensions.size} installed extensions")

@@ -15,6 +15,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExtensionReadingService
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.ExampleExtension
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.jar.JarExtensionLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaExtensionParser
+import indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache
 import indi.dmzz_yyhyy.lightnovelreader.data.extensions.settings.ExtensionSettingsManager
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.dao.ExtensionBookDao
@@ -25,6 +26,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.repository.ExtensionRepositoryImpl
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryRepositoryImpl
 import indi.dmzz_yyhyy.lightnovelreader.data.repository.RepositoryService
+import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
 @Module
@@ -71,7 +73,16 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideLuaExtensionParser(): LuaExtensionParser = LuaExtensionParser()
+    fun provideLuaLibraryCache(
+        okHttpClient: okhttp3.OkHttpClient
+    ): indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache = 
+        indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache(okHttpClient)
+
+    @Provides
+    @Singleton
+    fun provideLuaExtensionParser(
+        luaLibraryCache: indi.dmzz_yyhyy.lightnovelreader.data.extensions.lua.LuaLibraryCache
+    ): LuaExtensionParser = LuaExtensionParser(luaLibraryCache)
 
     @Provides
     @Singleton

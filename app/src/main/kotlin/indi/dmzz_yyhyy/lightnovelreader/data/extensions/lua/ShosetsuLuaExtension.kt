@@ -34,6 +34,14 @@ class ShosetsuLuaExtensionWrapper(
                     return@withContext emptyList<ExtensionSearchResult>()
                 }
 
+                // Validate extension before search
+                if (shosetsuExtension.baseURL.isBlank()) {
+                    println("ShosetsuLuaExtensionWrapper: Extension ${this@ShosetsuLuaExtensionWrapper.name} has no base URL configured")
+                    return@withContext emptyList<ExtensionSearchResult>()
+                }
+
+                println("ShosetsuLuaExtensionWrapper: Searching '${query}' on ${shosetsuExtension.baseURL}")
+                
                 // Create a text filter for the search
                 val filters = mapOf(0 to query)
                 val novels = shosetsuExtension.search(filters)
@@ -49,28 +57,13 @@ class ShosetsuLuaExtensionWrapper(
                     )
                 }
             } catch (e: Exception) {
-                println("ShosetsuLuaExtensionWrapper: Search failed for query '$query': ${e.message}")
-                // Return mock data as fallback
-                listOf(
-                    ExtensionSearchResult(
-                        id = "mock_1",
-                        title = "Mock Novel 1 (${query})",
-                        author = "Mock Author",
-                        description = "A mock novel for testing search with query: $query",
-                        imageUrl = "",
-                        url = "/mock/novel/1",
-                        extensionId = id
-                    ),
-                    ExtensionSearchResult(
-                        id = "mock_2",
-                        title = "Mock Novel 2 (${query})",
-                        author = "Another Author",
-                        description = "Another mock novel for search results",
-                        imageUrl = "",
-                        url = "/mock/novel/2",
-                        extensionId = id
-                    )
-                )
+                println("ShosetsuLuaExtensionWrapper: Search failed for query '$query' on ${this@ShosetsuLuaExtensionWrapper.name}: ${e.message}")
+                // Check if it's a Lua script error
+                if (e.message?.contains("vm error") == true || e.message?.contains("lib(") == true) {
+                    println("ShosetsuLuaExtensionWrapper: This appears to be a Lua script error. The extension may need updating or the target website may have changed.")
+                }
+                // Return empty list instead of mock data
+                emptyList()
             }
         }
 
@@ -92,28 +85,13 @@ class ShosetsuLuaExtensionWrapper(
                     )
                 }
             } catch (e: Exception) {
-                println("ShosetsuLuaExtensionWrapper: getLatest failed: ${e.message}")
-                // Return mock data as fallback
-                listOf(
-                    ExtensionSearchResult(
-                        id = "latest_1",
-                        title = "Latest Novel 1",
-                        author = "Latest Author",
-                        description = "A latest novel from ${name}",
-                        imageUrl = "",
-                        url = "/latest/novel/1",
-                        extensionId = id
-                    ),
-                    ExtensionSearchResult(
-                        id = "latest_2",
-                        title = "Latest Novel 2",
-                        author = "Another Author",
-                        description = "Another latest novel from ${name}",
-                        imageUrl = "",
-                        url = "/latest/novel/2",
-                        extensionId = id
-                    )
-                )
+                println("ShosetsuLuaExtensionWrapper: getLatest failed on ${this@ShosetsuLuaExtensionWrapper.name}: ${e.message}")
+                // Check if it's a Lua script error
+                if (e.message?.contains("vm error") == true || e.message?.contains("lib(") == true) {
+                    println("ShosetsuLuaExtensionWrapper: This appears to be a Lua script error. The extension may need updating or the target website may have changed.")
+                }
+                // Return empty list instead of mock data
+                emptyList()
             }
         }
 
@@ -141,28 +119,13 @@ class ShosetsuLuaExtensionWrapper(
                 }
             )
         } catch (e: Exception) {
-            println("ShosetsuLuaExtensionWrapper: getBook failed for URL '$novelId': ${e.message}")
-            // Return mock data as fallback
-            ExtensionBook(
-                id = novelId,
-                title = "Mock Novel Details",
-                author = "Mock Author",
-                description = "Mock novel details for URL: $novelId",
-                imageUrl = "",
-                url = novelId,
-                status = "Unknown",
-                genres = listOf("Fantasy"),
-                chapters = listOf(
-                    ExtensionChapter(
-                        id = "mock_ch_1",
-                        title = "Chapter 1: Mock Beginning",
-                        content = "",
-                        order = 1,
-                        url = "$novelId/chapter/1",
-                        releaseDate = System.currentTimeMillis()
-                    )
-                )
-            )
+            println("ShosetsuLuaExtensionWrapper: getBook failed for URL '$novelId' on ${this@ShosetsuLuaExtensionWrapper.name}: ${e.message}")
+            // Check if it's a Lua script error
+            if (e.message?.contains("vm error") == true || e.message?.contains("lib(") == true) {
+                println("ShosetsuLuaExtensionWrapper: This appears to be a Lua script error. The extension may need updating or the target website may have changed.")
+            }
+            // Return null instead of mock data
+            null
         }
     }
 
@@ -179,16 +142,13 @@ class ShosetsuLuaExtensionWrapper(
                     releaseDate = System.currentTimeMillis()
                 )
             } catch (e: Exception) {
-                println("ShosetsuLuaExtensionWrapper: getChapter failed for URL '$chapterId': ${e.message}")
-                // Return mock data as fallback
-                ExtensionChapter(
-                    id = chapterId,
-                    title = "Mock Chapter",
-                    content = "Mock chapter content for URL: $chapterId\n\nThis is placeholder text that would be the actual chapter content from the Shosetsu extension.",
-                    order = 1,
-                    url = chapterId,
-                    releaseDate = System.currentTimeMillis()
-                )
+                println("ShosetsuLuaExtensionWrapper: getChapter failed for URL '$chapterId' on ${this@ShosetsuLuaExtensionWrapper.name}: ${e.message}")
+                // Check if it's a Lua script error
+                if (e.message?.contains("vm error") == true || e.message?.contains("lib(") == true) {
+                    println("ShosetsuLuaExtensionWrapper: This appears to be a Lua script error. The extension may need updating or the target website may have changed.")
+                }
+                // Return null instead of mock data
+                null
             }
         }
 
@@ -207,6 +167,11 @@ class ShosetsuLuaExtensionWrapper(
                     )
                 }
             } catch (e: Exception) {
+                println("ShosetsuLuaExtensionWrapper: getChapters failed for book '$bookId' on ${this@ShosetsuLuaExtensionWrapper.name}: ${e.message}")
+                // Check if it's a Lua script error
+                if (e.message?.contains("vm error") == true || e.message?.contains("lib(") == true) {
+                    println("ShosetsuLuaExtensionWrapper: This appears to be a Lua script error. The extension may need updating or the target website may have changed.")
+                }
                 emptyList()
             }
         }
