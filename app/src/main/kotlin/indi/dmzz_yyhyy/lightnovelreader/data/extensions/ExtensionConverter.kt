@@ -10,6 +10,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.extensions.model.ExtensionSearchRes
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
+import org.jsoup.Jsoup
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -125,12 +126,60 @@ class ExtensionConverter @Inject constructor() {
         chapter: ExtensionChapter,
         chapterId: Int
     ): ChapterContent {
+        // Clean HTML content as a fallback if the extension didn't do it
+        val cleanedContent = cleanHtmlContent(chapter.content)
+        
         return MutableChapterContent(
             id = chapterId,
             title = chapter.title,
-            content = chapter.content,
+            content = cleanedContent,
             lastChapter = -1,
             nextChapter = -1
         )
+    }
+    
+    /**
+     * Clean HTML content from chapter text.
+     * This is a fallback mechanism in case extensions don't properly use the unhtml library.
+     */
+    private fun cleanHtmlContent(content: String): String {
+        if (content.isBlank()) return content
+        
+        // Check if content contains HTML tags
+        val hasHtmlTags = content.contains("<") && content.contains(">")
+        
+        return if (hasHtmlTags) {
+            try {
+                // Use Jsoup to parse and extract text content
+                val doc = Jsoup.parse(content)
+                val cleanText = doc.text()
+                
+                // If the cleaned text is significantly shorter, it might have been mostly HTML
+                // In that case, preserve some structure by converting specific tags
+                if (cleanText.length < content.length * 0.3) {
+                    // Convert some common tags to preserve structure
+                    content
+                        .replace("<br>", "\n")
+                        .replace("<br/>", "\n") 
+                        .replace("<br />", "\n")
+                        .replace("</p>", "\n\n")
+                        .replace("<p>", "")
+                        .replace("</div>", "\n")
+                        .replace("<div>", "")
+                        .replace(Regex("<[^>]+>"), "") // Remove remaining HTML tags
+                        .replace(Regex("\\s+"), " ") // Collapse whitespace
+                        .trim()
+                } else {
+                    cleanText
+                }
+            } catch (e: Exception) {
+                println("ExtensionConverter: Error cleaning HTML content: ${e.message}")
+                // Fallback: simple HTML tag removal
+                content.replace(Regex("<[^>]+>"), "").trim()
+            }
+        } else {
+            // No HTML tags detected, return as-is
+            content
+        }
     }
 }

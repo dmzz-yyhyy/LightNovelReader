@@ -3,6 +3,8 @@
 -- @language en
 -- @description A sample Lua extension for demonstrating functionality
 
+local unhtml = Require("unhtml")
+
 -- Helper function to make HTTP requests (would be provided by the runtime)
 function httpGet(url)
     -- This would be implemented by the native runtime
@@ -61,16 +63,30 @@ end
 
 -- Get a specific chapter
 function getChapter(bookId, chapterId)
+    local rawContent = [[
+            <h1>Chapter ]] .. chapterId .. [[: The Beginning</h1>
+            <p>This is the content of chapter ]] .. chapterId .. [[ from book ]] .. bookId .. [[.</p>
+            <p>Lorem ipsum dolor sit amet, <b>consectetur adipiscing elit</b>. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. <em>Ut enim ad minim veniam</em>, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. <strong>Excepteur sint occaecat</strong> cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo <a href="#">inventore veritatis</a> et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        ]]
+    
+    -- Clean the HTML content using the unhtml library
+    local cleanContent = rawContent -- Default to raw content
+    
+    -- Try to load and use the unhtml library
+    local success, unhtml = pcall(function() return Require("unhtml") end)
+    if success and unhtml and unhtml.HTMLToString then
+        cleanContent = unhtml.HTMLToString(rawContent)
+        print("Sample Extension: Successfully cleaned HTML using unhtml library")
+    else
+        print("Sample Extension: unhtml library not available, using raw HTML content")
+    end
+    
     local chapter = {
         id = chapterId,
         title = "Chapter " .. chapterId .. ": The Beginning",
-        content = [[
-            <h1>Chapter ]] .. chapterId .. [[: The Beginning</h1>
-            <p>This is the content of chapter ]] .. chapterId .. [[ from book ]] .. bookId .. [[.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-        ]],
+        content = cleanContent, -- Use cleaned content instead of raw HTML
         url = "https://example.com/novel/" .. bookId .. "/chapter/" .. chapterId,
         order = tonumber(chapterId) or 1,
         releaseDate = 1640995200000
