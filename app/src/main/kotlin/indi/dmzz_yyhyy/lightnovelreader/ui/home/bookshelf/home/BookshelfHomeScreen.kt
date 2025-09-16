@@ -180,6 +180,8 @@ fun BookshelfHomeScreen(
     }
 
     with(sharedTransitionScope) {
+        var showWenku8Import by remember { mutableStateOf(false) }
+        var showWenku8Login by remember { mutableStateOf(false) } 
         Scaffold(
             topBar = {
                 TopBar(
@@ -231,6 +233,7 @@ fun BookshelfHomeScreen(
                             }
                         }
                     },
+                    onClickImportFromWenku8 = { showWenku8Import = true },
                     onClickSaveThisBookshelf = {
                         createBookshelfDataFile(
                             uiState.selectedBookshelf.name,
@@ -504,6 +507,16 @@ fun BookshelfHomeScreen(
                         }
                     }
                 }
+            if (showWenku8Import) {
+                val bookshelfOptions = uiState.bookshelfList.map { it.id to it.name }
+                Wenku8CloudImportDialog(
+                    bookshelfId = uiState.selectedBookshelfId,
+                    bookshelfOptions = bookshelfOptions,
+                    onSelectBookshelf = { /* selection handled inside dialog prepare */ },
+                    showLoginDialog = { showWenku8Login = true },
+                    onDismiss = { showWenku8Import = false }
+                )
+            }
             }
         }
     }
@@ -564,6 +577,7 @@ fun TopBar(
     onClickRemove: () -> Unit,
     onClickBookmark: () -> Unit,
     onClickShareBookshelf: () -> Unit,
+    onClickImportFromWenku8: () -> Unit,
     onClickSaveThisBookshelf: () -> Unit,
     onClickSaveAllBookshelf: () -> Unit,
     onClickImportBookshelf: () -> Unit
@@ -651,7 +665,7 @@ fun TopBar(
                             exportImportMenuWidth = layoutCoordinates.size.width.toDp()
                         }
                     },
-                offset = DpOffset(0.dp, mainMenuItemHeight.times(3.5f)),
+                offset = DpOffset(0.dp, mainMenuItemHeight.times(2.5f)),
                 expanded = exportImportMenuExpended,
                 onDismissRequest = { exportImportMenuExpended = false }
             ) {
@@ -684,6 +698,17 @@ fun TopBar(
                     ) },
                     onClick = {
                         onClickImportBookshelf()
+                        exportImportMenuExpended = false
+                        mainMenuExpended = false
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text(
+                        text = stringResource(R.string.import_from_wenku8),
+                        style = AppTypography.dropDownItem
+                    ) },
+                    onClick = {
+                        onClickImportFromWenku8()
                         exportImportMenuExpended = false
                         mainMenuExpended = false
                     }

@@ -72,6 +72,13 @@ sealed class UserDataPath(
             data object LogLevel: UserDataPath("log_level", Data)
             data object IsUseProxy: UserDataPath("is_use_proxy", Data)
         }
+        data object Wenku8: UserDataPath("wenku8", Settings) {
+            data object SessionId: UserDataPath("session_id", Wenku8)
+            data object UserId: UserDataPath("user_id", Wenku8)
+            data object UserName: UserDataPath("user_name", Wenku8)
+            data object JieqiUserInfo: UserDataPath("jieqi_user_info", Wenku8)
+            data object JieqiVisitInfo: UserDataPath("jieqi_visit_info", Wenku8)
+        }
         /*data object Reader : UserDataPath("reader", Settings) {
             data object FontSize : LinkUserData(Reader.FontSize)
             data object FontLineHeight : LinkUserData(Reader.FontLineHeight)

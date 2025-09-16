@@ -7,8 +7,12 @@ import android.provider.DocumentsContract
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResult
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.login.Wenku8AccountViewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.work.OneTimeWorkRequest
@@ -18,6 +22,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Wenku8LoginDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
@@ -115,6 +120,45 @@ fun DataSettingsList(
         checked = settingState.isUseProxy,
         booleanUserData = settingState.isUseProxyUserData
     )
+    var displayWenku8Login by remember { mutableStateOf(false) }
+    var displayLogoutConfirm by remember { mutableStateOf(false) }
+    val accountViewModel = hiltViewModel<Wenku8AccountViewModel>()
+    val accountState by accountViewModel.state.collectAsState()
+    if (displayWenku8Login) {
+        Wenku8LoginDialog(
+            onDismissRequest = { displayWenku8Login = false },
+            onSuccess = { displayWenku8Login = false }
+        )
+    }
+    val loggedIn = accountState.loggedIn
+    SettingsClickableEntry(
+        iconRes = R.drawable.public_24px,
+        title = stringResource(R.string.login_wenku8),
+        description = if (loggedIn) "已登录: ${accountState.userName}" else stringResource(R.string.login_wenku8_desc),
+        onClick = {
+            if (accountState.loggedIn) {
+                displayLogoutConfirm = true
+            } else {
+                displayWenku8Login = true
+            }
+        }
+    )
+    if (displayLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { displayLogoutConfirm = false },
+            title = { Text(stringResource(id = R.string.logout_wenku8_title)) },
+            text = { Text(stringResource(id = R.string.logout_wenku8_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    accountViewModel.logout()
+                    displayLogoutConfirm = false
+                }) { Text(stringResource(id = R.string.logout_wenku8_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { displayLogoutConfirm = false }) { Text(stringResource(id = R.string.cancel)) }
+            }
+        )
+    }
     SettingsClickableEntry(
         iconRes = R.drawable.bug_report_24px,
         title = stringResource(R.string.settings_app_logs),

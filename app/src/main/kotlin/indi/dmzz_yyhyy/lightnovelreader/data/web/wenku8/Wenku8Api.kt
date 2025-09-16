@@ -485,4 +485,32 @@ object Wenku8Api: WebBookDataSource {
                 return null
             }
     }
+
+    /**
+     * 获取用户云端书架中的书籍 ID 列表。
+     * @return 可能为空列表（未登录/解析失败）
+     */
+    suspend fun getUserBookshelfIds(): List<Int> {
+        // 使用 MewX/light-novel-library_Wenku8_Android 项目的接口：action=bookcase&do=list&t=<lang>
+        // 目前语言参数暂固定 t=0（可根据需要扩展不同语言）
+        val request = "action=bookcase&do=list&t=0"
+        val document = wenku8Api(request) ?: return emptyList()
+        // 若返回的是单一纯数字（可能是未登录或错误码），直接返回空列表让上层判定登录状态
+        val bodyText = document.text().trim()
+        if (bodyText.matches(Regex("\\d+"))) {
+            val code = bodyText.toInt()
+            val errorCode = indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.common.Wenku8ErrorCode.fromInt(code)
+            if (errorCode == indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.common.Wenku8ErrorCode.SYSTEM_4_NOT_LOGGED_IN) {
+                throw IllegalStateException("WENKU8_CODE_${code}")
+            } else {
+                // 其它错误码：目前返回空列表，上层可视为解析失败或无数据；如需区分可扩展异常类型
+                return emptyList()
+            }
+        }
+        // 结构范例：<metadata><book aid="1499"/><book aid="1754"/>...</metadata>
+        return document
+            .select("book")
+            .mapNotNull { it.attr("aid").toIntOrNull() }
+            .distinct()
+    }
 }

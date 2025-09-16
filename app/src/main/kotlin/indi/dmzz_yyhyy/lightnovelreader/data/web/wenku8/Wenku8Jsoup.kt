@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8
 
 import android.util.Log
+import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.login.Wenku8SessionManager
 import indi.dmzz_yyhyy.lightnovelreader.utils.UserAgentGenerator
 import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionPost
 import indi.dmzz_yyhyy.lightnovelreader.utils.randomUAHeadersJsoup
@@ -15,15 +16,44 @@ import org.jsoup.Connection
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.io.encoding.Base64
 import kotlin.random.Random
 
+@Singleton
+class Wenku8CookieApplier @Inject constructor(
+    val sessionManager: Wenku8SessionManager
+) {
+    fun apply(base: Connection): Connection {
+        val dynamicCookies = sessionManager.cookies.value
+        var conn = base
+        if (dynamicCookies.isNotEmpty()) {
+            conn = conn.cookies(dynamicCookies)
+        }
+        return conn
+    }
+}
+
+lateinit var wenku8CookieApplier: Wenku8CookieApplier
+
+fun initWenku8CookieApplier(instance: Wenku8CookieApplier) {
+    wenku8CookieApplier = instance
+}
 private val requestLimiter = Semaphore(3)
 private val pendingJobs = Channel<Unit>(capacity = 25, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
-fun Connection.wenku8Cookie(): Connection =
-    this.userAgent(UserAgentGenerator.generate())
-        .cookies(indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.wenku8Cookie())
+fun Connection.wenku8Cookie(): Connection {
+    var conn = this
+    val isInitialized = ::wenku8CookieApplier.isInitialized
+    val isLoggedIn = isInitialized && wenku8CookieApplier.sessionManager.isLoggedIn()
+    if (isLoggedIn) {
+        return wenku8CookieApplier.apply(conn)
+    } else {
+        return this.userAgent(UserAgentGenerator.generate())
+            .cookies(indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.wenku8Cookie())
+    }
+}
 
 fun wenku8Cookie(): Map<String, String> = mapOf(
     "Hm_lvt_acfbfe93830e0272a88e1cc73d4d6d0f" to "1737964211",
