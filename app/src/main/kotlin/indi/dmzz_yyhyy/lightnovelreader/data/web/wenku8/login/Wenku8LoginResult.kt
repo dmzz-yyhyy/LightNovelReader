@@ -2,9 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.login
 
 sealed class Wenku8LoginResult {
     data class Success(
-        val userId: String?,
-        val userName: String?,
-        val sessionId: String?,
+        val userName: String,
+        val cookieMap: Map<String, String>,
     ) : Wenku8LoginResult()
     sealed class Failure : Wenku8LoginResult() {
         object Network : Failure()

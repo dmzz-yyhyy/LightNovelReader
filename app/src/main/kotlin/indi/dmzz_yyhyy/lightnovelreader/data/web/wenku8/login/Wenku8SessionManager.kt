@@ -2,49 +2,58 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.login
 
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @Singleton
 class Wenku8SessionManager @Inject constructor(
-    private val userDataRepository: UserDataRepository,
+    private val userDataRepository: UserDataRepository
 ) {
-    private val scope = CoroutineScope(Dispatchers.IO)
-    val sessionId = MutableStateFlow<String?>(null)
-    val jieqiUserInfo = MutableStateFlow<String?>(null)
-    val jieqiVisitInfo = MutableStateFlow<String?>(null)
+    private val _cookies = MutableStateFlow<Map<String, String>>(emptyMap())
+    val cookies: StateFlow<Map<String, String>> = _cookies.asStateFlow()
 
-    init {
-        scope.launch {
-            sessionId.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).getOrDefault("").ifBlank { null }
-            jieqiUserInfo.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiUserInfo.path).getOrDefault("").ifBlank { null }
-            jieqiVisitInfo.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiVisitInfo.path).getOrDefault("").ifBlank { null }
+    private val _sessionId = MutableStateFlow<String?>(null)
+    val sessionId: StateFlow<String?> = _sessionId.asStateFlow()
+
+    private val _userName = MutableStateFlow<String?>(null)
+    val userName: StateFlow<String?> = _userName.asStateFlow()
+
+    fun isLoggedIn(): Boolean {
+        return !_sessionId.value.isNullOrBlank()
+    }
+
+    fun onLoginSuccess(cookieMap: Map<String, String>, userName: String) {
+        val sessionId = cookieMap["PHPSESSID"]
+        if (sessionId.isNullOrBlank()) return
+
+        _cookies.value = cookieMap
+        _sessionId.value = sessionId
+        _userName.value = userName
+
+        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).set(sessionId)
+        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserName.path).set(userName)
+    }
+
+    fun refreshFromStorage() {
+        val storedSessionId = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).get()
+        val storedUserName = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserName.path).get()
+
+        if (!storedSessionId.isNullOrBlank()) {
+            _sessionId.value = storedSessionId
+            _userName.value = storedUserName
+            _cookies.value = mapOf("PHPSESSID" to storedSessionId)
         }
     }
 
-    suspend fun refreshFromStorage() {
-        sessionId.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).getOrDefault("").ifBlank { null }
-        jieqiUserInfo.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiUserInfo.path).getOrDefault("").ifBlank { null }
-        jieqiVisitInfo.value = userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiVisitInfo.path).getOrDefault("").ifBlank { null }
-    }
+    fun logout() {
+        _cookies.value = emptyMap()
+        _sessionId.value = null
+        _userName.value = null
 
-    suspend fun logout() {
-        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).set("")
-        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiUserInfo.path).set("")
-        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiVisitInfo.path).set("")
-        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserId.path).set("")
-        userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserName.path).set("")
-        refreshFromStorage()
-    }
-
-    fun applyCookies(map: MutableMap<String, String>) {
-        sessionId.value?.let { map["PHPSESSID"] = it }
-        jieqiUserInfo.value?.let { map["jieqiUserInfo"] = it }
-        jieqiVisitInfo.value?.let { map["jieqiVisitInfo"] = it }
+        userDataRepository.remove(UserDataPath.Settings.Wenku8.SessionId.path)
+        userDataRepository.remove(UserDataPath.Settings.Wenku8.UserName.path)
     }
 }

@@ -5,8 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.common.Wenku8ErrorCode
-import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataPath
 import org.jsoup.Jsoup
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,9 +13,7 @@ import javax.inject.Singleton
  * 负责执行 Wenku8 登录并提取会话相关 Cookie 的仓库。
  */
 @Singleton
-class Wenku8LoginRepository @Inject constructor(
-    private val userDataRepository: UserDataRepository,
-) {
+class Wenku8LoginRepository @Inject constructor() {
 
     private val loginUrl = "http://app.wenku8.com/android.php"
 
@@ -31,7 +27,7 @@ class Wenku8LoginRepository @Inject constructor(
         }
     }
 
-    private fun encode(v: String): String = java.net.URLEncoder.encode(v, Charsets.UTF_8)
+    private fun encode(v: String): String = java.net.URLEncoder.encode(v, "UTF-8")
 
     /**
      * 执行登录。
@@ -55,60 +51,29 @@ class Wenku8LoginRepository @Inject constructor(
         repeat(maxAttempts) { attempt ->
             try {
                 val connection = Jsoup.connect(loginUrl)
-                    .timeout(12_000)
+                    .userAgent("")
                     .method(org.jsoup.Connection.Method.POST)
-                    .ignoreContentType(true)
 
-                val useEncrypted = attempt == 0
-                if (useEncrypted) {
-                    applyEncrypted(connection, paramString)
-                } else {
-                    paramString.split('&').forEach { kv ->
-                        val idx = kv.indexOf('=')
-                        if (idx > 0 && idx < kv.length - 1) {
-                            val k = kv.substring(0, idx)
-                            val v = kv.substring(idx + 1)
-                            connection.data(k, v)
-                        }
-                    }
-                }
+                applyEncrypted(connection, paramString)
 
                 val response = connection.execute()
                 val body = response.body()
                 Log.d("Wenku8Login", "attempt=${attempt+1} body=$body")
 
-                // 可能的返回模式：
-                // 1) 包含 “成功” / success
-                // 2) 包含 “用户名” “密码” 相关错误提示
-                // 3) 纯数字码（映射 Wenku8ErrorCode）
                 if (body.isBlank()) return@withContext Wenku8LoginResult.Failure.Unknown
 
                 when {
                     body.contains("用户名", ignoreCase = true) && body.contains("错误") && body.contains("密码").not() -> return@withContext Wenku8LoginResult.Failure.Username
                     body.contains("密码", ignoreCase = true) && body.contains("错误") -> return@withContext Wenku8LoginResult.Failure.Password
                     body.contains("成功", ignoreCase = true) || body.contains("success", ignoreCase = true) -> {
-                        val cookieMap = response.cookies()
-                        val sessionId = cookieMap["PHPSESSID"]
-                        val cookieAll = response.headers("Set-Cookie").joinToString(";")
-                        val jieqiUserInfo = Regex("jieqiUserInfo=([^;]+)").find(cookieAll)?.groupValues?.get(1)
-                        val jieqiVisitInfo = Regex("jieqiVisitInfo=([^;]+)").find(cookieAll)?.groupValues?.get(1)
-                        val userId = Regex("jieqiUserId%3D(\\d+)").find(jieqiUserInfo ?: "")?.groupValues?.get(1)
-                        val userName = Regex("jieqiUserName%3D([^%,]+)").find(jieqiUserInfo ?: "")?.groupValues?.get(1)
-
-                        sessionId?.let { userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.SessionId.path).set(it) }
-                        if (!jieqiUserInfo.isNullOrBlank()) userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiUserInfo.path).set(jieqiUserInfo)
-                        if (!jieqiVisitInfo.isNullOrBlank()) userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.JieqiVisitInfo.path).set(jieqiVisitInfo)
-                        if (!userId.isNullOrBlank()) userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserId.path).set(userId)
-                        if (!userName.isNullOrBlank()) userDataRepository.stringUserData(UserDataPath.Settings.Wenku8.UserName.path).set(userName)
-                        return@withContext Wenku8LoginResult.Success(userId = userId, userName = userName, sessionId = sessionId)
+                        return@withContext Wenku8LoginResult.Success(userName = account, cookieMap = response.cookies())
                     }
                     body.all { it.isDigit() } -> {
                         val codeInt = body.toIntOrNull()
                         if (codeInt != null) {
                             when (Wenku8ErrorCode.fromInt(codeInt)) {
                                 Wenku8ErrorCode.SYSTEM_1_SUCCEEDED -> {
-                                    val sessionId = response.cookies()["PHPSESSID"]
-                                    return@withContext Wenku8LoginResult.Success(null, null, sessionId)
+                                    return@withContext Wenku8LoginResult.Success(userName = account, cookieMap = response.cookies())
                                 }
                                 Wenku8ErrorCode.SYSTEM_2_ERROR_USERNAME -> return@withContext Wenku8LoginResult.Failure.Username
                                 Wenku8ErrorCode.SYSTEM_3_ERROR_PASSWORD -> return@withContext Wenku8LoginResult.Failure.Password

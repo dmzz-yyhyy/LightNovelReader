@@ -24,6 +24,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.FirstLetterSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.data.web.wenku8.exploration.expanedpage.filter.PublishingHouseSingleChoiceFilter
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.exploration.expanded.navigateToExplorationExpandDestination
+import indi.dmzz_yyhyy.lightnovelreader.utils.autoReconnectionPost
 import indi.dmzz_yyhyy.lightnovelreader.utils.cache.Cache
 import indi.dmzz_yyhyy.lightnovelreader.utils.randomUAHeadersJsoup
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.net.URLEncoder
 import java.net.UnknownHostException
@@ -48,6 +50,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 object Wenku8Api: WebBookDataSource {
+    private const val WENKU8_USER_AGENT = "Dalvik/2.1.0 (Linux; U; Android 11; IN2010 Build/RP1A.201005.001)"
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -80,6 +83,21 @@ object Wenku8Api: WebBookDataSource {
         }
     }
 
+    private suspend fun wenku8Api(request: String): Document? {
+        try {
+            val connection = Jsoup.connect("http://app.wenku8.com/android.php")
+                .userAgent(WENKU8_USER_AGENT)
+                .data("request", android.util.Base64.encodeToString(request.toByteArray(), android.util.Base64.NO_WRAP))
+                .data("appver", indi.dmzz_yyhyy.lightnovelreader.BuildConfig.VERSION_NAME)
+                .data("timetoken", System.currentTimeMillis().toString())
+                .wenku8Cookie()
+            return connection.post()
+        } catch (e: Exception) {
+            Log.e("Wenku8Api", "Request failed for action: $request", e)
+            return null
+        }
+    }
+
     private inline fun <reified T> ifCache(id: Int, block: () -> T): T {
         val cacheData = cache.getCache<T>(id)
         if (cacheData == null) {
@@ -106,6 +124,7 @@ object Wenku8Api: WebBookDataSource {
                 .connect(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString())
                 .headers(randomUAHeadersJsoup())
                 .timeout(2000)
+                .wenku8Cookie()
                 .let {
                     if (ProxyPool.enable && !isLocalIpUnableUse)
                         ProxyPool.apply {
@@ -115,8 +134,8 @@ object Wenku8Api: WebBookDataSource {
                 }
             Jsoup
                 .connect("$host/")
-                .wenku8Cookie()
                 .timeout(2000)
+                .wenku8Cookie()
                 .let {
                     if (ProxyPool.enable && !isLocalIpUnableUse)
                         ProxyPool.apply {
@@ -305,7 +324,7 @@ object Wenku8Api: WebBookDataSource {
                         ?.toInt() ?: -1
                     )
                 else {
-                    val titleGroup = element.selectFirst("div > div:nth-child(1) > a")
+                    val titleGroup = element.selectFirst("div > div:nth-right(1) > a")
                         ?.attr("title")
                         ?.let { it1 -> titleRegex.find(it1)?.groups }
                     MutableBookInformation(
@@ -346,8 +365,9 @@ object Wenku8Api: WebBookDataSource {
                 }
             }
 
-    private fun registerExplorationExpandedPageDataSource(id: String, expandedPageDataSource: ExplorationExpandedPageDataSource) =
-            explorationExpandedPageDataSourceMap.put(id, expandedPageDataSource)
+    private fun registerExplorationExpandedPageDataSource(id: String, expandedPageDataSource: ExplorationExpandedPageDataSource) {
+        explorationExpandedPageDataSourceMap[id] = expandedPageDataSource
+    }
 
     init {
         registerExplorationExpandedPageDataSource(
@@ -490,7 +510,7 @@ object Wenku8Api: WebBookDataSource {
      * 获取用户云端书架中的书籍 ID 列表。
      * @return 可能为空列表（未登录/解析失败）
      */
-    suspend fun getUserBookshelfIds(): List<Int> {
+     suspend fun getUserBookshelfIds(): List<Int> {
         // 使用 MewX/light-novel-library_Wenku8_Android 项目的接口：action=bookcase&do=list&t=<lang>
         // 目前语言参数暂固定 t=0（可根据需要扩展不同语言）
         val request = "action=bookcase&do=list&t=0"

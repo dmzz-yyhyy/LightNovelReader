@@ -55,7 +55,7 @@ fun Wenku8LoginDialog(
                 )
                 when {
                     uiState.isLoading -> Text(text = stringResource(id = R.string.login_logging_in), modifier = Modifier.padding(top = 12.dp))
-                    uiState.success != null -> Text(text = stringResource(id = R.string.login_success), modifier = Modifier.padding(top = 12.dp))
+                    uiState.isSuccess -> Text(text = stringResource(id = R.string.login_success), modifier = Modifier.padding(top = 12.dp))
                     uiState.error != null -> {
                         val msg = when (val err = uiState.error) {
                             Wenku8LoginResult.Failure.Username -> stringResource(id = R.string.login_error_username)
@@ -92,8 +92,8 @@ fun Wenku8LoginDialog(
         }
     )
 
-    LaunchedEffect(uiState.success) {
-        if (uiState.success != null) {
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
             onSuccess()
         }
     }

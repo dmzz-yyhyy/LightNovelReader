@@ -85,6 +85,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -106,6 +107,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.SharedContentKey
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookCardItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Wenku8LoginDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.HomeNavigateBar
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import kotlinx.coroutines.Dispatchers
@@ -181,7 +183,9 @@ fun BookshelfHomeScreen(
 
     with(sharedTransitionScope) {
         var showWenku8Import by remember { mutableStateOf(false) }
-        var showWenku8Login by remember { mutableStateOf(false) } 
+        var showWenku8Login by remember { mutableStateOf(false) }
+        val importViewModel: Wenku8CloudImportViewModel = hiltViewModel()
+
         Scaffold(
             topBar = {
                 TopBar(
@@ -507,6 +511,7 @@ fun BookshelfHomeScreen(
                         }
                     }
                 }
+            }
             if (showWenku8Import) {
                 val bookshelfOptions = uiState.bookshelfList.map { it.id to it.name }
                 Wenku8CloudImportDialog(
@@ -514,9 +519,18 @@ fun BookshelfHomeScreen(
                     bookshelfOptions = bookshelfOptions,
                     onSelectBookshelf = { /* selection handled inside dialog prepare */ },
                     showLoginDialog = { showWenku8Login = true },
-                    onDismiss = { showWenku8Import = false }
+                    onDismiss = { showWenku8Import = false },
+                    viewModel = importViewModel
                 )
             }
+            if (showWenku8Login) {
+                Wenku8LoginDialog(
+                    onDismissRequest = { showWenku8Login = false },
+                    onSuccess = {
+                        showWenku8Login = false
+                        importViewModel.prepare(uiState.selectedBookshelfId)
+                    }
+                )
             }
         }
     }
