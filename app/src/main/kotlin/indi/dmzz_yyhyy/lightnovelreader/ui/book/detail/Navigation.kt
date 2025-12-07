@@ -134,7 +134,7 @@ fun NavGraphBuilder.bookDetailDestination() {
             requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
             onClickTag = viewModel::onClickTag,
             onClickCover = navController::navigateToImageViewerDialog,
-            onClickMarkAllRead = { navController.navigateToMarkAllChaptersAsReadDialog(viewModel.uiState.bookInformation.id) }
+            onClickMarkAsRead = { navController.navigateToMarkAllChaptersAsReadDialog(viewModel.uiState.bookInformation.id) }
         )
     }
 }

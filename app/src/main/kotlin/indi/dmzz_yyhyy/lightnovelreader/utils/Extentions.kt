@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.snapshotFlow
@@ -79,21 +78,22 @@ fun <T> Flow<T>.throttleLatest(periodMillis: Long): Flow<T> = flow {
 
 @Composable
 fun LazyListState.isScrollingUp(): State<Boolean> {
-    return produceState(initialValue = true) {
-        var lastIndex = 0
-        var lastScroll = Int.MAX_VALUE
-        snapshotFlow {
-            firstVisibleItemIndex to firstVisibleItemScrollOffset
-        }.collect { (currentIndex, currentScroll) ->
-            if (currentIndex != lastIndex || currentScroll != lastScroll) {
-                value = currentIndex < lastIndex ||
+    val up = remember(this) { mutableStateOf(true) }
+
+    LaunchedEffect(this) {
+        var lastIndex = firstVisibleItemIndex
+        var lastScroll = firstVisibleItemScrollOffset
+        snapshotFlow { firstVisibleItemIndex to firstVisibleItemScrollOffset }
+            .collect { (currentIndex, currentScroll) ->
+                up.value = currentIndex < lastIndex ||
                         (currentIndex == lastIndex && currentScroll < lastScroll)
                 lastIndex = currentIndex
                 lastScroll = currentScroll
             }
-        }
     }
+    return up
 }
+
 
 fun NavController.popBackStackIfResumed() {
     if (isResumed()) {

@@ -35,7 +35,7 @@
     <string name="ignore_version">Ignore Version</string>
     <string name="switch_and_restart">Switch and Restart</string>
     <string name="hide_read">Hide Read</string>
-    <string name="mark_all_read">Mark all as read</string>
+    <string name="mark_as_read">Mark as read…</string>
     <string name="export_epub">Export as Epub</string>
     <string name="export_include_images">Include images</string>
     <string name="export_split_volumes">Export by volumes</string>

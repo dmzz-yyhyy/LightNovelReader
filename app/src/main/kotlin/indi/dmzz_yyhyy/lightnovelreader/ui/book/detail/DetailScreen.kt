@@ -65,9 +65,11 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -121,7 +123,7 @@ fun DetailScreen(
     requestAddBookToBookshelf: (String) -> Unit,
     onClickTag: (String) -> Unit,
     onClickCover: (Uri) -> Unit,
-    onClickMarkAllRead: () -> Unit
+    onClickMarkAsRead: () -> Unit
 ) {
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -152,9 +154,41 @@ fun DetailScreen(
         onDispose { claim(false) }
     }
 
-    val fabVisible = uiState.bookVolumes.volumes.isNotEmpty() &&
-            lazyListState.canScrollForward &&
-            lazyListState.isScrollingUp().value
+    val scrollingUp by lazyListState.isScrollingUp()
+    val fabVisible by remember(uiState.bookVolumes.volumes, lazyListState) {
+        derivedStateOf { uiState.bookVolumes.volumes.isNotEmpty() && lazyListState.canScrollForward && scrollingUp }
+    }
+
+    val isStartReading = uiState.userReadingData.lastReadChapterId.isBlank()
+    val fabTextRes = if (isStartReading) R.string.start_reading else R.string.continue_reading
+
+    val onFabClick = remember(isStartReading, onClickReadFromStart, onClickContinueReading) {
+        { if (isStartReading) onClickReadFromStart() else onClickContinueReading() }
+    }
+    val onFabClickLatest by rememberUpdatedState(onFabClick)
+
+    val fabContent = remember {
+        movableContentOf<Boolean, Int, () -> Unit> { visible, textRes, onClick ->
+            AnimatedVisibility(
+                visible = visible,
+                enter = slideInVertically(
+                    initialOffsetY = { it / 4 },
+                    animationSpec = tween(250, easing = FastOutSlowInEasing)
+                ) + fadeIn(tween(200, easing = FastOutSlowInEasing)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it / 4 },
+                    animationSpec = tween(200, easing = FastOutSlowInEasing)
+                ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
+            ) {
+                ExtendedFloatingActionButton(
+                    modifier = Modifier.padding(end = 28.dp, bottom = 28.dp),
+                    onClick = onClick,
+                    icon = { Icon(painterResource(R.drawable.filled_menu_book_24px), null) },
+                    text = { Text(stringResource(textRes)) }
+                )
+            }
+        }
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -168,7 +202,8 @@ fun DetailScreen(
                 val targetBottomPad = if (fabVisible) 90.dp else 32.dp
                 val snackbarBottomPad by animateDpAsState(
                     targetValue = targetBottomPad,
-                    animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing)
+                    animationSpec = tween(250, easing = FastOutSlowInEasing),
+                    label = "snackbarBottomPad"
                 )
 
                 SnackbarHost(
@@ -180,42 +215,8 @@ fun DetailScreen(
                     LnrSnackbar(data)
                 }
 
-                AnimatedVisibility(
-                    modifier = Modifier.align(Alignment.BottomEnd),
-                    visible = fabVisible,
-                    enter = slideInVertically(
-                        initialOffsetY = { it / 4 },
-                        animationSpec = tween(250, easing = FastOutSlowInEasing)
-                    ) + fadeIn(tween(200, easing = FastOutSlowInEasing)),
-                    exit = slideOutVertically(
-                        targetOffsetY = { it / 4 },
-                        animationSpec = tween(200, easing = FastOutSlowInEasing)
-                    ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
-                ) {
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier
-                            .padding(end = 28.dp, bottom = 28.dp),
-                        onClick = {
-                            if (uiState.userReadingData.lastReadChapterId.isBlank())
-                                onClickReadFromStart()
-                            else
-                                onClickContinueReading()
-                        },
-                        icon = {
-                            Icon(
-                                painterResource(R.drawable.filled_menu_book_24px),
-                                null
-                            )
-                        },
-                        text = {
-                            Text(
-                                if (uiState.userReadingData.lastReadChapterId.isBlank())
-                                    stringResource(R.string.start_reading)
-                                else
-                                    stringResource(R.string.continue_reading)
-                            )
-                        }
-                    )
+                Box(modifier = Modifier.align(Alignment.BottomEnd)) {
+                    fabContent(fabVisible, fabTextRes) { onFabClickLatest() }
                 }
             }
         },
@@ -237,7 +238,7 @@ fun DetailScreen(
                         uiState.bookInformation.id
                     )
                 },
-                onClickMarkAllRead = onClickMarkAllRead,
+                onClickMarkAsRead = onClickMarkAsRead,
                 scrollBehavior = scrollBehavior,
                 isCollapsed = isCollapsed
             )
@@ -549,7 +550,7 @@ private fun TopBar(
     onClickBackButton: () -> Unit,
     onClickExport: () -> Unit,
     onClickTextFormatting: () -> Unit,
-    onClickMarkAllRead: () -> Unit,
+    onClickMarkAsRead: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     isCollapsed: Boolean
 ) {
@@ -608,7 +609,7 @@ private fun TopBar(
                     volumesEmpty = volumesEmpty,
                     onClickExport = onClickExport,
                     onClickTextFormatting = onClickTextFormatting,
-                    onClickMarkAllRead = onClickMarkAllRead
+                    onClickMarkAsRead = onClickMarkAsRead
                 )
             },
             scrollBehavior = scrollBehavior
@@ -642,7 +643,7 @@ private fun TopBarActions(
     volumesEmpty: Boolean,
     onClickExport: () -> Unit,
     onClickTextFormatting: () -> Unit,
-    onClickMarkAllRead: () -> Unit
+    onClickMarkAsRead: () -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -658,10 +659,10 @@ private fun TopBarActions(
         }
         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.mark_all_read), style = typography.bodyLarge) },
+                text = { Text(stringResource(R.string.mark_as_read), style = typography.bodyLarge) },
                 onClick = {
                     menuExpanded = false
-                    onClickMarkAllRead()
+                    onClickMarkAsRead()
                 }
             )
         }
@@ -1127,7 +1128,9 @@ private fun ChapterItem(
             }
             if (isLastRead)
                 Icon(
-                    modifier = Modifier.padding(start = 22.dp).size(24.dp),
+                    modifier = Modifier
+                        .padding(start = 22.dp)
+                        .size(24.dp),
                     painter = painterResource(R.drawable.target_24px),
                     tint = colorScheme.primary,
                     contentDescription = "last_read"

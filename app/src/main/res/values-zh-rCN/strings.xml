@@ -31,7 +31,7 @@
     <string name="ignore_version">忽略该版本</string>
     <string name="switch_and_restart">切换并重启</string>
     <string name="hide_read">仅显示未读</string>
-    <string name="mark_all_read">全部标为已读</string>
+    <string name="mark_as_read">标记为已读…</string>
     <string name="export_to_file">导出至文件</string>
     <string name="export_epub">导出为 Epub</string>
     <string name="export_include_images">包含图片</string>
