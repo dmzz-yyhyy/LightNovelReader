@@ -18,6 +18,8 @@ interface StatsDetailedUiState {
     var selectedViewIndex: Int
     val isLoading: Boolean
     val bookInformationMap: Map<String, BookInformation>
+    val bookFirstReadDateMap: Map<String, LocalDate>
+    val bookFirstFinishedDateMap: Map<String, LocalDate>
 }
 
 class MutableStatsDetailedUiState : StatsDetailedUiState {
@@ -28,6 +30,8 @@ class MutableStatsDetailedUiState : StatsDetailedUiState {
     override var selectedViewIndex: Int by mutableIntStateOf(0)
     override var isLoading: Boolean by mutableStateOf(false)
     override val bookInformationMap: MutableMap<String, BookInformation> = mutableStateMapOf()
+    override var bookFirstReadDateMap: Map<String, LocalDate> by mutableStateOf(emptyMap())
+    override var bookFirstFinishedDateMap: Map<String, LocalDate> by mutableStateOf(emptyMap())
 }
 
 val StatsDetailedUiState.currentViewOption: StatsViewOption

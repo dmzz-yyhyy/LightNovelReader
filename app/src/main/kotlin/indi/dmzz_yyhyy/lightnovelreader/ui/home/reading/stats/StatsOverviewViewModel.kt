@@ -7,14 +7,12 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import indi.dmzz_yyhyy.lightnovelreader.utils.DurationFormat
 import indi.dmzz_yyhyy.lightnovelreader.utils.quickSelect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.collections.set
 import kotlin.time.DurationUnit
@@ -22,11 +20,7 @@ import kotlin.time.toDuration
 
 data class DailyDateDetails(
     val formattedTotalTime: String,
-    val timeDetails: List<Pair<BookInformation, Int>?>,
-    val firstBook: BookInformation?,
-    val firstSeenTime: String?,
-    val lastBook: BookInformation?,
-    val lastSeenTime: String?
+    val timeDetails: List<Pair<BookInformation, Int>>
 )
 
 @HiltViewModel
@@ -48,7 +42,7 @@ class StatsOverviewViewModel @Inject constructor(
             val time = System.currentTimeMillis()
             Log.d("AppReadingStats", "Refresh started")
             _uiState.selectedDate = LocalDate.now()
-            _uiState.totalRecordEntity = statsRepository.getTotalBookRecord()
+            _uiState.totalSummary = statsRepository.getTotalReadingSummary()
 
             val startDate = _uiState.startDate
             val endDate = LocalDate.now()
@@ -80,25 +74,15 @@ class StatsOverviewViewModel @Inject constructor(
             _uiState.selectedDateDetails = null
             return
         }
-        val dateFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
-        var totalSeconds = 0L
-        var firstRecord: BookRecordEntity? = null
-        var lastRecord: BookRecordEntity? = null
+        var totalMinutes = 0L
         val detailsList = mutableListOf<Pair<BookInformation, Int>>()
 
         for (rec in records) {
-            totalSeconds += rec.totalTime
-
-            if (firstRecord == null || rec.firstSeen.isBefore(firstRecord.firstSeen)) {
-                firstRecord = rec
-            }
-            if (lastRecord == null || rec.lastSeen.isAfter(lastRecord.lastSeen)) {
-                lastRecord = rec
-            }
+            val minutes = rec.readingTimeCount.getTotalMinutes()
+            totalMinutes += minutes
 
             val bookInfo = _uiState.bookInformationMap[rec.bookId] ?: BookInformation.empty()
-            detailsList += bookInfo to rec.totalTime
+            detailsList += bookInfo to minutes
         }
 
         val sortedDetails = detailsList
@@ -106,15 +90,11 @@ class StatsOverviewViewModel @Inject constructor(
             .toMutableList()
 
         val formattedTotal = DurationFormat()
-            .format(totalSeconds.toDuration(DurationUnit.SECONDS), DurationFormat.Unit.SECOND)
+            .format(totalMinutes.toDuration(DurationUnit.MINUTES), DurationFormat.Unit.MINUTE)
 
         _uiState.selectedDateDetails = DailyDateDetails(
             formattedTotalTime = formattedTotal,
-            timeDetails = sortedDetails,
-            firstBook      = firstRecord?.let { _uiState.bookInformationMap[it.bookId] },
-            firstSeenTime  = firstRecord?.firstSeen?.format(dateFormatter),
-            lastBook       = lastRecord?.let  { _uiState.bookInformationMap[it.bookId] },
-            lastSeenTime   = lastRecord?.lastSeen?.format(dateFormatter)
+            timeDetails = sortedDetails
         )
     }
 

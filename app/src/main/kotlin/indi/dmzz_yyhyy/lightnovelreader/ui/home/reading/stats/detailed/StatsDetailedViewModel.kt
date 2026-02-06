@@ -54,6 +54,8 @@ class StatsDetailedViewModel @Inject constructor(
             statsRepository.getBookRecords(startDate, endDate)
         val statsEntitiesMap: Map<LocalDate, ReadingStatisticsEntity> =
             statsRepository.getReadingStatistics(startDate, endDate)
+        val firstReadDateMap = statsRepository.getBookFirstReadDateMap()
+        val firstFinishedDateMap = statsRepository.getBookFirstFinishedDateMap()
 
         val allDates = generateSequence(startDate) { it.plusDays(1) }
             .takeWhile { it <= endDate }
@@ -69,16 +71,10 @@ class StatsDetailedViewModel @Inject constructor(
 
         _uiState.targetDateRangeStatsMap = statsMap
         _uiState.targetDateRangeRecordsMap = recordsMap
+        _uiState.bookFirstReadDateMap = firstReadDateMap
+        _uiState.bookFirstFinishedDateMap = firstFinishedDateMap
 
-        val bookIds = mutableSetOf<String>()
-        statsMap.values.forEach { entity ->
-            bookIds += entity.favoriteBooks
-            bookIds += entity.startedBooks
-            bookIds += entity.finishedBooks
-        }
-        recordsMap.values.flatten().forEach { rec ->
-            bookIds += rec.bookId
-        }
+        val bookIds = recordsMap.values.flatten().map { it.bookId }.toSet()
 
         bookIds.forEach { id ->
             _uiState.bookInformationMap[id] = bookRepository.getStateBookInformation(id, viewModelScope)

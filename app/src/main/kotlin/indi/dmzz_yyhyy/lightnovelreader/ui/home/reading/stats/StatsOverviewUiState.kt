@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.TotalReadingSummary
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import java.time.LocalDate
 
@@ -16,7 +17,7 @@ interface StatsOverviewUiState {
     val thresholds: Int
     val startDate: LocalDate
     var dateLevelMap: Map<LocalDate, Level>
-    var totalRecordEntity: BookRecordEntity?
+    var totalSummary: TotalReadingSummary?
     var bookRecordsByDate: Map<LocalDate, List<BookRecordEntity>>
     val bookInformationMap: Map<String, BookInformation>
     val selectedDateDetails: DailyDateDetails?
@@ -29,7 +30,7 @@ class MutableStatisticsOverviewUiState : StatsOverviewUiState {
     override var thresholds: Int by mutableIntStateOf(0)
     override val startDate: LocalDate by mutableStateOf(LocalDate.now().minusMonths(6))
     override var dateLevelMap: Map<LocalDate, Level> by mutableStateOf(emptyMap())
-    override var totalRecordEntity: BookRecordEntity? by mutableStateOf(null)
+    override var totalSummary: TotalReadingSummary? by mutableStateOf(null)
     override var bookRecordsByDate: Map<LocalDate, List<BookRecordEntity>> by mutableStateOf(emptyMap())
     override var bookInformationMap = mutableStateMapOf<String, BookInformation>()
     override var selectedDateDetails: DailyDateDetails? by mutableStateOf(null)

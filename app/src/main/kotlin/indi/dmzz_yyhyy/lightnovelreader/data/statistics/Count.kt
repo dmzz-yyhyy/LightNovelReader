@@ -64,4 +64,12 @@ class Count {
 
     fun getHourStatistics() = (0..23).associateWith { getMinute(it) }
     fun getTotalMinutes() = (0..23).sumOf { getMinute(it) }
+
+    operator fun plus(other: Count): Count {
+        val count = Count()
+        for (hour in 0..23) {
+            count.setMinute(hour, other.getMinute(hour).coerceAtLeast(this.getMinute(hour)))
+        }
+        return count
+    }
 }

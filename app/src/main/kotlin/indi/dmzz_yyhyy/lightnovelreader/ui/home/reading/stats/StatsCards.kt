@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.BookStack
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsDetailedUiState
@@ -63,7 +62,7 @@ private fun assignColors(
 ): Map<String, Color> {
     return records
         .groupBy { it.bookId }
-        .mapValues { (_, list) -> list.sumOf { it.totalTime } }
+        .mapValues { (_, list) -> list.sumOf { it.readingTimeCount.getTotalMinutes() } }
         .toList()
         .sortedByDescending { it.second }
         .mapIndexed { index, (bookId, _) ->
@@ -78,17 +77,17 @@ private fun assignColors(
 }
 
 /**
- * @return startedBooks/favoriteBooks/finishedBooks 在日期范围内的 BookId 列表
+ * @return startedBooks/finishedBooks 在日期范围内的 BookId 列表
  */
 private fun getBooksInRange(
-    statsMap: Map<LocalDate, ReadingStatisticsEntity>,
-    dateRange: ClosedRange<LocalDate>,
-    selector: (ReadingStatisticsEntity) -> List<String>
+    bookDateMap: Map<String, LocalDate>,
+    dateRange: ClosedRange<LocalDate>
 ): List<String> {
-    return statsMap
-        .filterKeys { it in dateRange }
-        .values
-        .flatMap(selector)
+    return bookDateMap
+        .filterValues { it in dateRange }
+        .toList()
+        .sortedBy { it.second }
+        .map { it.first }
 }
 
 /**
@@ -117,7 +116,7 @@ private fun BookActivitySection(
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 24.dp)
+                .padding(start = 12.dp)
                 .weight(1f, fill = true),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
@@ -168,13 +167,10 @@ fun ActivityStatsCard(
     modifier: Modifier = Modifier
 ) {
     val dateRange = uiState.currentDateRange
-    val statsMap = uiState.targetDateRangeStatsMap
+    val startedBooks = getBooksInRange(uiState.bookFirstReadDateMap, dateRange)
+    val finishedBooks = getBooksInRange(uiState.bookFirstFinishedDateMap, dateRange)
 
-    val startedBooks = getBooksInRange(statsMap, dateRange) { it.startedBooks }
-    val favoriteBooks = getBooksInRange(statsMap, dateRange) { it.favoriteBooks }
-    val finishedBooks = getBooksInRange(statsMap, dateRange) { it.finishedBooks }
-
-    val hasActivity = startedBooks.isNotEmpty() || favoriteBooks.isNotEmpty() || finishedBooks.isNotEmpty()
+    val hasActivity = startedBooks.isNotEmpty() || finishedBooks.isNotEmpty()
     if (!hasActivity) return
 
     StatsCard(
@@ -189,16 +185,9 @@ fun ActivityStatsCard(
                     bookInfoMap = uiState.bookInformationMap,
                     uiState = uiState
                 )
-                HorizontalDivider()
-            }
-            if (favoriteBooks.isNotEmpty()) {
-                BookActivitySection(
-                    titleResId = R.string.activity_collections,
-                    bookIds = favoriteBooks,
-                    bookInfoMap = uiState.bookInformationMap,
-                    uiState = uiState
-                )
-                HorizontalDivider()
+                if (finishedBooks.isNotEmpty()) {
+                    HorizontalDivider()
+                }
             }
             if (finishedBooks.isNotEmpty()) {
                 BookActivitySection(
@@ -207,7 +196,6 @@ fun ActivityStatsCard(
                     bookInfoMap = uiState.bookInformationMap,
                     uiState = uiState
                 )
-                HorizontalDivider()
             }
         }
     }
@@ -233,9 +221,12 @@ fun ReadingDetailStatsCard(
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val orderedBooks = allRecords
-                    .sortedBy { it.lastSeen }
-                    .map { it.bookId }
-                    .distinct()
+                    .map { it.bookId to it.readingTimeCount.getTotalMinutes() }
+                    .groupBy({ it.first }, { it.second })
+                    .mapValues { (_, minutes) -> minutes.sum() }
+                    .toList()
+                    .sortedByDescending { it.second }
+                    .map { it.first }
                 BookStack(
                     uiState = uiState,
                     books = orderedBooks,
@@ -302,9 +293,20 @@ fun ReadingTimeBar(
     }
 
     val grouped = recordList.groupBy { it.bookId }
-    val totalTime = recordList.sumOf { it.totalTime }.toFloat()
+    val totalTime = recordList.sumOf { it.readingTimeCount.getTotalMinutes() }.toFloat()
+    if (totalTime <= 0f) {
+        Box(
+            modifier = Modifier
+                .height(80.dp)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(stringResource(R.string.no_records))
+        }
+        return
+    }
     val sortedBooks = grouped
-        .mapValues { it.value.sumOf { r -> r.totalTime } }
+        .mapValues { it.value.sumOf { r -> r.readingTimeCount.getTotalMinutes() } }
         .toList()
         .sortedByDescending { it.second }
 
@@ -372,7 +374,7 @@ fun ReadingTimeBar(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(Modifier.width(12.dp))
-                    val formattedTime = DateUtils.formatElapsedTime(timeMinutes * 1L)
+                    val formattedTime = DateUtils.formatElapsedTime(timeMinutes * 60L)
                     Text(
                         text = formattedTime,
                         style = typography.labelMedium,
