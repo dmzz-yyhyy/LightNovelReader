@@ -10,7 +10,7 @@ import androidx.compose.runtime.setValue
 import java.time.LocalDateTime
 
 @Stable
-interface UserReadingData: CanBeEmpty {
+interface UserReadingData: CanBeEmpty, Copyable<UserReadingData> {
     val id: String
     val lastReadTime: LocalDateTime
     val totalReadTime: Int
@@ -40,6 +40,8 @@ interface UserReadingData: CanBeEmpty {
             return this
         return MutableUserReadingData(id, lastReadTime, totalReadTime, readingProgress, lastReadChapterId, lastReadChapterTitle, currentChapterReadingProgressMap, maxChapterReadingProgressMap)
     }
+
+    override fun copy(): UserReadingData = MutableUserReadingData(id, lastReadTime, totalReadTime, readingProgress, lastReadChapterId, lastReadChapterTitle, currentChapterReadingProgressMap, maxChapterReadingProgressMap)
 }
 
 class MutableUserReadingData(

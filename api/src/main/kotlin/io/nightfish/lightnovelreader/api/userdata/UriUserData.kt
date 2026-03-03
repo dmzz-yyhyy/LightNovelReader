@@ -10,7 +10,7 @@ class UriUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<Uri>(path) {
     override fun set(value: Uri) {
-        userDataDao.update(path, group, "Uri", value.toString())
+        userDataDao.insert(path, group, "Uri", value.toString())
     }
 
     override fun get(): Uri? {

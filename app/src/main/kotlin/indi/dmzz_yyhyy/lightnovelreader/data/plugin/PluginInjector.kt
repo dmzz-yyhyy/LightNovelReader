@@ -68,7 +68,7 @@ class PluginInjector @Inject constructor(
         catch (_: SecurityException) { }
         try {
             clazz.constructors.forEach { constructor ->
-                constructor.parameterTypes.all { injectMap.keys.contains(it) }
+                if (!constructor.parameterTypes.all { injectMap.keys.contains(it) }) return@forEach
                 return constructor.newInstance(*constructor.parameterTypes.map { injectMap[it] }.toTypedArray()) as T
             }
         }

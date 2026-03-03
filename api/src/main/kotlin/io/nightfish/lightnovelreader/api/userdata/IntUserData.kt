@@ -8,7 +8,7 @@ class IntUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<Int>(path) {
     override fun set(value: Int) {
-        userDataDao.update(path, group, "Int", value.toString())
+        userDataDao.insert(path, group, "Int", value.toString())
     }
 
     override fun get(): Int? {

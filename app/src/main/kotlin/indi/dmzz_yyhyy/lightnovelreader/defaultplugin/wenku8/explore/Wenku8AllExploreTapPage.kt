@@ -5,46 +5,28 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
-import io.nightfish.lightnovelreader.api.explore.ExplorePage
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 
 object Wenku8AllExploreTapPage: ExploreTapPageDataSource {
-    private var lock = false
-    private val exploreBooksRows: MutableStateFlow<List<ExploreBooksRow>> = MutableStateFlow(emptyList())
-
     override val title = "全部"
 
-    override fun getExplorePage(): ExplorePage  {
-        if (!lock) {
-            lock = true
-            CoroutineScope(Dispatchers.IO).launch {
-                exploreBooksRows.update {
-                    it + getAllBookBooksRow().copy(expandable = true, expandedPageDataSourceId = "allBook")
-                }
-                exploreBooksRows.update {
-                    it + getTopListBookBooksRow("热门轻小说", "allvisit")
-                }
-                exploreBooksRows.update {
-                    it + getTopListBookBooksRow("动画化作品", "anime")
-                }
-                exploreBooksRows.update {
-                    it + getTopListBookBooksRow("今日更新", "lastupdate")
-                }
-                exploreBooksRows.update {
-                    it + getTopListBookBooksRow("新书一览", "postdate")
-                }
-                exploreBooksRows.update {
-                    it + getCompletedBooksRow().copy(expandable = true, expandedPageDataSourceId = "allCompletedBook")
-                }
-            }
-        }
-        return ExplorePage("首页", exploreBooksRows)
+    override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
+        val rows = mutableListOf<ExploreBooksRow>()
+        rows.add(getAllBookBooksRow().copy(expandable = true, expandedPageDataSourceId = "allBook"))
+        emit(rows)
+        rows.add(getTopListBookBooksRow("热门轻小说", "allvisit"))
+        emit(rows)
+        rows.add(getTopListBookBooksRow("动画化作品", "anime"))
+        emit(rows)
+        rows.add(getTopListBookBooksRow("今日更新", "lastupdate"))
+        emit(rows)
+        rows.add(getTopListBookBooksRow("新书一览", "postdate"))
+        emit(rows)
+        rows.add(getCompletedBooksRow().copy(expandable = true, expandedPageDataSourceId = "allCompletedBook"))
+        emit(rows)
     }
 
     private suspend fun getCompletedBooksRow(): ExploreBooksRow {

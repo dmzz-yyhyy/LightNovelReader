@@ -50,7 +50,7 @@ object GithubParser {
                 ?.groups
                 ?.get(1)
                 ?.value
-                ?.let { return "http://$it" } ?: return RAW_HOST
+                ?.let { return "http://$it" }
         } catch (e: Exception) {
             e.printStackTrace()
         }

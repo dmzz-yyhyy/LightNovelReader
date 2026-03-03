@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.userdata
 
-import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import io.nightfish.lightnovelreader.api.userdata.BooleanUserData
 import io.nightfish.lightnovelreader.api.userdata.ColorUserData
@@ -27,17 +26,4 @@ class UserDataRepository @Inject constructor(
     override fun uriUserData(path: String) = UriUserData(path, userDataDao)
 
     override fun remove(path: String) = userDataDao.remove(path)
-
-    fun importUserData(data: AppUserDataContent): Boolean {
-        val userDataList = data.userData ?: return false
-        userDataList.forEach {
-            userDataDao.update(
-                path = it.path,
-                group = it.group,
-                type = it.type,
-                value = it.value
-            )
-        }
-        return true
-    }
 }

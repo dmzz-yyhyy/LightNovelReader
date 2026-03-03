@@ -28,6 +28,7 @@
 -dontwarn android.content.res.**
 -dontwarn org.slf4j.impl.StaticLoggerBinder
 -dontwarn org.jetbrains.kotlin.**
+-dontwarn com.google.gson.**
 -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 -keep,allowobfuscation,allowshrinking class indi.dmzz_yyhyy.lightnovelreader.data.json.** { *; }
 -keep,allowobfuscation,allowshrinking class indi.dmzz_yyhyy.lightnovelreader.data.web.zaicomic.** { *; }
@@ -45,8 +46,6 @@
 -keepclassmembernames class indi.dmzz_yyhyy.lightnovelreader.data.update.** { *; }
 
 -keepattributes Signature, *Annotation*, InnerClasses
--keep class com.google.gson.reflect.TypeToken
--keep class * extends com.google.gson.reflect.TypeToken
 -keep public class * implements java.lang.reflect.Type
 -keepclassmembers,allowobfuscation,allowoptimization class <1> {
   <init>();

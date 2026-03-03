@@ -32,7 +32,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
-import io.nightfish.lightnovelreader.api.book.WorldCount
+import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.builder.ContentBuilder
 import io.nightfish.lightnovelreader.api.content.builder.image
 import io.nightfish.lightnovelreader.api.content.builder.simpleText
@@ -234,8 +234,8 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
 
         private val MIGRATION_13_14 = object : Migration(13, 14) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("alter table book_information rename to temp")
-                var cursor = db.query("select * from temp")
+                println("2333")
+                db.execSQL("alter table book_information rename to temp1")
                 db.execSQL(
                     "create table book_information (" +
                             "id TEXT NOT NULL," +
@@ -251,67 +251,69 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             "is_complete INTEGER NOT NULL, " +
                             "PRIMARY KEY(id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
-                        )
-                        contentValues.put(
-                            "title",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "title" })
-                        )
-                        contentValues.put(
-                            "subtitle",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "subtitle" })
-                        )
-                        contentValues.put(
-                            "cover_uri",
-                            UriConverter.uriToString(
-                                cursor.getString(cursor.columnNames.indexOfFirst { it == "cover_url" })
-                                    .toUri()
+                db.query("select * from temp1").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
                             )
-                        )
-                        contentValues.put(
-                            "author",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "author" })
-                        )
-                        contentValues.put(
-                            "description",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "description" })
-                        )
-                        contentValues.put(
-                            "tags",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "tags" })
-                        )
-                        contentValues.put(
-                            "word_count",
-                            WorldCountConverter.worldCountToString(WorldCount(cursor.getInt(cursor.columnNames.indexOfFirst { it == "word_count" })))
-                        )
-                        contentValues.put(
-                            "publishing_house",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "publishing_house" })
-                        )
-                        contentValues.put(
-                            "last_update",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "last_update" })
-                        )
-                        contentValues.put(
-                            "is_complete",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "is_complete" })
-                        )
-                        db.insert(
-                            "book_information",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                            contentValues.put(
+                                "title",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "title" })
+                            )
+                            contentValues.put(
+                                "subtitle",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "subtitle" })
+                            )
+                            contentValues.put(
+                                "cover_uri",
+                                UriConverter.uriToString(
+                                    cursor.getString(cursor.columnNames.indexOfFirst { it == "cover_url" })
+                                        .toUri()
+                                )
+                            )
+                            contentValues.put(
+                                "author",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "author" })
+                            )
+                            contentValues.put(
+                                "description",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "description" })
+                            )
+                            contentValues.put(
+                                "tags",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "tags" })
+                            )
+                            contentValues.put(
+                                "word_count",
+                                WorldCountConverter.worldCountToString(WordCount(cursor.getInt(cursor.columnNames.indexOfFirst { it == "word_count" })))
+                            )
+                            contentValues.put(
+                                "publishing_house",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "publishing_house" })
+                            )
+                            contentValues.put(
+                                "last_update",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "last_update" })
+                            )
+                            contentValues.put(
+                                "is_complete",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "is_complete" })
+                            )
+                            db.insert(
+                                "book_information",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp1")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table volume rename to temp")
-                cursor = db.query("select * from temp")
+
+                db.execSQL("alter table volume rename to temp2")
                 db.execSQL(
                     "create table volume (" +
                             "book_id TEXT NOT NULL," +
@@ -321,72 +323,79 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             "volume_index INTEGER NOT NULL, " +
                             "PRIMARY KEY(volume_id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "book_id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "volume_id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "volume_id" })
-                        )
-                        contentValues.put(
-                            "volume_title",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "volume_title" })
-                        )
-                        contentValues.put(
-                            "chapter_id_list",
-                            UriConverter.uriToString(
-                                cursor.getString(cursor.columnNames.indexOfFirst { it == "chapter_id_list" })
-                                    .toUri()
+                db.query("select * from temp2").let { cursor ->
+                    println("ciallo")
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            println("1: " + cursor.columnNames.joinToString())
+                            println("2: " + cursor.columnNames.indexOfFirst { it == "book_id" })
+                            println("3: " + cursor.getString(cursor.columnNames.indexOfFirst { it == "book_id" }))
+                            contentValues.put(
+                                "book_id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
+                                    .toString()
                             )
-                        )
-                        contentValues.put(
-                            "volume_index",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "volume_index" })
-                        )
-                        db.insert(
-                            "volume",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
-                }
-                db.execSQL("drop table temp")
+                            contentValues.put(
+                                "volume_id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "volume_id" })
+                            )
+                            contentValues.put(
+                                "volume_title",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "volume_title" })
+                            )
+                            contentValues.put(
+                                "chapter_id_list",
+                                UriConverter.uriToString(
+                                    cursor.getString(cursor.columnNames.indexOfFirst { it == "chapter_id_list" })
+                                        .toUri()
+                                )
+                            )
+                            contentValues.put(
+                                "volume_index",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "volume_index" })
+                            )
+                            db.insert(
+                                "volume",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp2")
 
-                db.execSQL("alter table chapter_information rename to temp")
-                cursor = db.query("select * from temp")
+                }
+
+                db.execSQL("alter table chapter_information rename to temp3")
                 db.execSQL(
                     "create table chapter_information (" +
                             "id TEXT NOT NULL," +
                             "title TEXT NOT NULL," +
                             "PRIMARY KEY(id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getString(cursor.getColumnIndexOrThrow("id"))
-                        )
-                        contentValues.put(
-                            "title",
-                            cursor.getString(cursor.getColumnIndexOrThrow("title"))
-                        )
-                        db.insert(
-                            "chapter_information",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                db.query("select * from temp3").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getString(cursor.getColumnIndexOrThrow("id"))
+                            )
+                            contentValues.put(
+                                "title",
+                                cursor.getString(cursor.getColumnIndexOrThrow("title"))
+                            )
+                            db.insert(
+                                "chapter_information",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp3")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table chapter_content rename to temp")
-                cursor = db.query("select * from temp")
+                db.execSQL("alter table chapter_content rename to temp4")
                 db.execSQL(
                     "create table chapter_content (" +
                             "id TEXT NOT NULL," +
@@ -396,48 +405,50 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             "title TEXT NOT NULL," +
                             "PRIMARY KEY(id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        val textContent =
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "content" })
+                db.query("select * from temp4").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            val textContent =
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "content" })
 
-                        val content = ContentBuilder().apply {
-                            textContent.split("[image]").forEach {
-                                if (it.trim().startsWith("http")) image(it.toUri())
-                                else simpleText(it)
-                            }
-                        }.build()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
-                        )
-                        contentValues.put("content", content.toString())
-                        contentValues.put(
-                            "lastChapter",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "lastChapter" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "nextChapter",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "nextChapter" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "title",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "title" })
-                        )
-                        db.insert(
-                            "chapter_content",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                            val content = ContentBuilder().apply {
+                                textContent.split("[image]").forEach {
+                                    if (it.trim().startsWith("http")) image(it.toUri())
+                                    else simpleText(it)
+                                }
+                            }.build()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                                    .toString()
+                            )
+                            contentValues.put("content", content.toString())
+                            contentValues.put(
+                                "lastChapter",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "lastChapter" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "nextChapter",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "nextChapter" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "title",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "title" })
+                            )
+                            db.insert(
+                                "chapter_content",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp4")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table user_reading_data rename to temp")
-                cursor = db.query("select * from temp")
+                db.execSQL("alter table user_reading_data rename to temp5")
                 db.execSQL(
                     "create table user_reading_data (" +
                             "id TEXT NOT NULL," +
@@ -450,53 +461,55 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             "total_read_time INTEGER NOT NULL," +
                             "PRIMARY KEY(id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
-                        )
-                        contentValues.put(
-                            "last_read_chapter_id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_read_chapter_id" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "last_read_chapter_progress",
-                            cursor.getFloat(cursor.columnNames.indexOfFirst { it == "last_read_chapter_progress" })
-                        )
-                        contentValues.put(
-                            "last_read_chapter_title",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "last_read_chapter_title" })
-                        )
-                        contentValues.put(
-                            "last_read_time",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "last_read_time" })
-                        )
-                        contentValues.put(
-                            "read_completed_chapter_ids",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "read_completed_chapter_ids" })
-                        )
-                        contentValues.put(
-                            "reading_progress",
-                            cursor.getFloat(cursor.columnNames.indexOfFirst { it == "reading_progress" })
-                        )
-                        contentValues.put(
-                            "total_read_time",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_read_time" })
-                        )
-                        db.insert(
-                            "user_reading_data",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                db.query("select * from temp5").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "last_read_chapter_id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_read_chapter_id" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "last_read_chapter_progress",
+                                cursor.getFloat(cursor.columnNames.indexOfFirst { it == "last_read_chapter_progress" })
+                            )
+                            contentValues.put(
+                                "last_read_chapter_title",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "last_read_chapter_title" })
+                            )
+                            contentValues.put(
+                                "last_read_time",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "last_read_time" })
+                            )
+                            contentValues.put(
+                                "read_completed_chapter_ids",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "read_completed_chapter_ids" })
+                            )
+                            contentValues.put(
+                                "reading_progress",
+                                cursor.getFloat(cursor.columnNames.indexOfFirst { it == "reading_progress" })
+                            )
+                            contentValues.put(
+                                "total_read_time",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_read_time" })
+                            )
+                            db.insert(
+                                "user_reading_data",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp5")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table book_shelf_book_metadata rename to temp")
-                cursor = db.query("select * from temp")
+                db.execSQL("alter table book_shelf_book_metadata rename to temp6")
                 db.execSQL(
                     "create table book_shelf_book_metadata (" +
                             "id TEXT NOT NULL," +
@@ -504,32 +517,34 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             "last_update TEXT NOT NULL," +
                             "PRIMARY KEY(id))"
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
-                        )
-                        contentValues.put(
-                            "book_shelf_ids",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "book_shelf_ids" })
-                        )
-                        contentValues.put(
-                            "last_update",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "last_update" })
-                        )
-                        db.insert(
-                            "book_shelf_book_metadata",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                db.query("select * from temp6").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "book_shelf_ids",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "book_shelf_ids" })
+                            )
+                            contentValues.put(
+                                "last_update",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "last_update" })
+                            )
+                            db.insert(
+                                "book_shelf_book_metadata",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp6")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table book_records rename to temp")
-                cursor = db.query("select * from temp")
+                db.execSQL("alter table book_records rename to temp7")
                 db.execSQL(
                     """
                     CREATE TABLE book_records (
@@ -542,49 +557,50 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         last_seen INTEGER NOT NULL)
                 """
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
-                        )
-                        contentValues.put(
-                            "date",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "date" })
-                        )
-                        contentValues.put(
-                            "book_id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "sessions",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "sessions" })
-                        )
-                        contentValues.put(
-                            "total_time",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_time" })
-                        )
-                        contentValues.put(
-                            "first_seen",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "first_seen" })
-                        )
-                        contentValues.put(
-                            "last_seen",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_seen" })
-                        )
-                        db.insert(
-                            "book_records",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                db.query("select * from temp7").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                            )
+                            contentValues.put(
+                                "date",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "date" })
+                            )
+                            contentValues.put(
+                                "book_id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "sessions",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "sessions" })
+                            )
+                            contentValues.put(
+                                "total_time",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_time" })
+                            )
+                            contentValues.put(
+                                "first_seen",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "first_seen" })
+                            )
+                            contentValues.put(
+                                "last_seen",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_seen" })
+                            )
+                            db.insert(
+                                "book_records",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp7")
                 }
-                db.execSQL("drop table temp")
 
-                db.execSQL("alter table formatting_rule rename to temp")
-                cursor = db.query("select * from temp")
+                db.execSQL("alter table formatting_rule rename to temp8")
                 db.execSQL(
                     """
                 CREATE TABLE formatting_rule (
@@ -597,46 +613,48 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                     is_enabled INTEGER NOT NULL)
                 """
                 )
-                if (cursor.moveToFirst()) {
-                    do {
-                        val contentValues = ContentValues()
-                        contentValues.put(
-                            "id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
-                        )
-                        contentValues.put(
-                            "book_id",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
-                                .toString()
-                        )
-                        contentValues.put(
-                            "name",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "sessions" })
-                        )
-                        contentValues.put(
-                            "is_regex",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_time" })
-                        )
-                        contentValues.put(
-                            "match",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "first_seen" })
-                        )
-                        contentValues.put(
-                            "replacement",
-                            cursor.getString(cursor.columnNames.indexOfFirst { it == "last_seen" })
-                        )
-                        contentValues.put(
-                            "is_enabled",
-                            cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_seen" })
-                        )
-                        db.insert(
-                            "formatting_rule",
-                            SQLiteDatabase.CONFLICT_FAIL,
-                            contentValues
-                        )
-                    } while (cursor.moveToNext())
+                db.query("select * from temp8").let { cursor ->
+                    if (cursor.moveToFirst()) {
+                        do {
+                            val contentValues = ContentValues()
+                            contentValues.put(
+                                "id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                            )
+                            contentValues.put(
+                                "book_id",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "book_id" })
+                                    .toString()
+                            )
+                            contentValues.put(
+                                "name",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "sessions" })
+                            )
+                            contentValues.put(
+                                "is_regex",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "total_time" })
+                            )
+                            contentValues.put(
+                                "match",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "first_seen" })
+                            )
+                            contentValues.put(
+                                "replacement",
+                                cursor.getString(cursor.columnNames.indexOfFirst { it == "last_seen" })
+                            )
+                            contentValues.put(
+                                "is_enabled",
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "last_seen" })
+                            )
+                            db.insert(
+                                "formatting_rule",
+                                SQLiteDatabase.CONFLICT_FAIL,
+                                contentValues
+                            )
+                        } while (cursor.moveToNext())
+                    }
+                    db.execSQL("drop table temp8")
                 }
-                db.execSQL("drop table temp")
             }
         }
 

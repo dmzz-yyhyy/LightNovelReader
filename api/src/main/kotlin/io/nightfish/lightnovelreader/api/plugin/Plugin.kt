@@ -19,6 +19,8 @@ package io.nightfish.lightnovelreader.api.plugin
  * - 同组，且 `apiVersion <= 宿主版本` 时兼容
  * - 不同组，或高于宿主版本时视为不兼容
  */
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Plugin(
     val name: String,
     val version: Int,

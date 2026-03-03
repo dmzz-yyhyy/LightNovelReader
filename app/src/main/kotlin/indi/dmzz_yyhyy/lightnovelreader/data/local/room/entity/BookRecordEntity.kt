@@ -2,13 +2,14 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Index
+import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.CountConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import java.time.LocalDate
+import java.time.LocalTime
 
+@Serializable
 @TypeConverters(
     LocalDateTimeConverter::class,
     CountConverter::class

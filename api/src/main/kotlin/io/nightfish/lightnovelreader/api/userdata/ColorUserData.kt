@@ -9,7 +9,7 @@ class ColorUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<Color>(path) {
     override fun set(value: Color) {
-        userDataDao.update(path, group, "Color", value.value.toString())
+        userDataDao.insert(path, group, "Color", value.value.toString())
     }
 
     override fun get(): Color? {

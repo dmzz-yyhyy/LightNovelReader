@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import java.util.concurrent.PriorityBlockingQueue
@@ -66,10 +68,6 @@ class AdvancedPrioritySemaphore(permits: Int) {
             available += permits
             checkAndSignalNext()
         }
-    }
-
-    fun tryAcquire(priority: Int = 0): Boolean {
-        return tryAcquire(1, priority)
     }
 
     fun tryAcquire(permits: Int, priority: Int = 0): Boolean {

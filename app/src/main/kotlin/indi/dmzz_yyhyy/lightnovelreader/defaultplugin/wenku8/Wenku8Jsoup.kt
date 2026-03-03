@@ -2,7 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8
 
 import cxhttp.CxHttp
 import cxhttp.response.Response
-import indi.dmzz_yyhyy.lightnovelreader.utils.UserAgentGenerator
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Semaphore

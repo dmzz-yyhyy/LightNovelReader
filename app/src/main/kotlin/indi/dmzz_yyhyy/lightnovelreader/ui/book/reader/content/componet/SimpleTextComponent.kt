@@ -35,7 +35,6 @@ fun SimpleTextComponentContent(
             color = color,
             lineHeight = (fontSize.value + fontLineHeight.value).sp,
             onTextLayout = {
-                println("ciallo")
             }
         )
     }

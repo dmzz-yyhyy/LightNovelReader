@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home
 
+import android.content.Context
 import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
@@ -9,12 +11,15 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
+import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.bookshelf.MutableBookshelf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,6 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookshelfHomeViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
     private val workManager: WorkManager,
@@ -67,6 +73,7 @@ class BookshelfHomeViewModel @Inject constructor(
                 )
         }
     }
+
     private fun getBookshelf(id: Int): MutableBookshelf {
         val bookshelfFlow = bookshelfRepository.getBookshelfFlow(id)
         val mutableBookshelf = MutableBookshelf().apply { this.id = id }
@@ -157,7 +164,12 @@ class BookshelfHomeViewModel @Inject constructor(
 
     fun removeSelectedBooks() {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.selectedBookIds.forEach { bookshelfRepository.deleteBookFromBookshelf(_uiState.selectedBookshelfId, it) }
+            _uiState.selectedBookIds.forEach {
+                bookshelfRepository.deleteBookFromBookshelf(
+                    _uiState.selectedBookshelfId,
+                    it
+                )
+            }
             _uiState.selectedBookIds.clear()
         }
     }
@@ -167,7 +179,8 @@ class BookshelfHomeViewModel @Inject constructor(
         _uiState.selectedBookIds.forEach { bookId ->
             _uiState.bookInformationMap[bookId]?.let { bookInformation ->
                 bookshelfIds.forEach {
-                    bookshelfRepository.addBookIntoBookShelf(it,
+                    bookshelfRepository.addBookIntoBookShelf(
+                        it,
                         bookInformation
                     )
                 }
@@ -178,14 +191,59 @@ class BookshelfHomeViewModel @Inject constructor(
         _uiState.selectMode = false
     }
 
-    fun saveAllBookshelfJsonData(uri: Uri) {
+    fun saveAllBookshelf(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            bookshelfRepository.saveBookshelfJsonData(-1, uri)
+            val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
+                .setInputData(
+                    workDataOf(
+                        "uri" to uri.toString(),
+                        "bookshelfId" to -1
+                    )
+                )
+                .build()
+            workManager.enqueueUniqueWork(
+                uri.toString(),
+                ExistingWorkPolicy.KEEP,
+                workRequest
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                workManager.getWorkInfoByIdFlow(workRequest.id).collect {
+                    it ?: return@collect
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> Toast.makeText(context, "导出成功", Toast.LENGTH_LONG).show()
+                        WorkInfo.State.FAILED -> Toast.makeText(context, "导出失败", Toast.LENGTH_LONG).show()
+                        else -> return@collect
+                    }
+                }
+            }
         }
     }
-    fun saveThisBookshelfJsonData(uri: Uri) {
+
+    fun saveThisBookshelf(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            bookshelfRepository.saveBookshelfJsonData(_uiState.selectedBookshelfId, uri)
+            val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
+                .setInputData(
+                    workDataOf(
+                        "uri" to uri.toString(),
+                        "bookshelfId" to uiState.selectedBookshelfId
+                    )
+                )
+                .build()
+            workManager.enqueueUniqueWork(
+                uri.toString(),
+                ExistingWorkPolicy.KEEP,
+                workRequest
+            )
+            CoroutineScope(Dispatchers.Main).launch {
+                workManager.getWorkInfoByIdFlow(workRequest.id).collect {
+                    it ?: return@collect
+                    when(it.state) {
+                        WorkInfo.State.SUCCEEDED -> Toast.makeText(context, "导出成功", Toast.LENGTH_LONG).show()
+                        WorkInfo.State.FAILED -> Toast.makeText(context, "导出失败", Toast.LENGTH_LONG).show()
+                        else -> return@collect
+                    }
+                }
+            }
         }
     }
 

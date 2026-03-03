@@ -35,7 +35,7 @@ fun NavGraphBuilder.homeNavigation(sharedTransitionScope: SharedTransitionScope)
         readingNavigation(sharedTransitionScope)
         exploreNavigation()
         bookshelfNavigation(sharedTransitionScope)
-        settingsNavigation(sharedTransitionScope)
+        settingsNavigation()
     }
 }
 

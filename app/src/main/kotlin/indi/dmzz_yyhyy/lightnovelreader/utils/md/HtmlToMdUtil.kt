@@ -137,7 +137,7 @@ object HtmlToMdUtil {
 
     private fun getLastLine(lines: ArrayList<MDLine>): MDLine {
         val line: MDLine
-        if (lines.size > 0) {
+        if (lines.isNotEmpty()) {
             line = lines[lines.size - 1]
         } else {
             line = MDLine(MDLine.MDLineType.None, 0, "")

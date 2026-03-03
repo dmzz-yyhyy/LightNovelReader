@@ -1,23 +1,24 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter.dateToString
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
-import io.nightfish.lightnovelreader.api.book.UserReadingData
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
 @Dao
 interface UserReadingDataDao {
-    @TypeConverters(ChapterReadingProgressMapConverter::class)
+    @TypeConverters(ChapterReadingProgressMapConverter::class, LocalDateTimeConverter::class)
     @Query("replace into user_reading_data (id, last_read_time, total_read_time, reading_progress, last_read_chapter_id, last_read_chapter_title, current_chapter_reading_progress_map, max_chapter_reading_progress_map) " +
             "values (:id, :lastReadTime, :totalReadTime, :readingProgress, :lastReadChapterId, :lastReadChapterTitle, :currentChapterReadingProgressMap, :maxChapterReadingProgressMap)")
-    fun update(
+    fun insert(
         id: String,
-        lastReadTime: String,
+        lastReadTime: LocalDateTime,
         totalReadTime: Int,
         readingProgress: Float,
         lastReadChapterId: String,
@@ -26,21 +27,8 @@ interface UserReadingDataDao {
         maxChapterReadingProgressMap: Map<String, Float>
     )
 
-    @Transaction
-    fun update(userReading: UserReadingData) {
-        dateToString(userReading.lastReadTime)?.let {
-            update(
-                userReading.id,
-                it,
-                userReading.totalReadTime,
-                userReading.readingProgress,
-                userReading.lastReadChapterId,
-                userReading.lastReadChapterTitle,
-                userReading.currentChapterReadingProgressMap,
-                userReading.maxChapterReadingProgressMap
-            )
-        }
-    }
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(userReading: UserReadingDataEntity)
 
     @Query("select * from user_reading_data where id = :id")
     fun getEntity(id: String): UserReadingDataEntity?

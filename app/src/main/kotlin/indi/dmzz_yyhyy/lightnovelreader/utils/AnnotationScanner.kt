@@ -2,6 +2,13 @@ package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.annotation.SuppressLint
 import android.util.Log
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.runCatching
+import com.github.michaelbull.result.unwrap
+import com.github.michaelbull.result.unwrapError
 import dalvik.system.DexClassLoader
 import dalvik.system.DexFile
 import java.lang.reflect.Field
@@ -22,53 +29,60 @@ object AnnotationScanner {
         classLoader: DexClassLoader,
         annotationClass: Class<out Annotation?>,
         scanPackage: String = "",
-    ): MutableList<Class<*>> {
-        val result: MutableList<Class<*>> = ArrayList()
+    ): Result<MutableList<Class<*>>, Throwable> =
+        findField(classLoader, "pathList")
+            .andThen { pathListField ->
+                pathListField.get(classLoader)?.let(::Ok) ?: Err(Error("Failed to get path list"))
+            }.andThen { pathList ->
+                findField(pathList, "dexElements")
+                    .andThen { dexElementsField ->
+                        runCatching {
+                            @Suppress("UNCHECKED_CAST")
+                            dexElementsField.get(pathList) as Array<Any>
+                        }
+                    }
+            }.andThen { dexElements ->
+                val result: MutableList<Class<*>> = ArrayList()
+                for (dexElement in dexElements) {
+                    val dexFileField = findField(dexElement, "dexFile")
+                    if (dexFileField.isErr) {
+                        dexFileField
+                            .unwrapError()
+                            .printStackTrace()
+                        continue
+                    }
+                    val dexFile = dexFileField
+                        .unwrap()
+                        .get(dexElement) as? DexFile
+                        ?: continue
+                    val classNames = dexFile.entries()
 
-        try {
-            val pathListField = findField(classLoader, "pathList")
-            val pathList = pathListField.get(classLoader) ?: return mutableListOf()
-
-            val dexElementsField = findField(pathList, "dexElements")
-            @Suppress("UNCHECKED_CAST") val dexElements = dexElementsField.get(pathList) as? Array<Any> ?: return mutableListOf()
-
-            for (dexElement in dexElements) {
-                val dexFileField = runCatching { findField(dexElement, "dexFile") }.getOrNull() ?: continue
-                val dexFile = dexFileField.get(dexElement) as? DexFile ?: continue
-                val classNames = runCatching { dexFile.entries() }.getOrNull() ?: continue
-
-                while (classNames.hasMoreElements()) {
-                    val className = classNames.nextElement()
-                    if (className.isNullOrEmpty() || !className.contains(".") ||
-                        (scanPackage.isNotEmpty() && !className.startsWith(scanPackage))) continue
-                    runCatching {
+                    while (classNames.hasMoreElements()) {
+                        val className = classNames.nextElement()
+                        if (className.isNullOrEmpty() || !className.contains(".") ||
+                            (scanPackage.isNotEmpty() && !className.startsWith(scanPackage))) continue
                         val clazz = classLoader.loadClass(className)
                         if (clazz.isAnnotationPresent(annotationClass)) {
                             result.add(clazz)
                             Log.d(TAG, "Found annotated class: $className")
                         }
                     }
+
                 }
+                Ok(result)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error scanning annotations", e)
-        }
 
-        return result
-    }
-
-    @Throws(NoSuchFieldException::class)
-    private fun findField(instance: Any, name: String): Field {
+    private fun findField(instance: Any, name: String): Result<Field, Throwable> {
         var clazz: Class<*>? = instance.javaClass
         while (clazz != null) {
             try {
                 val field = clazz.getDeclaredField(name)
                 field.isAccessible = true
-                return field
+                return Ok(field)
             } catch (_: NoSuchFieldException) {
                 clazz = clazz.superclass
             }
         }
-        throw NoSuchFieldException("Field " + name + " not found in " + instance.javaClass)
+        return Err(NoSuchFieldException("Field " + name + " not found in " + instance.javaClass))
     }
 }

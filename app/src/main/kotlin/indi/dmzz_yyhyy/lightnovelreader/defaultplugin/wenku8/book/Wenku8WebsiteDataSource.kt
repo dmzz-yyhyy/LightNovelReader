@@ -4,7 +4,7 @@ import androidx.core.net.toUri
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
 import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
-import indi.dmzz_yyhyy.lightnovelreader.utils.selectFirstXpath
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
@@ -13,16 +13,19 @@ import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.MutableBookInformation
 import io.nightfish.lightnovelreader.api.book.MutableChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.book.WorldCount
+import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.builder.ContentBuilder
 import io.nightfish.lightnovelreader.api.content.builder.image
 import io.nightfish.lightnovelreader.api.content.builder.simpleText
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.jsoup.Jsoup
+import kotlinx.coroutines.flow.flowOn
+import org.jsoup.nodes.Element
+import org.jsoup.nodes.TextNode
 import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -100,7 +103,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
                 ?.replace("全文长度：", "")
                 ?.replace("字", "")
                 ?.toIntOrNull()
-                ?.let { WorldCount(it) }
+                ?.let { WordCount(it) }
                 ?: return@ifCache BookInformation.empty(),
             lastUpdated = soup
                 .selectFirstXpath("//*[@id=\"content\"]/div[1]/table[1]/tbody/tr[2]/td[4]")
@@ -156,21 +159,13 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
         val content = soup.selectFirstXpath("//*[@id=\"content\"]") ?: return@ifCache ChapterContent.empty(chapterId)
         val jsonObject = ContentBuilder().apply {
             var text = ""
-            content.toString().split("\n").forEach {
-                val doc = Jsoup.parse(it)
-                if (doc.body().children().isEmpty()) return@forEach
-                val element = doc.body().child(0)
-                if (element.id() == "content" || element.id() == "contentdp") return@forEach
-                val line = doc.body().text()
-                if (line.isNotEmpty()) {
-                    text = "$text    $line"
-                }
-                when {
-                    element.`is`("br") -> text += "\n"
-                    element.`is`("div.divimage") -> {
+            for (node in content.childNodes()) {
+                when (node) {
+                    is TextNode -> text += node.nodeValue().replace(" ", "  ")
+                    is Element if node.`is`("div.divimage") -> {
                         simpleText(text)
                         text = ""
-                        element
+                        node
                             .selectFirst("img")
                             ?.attr("src")
                             ?.toUri()
@@ -182,20 +177,22 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
                 simpleText(text)
             }
         }.build()
+        val lastChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[3]").let {
+            it ?: return@let ""
+            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) ""
+            else it.attr("href").split(".").firstOrNull() ?: ""
+        }
+        val nextChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[4]").let {
+            it ?: return@let ""
+            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) ""
+            else it.attr("href").split(".").firstOrNull() ?: ""
+        }
         return@ifCache MutableChapterContent(
             id = chapterId,
             title = soup.selectFirstXpath("//*[@id=\"title\"]")?.text() ?: return@ifCache ChapterContent.empty(chapterId),
             content = jsonObject,
-            lastChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[3]").let {
-                it ?: return@let ""
-                if (it.attr("href") == "index.htm") ""
-                else it.attr("href").split(".").firstOrNull() ?: ""
-            },
-            nextChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[4]").let {
-                it ?: return@let ""
-                if (it.attr("href") == "index.htm") ""
-                else it.attr("href").split(".").firstOrNull() ?: ""
-            }
+            lastChapter = lastChapter,
+            nextChapter = nextChapter
         )
     }
 
@@ -204,8 +201,9 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
 
         var targetPage = 1
         var presentPage = 1
-        while(presentPage <= targetPage) {
-            val soup = autoReconnectionGetWithWenku8Cookie(url("modules/article/search.php?searchtype=$searchType&searchkey=$encodedKeyword&page=$presentPage"))
+        while (presentPage <= targetPage) {
+            val soup =
+                autoReconnectionGetWithWenku8Cookie(url("modules/article/search.php?searchtype=$searchType&searchkey=$encodedKeyword&page=$presentPage"))
             if (soup == null) {
                 emit(SearchResult.Error("Failed to request the web page"))
                 return@flow
@@ -214,7 +212,8 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
                 delay(5.seconds)
                 continue
             }
-            val menu = soup.selectFirstXpath("//*[@id=\"content\"]/div[1]/div[4]/div/span[1]/fieldset/div/a")
+            val menu =
+                soup.selectFirstXpath("//*[@id=\"content\"]/div[1]/div[4]/div/span[1]/fieldset/div/a")
             if (menu != null && menu.text().contains("小说目录")) {
                 val id = menu.attr("href").split("/").getOrNull(3)
                 if (id == null) {
@@ -226,7 +225,8 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
             }
             soup.baseUri()
             if (targetPage == 1) {
-                val page = soup.selectFirstXpath("//*[@id=\"pagelink\"]/em")?.text()?.split("/")?.getOrNull(1)?.toIntOrNull()
+                val page = soup.selectFirstXpath("//*[@id=\"pagelink\"]/em")?.text()?.split("/")
+                    ?.getOrNull(1)?.toIntOrNull()
                 if (page == null) {
                     emit(SearchResult.Error("Failed to request the web page"))
                     return@flow
@@ -234,7 +234,8 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
                 targetPage = page
             }
 
-            val books = Wenku8Api.getBookInformationListFromBookCards(soup.selectXpath("//*[@id=\"content\"]/table/tbody/tr/td/div"))
+            val books =
+                Wenku8Api.getBookInformationListFromBookCards(soup.selectXpath("//*[@id=\"content\"]/table/tbody/tr/td/div"))
             for (information in books) {
                 emit(SearchResult.MultipleBook(information))
             }
@@ -251,6 +252,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
         }
         emit(SearchResult.End())
     }
+        .flowOn(Dispatchers.IO)
 
     init {
         CxHttpInit.init()

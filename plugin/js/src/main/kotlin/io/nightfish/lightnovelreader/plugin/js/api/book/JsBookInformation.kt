@@ -2,7 +2,7 @@ package io.nightfish.lightnovelreader.plugin.js.api.book
 
 import android.net.Uri
 import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.WorldCount
+import io.nightfish.lightnovelreader.api.book.WordCount
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -16,7 +16,7 @@ data class JsBookInformation(
     override val description: String,
     override val tags: List<String>,
     override val publishingHouse: String,
-    override val wordCount: WorldCount,
+    override val wordCount: WordCount,
     val lastUpdatedZonedDateTime: ZonedDateTime,
     override val isComplete: Boolean
 ): BookInformation {
@@ -24,7 +24,7 @@ data class JsBookInformation(
 
     companion object {
         fun empty(id: String): JsBookInformation {
-            return JsBookInformation(id, "", "", Uri.EMPTY, "", "", emptyList(), "", WorldCount(-1), ZonedDateTime.now(), false)
+            return JsBookInformation(id, "", "", Uri.EMPTY, "", "", emptyList(), "", WordCount(-1), ZonedDateTime.now(), false)
         }
     }
 }

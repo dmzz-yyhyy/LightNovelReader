@@ -21,7 +21,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
 
 @HiltWorker
 class CheckUpdateWork @AssistedInject constructor(

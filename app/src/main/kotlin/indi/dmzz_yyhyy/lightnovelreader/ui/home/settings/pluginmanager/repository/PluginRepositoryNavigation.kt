@@ -36,7 +36,7 @@ fun NavGraphBuilder.settingsPluginRepositoryDestination() {
         )
 
         LaunchedEffect(Unit) {
-            if (uiState.pluginMetadataList.isEmpty() && !uiState.isLoading) {
+            if (uiState.remotePluginMetadataList.isEmpty() && !uiState.isLoading) {
                 viewModel.loadPluginRepository()
             }
         }

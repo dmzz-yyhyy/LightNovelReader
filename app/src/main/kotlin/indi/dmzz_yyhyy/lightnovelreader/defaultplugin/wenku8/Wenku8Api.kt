@@ -10,14 +10,14 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDis
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
-import indi.dmzz_yyhyy.lightnovelreader.utils.UserAgentGenerator
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.MutableBookInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.book.WorldCount
+import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.component.ImageComponentData
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
@@ -78,7 +78,7 @@ object Wenku8Api : WebBookDataSource {
     )
     var host = hosts[0]
 
-    init {
+    override fun onLoad() {
         coroutineScope.launch {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
@@ -145,7 +145,7 @@ object Wenku8Api : WebBookDataSource {
             navController.navigateToExploreExpandDestination(tag)
     }
 
-    override fun getCoverUriInVolume(
+    override suspend fun getCoverUriInVolume(
         bookId: String,
         volume: Volume,
         volumeChapterContentMap: MutableMap<String, ChapterContent>,
@@ -223,7 +223,7 @@ object Wenku8Api : WebBookDataSource {
                         publishingHouse = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
                             ?.text()?.split("/")?.getOrNull(1)
                             ?.split(":")?.getOrNull(1) ?: "",
-                        wordCount = WorldCount(
+                        wordCount = WordCount(
                             element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
                                 ?.text()?.split("/")?.getOrNull(1)
                                 ?.split(":")?.getOrNull(1)

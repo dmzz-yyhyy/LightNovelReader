@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list
 
 import androidx.compose.foundation.background
@@ -14,8 +16,14 @@ import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsAboutInfoDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsDisableStatsDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsPrivacyPolicyDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
+
 @Composable
 fun AboutSettingsList(
+    settingState: SettingState,
     onClickLicenses: () -> Unit
 ) {
     val appInfo: String = buildString {
@@ -24,9 +32,33 @@ fun AboutSettingsList(
             .append(if (BuildConfig.DEBUG) "debug" else "release")
     }
     var showAppInfoDialog by remember { mutableStateOf(false) }
+    var showDisableStatsDialog by remember { mutableStateOf(false) }
+    var showPrivacyPolicy by remember { mutableStateOf(false) }
 
     if (showAppInfoDialog) {
         SettingsAboutInfoDialog(onDismissRequest = { showAppInfoDialog = false })
+    }
+
+    if (showPrivacyPolicy) {
+        SettingsPrivacyPolicyDialog(
+            onDismissRequest = {
+                showPrivacyPolicy = false
+                showDisableStatsDialog = false
+            }
+        )
+    }
+
+    if (showDisableStatsDialog) {
+        SettingsDisableStatsDialog(
+            onClickConfirm = {
+                settingState.statisticsUserData.asynchronousSet(false)
+                showDisableStatsDialog = false
+            },
+            onDismissRequest = { showDisableStatsDialog = false },
+            onClickShowPrivacyPolicy = {
+                showPrivacyPolicy = true
+            }
+        )
     }
 
     SettingsClickableEntry(
@@ -58,14 +90,21 @@ fun AboutSettingsList(
         description = stringResource(R.string.settings_support_author_desc),
         openUrl = "https://afdian.com/a/lightnovelreader"
     )
-    /* SettingsSwitchEntry(
+    SettingsSwitchEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
+        painter = painterResource(R.drawable. data_usage_24px),
         title = stringResource(R.string.settings_statistics),
         description = stringResource(R.string.settings_statistics_desc),
         checked = if (BuildConfig.DEBUG) false else settingState.statistics,
-        booleanUserData = settingState.statisticsUserData,
+        onCheckedChange = { checked ->
+            if (!checked && settingState.statistics) {
+                showDisableStatsDialog = true
+            } else {
+                settingState.statisticsUserData.asynchronousSet(checked)
+            }
+        },
         disabled = BuildConfig.DEBUG
-    ) */
+    )
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
         painter = painterResource(R.drawable.code_24px),

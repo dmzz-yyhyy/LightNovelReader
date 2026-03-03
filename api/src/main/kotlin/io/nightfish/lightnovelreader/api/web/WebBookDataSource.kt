@@ -109,7 +109,7 @@ interface WebBookDataSource {
      * @param volume 需要搜索封面的卷id
      * @param volumeChapterContentMap 包含搜索卷全部章节的Map, 以章节id为key
      */
-    fun getCoverUriInVolume(
+    suspend fun getCoverUriInVolume(
         bookId: String,
         volume: Volume,
         volumeChapterContentMap: MutableMap<String, ChapterContent>,

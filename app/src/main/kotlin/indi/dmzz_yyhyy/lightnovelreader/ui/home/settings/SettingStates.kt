@@ -26,7 +26,7 @@ class SettingState(
     val appLocaleKey by appLocaleKeyUserData.asState("zh-CN")
     val statistics by statisticsUserData.asState(true)
     val updateChannelKey by updateChannelKeyUserData.asState("Development")
-    val distributionPlatformKey by distributionPlatformKeyUserData.asState("GitHub")
+    val distributionPlatformKey by distributionPlatformKeyUserData.asState("LnrAPI")
     val logLevelKey by logLevelKeyUserData.asState("none")
     val isUseProxy by isUseProxyUserData.asState(false)
     val enableSimplifiedTraditionalTransform by enableSimplifiedTraditionalTransformUserData.safeAsState(false)

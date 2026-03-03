@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -32,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@SuppressLint("LocalContextGetResourceValueCall")
 fun NavGraphBuilder.bookDetailDestination() {
     composable<Route.Book.Detail> { entry ->
         val navController = LocalNavController.current

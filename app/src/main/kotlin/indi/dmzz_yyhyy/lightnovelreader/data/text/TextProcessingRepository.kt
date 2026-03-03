@@ -36,8 +36,6 @@ class TextProcessingRepository @Inject constructor(
     }
 
     fun processText(block: () -> String): String = process(block.invoke()) { it::processText }
-    fun processSearchTypeNameMap(block: () -> Map<String, String>): Map<String, String> = process(block.invoke()) { it::processSearchTypeNameMap }
-    fun processSearchTipMap(block: () -> Map<String, String>): Map<String, String> = process(block.invoke()) { it::processSearchTipMap }
     fun processBookInformation(block: () -> BookInformation): BookInformation = process(block.invoke()) { it::processBookInformation }
     fun processBookVolumes(block: () -> BookVolumes): BookVolumes = process(block.invoke()) { it::processBookVolumes }
     fun processChapterContent(bookId: String, block: () -> ChapterContent): ChapterContent = process(block.invoke()) { processor ->

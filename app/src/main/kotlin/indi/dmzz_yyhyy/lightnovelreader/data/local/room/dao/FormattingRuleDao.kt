@@ -23,11 +23,17 @@ interface FormattingRuleDao {
 
     @Query("replace into formatting_rule (id, book_id, name, is_regex, `match`, replacement, is_enabled) " +
             "values (:id, :bookId, :name, :isRegex, :match, :replacement, :isEnabled)")
-    suspend fun update(id: Int, bookId: String, name: String, isRegex: Boolean, match: String, replacement: String, isEnabled: Boolean)
+    fun update(id: Int, bookId: String, name: String, isRegex: Boolean, match: String, replacement: String, isEnabled: Boolean)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun update(entity: FormattingRuleEntity)
 
     @Query("select * from formatting_rule where id = :id")
-    suspend fun getBookRuleEntity(id: Int): FormattingRuleEntity
+    suspend fun getBookRuleEntity(id: Int?): FormattingRuleEntity?
 
     @Query("delete from formatting_rule where id = :id")
     suspend fun deleteRule(id: Int)
+
+    @Query("delete from book_shelf")
+    fun clear()
 }

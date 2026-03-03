@@ -5,36 +5,22 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
-import io.nightfish.lightnovelreader.api.explore.ExplorePage
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 
 object Wenku8HomeExploreTapPage: ExploreTapPageDataSource {
-    private var lock = false
-    private val exploreBooksRows: MutableStateFlow<List<ExploreBooksRow>> = MutableStateFlow(emptyList())
-
     override val title = "首页"
 
-    override fun getExplorePage(): ExplorePage  {
-        if (!lock) {
-            lock = true
-            CoroutineScope(Dispatchers.IO).launch {
-                val soup = autoReconnectionGetWithWenku8Cookie(host)
-                (0..2).map { index->
-                    exploreBooksRows.update {
-                        it + getBooksRow(index, soup)
-                    }
-                }
-            }
+    override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
+        val rows = mutableListOf<ExploreBooksRow>()
+        val soup = autoReconnectionGetWithWenku8Cookie(host)
+        (0..2).map { index->
+            rows.add(getBooksRow(index, soup))
+            emit(rows)
         }
-        return ExplorePage("首页", exploreBooksRows)
     }
-
     private fun getBooksRow(index: Int, soup: Document?): ExploreBooksRow {
         val title = soup?.selectFirst("#centers > div:nth-child(${index+2}) > div.blocktitle")?.text()
             ?.split("(")?.getOrNull(0) ?: ""

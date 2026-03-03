@@ -8,7 +8,7 @@ class BooleanUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<Boolean>(path) {
     override fun set(value: Boolean) {
-        userDataDao.update(path, group, "Float", value.toString())
+        userDataDao.insert(path, group, "Float", value.toString())
     }
 
     override fun get(): Boolean? {

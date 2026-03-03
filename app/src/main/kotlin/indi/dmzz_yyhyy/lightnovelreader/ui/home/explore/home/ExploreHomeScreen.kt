@@ -66,6 +66,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
@@ -114,74 +115,83 @@ fun ExploreHomeScreen(
     refresh: () -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        init()
-    }
-
     Column {
         TopBar(
             scrollBehavior = enterAlwaysScrollBehavior,
             onClickSearch = onClickSearch
         )
-        ExploreScreen(
-            refresh = refresh,
-            uiState = exploreUiState
-        ) {
-            Column {
-                PrimaryTabRow(selectedTabIndex = exploreHomeUiState.selectedPage) {
-                    exploreHomeUiState.pageTitles.forEachIndexed { index, title ->
-                        Tab(
-                            selected = exploreHomeUiState.selectedPage == index,
-                            onClick = {
-                                changePage(index)
-                            },
-                            text = {
-                                Text(
-                                    text = title,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+
+        LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
+            init()
+        }
+
+        if (exploreHomeUiState.pageTitles.isNotEmpty()) {
+            ExploreScreen(
+                refresh = refresh,
+                uiState = exploreUiState
+            ) {
+                Column {
+                    PrimaryTabRow(selectedTabIndex = exploreHomeUiState.selectedPage) {
+                        exploreHomeUiState.pageTitles.forEachIndexed { index, title ->
+                            Tab(
+                                selected = exploreHomeUiState.selectedPage == index,
+                                onClick = {
+                                    changePage(index)
+                                },
+                                text = {
+                                    Text(
+                                        text = title,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    var showEmptyPage by remember { mutableStateOf(false) }
+
+                    LaunchedEffect(exploreHomeUiState.explorePageBooksRawList) {
+                        if (exploreHomeUiState.explorePageBooksRawList.isEmpty()) {
+                            delay(140)
+                            showEmptyPage = true
+                        } else {
+                            showEmptyPage = false
+                        }
+                    }
+
+                    AnimatedVisibility(
+                        modifier = Modifier.navigationBarsPadding().bottomBarPadding(),
+                        visible = showEmptyPage,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Loading()
+                    }
+                    AnimatedContent(
+                        targetState = exploreHomeUiState.explorePageBooksRawList,
+                        contentKey = { exploreHomeUiState.selectedPage },
+                        transitionSpec = {
+                            (fadeIn(initialAlpha = 0.7f)).togetherWith(fadeOut(targetAlpha = 0.7f))
+                        },
+                        label = "ExplorePageBooksRawAnime"
+                    ) {
+                        ExplorePage(
+                            explorePageBooksRawList = it,
+                            onClickExpand = onClickExpand,
+                            onClickBook = onClickBook,
+                            nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
+                            refresh = refresh
                         )
                     }
                 }
-
-                var showEmptyPage by remember { mutableStateOf(false) }
-
-                LaunchedEffect(exploreHomeUiState.explorePageBooksRawList) {
-                    if (exploreHomeUiState.explorePageBooksRawList.isEmpty()) {
-                        delay(140)
-                        showEmptyPage = true
-                    } else {
-                        showEmptyPage = false
-                    }
-                }
-
-                AnimatedVisibility(
-                    modifier = Modifier.navigationBarsPadding().bottomBarPadding(),
-                    visible = showEmptyPage,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Loading()
-                }
-                AnimatedContent(
-                    targetState = exploreHomeUiState.explorePageBooksRawList,
-                    contentKey = { exploreHomeUiState.selectedPage },
-                    transitionSpec = {
-                        (fadeIn(initialAlpha = 0.7f)).togetherWith(fadeOut(targetAlpha = 0.7f))
-                    },
-                    label = "ExplorePageBooksRawAnime"
-                ) {
-                    ExplorePage(
-                        explorePageBooksRawList = it,
-                        onClickExpand = onClickExpand,
-                        onClickBook = onClickBook,
-                        nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
-                        refresh = refresh
-                    )
-                }
             }
+        } else {
+            EmptyPage(
+                icon = painterResource(id = R.drawable.error_24px),
+                title = "无探索页",
+                description = "数据源提供了空的探索页, 这通常是由于数据源未实现探索页面导致的"
+            )
         }
     }
 }

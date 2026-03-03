@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -27,19 +28,21 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalSharedTransitionApi::class)
 fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransitionScope) {
     composable<Route.Main.Bookshelf.Home> {
-        val context = LocalContext.current
+        LocalContext.current
         val navController = LocalNavController.current
         val bookshelfHomeViewModel = hiltViewModel<BookshelfHomeViewModel>()
+        val bookshelfNewTitle = stringResource(R.string.bookshelf_new_title)
+        val bookshelfEditTitle = stringResource(R.string.bookshelf_edit_title)
         BookshelfHomeScreen(
             init = bookshelfHomeViewModel::load,
             changePage = bookshelfHomeViewModel::changePage,
             changeBookSelectState = bookshelfHomeViewModel::changeBookSelectState,
             uiState = bookshelfHomeViewModel.uiState,
             onClickCreate = {
-                navController.navigateToBookshelfEditDestination(-1, context.getString(R.string.bookshelf_new_title))
+                navController.navigateToBookshelfEditDestination(-1, bookshelfNewTitle)
             },
             onClickEdit = {
-                navController.navigateToBookshelfEditDestination(it, context.getString(R.string.bookshelf_edit_title))
+                navController.navigateToBookshelfEditDestination(it, bookshelfEditTitle)
             },
             onClickBook = navController::navigateToBookDetailDestination,
             onClickEnableSelectMode = bookshelfHomeViewModel::enableSelectMode,
@@ -51,8 +54,8 @@ fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransi
                 if (bookshelfHomeViewModel.uiState.selectedBookshelf.allBookIds.isEmpty())
                     bookshelfHomeViewModel.disableSelectMode()
             },
-            saveAllBookshelfJsonData = bookshelfHomeViewModel::saveAllBookshelfJsonData,
-            saveBookshelfJsonData = bookshelfHomeViewModel::saveThisBookshelfJsonData,
+            saveAllBookshelfJsonData = bookshelfHomeViewModel::saveAllBookshelf,
+            saveBookshelfJsonData = bookshelfHomeViewModel::saveThisBookshelf,
             importBookshelf = bookshelfHomeViewModel::importBookshelf,
             onClickMarkSelectedBooks = {
                 navController.navigateToAddBookToBookshelfDialog(bookshelfHomeViewModel.uiState.selectedBookIds)

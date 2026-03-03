@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInfo
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginSource
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import kotlinx.coroutines.launch
@@ -121,9 +121,9 @@ fun InfoItem(
 @Composable
 fun PluginDetailScreen(
     enabled: Boolean,
-    pluginInfo: PluginInfo?,
+    pluginInfo: PluginMetadata?,
     onClickBack: () -> Unit,
-    onClickSwitch: (PluginInfo) -> Unit,
+    onClickSwitch: (PluginMetadata) -> Unit,
     pluginContent: @Composable (PaddingValues) -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -172,8 +172,8 @@ fun PluginDetailScreen(
 @Composable
 private fun PluginSwitchBlock(
     enabled: Boolean,
-    pluginInfo: PluginInfo,
-    onClickSwitch: (PluginInfo) -> Unit
+    pluginInfo: PluginMetadata,
+    onClickSwitch: (PluginMetadata) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -233,7 +233,7 @@ private fun PluginSwitchBlock(
 
 @Composable
 private fun PluginInfoBlock(
-    pluginInfo: PluginInfo
+    pluginInfo: PluginMetadata
 ) {
     val titleStyle = typography.titleMedium.copy(
         color = colorScheme.onSurface,
@@ -261,7 +261,7 @@ private fun PluginInfoBlock(
         Column {
             InfoItem(
                 title = stringResource(R.string.plugin_info_id_label),
-                content = pluginInfo.id,
+                content = pluginInfo.packageName,
                 titleStyle = titleStyle,
                 contentStyle = contentStyle,
             )
@@ -284,7 +284,7 @@ private fun PluginInfoBlock(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
-    pluginInfo: PluginInfo,
+    pluginInfo: PluginMetadata,
     scrollBehavior: TopAppBarScrollBehavior,
     onClickBack: () -> Unit
 ) {
@@ -300,7 +300,7 @@ private fun TopBar(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = pluginInfo.id,
+                    text = pluginInfo.packageName,
                     style = typography.labelLarge,
                     color = colorScheme.onSurfaceVariant
                 )

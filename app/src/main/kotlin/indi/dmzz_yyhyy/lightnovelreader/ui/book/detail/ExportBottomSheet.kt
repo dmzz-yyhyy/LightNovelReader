@@ -143,13 +143,12 @@ fun ExportBottomSheet(
             LazyColumn {
                 items(bookVolumes.volumes) { volume ->
                     val isChecked = volume.volumeId in selectedVolumeIds
-                    val isInteractive = isSplitEnabled
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(enabled = isInteractive) {
-                                if (isInteractive) {
+                            .clickable(enabled = isSplitEnabled) {
+                                if (isSplitEnabled) {
                                     val updated = if (isChecked) {
                                         selectedVolumeIds - volume.volumeId
                                     } else {
@@ -165,14 +164,14 @@ fun ExportBottomSheet(
                             modifier = Modifier.weight(1f, fill = true),
                             text = volume.volumeTitle,
                             style = typography.titleMedium,
-                            color = if (isInteractive) MaterialTheme.colorScheme.onSurface
+                            color = if (isSplitEnabled) MaterialTheme.colorScheme.onSurface
                             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                         )
                         Spacer(Modifier.width(12.dp))
                         Checkbox(
                             checked = isChecked,
                             onCheckedChange = {
-                                if (isInteractive) {
+                                if (isSplitEnabled) {
                                     val updated = if (isChecked) {
                                         selectedVolumeIds - volume.volumeId
                                     } else {
@@ -181,7 +180,7 @@ fun ExportBottomSheet(
                                     onSettingsChange(settings.copy(selectedVolumeIds = updated))
                                 }
                             },
-                            enabled = isInteractive
+                            enabled = isSplitEnabled
                         )
                     }
                 }

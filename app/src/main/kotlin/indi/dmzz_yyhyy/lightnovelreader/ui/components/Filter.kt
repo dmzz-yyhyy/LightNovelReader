@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,7 +32,6 @@ import io.nightfish.lightnovelreader.api.web.explore.filter.SingleChoiceFilter
 import io.nightfish.lightnovelreader.api.web.explore.filter.SliderFilter
 import io.nightfish.lightnovelreader.api.web.explore.filter.SwitchFilter
 
-@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun Filter<*>.Component(
     dialog: (@Composable () -> Unit) -> Unit,
@@ -101,7 +101,7 @@ fun Filter<*>.Component(
         is SliderFilter -> {
             var enabled by remember { mutableStateOf(this.enabled) }
             var displayDialog by remember { mutableStateOf(false) }
-            var value by remember { mutableStateOf(this.value) }
+            var value by remember { mutableFloatStateOf(this.value) }
             LaunchedEffect(this@Component.enabled) {
                 enabled = this@Component.enabled
             }

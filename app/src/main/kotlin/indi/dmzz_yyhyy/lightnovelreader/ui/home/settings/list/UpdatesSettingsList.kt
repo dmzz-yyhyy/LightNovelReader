@@ -47,7 +47,7 @@ fun UpdatesSettingsList(
         onOptionChange = { option ->
             settingState.distributionPlatformKeyUserData.asynchronousSet(option)
             if (MenuOptions.UpdatePlatformOptions.optionList.firstOrNull{ settingState.updateChannelKey == it.key } == null)
-                settingState.updateChannelKeyUserData.asynchronousSet(MenuOptions.UpdateChannelOptions.Development)
+                settingState.updateChannelKeyUserData.asynchronousSet(MenuOptions.UpdateChannelOptions.DEVELOPMENT)
         }
     )
     SettingsClickableEntry(

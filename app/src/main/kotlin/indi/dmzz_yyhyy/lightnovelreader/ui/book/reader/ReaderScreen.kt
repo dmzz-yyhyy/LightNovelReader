@@ -89,7 +89,8 @@ import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.util.Locale
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Suppress("AssignedValueIsNeverRead")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReaderScreen(

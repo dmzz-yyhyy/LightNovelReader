@@ -23,10 +23,10 @@ class LocalBookDataSource @Inject constructor(
     private val userReadingDataDao: UserReadingDataDao
 ): LocalBookDataSourceApi {
     override suspend fun getBookInformation(id: String): BookInformation? = bookInformationDao.get(id)
-    override fun updateBookInformation(info: BookInformation) = bookInformationDao.update(info)
+    override fun updateBookInformation(info: BookInformation) = bookInformationDao.insert(info)
     override suspend fun getBookVolumes(id: String): BookVolumes? = bookVolumesDao.getBookVolumes(id)
     override fun updateBookVolumes(bookVolumes: BookVolumes) =
-        bookVolumesDao.update(bookVolumes.bookId, bookVolumes)
+        bookVolumesDao.insertVolume(bookVolumes.bookId, bookVolumes)
 
     override suspend fun getChapterContent(id: String) = chapterContentDao.get(id)?.let {
         MutableChapterContent(
@@ -49,8 +49,8 @@ class LocalBookDataSource @Inject constructor(
             it.readingProgress,
             it.lastReadChapterId,
             it.lastReadChapterTitle,
-            it.currentChapterReadingProgress,
-            it.maxChapterReadingProgress
+            it.currentChapterReadingProgressMap,
+            it.maxChapterReadingProgressMap
 
         )
     }
@@ -64,8 +64,8 @@ class LocalBookDataSource @Inject constructor(
             it.readingProgress,
             it.lastReadChapterId,
             it.lastReadChapterTitle,
-            it.currentChapterReadingProgress,
-            it.maxChapterReadingProgress
+            it.currentChapterReadingProgressMap,
+            it.maxChapterReadingProgressMap
         )
     }
 
@@ -78,11 +78,21 @@ class LocalBookDataSource @Inject constructor(
                 it.readingProgress,
                 it.lastReadChapterId,
                 it.lastReadChapterTitle,
-                it.currentChapterReadingProgress,
-                it.maxChapterReadingProgress
+                it.currentChapterReadingProgressMap,
+                it.maxChapterReadingProgressMap
             )
         } ?: MutableUserReadingData.empty().apply { this.id = id }
-        userReadingDataDao.update(update(userReadingData.apply { this.id = id }))
+        val new = update(userReadingData.apply { this.id = id })
+        userReadingDataDao.insert(
+            id = new.id,
+            lastReadTime = new.lastReadTime,
+            totalReadTime = new.totalReadTime,
+            readingProgress = new.readingProgress,
+            lastReadChapterId = new.lastReadChapterId,
+            lastReadChapterTitle = new.lastReadChapterTitle,
+            currentChapterReadingProgressMap = new.currentChapterReadingProgressMap,
+            maxChapterReadingProgressMap = new.maxChapterReadingProgressMap
+        )
     }
 
     override fun getAllUserReadingData(): List<UserReadingData> =
@@ -94,8 +104,8 @@ class LocalBookDataSource @Inject constructor(
                 it.readingProgress,
                 it.lastReadChapterId,
                 it.lastReadChapterTitle,
-                it.currentChapterReadingProgress,
-                it.maxChapterReadingProgress
+                it.currentChapterReadingProgressMap,
+                it.maxChapterReadingProgressMap
             )
         }
 

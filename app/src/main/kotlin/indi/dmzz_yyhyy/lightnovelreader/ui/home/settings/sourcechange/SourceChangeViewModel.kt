@@ -2,46 +2,38 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.sourcechange
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
-import androidx.core.net.toUri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.runCatching
+import com.github.michaelbull.result.unwrapError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
-import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalDataManager
+import indi.dmzz_yyhyy.lightnovelreader.data.local.cbor.LocalData
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
-import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportDataWork
-import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
+import indi.dmzz_yyhyy.lightnovelreader.utils.readAppLocalData
+import indi.dmzz_yyhyy.lightnovelreader.utils.writeAppLocalData
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.decodeFromByteArray
+import kotlinx.serialization.encodeToByteArray
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
 @HiltViewModel
 class SourceChangeViewModel @Inject constructor(
     @param:ApplicationContext private val appContext: Context,
-    private val userDataRepository: UserDataRepository,
-    private val workManager: WorkManager,
     private val webBookDataSourceProvider: WebBookDataSourceProvider,
-    private val localBookDataSource: LocalBookDataSource,
-    private val bookshelfRepository: BookshelfRepository,
-    private val statsRepository: StatsRepository,
+    private val localDataManager: LocalDataManager,
+    private val userDataRepository: UserDataRepository,
     webBookDataSourceManager: WebBookDataSourceManager
 ) : ViewModel() {
 
@@ -50,168 +42,83 @@ class SourceChangeViewModel @Inject constructor(
         webDataSourceItems = webBookDataSourceManager.webDataSourceItems
     }
     val uiState: SourceChangeUiState = _uiState
-
-
-    private val currentSourceId: Int
-        get() = _uiState.currentSourceId
-
-    fun changeWebSource(webDataSourceId: Int, fileDir: File) {
-        if (webDataSourceId == _uiState.currentSourceId) return
+    @Suppress("OPT_IN_USAGE")
+    fun changeWebSource(newWebDataSourceId: Int) {
+        if (newWebDataSourceId == _uiState.currentSourceId) return
         if (_uiState.isProcessing) return
 
         _uiState.isProcessing = true
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val oldUri = File(fileDir, "${currentSourceId}.data.lnr").toUri()
-            val exportRequest = exportToFile(
-                uri = oldUri,
-                exportContext = MutableExportContext().apply { settings = false }
-            )
-
+        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
+            var isCleanedLocalData = false
             try {
-                val exportInfo = wait(exportRequest)
-                when (exportInfo?.state) {
-                    WorkInfo.State.SUCCEEDED -> {
-                        performDataClearAndImport(webDataSourceId, fileDir, oldUri)
+                val result = localDataManager.exportCurrentLocalData()
+                    .andThen { data ->
+                        runCatching {
+                            val webBookDataSourceId = webBookDataSourceProvider.default.id
+                            localDataManager.localDataDir
+                                .resolve(webBookDataSourceId.toString())
+                                .also {
+                                    if (it.exists()) it.delete()
+                                }
+                                .outputStream()
+                                .use {
+                                    it.writeAppLocalData(Cbor.encodeToByteArray(data))
+                                }
+                        }
+                    }.andThen {
+                        isCleanedLocalData = true
+                        runCatching {
+                            localDataManager.cleanDatabaseWithoutGlobalUserData()
+                        }
+                    }.andThen out@ {
+                        val file = localDataManager.localDataDir.resolve(newWebDataSourceId.toString())
+                        if (!file.exists()) return@out Ok(Unit)
+                        runCatching {
+                            file
+                                .inputStream()
+                                .use {
+                                    Cbor.decodeFromByteArray<LocalData>(it.readAppLocalData())
+                                }
+                        }.andThen {
+                            localDataManager.importLocalDataToDatabase(it)
+                        }
+                    }.andThen {
+                        runCatching {
+                            userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).set(newWebDataSourceId)
+                        }
                     }
-
-                    WorkInfo.State.FAILED,
-                    WorkInfo.State.CANCELLED -> {
-                        Log.e("SourceChange", "Export failed, aborting")
-                        _uiState.isProcessing = false
+                if (result.isErr) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Toast.makeText(appContext, "Failed to change data source. Please check the log for more information", Toast.LENGTH_LONG).show()
                     }
-
-                    else -> {
-                        _uiState.isProcessing = false
-                    }
+                    Log.e("SourceChangeViewModel", "Failed to change data source.")
+                    result.unwrapError().printStackTrace()
+                    if (isCleanedLocalData) rollbackData()
+                    return@launch
+                } else {
+                    restartApp(appContext)
                 }
-            } catch (e: Exception) {
-                Log.e("SourceChange", "Export failed", e)
+                _uiState.currentSourceId = newWebDataSourceId
+            } finally {
+                if (isCleanedLocalData) rollbackData()
                 _uiState.isProcessing = false
             }
         }
     }
 
-    private fun exportToFile(uri: Uri, exportContext: ExportContext): OneTimeWorkRequest {
-        val workRequest = OneTimeWorkRequestBuilder<ExportDataWork>()
-            .setInputData(
-                workDataOf(
-                    "uri" to uri.toString(),
-                    "exportBookshelf" to exportContext.bookshelf,
-                    "exportReadingData" to exportContext.readingData,
-                    "exportSetting" to exportContext.settings,
-                    "exportBookmark" to exportContext.bookmark,
-                )
-            )
-            .build()
-        workManager.enqueueUniqueWork(
-            uri.toString(),
-            ExistingWorkPolicy.KEEP,
-            workRequest
-        )
-        return workRequest
-    }
-
-    private fun importFromFile(uri: Uri, ignoreDataIdCheck: Boolean): OneTimeWorkRequest {
-        val workRequest = OneTimeWorkRequestBuilder<ImportDataWork>()
-            .setInputData(
-                workDataOf(
-                    "uri" to uri.toString(),
-                    "ignoreDataIdCheck" to ignoreDataIdCheck
-                )
-            )
-            .build()
-        workManager.enqueueUniqueWork(
-            uri.toString(),
-            ExistingWorkPolicy.KEEP,
-            workRequest
-        )
-        return workRequest
-    }
-
-    private suspend fun wait(request: OneTimeWorkRequest): WorkInfo? {
-        return workManager
-            .getWorkInfoByIdFlow(request.id)
-            .first { it?.state?.isFinished == true }
-    }
-
-    private suspend fun performDataClearAndImport(
-        newSourceId: Int,
-        fileDir: File,
-        fallbackUri: Uri
-    ) {
-        val oldSourceId = currentSourceId
-        try {
-            localBookDataSource.clear()
-            bookshelfRepository.clear()
-            userDataRepository.remove(UserDataPath.ReadingBooks.path)
-            userDataRepository.remove(UserDataPath.Search.History.path)
-            userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
-                .set(newSourceId)
-            statsRepository.clear()
-
-            val newFile = File(fileDir, "$newSourceId.data.lnr")
-            if (!newFile.exists()) {
-                Log.i("SourceChange", "No data file for new source, just restart")
-                _uiState.currentSourceId = newSourceId
-                _uiState.isProcessing = false
-                restartApp(appContext)
-                return
-            }
-
-            val importRequest = importFromFile(newFile.toUri(), ignoreDataIdCheck = true)
-            val importInfo = wait(importRequest)
-
-            when (importInfo?.state) {
-                WorkInfo.State.SUCCEEDED -> {
-                    Log.i("SourceChange", "All operations completed, restarting")
-                    _uiState.currentSourceId = newSourceId
-                    _uiState.isProcessing = false
-                    restartApp(appContext)
-                }
-
-                WorkInfo.State.FAILED,
-                WorkInfo.State.CANCELLED -> {
-                    Log.e("SourceChange", "Import failed. Attempting rollback")
-                    restoreFallbackData(fallbackUri, oldSourceId)
-                }
-
-                else -> {
-                    Log.e("SourceChange", "Import finished with unexpected state")
-                    restoreFallbackData(fallbackUri, oldSourceId)
-                }
-            }
-        } catch (e: Exception) {
-            Log.e("SourceChange", "Error during import", e)
-            restoreFallbackData(fallbackUri, oldSourceId)
-        }
-    }
-
-    private suspend fun restoreFallbackData(uri: Uri, fallbackSourceId: Int) {
-        try {
-            userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
-                .set(fallbackSourceId)
-
-            val restoreRequest = importFromFile(uri, ignoreDataIdCheck = true)
-            val restoreInfo = wait(restoreRequest)
-
-            when (restoreInfo?.state) {
-                WorkInfo.State.SUCCEEDED -> {
-                    Log.i("SourceChange", "Rollback succeeded, restarting")
-                    restartApp(appContext)
-                }
-
-                WorkInfo.State.FAILED,
-                WorkInfo.State.CANCELLED -> {
-                    Log.e("SourceChange", "Rollback failed.")
-                    _uiState.isProcessing = false
-                }
-
-                else -> _uiState.isProcessing = false
-            }
-        } catch (e: Exception) {
-            Log.e("SourceChange", "Rollback import failed with exception", e)
-            _uiState.isProcessing = false
+    @Suppress("OPT_IN_USAGE")
+    fun rollbackData() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val webBookDataSourceId = webBookDataSourceProvider.default.id
+            val localData =
+                localDataManager.localDataDir
+                    .resolve(webBookDataSourceId.toString())
+                    .inputStream()
+                    .use {
+                        Cbor.decodeFromByteArray<LocalData>(it.readAppLocalData())
+                    }
+            localDataManager.importLocalDataToDatabase(localData)
         }
     }
 
@@ -219,8 +126,6 @@ class SourceChangeViewModel @Inject constructor(
         val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
         intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
-
         exitProcess(0)
     }
-
 }

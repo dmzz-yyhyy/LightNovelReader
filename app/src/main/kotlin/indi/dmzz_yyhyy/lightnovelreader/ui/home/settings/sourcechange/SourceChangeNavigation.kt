@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.sourcechange
 
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -14,13 +13,12 @@ fun NavGraphBuilder.settingsSourceChangeDestination() {
     composable<Route.Main.Settings.SourceChange> {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<SourceChangeViewModel>()
-        val context = LocalContext.current
 
         SourceChangeScreen(
             uiState = viewModel.uiState,
             onClickBack = navController::popBackStackIfResumed,
             onApplyClick = { selectedId ->
-                viewModel.changeWebSource(selectedId, context.filesDir)
+                viewModel.changeWebSource(selectedId)
             },
         )
     }

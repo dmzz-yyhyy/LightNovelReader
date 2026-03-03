@@ -19,9 +19,11 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalImageHeaderGetter
 
 @Composable
 fun Cover(width: Dp, height: Dp, uri: Uri, rounded: Dp = 8.dp) {
+    val imagerHeader = LocalImageHeaderGetter.current
     Box(modifier = Modifier
         .size(width, height)
         .graphicsLayer {
@@ -31,11 +33,13 @@ fun Cover(width: Dp, height: Dp, uri: Uri, rounded: Dp = 8.dp) {
     ) {
         Box(
             Modifier
-            .size(width, height)
-            .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
+                .size(width, height)
+                .background(MaterialTheme.colorScheme.surfaceContainerHighest)) {
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size((width.times(0.33898306f))).align(Alignment.Center)
+                modifier = Modifier
+                    .size((width.times(0.33898306f)))
+                    .align(Alignment.Center)
             )
         }
         val imageLoader = LocalContext.current.imageLoader
@@ -46,6 +50,11 @@ fun Cover(width: Dp, height: Dp, uri: Uri, rounded: Dp = 8.dp) {
                 .crossfade(true)
                 .memoryCachePolicy(CachePolicy.ENABLED)
                 .networkCachePolicy(CachePolicy.ENABLED)
+                .apply {
+                    for (entry in imagerHeader()) {
+                        addHeader(entry.key, entry.value)
+                    }
+                }
                 .build(),
             contentDescription = "cover",
             contentScale = ContentScale.Crop,

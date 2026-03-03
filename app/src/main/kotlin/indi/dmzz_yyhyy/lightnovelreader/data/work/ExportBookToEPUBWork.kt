@@ -22,12 +22,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.ExportType
-import indi.dmzz_yyhyy.lightnovelreader.utils.ImageDownloader
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.ImageDownloader
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
+import io.nightfish.lightnovelreader.api.book.isNullOrEmpty
 import io.nightfish.potatoepub.builder.ChapterBuilder
 import io.nightfish.potatoepub.builder.EpubBuilder
 import kotlinx.coroutines.Dispatchers
@@ -121,6 +122,9 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return@withContext Result.failure()
         val tempDir = applicationContext.cacheDir.resolve("epub").resolve(bookId)
         val cover = tempDir.resolve("cover.jpg")
+            .also {
+                if (it.exists()) it.delete()
+            }
         val downloadItem = MutableDownloadItem(DownloadType.EPUB_EXPORT, bookId)
         downloadProgressRepository.addExportItem(downloadItem)
         if (bookId.isBlank()) {
@@ -132,7 +136,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         var bookInformation = webBookDataSourceProvider.lowPriority.getBookInformation(bookId)
         if (bookInformation.isEmpty()) {
             val localData = localBookDataSource.getBookInformation(bookId)
-            if (localData == null || localData.isEmpty()) {
+            if (localData.isNullOrEmpty()) {
                 downloadItem.progress = -1f
                 updateFailureNotification(bookId)
                 return@withContext Result.failure()
@@ -142,12 +146,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         var bookVolumes = webBookDataSourceProvider.lowPriority.getBookVolumes(bookId)
         if (bookVolumes.isEmpty()) {
             val localData = localBookDataSource.getBookVolumes(bookId)
-            if (localData == null || localData.isEmpty()) {
+            if (localData.isNullOrEmpty()) {
                 downloadItem.progress = -1f
                 updateFailureNotification(bookId)
                 return@withContext Result.failure()
             }
-            else bookVolumes = localData
+            else bookVolumes = localData!!
         }
         val bookContentMap = mutableMapOf<String, ChapterContent>()
         updateProgressNotification(bookId, 0)
@@ -164,12 +168,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 var chapterContent = webBookDataSourceProvider.lowPriority.getChapterContent(it.id, bookId)
                 if (chapterContent.isEmpty()) {
                     val localData = localBookDataSource.getChapterContent(it.id)
-                    if (localData == null || localData.isEmpty()) {
+                    if (localData.isNullOrEmpty()) {
                         downloadItem.progress = -1f
                         updateFailureNotification(bookId)
                         return@withContext Result.failure()
                     }
-                    else chapterContent = localData
+                    else chapterContent = localData!!
                 }
                 bookContentMap[it.id] = chapterContent
             }
@@ -403,12 +407,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         tasks: MutableList<ImageDownloader.Task>,
         epubBuilder: EpubBuilder
     ) {
-        val src = this.attributes().first { it.name == "src" }
+        val src = this.attributes().firstOrNull { it.name == "src" }
         if (src != null && src.value.runCatching { this.toUri() }.isSuccess) {
             val id = src.value.hashCode()
-            val image = tempDir.resolve("image_id.jpg")
+            val image = tempDir.resolve("image_$id.jpg")
             tasks.add(ImageDownloader.Task(image, src.value.toUri()))
-            src.value = "image/image_${src.value}.jpg"
+            src.value = "image/image_$id.jpg"
             epubBuilder.imgRes(
                 href = src.value,
                 id = id.toString(),

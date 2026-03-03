@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 
 @Stable
-interface ChapterContent: CanBeEmpty {
+interface ChapterContent: CanBeEmpty, Copyable<ChapterContent> {
     val id: String
     val title: String
     val content: JsonObject
@@ -18,9 +18,14 @@ interface ChapterContent: CanBeEmpty {
 
     fun hasPrevChapter(): Boolean = lastChapter.isNotEmpty()
     fun hasNextChapter(): Boolean = nextChapter.isNotEmpty()
+
     override fun isEmpty() = this.id.isEmpty()
             || this.content.isEmpty()
             || this.content["components"]?.jsonArray?.isEmpty() ?: true
+
+
+    override fun copy(): ChapterContent =
+        MutableChapterContent(id, title, content, lastChapter, nextChapter)
 
     companion object {
         fun empty(): ChapterContent = empty("")

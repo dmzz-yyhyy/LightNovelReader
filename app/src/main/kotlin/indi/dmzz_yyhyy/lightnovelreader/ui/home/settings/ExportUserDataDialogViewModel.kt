@@ -36,6 +36,7 @@ class ExportUserDataDialogViewModel @Inject constructor(
             .setInputData(
                 workDataOf(
                     "uri" to uri.toString(),
+                    "exportLocalBookCache" to exportContext.localBookCache,
                     "exportBookshelf" to exportContext.bookshelf,
                     "exportReadingData" to exportContext.readingData,
                     "exportSetting" to exportContext.settings,
@@ -71,6 +72,7 @@ class ExportUserDataDialogViewModel @Inject constructor(
             .setInputData(
                 workDataOf(
                     "uri" to uri.toString(),
+                    "exportLocalBookCache" to exportContext.localBookCache,
                     "exportBookshelf" to exportContext.bookshelf,
                     "exportReadingData" to exportContext.readingData,
                     "exportSetting" to exportContext.settings,

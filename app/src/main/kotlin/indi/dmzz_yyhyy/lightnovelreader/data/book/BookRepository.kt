@@ -7,8 +7,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
-import indi.dmzz_yyhyy.lightnovelreader.data.json.BookUserData
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
@@ -193,35 +191,6 @@ class BookRepository @Inject constructor(
     }
 
     fun isCacheBookWorkFlow(workId: UUID) = workManager.getWorkInfoByIdFlow(workId)
-
-    fun importUserReadingData(data: AppUserDataContent): Boolean {
-        val userReadingDataList: List<BookUserData> = data.bookUserData ?: return false
-        userReadingDataList.forEach { bookUserData ->
-            localBookDataSource.updateUserReadingData(bookUserData.id) {
-                MutableUserReadingData(
-                    id = bookUserData.id,
-                    lastReadTime = if (bookUserData.lastReadTime.isAfter(it.lastReadTime)) bookUserData.lastReadTime else it.lastReadTime,
-                    totalReadTime = if (bookUserData.totalReadTime > it.totalReadTime) bookUserData.totalReadTime else it.totalReadTime,
-                    readingProgress = if (bookUserData.readingProgress > it.readingProgress) bookUserData.readingProgress else it.readingProgress,
-                    lastReadChapterId = bookUserData.lastReadChapterId,
-                    lastReadChapterTitle = bookUserData.lastReadChapterTitle,
-                    currentChapterReadingProgressMap = bookUserData.currentChapterReadingProgressMap.toMutableMap().apply {
-                        it.currentChapterReadingProgressMap.forEach { (key, value) ->
-                            val maxProgress = value.coerceAtLeast(this[key] ?: 0f)
-                            this[key] = maxProgress
-                        }
-                    },
-                    maxChapterReadingProgressMap = bookUserData.maxChapterReadingProgressMap.toMutableMap().apply {
-                        it.maxChapterReadingProgressMap.forEach { (key, value) ->
-                            val maxProgress = value.coerceAtLeast(this[key] ?: 0f)
-                            this[key] = maxProgress
-                        }
-                    }
-                )
-            }
-        }
-        return true
-    }
 
     fun cacheBook(bookId: String): OneTimeWorkRequest {
         val workRequest = OneTimeWorkRequestBuilder<CacheBookWork>()

@@ -7,7 +7,7 @@ class StringUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<String>(path) {
     override fun set(value: String) {
-        userDataDao.update(path, group, "String", value)
+        userDataDao.insert(path, group, "String", value)
     }
 
     override fun get(): String? {

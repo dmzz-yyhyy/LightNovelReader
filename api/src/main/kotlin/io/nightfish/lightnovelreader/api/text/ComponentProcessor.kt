@@ -33,6 +33,7 @@ class ComponentProcessor(
                                 put("id", id)
                                 put("data", data)
                             }
+                            return@forEach
                         }
                         val serializer = serializerMap[id]
                             ?: return@forEach

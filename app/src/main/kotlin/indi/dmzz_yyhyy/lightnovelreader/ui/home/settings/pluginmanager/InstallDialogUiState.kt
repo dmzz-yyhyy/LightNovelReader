@@ -5,14 +5,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInstallPromptType
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInstallStage
 
 @Stable
 interface PluginInstallerDialogUiState {
     var mode: PluginDialogMode
 
-    var installStage: PluginInstallStage
     var installMessage: String
     var installProgress: Float?
     var installInfo: PluginInstallInfo?
@@ -52,6 +49,7 @@ enum class InstallStepState {
 }
 
 enum class DeleteStepState {
+    Confirming,
     Working,
     Completed
 }
@@ -70,7 +68,6 @@ enum class UpdateStepState {
 class MutablePluginInstallerDialogUiState : PluginInstallerDialogUiState {
     override var mode by mutableStateOf(PluginDialogMode.Hidden)
 
-    override var installStage by mutableStateOf(PluginInstallStage.Preparing)
     override var installMessage by mutableStateOf("")
     override var installProgress: Float? by mutableStateOf(null)
     override var installInfo: PluginInstallInfo? by mutableStateOf(null)
@@ -113,8 +110,4 @@ enum class InstallDecisionType {
     Reinstall,
     Downgrade,
     InvalidSignature
-}
-
-fun PluginInstallPromptType.toDecisionType(): InstallDecisionType = when (this) {
-    PluginInstallPromptType.Reinstall -> InstallDecisionType.Reinstall
 }

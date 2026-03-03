@@ -6,16 +6,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.DeleteBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.bookshelfEditDestination() {
-    composable<Route.Main.Bookshelf.Edit>(
-
-    ) {
+    composable<Route.Main.Bookshelf.Edit> {
         val navController = LocalNavController.current
         val editBookshelfViewModel = hiltViewModel<EditBookshelfViewModel>()
         val edit = it.toRoute<Route.Main.Bookshelf.Edit>()

@@ -19,6 +19,9 @@ interface BookRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertBookRecord(record: BookRecordEntity)
 
+    @Query("select * from book_records where id=:id")
+    suspend fun getEntity(id: Int?): BookRecordEntity?
+
     @Query("SELECT * FROM book_records")
     fun getAllBookRecords(): List<BookRecordEntity>
 

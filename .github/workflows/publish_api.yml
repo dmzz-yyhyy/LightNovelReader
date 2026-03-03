@@ -1,0 +1,33 @@
+name: PublishApiArtifact
+on:
+  workflow_dispatch:
+  merge_group:
+  push:
+    branches: [refactoring]
+    paths:
+      - .github/workflows/publish_epub.yml
+      - api/**
+
+jobs:
+  PublishApiArtifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Build with Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradle wrapper executable
+        if: ${{ runner.os != 'Windows' }}
+        run: chmod +x ./gradlew
+
+      - name: Publish to maven
+        run: ./gradlew api:publish
+        env:
+          REPO_USER: ${{ secrets.REPOSILITE_USERNAME }}
+          REPO_PASS: ${{ secrets.REPOSILITE_PASSWORD }}

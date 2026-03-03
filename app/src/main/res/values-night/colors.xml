@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="splash_background">#090A15</color>
+    <color name="splash_background">@android:color/background_dark</color>
 </resources>

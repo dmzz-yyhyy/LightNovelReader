@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.LightNovelReader.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenAnimatedIcon">@drawable/icon_foreground_splash</item>
+    <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
-        <item name="postSplashScreenTheme">@style/Theme.LightNovelReader</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.App</item>
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.LightNovelReader" parent="@style/Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme" parent="Theme.Splash" />
+
+    <style name="DialogTheme" parent="@style/Theme.App">
+        <item name="android:colorBackground">?colorBackgroundFloating</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Dialog</item>
     </style>
 </resources>

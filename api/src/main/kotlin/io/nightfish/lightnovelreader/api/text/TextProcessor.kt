@@ -14,8 +14,6 @@ interface TextProcessor {
     fun <T> Map<T, String>.process() = this.mapValues { (_, text) ->
         processText(text)
     }
-    fun processSearchTypeNameMap(map: Map<String, String>): Map<String, String> = map.process()
-    fun processSearchTipMap(map: Map<String, String>): Map<String, String> = map.process()
     fun processBookInformation(bookInformation: BookInformation): BookInformation = bookInformation.toMutable().apply {
         this.title = processText(title)
         this.subtitle = processText(subtitle)

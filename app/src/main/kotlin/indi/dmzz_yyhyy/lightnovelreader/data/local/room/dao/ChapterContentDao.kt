@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
+import androidx.room.Update
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.JsonObjectConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import io.nightfish.lightnovelreader.api.book.ChapterContent
@@ -27,6 +28,17 @@ interface ChapterContentDao {
         )
     }
 
+    @Transaction
+    fun update(chapterContent: ChapterContentEntity) {
+        update(
+            chapterContent.id,
+            chapterContent.title,
+            chapterContent.content,
+            chapterContent.lastChapter,
+            chapterContent.nextChapter
+        )
+    }
+
     @Query("select * from chapter_content where id = :id")
     suspend fun get(id: String): ChapterContentEntity?
 
@@ -35,4 +47,10 @@ interface ChapterContentDao {
 
     @Query("delete from chapter_content")
     fun clear()
+
+    @Update
+    fun updateEntities(vararg entities: ChapterContentEntity)
+
+    @Query("select * from chapter_content")
+    fun getAllEntities(): List<ChapterContentEntity>
 }

@@ -41,20 +41,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInfo
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginSource
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.horizontalPadding
+import io.nightfish.lightnovelreader.api.ApiCompat
 import kotlinx.coroutines.delay
 
 @Composable
 fun PluginCard(
     modifier: Modifier = Modifier,
     enabledPluginList: List<String>,
-    enabledPluginPackageList: List<String>,
     isErrorDisabled: Boolean,
-    pluginInfo: PluginInfo,
+    pluginInfo: PluginMetadata,
     onClickDetail: (String) -> Unit,
-    onClickSwitch: (PluginInfo) -> Unit,
+    onClickSwitch: (PluginMetadata) -> Unit,
     onClickDelete: (String) -> Unit,
     onClickKeyAlert: () -> Unit,
     onClickErrorAlert: () -> Unit,
@@ -62,13 +62,9 @@ fun PluginCard(
     onClickCheckUpdate: (String) -> Unit,
     onClickShowSignatures: (String) -> Unit
 ) {
-    val identifier = pluginInfo.id
-    val enabled = when (pluginInfo.source) {
-        PluginSource.InstalledApp -> identifier in enabledPluginPackageList
-        else -> pluginInfo.id in enabledPluginList
-    }
+    val enabled = pluginInfo.packageName in enabledPluginList
     val disabledByError = isErrorDisabled && !enabled
-    val disabledByCompatibility = !pluginInfo.isApiCompatible
+    val disabledByCompatibility = !ApiCompat.isSupported(pluginInfo.apiVersion)
 
     var switchEnabled by remember { mutableStateOf(true) }
     var menuExpanded by remember { mutableStateOf(false) }
@@ -88,7 +84,7 @@ fun PluginCard(
             .padding(vertical = 10.dp, horizontal = horizontalPadding)
             .clip(RoundedCornerShape(18.dp))
             .combinedClickable(
-                onClick = { onClickDetail(pluginInfo.id) },
+                onClick = { onClickDetail(pluginInfo.packageName) },
                 onLongClick = { menuExpanded = true }
             ),
         colors = CardDefaults.cardColors(containerColor = containerColor),
@@ -189,7 +185,7 @@ fun PluginCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                if (pluginInfo.signatures == null) {
+                if (!pluginInfo.hasSignature) {
                     AssistChip(
                         onClick = onClickKeyAlert,
                         label = { Text("签名无效") },
@@ -259,7 +255,7 @@ fun PluginCard(
                     },
                     onClick = {
                         menuExpanded = false
-                        onClickShowSignatures(pluginInfo.id)
+                        onClickShowSignatures(pluginInfo.packageName)
                     }
                 )
                 if (pluginInfo.source == PluginSource.LocalPackage) {
@@ -272,7 +268,7 @@ fun PluginCard(
                         },
                         onClick = {
                             menuExpanded = false
-                            onClickDelete(pluginInfo.id)
+                            onClickDelete(pluginInfo.packageName)
                         }
                     )
                 }

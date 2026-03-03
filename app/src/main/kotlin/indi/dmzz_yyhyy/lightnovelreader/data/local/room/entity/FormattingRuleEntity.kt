@@ -3,7 +3,9 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "formatting_rule")
 data class FormattingRuleEntity(
     @PrimaryKey(autoGenerate = true)
@@ -17,4 +19,6 @@ data class FormattingRuleEntity(
     val replacement: String,
     @ColumnInfo(name = "is_enabled")
     val isEnabled: Boolean
-)
+): Mergeable<FormattingRuleEntity> {
+    override fun merge(new: FormattingRuleEntity): FormattingRuleEntity = new
+}

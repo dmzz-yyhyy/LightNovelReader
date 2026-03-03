@@ -105,7 +105,7 @@ fun ReadingScreen(
     onClickStats: () -> Unit,
     onRemoveBook: (String) -> Unit,
     onAddBook: (String) -> Unit,
-    sharedTransitionScope: SharedTransitionScope,
+    @Suppress("unused") sharedTransitionScope: SharedTransitionScope,
     loadBookInfo: (String) -> Unit,
     onClickOpenChapters: (String) -> Unit,
 ) {
@@ -113,38 +113,36 @@ fun ReadingScreen(
         updateReadingBooks()
     }
 
-    with(sharedTransitionScope) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            TopBar(
-                onClickDownloadManager = onClickDownloadManager,
-                onClickStats = onClickStats
-            )
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopBar(
+            onClickDownloadManager = onClickDownloadManager,
+            onClickStats = onClickStats
+        )
 
-            if (recentReadingBookIds.isEmpty()) {
-                EmptyPage(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .navigationBarsPadding()
-                        .bottomBarPadding(),
-                    icon = painterResource(R.drawable.empty_90dp),
-                    title = stringResource(R.string.nothing_here),
-                    description = stringResource(R.string.nothing_here_desc_reading),
-                )
-            } else {
-                ReadingContent(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    onClickBook = onClickBook,
-                    onClickContinueReading = onClickContinueReading,
-                    onClickOpenChapters = onClickOpenChapters,
-                    onAddBook = onAddBook,
-                    onRemoveBook = onRemoveBook,
-                    recentReadingBookInformationMap = recentReadingBookInformationMap,
-                    recentReadingUserReadingDataMap = recentReadingUserReadingDataMap,
-                    recentReadingBookIds = recentReadingBookIds,
-                    loadBookInfo = loadBookInfo
-                )
-            }
+        if (recentReadingBookIds.isEmpty()) {
+            EmptyPage(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .navigationBarsPadding()
+                    .bottomBarPadding(),
+                icon = painterResource(R.drawable.empty_90dp),
+                title = stringResource(R.string.nothing_here),
+                description = stringResource(R.string.nothing_here_desc_reading),
+            )
+        } else {
+            ReadingContent(
+                modifier = Modifier
+                    .fillMaxSize(),
+                onClickBook = onClickBook,
+                onClickContinueReading = onClickContinueReading,
+                onClickOpenChapters = onClickOpenChapters,
+                onAddBook = onAddBook,
+                onRemoveBook = onRemoveBook,
+                recentReadingBookInformationMap = recentReadingBookInformationMap,
+                recentReadingUserReadingDataMap = recentReadingUserReadingDataMap,
+                recentReadingBookIds = recentReadingBookIds,
+                loadBookInfo = loadBookInfo
+            )
         }
     }
 }

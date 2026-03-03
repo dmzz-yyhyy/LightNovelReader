@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data
 
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.update.APIParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.GithubParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateParser
 
@@ -74,19 +75,26 @@ sealed class MenuOptions {
 
     open class UpdateChannelOptions(vararg options: OptionWithValue<UpdateParser>): MenuOptionsWithValues<UpdateParser>(options.toList()) {
         companion object {
-            const val Release = "Release"
-            const val Development = "Development"
+            const val RELEASE = "Release"
+            const val DEVELOPMENT = "Development"
         }
     }
 
     data object GitHubUpdateChannelOptions: UpdateChannelOptions(
-        OptionWithValue(Release, R.string.key_update_channel_release, GithubParser.ReleaseParser),
-        OptionWithValue(Development, R.string.key_update_channel_development, GithubParser.DevelopmentParser),
+        OptionWithValue(RELEASE, R.string.key_update_channel_release, GithubParser.ReleaseParser),
+        OptionWithValue(DEVELOPMENT, R.string.key_update_channel_development, GithubParser.DevelopmentParser),
         OptionWithValue("CI", R.string.key_update_channel_ci, GithubParser.CIParser)
+    )
+
+    data object LnrAPIUpdateChannelOptions: UpdateChannelOptions(
+        OptionWithValue(RELEASE, R.string.key_update_channel_release, APIParser.StableParser),
+        OptionWithValue(DEVELOPMENT, R.string.key_update_channel_development, APIParser.BetaParser),
+        OptionWithValue("CI", R.string.key_update_channel_ci, APIParser.UnstableParser)
     )
 
     data object UpdatePlatformOptions: MenuOptionsWithValues<UpdateChannelOptions>() {
         val GitHub = option("GitHub", R.string.key_platform_github, GitHubUpdateChannelOptions)
+        val LnrAPI = option("LnrAPI", R.string.key_platform_lnr_api, LnrAPIUpdateChannelOptions)
     }
 
     data object DarkModeOptions: MenuOptions(
@@ -115,12 +123,14 @@ sealed class MenuOptions {
     )
 
     data object LightThemeNameOptions: MenuOptions(
-        Option("light_default", R.string.key_light_theme_default)
+        Option("light_default", R.string.key_light_theme_default),
+        Option("light_designer", R.string.key_light_theme_designer)
     )
 
     data object DarkThemeNameOptions: MenuOptions(
         Option("dark_default", R.string.key_dark_theme_default),
-        Option("dark_obsidian", R.string.key_dark_theme_obsidian)
+        Option("dark_obsidian", R.string.key_dark_theme_obsidian),
+        Option("dark_designer", R.string.key_dark_theme_designer)
     )
 
     data object ReaderBgImageDisplayModeOptions: MenuOptions() {

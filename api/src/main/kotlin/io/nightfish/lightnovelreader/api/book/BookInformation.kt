@@ -9,7 +9,7 @@ import androidx.compose.runtime.setValue
 import java.time.LocalDateTime
 
 @Stable
-interface BookInformation: CanBeEmpty {
+interface BookInformation: CanBeEmpty, Copyable<BookInformation> {
     val id: String
     val title: String
     val subtitle: String
@@ -18,7 +18,7 @@ interface BookInformation: CanBeEmpty {
     val description: String
     val tags: List<String>
     val publishingHouse: String
-    val wordCount: WorldCount
+    val wordCount: WordCount
     val lastUpdated: LocalDateTime
     val isComplete: Boolean
 
@@ -33,7 +33,7 @@ interface BookInformation: CanBeEmpty {
             "",
             emptyList(),
             "",
-            WorldCount(0),
+            WordCount(0),
             LocalDateTime.MIN,
             false
         )
@@ -41,7 +41,10 @@ interface BookInformation: CanBeEmpty {
 
     override fun isEmpty() = id.isEmpty() || title == ""
 
-    @Suppress("unused")
+    override fun copy(): BookInformation =
+        MutableBookInformation(id, title, subtitle, coverUri, author, description, tags, publishingHouse, wordCount, lastUpdated, isComplete)
+
+
     fun toMutable(): MutableBookInformation {
         if (this is MutableBookInformation)
             return this
@@ -58,7 +61,7 @@ class MutableBookInformation(
     description: String,
     tags: List<String>,
     publishingHouse: String,
-    wordCount: WorldCount,
+    wordCount: WordCount,
     lastUpdated: LocalDateTime,
     isComplete: Boolean
 ): BookInformation {
@@ -84,7 +87,7 @@ class MutableBookInformation(
             "",
             emptyList(),
             "",
-            WorldCount(0),
+            WordCount(0),
             LocalDateTime.MIN,
             false
         )

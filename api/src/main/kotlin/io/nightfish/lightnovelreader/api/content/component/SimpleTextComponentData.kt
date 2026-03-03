@@ -17,7 +17,7 @@ data class SimpleTextComponentData(
     override fun toJsonElement(): JsonElement = Json.encodeToJsonElement(this)
 
     override fun toHtmlElement(context: Context): Element = DocumentHelper.createElement("div").apply {
-        text
+        this@SimpleTextComponentData.text
             .replace("[\\x00-\\x08\\x0b-\\x0c\\x0e-\\x1f]", "")
             .split("\n")
             .forEach {

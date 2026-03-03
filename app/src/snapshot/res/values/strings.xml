@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name" translatable="false">[SNAPSHOT] LightNovelReader</string>
+    <string name="settings_statistics_desc">*Unavailable for debug builds</string>
+</resources>

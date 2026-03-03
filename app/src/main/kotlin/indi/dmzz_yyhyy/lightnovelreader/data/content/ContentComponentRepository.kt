@@ -24,10 +24,10 @@ class ContentComponentRepository @Inject constructor(
     val pluginInjectorProvider: PluginInjectorProvider
 ): ContentComponentRepositoryApi {
     private val serializeMutableMap = mutableMapOf<String, ComponentDataJsonElementSerializer<out AbstractContentComponentData>>()
-    val serializeMap = serializeMutableMap.toMap()
+    val serializeMap get() =  serializeMutableMap.toMap()
     private val kClassMutableMap = mutableMapOf<String, KClass<out AbstractContentComponent<out AbstractContentComponentData>>>()
     private val dataKClassMutableMap = mutableMapOf<String, KClass<out AbstractContentComponentData>>()
-    val dataKClassMap = dataKClassMutableMap.toMap()
+    val dataKClassMap get() = dataKClassMutableMap.toMap()
 
     fun getContentDataFromJson(jsonObject: JsonObject): ContentData = ContentData(
         jsonObject["components"]
@@ -91,9 +91,9 @@ class ContentComponentRepository @Inject constructor(
 
         override fun register() {
             if (componentKClass == null || componentDataKClass == null ||serializer == null) throw Error("builder missing parameters")
-            kClassMap.put(id, componentKClass!!)
-            dataKClassMap.put(id, componentDataKClass!!)
-            serializerMap.put(id, serializer!!)
+            kClassMap[id] = componentKClass!!
+            dataKClassMap[id] = componentDataKClass!!
+            serializerMap[id] = serializer!!
         }
     }
     fun getDataFromJsonObject(content: JsonObject, block: (AbstractContentComponentData) -> Unit) {

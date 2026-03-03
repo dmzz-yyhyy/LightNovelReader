@@ -7,13 +7,17 @@ import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.serialier.LocalDateTimeSerializer
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
+@Serializable
 @TypeConverters(ListConverter::class, LocalDateTimeConverter::class, ChapterReadingProgressMapConverter::class)
 @Entity(tableName = "user_reading_data")
 data class UserReadingDataEntity(
     @PrimaryKey
     val id: String,
+    @Serializable(LocalDateTimeSerializer::class)
     @ColumnInfo(name = "last_read_time")
     val lastReadTime: LocalDateTime,
     @ColumnInfo(name = "total_read_time")
@@ -25,7 +29,16 @@ data class UserReadingDataEntity(
     @ColumnInfo(name = "last_read_chapter_title")
     val lastReadChapterTitle: String,
     @ColumnInfo(name = "current_chapter_reading_progress_map")
-    val currentChapterReadingProgress: Map<String, Float>,
+    val currentChapterReadingProgressMap: Map<String, Float>,
     @ColumnInfo(name = "max_chapter_reading_progress_map")
-    val maxChapterReadingProgress: Map<String, Float>
-)
+    val maxChapterReadingProgressMap: Map<String, Float>
+): Mergeable<UserReadingDataEntity> {
+    override fun merge(new: UserReadingDataEntity): UserReadingDataEntity = new.copy(
+        lastReadTime = new.lastReadTime.coerceAtLeast(this.lastReadTime),
+        totalReadTime = new.totalReadTime.coerceAtLeast(this.totalReadTime),
+        readingProgress = new.readingProgress.coerceAtLeast(this.readingProgress),
+        maxChapterReadingProgressMap = new.maxChapterReadingProgressMap.mapValues { (key, value) ->
+            value.coerceAtLeast(this.maxChapterReadingProgressMap[key] ?: 0f)
+        }
+    )
+}

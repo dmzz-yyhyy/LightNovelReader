@@ -21,9 +21,11 @@
     <string name="key_dark_mode_disabled">保持禁用</string>
     <!-- Light Theme Name -->
     <string name="key_light_theme_default">默认</string>
+    <string name="key_light_theme_designer">Designer</string>
     <!-- Dark Theme Name -->
     <string name="key_dark_theme_default">默认</string>
     <string name="key_dark_theme_obsidian">黑曜石</string>
+    <string name="key_dark_theme_designer">Designer</string>
     <!-- Experimental Locale -->
     <string name="key_locale_none">跟随应用语言</string>
     <!-- FlipAnime -->

@@ -8,7 +8,7 @@ class IntListUserData (
     private val userDataDao: UserDataDaoApi
 ) : UserData<List<Int>>(path) {
     override fun set(value: List<Int>) {
-        userDataDao.update(path, group, "IntList", value.joinToString(","))
+        userDataDao.insert(path, group, "IntList", value.joinToString(","))
     }
 
     override fun get(): List<Int>? {
@@ -19,8 +19,8 @@ class IntListUserData (
     }
 
     override fun getFlow(): Flow<List<Int>?> {
-        return userDataDao.getFlow(path).map {
-            it?.split(",")
+        return userDataDao.getFlow(path).map { text ->
+            text?.split(",")
                 ?.filter { it.isNotBlank() }
                 ?.map(String::toInt)
         }

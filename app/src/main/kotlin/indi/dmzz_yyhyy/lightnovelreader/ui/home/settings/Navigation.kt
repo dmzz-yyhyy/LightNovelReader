@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.result.ActivityResult
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +52,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.settingsDestination(sharedTransitionScope: SharedTransitionScope) {
+fun NavGraphBuilder.settingsDestination() {
     composable<Route.Main.Settings.Home> {
         val navController = LocalNavController.current
         val settingsViewModel = hiltViewModel<SettingsViewModel>()
@@ -71,9 +70,7 @@ fun NavGraphBuilder.settingsDestination(sharedTransitionScope: SharedTransitionS
             onClickLogcat = navController::navigateToSettingsLogcatDestination,
             onClickTextFormatting = navController::navigateToSettingsTextFormattingManagerDestination,
             onClickPluginManager = navController::navigateToSettingsPluginManagerHomeDestination,
-            onClickThemeSettings = navController::navigateToSettingsThemeDestination,
-            animatedVisibilityScope = this,
-            sharedTransitionScope = sharedTransitionScope
+            onClickThemeSettings = navController::navigateToSettingsThemeDestination
         )
     }
     settingsSourceChangeDestination()
@@ -83,11 +80,11 @@ fun NavGraphBuilder.settingsDestination(sharedTransitionScope: SharedTransitionS
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.settingsNavigation(sharedTransitionScope: SharedTransitionScope) {
+fun NavGraphBuilder.settingsNavigation() {
     navigation<Route.Main.Settings>(
         startDestination = Route.Main.Settings.Home
     ) {
-        settingsDestination(sharedTransitionScope)
+        settingsDestination()
         settingsDebugDestination()
         settingsLogcatDestination()
         settingsThemeDestination()

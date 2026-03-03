@@ -1,9 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings
 
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,102 +56,97 @@ fun SettingsScreen(
     onClickLicenses: () -> Unit,
     onClickThemeSettings: () -> Unit,
     onClickPluginManager: () -> Unit,
-    onClickTextFormatting: () -> Unit,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    sharedTransitionScope: SharedTransitionScope,
+    onClickTextFormatting: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val listState = rememberLazyListState()
 
-    with(sharedTransitionScope) {
-        Column {
-            TopBar(scrollBehavior)
-            LazyColumn (
-                Modifier.fillMaxSize(),
-                listState
-            ) {
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.app_updates)
-                    ) {
-                        UpdatesSettingsList(
-                            updatePhase = updatePhase,
-                            settingState = settingState,
-                            checkUpdate = checkUpdate,
-                        )
-                    }
+    Column {
+        TopBar(scrollBehavior)
+        LazyColumn(
+            Modifier.fillMaxSize(), listState
+        ) {
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.app_updates)
+                ) {
+                    UpdatesSettingsList(
+                        updatePhase = updatePhase,
+                        settingState = settingState,
+                        checkUpdate = checkUpdate,
+                    )
                 }
-
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.reading_settings),
-                    ) {
-                        ReadingSettingsList(
-                            settingState = settingState,
-                            onClickTheme = onClickThemeSettings,
-                            onClickTextFormatting = onClickTextFormatting
-                        )
-                    }
-                }
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.display_settings),
-                    ) {
-                        DisplaySettingsList(
-                            settingState = settingState
-                        )
-                    }
-                }
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.data_settings),
-                    ) {
-                        DataSettingsList(
-                            onClickChangeSource = onClickChangeSource,
-                            onClickExportUserData = onClickExportUserData,
-                            settingState = settingState,
-                            importData = importData,
-                        )
-                    }
-                }
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.app_settings),
-                    ) {
-                        AppSettingsList(
-                            settingState = settingState,
-                            onClickLogcat = onClickLogcat,
-                            onClickPluginManager = onClickPluginManager,
-                        )
-                    }
-                }
-                item {
-                    SettingsCategory(
-                        title = stringResource(R.string.about_settings),
-                    ) {
-                        AboutSettingsList(
-                            onClickLicenses = onClickLicenses
-                        )
-                    }
-                }
-                if (BuildConfig.DEBUG) {
-                    item {
-                        SettingsCategory(
-                            title = stringResource(R.string.debug_settings)
-                        ) {
-                            SettingsClickableEntry(
-                                modifier = Modifier.background(colorScheme.surfaceContainer),
-                                painter = painterResource(R.drawable.adb_24px),
-                                title = stringResource(R.string.settings_debug_tools),
-                                description = stringResource(R.string.settings_debug_tools_desc),
-                                onClick = onClickDebugMode
-                            )
-                        }
-                    }
-                }
-                bottomBarSpacer()
-                navigationBarSpacer()
             }
+
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.reading_settings),
+                ) {
+                    ReadingSettingsList(
+                        settingState = settingState,
+                        onClickTheme = onClickThemeSettings,
+                        onClickTextFormatting = onClickTextFormatting
+                    )
+                }
+            }
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.display_settings),
+                ) {
+                    DisplaySettingsList(
+                        settingState = settingState
+                    )
+                }
+            }
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.data_settings),
+                ) {
+                    DataSettingsList(
+                        onClickChangeSource = onClickChangeSource,
+                        onClickExportUserData = onClickExportUserData,
+                        settingState = settingState,
+                        importData = importData,
+                    )
+                }
+            }
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.app_settings),
+                ) {
+                    AppSettingsList(
+                        settingState = settingState,
+                        onClickLogcat = onClickLogcat,
+                        onClickPluginManager = onClickPluginManager,
+                    )
+                }
+            }
+            item {
+                SettingsCategory(
+                    title = stringResource(R.string.about_settings),
+                ) {
+                    AboutSettingsList(
+                        settingState = settingState, onClickLicenses = onClickLicenses
+                    )
+                }
+            }
+            if (BuildConfig.DEBUG) {
+                item {
+                    SettingsCategory(
+                        title = stringResource(R.string.debug_settings)
+                    ) {
+                        SettingsClickableEntry(
+                            modifier = Modifier.background(colorScheme.surfaceContainer),
+                            painter = painterResource(R.drawable.adb_24px),
+                            title = stringResource(R.string.settings_debug_tools),
+                            description = stringResource(R.string.settings_debug_tools_desc),
+                            onClick = onClickDebugMode
+                        )
+                    }
+                }
+            }
+            bottomBarSpacer()
+            navigationBarSpacer()
         }
     }
 }
@@ -167,8 +160,7 @@ private fun TopBar(
     TopAppBar(
         title = {
             Text(
-                text = stringResource(R.string.nav_settings),
-                style = typography.displayLarge
+                text = stringResource(R.string.nav_settings), style = typography.displayLarge
             )
         },
         navigationIcon = {
@@ -186,13 +178,11 @@ private fun TopBar(
 
 @Composable
 fun SettingsCategory(
-    title: String? = null,
-    content: @Composable ColumnScope.() -> Unit
+    title: String? = null, content: @Composable ColumnScope.() -> Unit
 ) {
     title?.let {
         SectionHeader(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-            text = it
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp), text = it
         )
     }
 
@@ -200,8 +190,7 @@ fun SettingsCategory(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .padding(bottom = 16.dp)
-            .clip(RoundedCornerShape(16.dp)),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+            .clip(RoundedCornerShape(16.dp)), verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         content()
     }

@@ -1,5 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 plugins {
     alias(libs.plugins.android.application)
@@ -20,7 +23,7 @@ android {
         minSdk = 24
         targetSdk = 36
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_02_00_025
+        versionCode = 1_02_00_031
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -46,13 +49,29 @@ android {
             isDebuggable = true
             isJniDebuggable = true
             vcsInfo.include = false
-            versionNameSuffix = defaultConfig.versionCode.toString()
+            versionNameSuffix = "-" + defaultConfig.versionCode.toString()
+        }
+
+        register("snapshot") {
+            initWith(getByName("release"))
+            matchingFallbacks.add("relese")
+            applicationIdSuffix = ".snapshot"
+            isShrinkResources = true
+            isMinifyEnabled = true
+            vcsInfo.include = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            val dateFormat = SimpleDateFormat("MMM-dd-HH-mm-ss", Locale.US)
+            versionNameSuffix = "-${dateFormat.format(Date())}"
         }
 
         base {
             archivesName = "LightNovelReader-${defaultConfig.versionName}"
         }
     }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
@@ -65,6 +84,18 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("snapshot")) { variant ->
+        variant.outputs.forEach { output ->
+            val outputImpl = output as com.android.build.api.variant.impl.VariantOutputImpl
+            val originalFileName = outputImpl.outputFileName.get()
+            val dateFormat = SimpleDateFormat("MMM-dd-HH-mm-ss", Locale.US)
+            val newFileName = originalFileName.replace(".apk", "-${dateFormat.format(Date())}.apk")
+            outputImpl.outputFileName = newFileName
         }
     }
 }
@@ -85,6 +116,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Android lib
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.foundation)
     implementation(libs.core.splashscreen)
     implementation(libs.lifecycle.runtime.ktx)
     implementation(libs.lifecycle.runtime.compose)
@@ -117,8 +149,6 @@ dependencies {
     implementation(libs.coil.compose)
     // jsoup
     implementation(libs.jsoup)
-    // Gson
-    implementation(libs.gson)
     // Markdown
     implementation(libs.markdown)
     // Room
@@ -155,12 +185,15 @@ dependencies {
     implementation(libs.kotlin.result.coroutines)
     // apksig
     implementation(libs.apksig)
+    // http
     implementation(libs.cxhttp)
     implementation(libs.okhttp)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.androidx.profileinstaller)
-    //RE2J
+    // RE2J
     implementation(libs.re2j)
+    // Matomo
+    implementation(libs.matomo.sdk.android)
 }
 
 configurations.implementation {

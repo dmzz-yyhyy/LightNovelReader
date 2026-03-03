@@ -10,6 +10,8 @@ local.properties
 .idea/dataSources.local.xml
 .idea/deploymentTargetDropDown.xml
 .idea/deploymentTargetSelector.xml
+.idea/misc.xml
+.idea/compiler.xml
 .DS_Store
 ./build
 ./captures
@@ -17,3 +19,4 @@ local.properties
 .cxx
 ./local.properties
 .kotlin/
+/app/snapshot/

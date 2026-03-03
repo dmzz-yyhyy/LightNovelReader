@@ -130,7 +130,7 @@ fun RegexText(
 @Composable
 private fun Preview() {
     Column {
-        RegexText("\\\\[[abc][^abc][a-z][^a-z][a-zA-z]\\.a|b\\s\\S(?:.*)(...)a?a*a+a{3}a{3,6}^\$aaaaadsa\\")
-        Text("\\\\[[abc][^abc][a-z][^a-z][a-zA-z]\\.a|b\\s\\S(?:.*)(...)a?a*a+a{3}a{3,6}^\$aaaaadsa\\")
+        RegexText($$"\\\\[[abc][^abc][a-z][^a-z][a-zA-z]\\.a|b\\s\\S(?:.*)(...)a?a*a+a{3}a{3,6}^$aaaaadsa\\")
+        Text($$"\\\\[[abc][^abc][a-z][^a-z][a-zA-z]\\.a|b\\s\\S(?:.*)(...)a?a*a+a{3}a{3,6}^$aaaaadsa\\")
     }
 }

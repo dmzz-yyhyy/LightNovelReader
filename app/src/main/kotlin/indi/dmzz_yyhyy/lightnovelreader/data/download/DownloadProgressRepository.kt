@@ -23,7 +23,7 @@ class DownloadProgressRepository @Inject constructor(
         private val userDataDao: UserDataDao
     ) : UserData<List<DownloadItem>>(path) {
         override fun set(value: List<DownloadItem>) {
-            userDataDao.update(path, group, "CompletedDownloadItemList", value.joinToString {
+            userDataDao.insert(path, group, "CompletedDownloadItemList", value.joinToString {
                 "${it.type.name}|${it.bookId}"
             })
         }

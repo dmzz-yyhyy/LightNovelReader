@@ -21,8 +21,7 @@ class Cache(
             if (map.size >= maxCountEachType)
                 map.remove(map.entries.minByOrNull { it.value.time }?.key ?: return)
             map[id] = CacheData(System.currentTimeMillis(), t)
-        }
-        else {
+        } else {
             cacheMap[tClass] = mutableMapOf(Pair(id, CacheData(System.currentTimeMillis(), t)))
         }
     }

@@ -27,7 +27,6 @@
     <string name="enabled">啟用</string>
     <string name="disabled">停用</string>
     <string name="install_update">安裝更新</string>
-    <string name="unspecified">未指定</string>
     <string name="ignore">忽略</string>
     <string name="ignore_version">忽略此版本</string>
     <string name="switch_and_restart">切換並重新啟動</string>
@@ -205,7 +204,23 @@
     <string name="settings_communication">加入討論</string>
     <string name="settings_communication_desc">加入我們的 QQ 群討論或回饋</string>
     <string name="settings_statistics">匿名統計</string>
-    <string name="settings_statistics_desc">我們使用 Microsoft AppCenter 匿名收集一些統計資料，以使 LightNovelReader 變得更好</string>
+    <string name="settings_statistics_desc">我們需要收集一些統計資料，以使 LightNovelReader 變得更好</string>
+    <string name="settings_statistics_disable_dialog_title">等一等……</string>
+    <string name="settings_statistics_disable_dialog_text">
+        真的要關閉統計嗎 ο(=•ω＜=)ρ⌒☆
+        \nLightNovelReader 僅統計日活等數據
+        \n不會涉及任何隱私資訊，而且是匿名統計
+        \n關閉後夜魚只能對著 0 日活哭泣了 ≧ ﹏ ≦
+    </string>
+    <string name="settings_statistics_disable_dialog_confirm">仍要關閉</string>
+    <string name="privacy_policy">隱私政策</string>
+    <string name="privacy_policy_title">我們蒐集什麼</string>
+    <string name="privacy_policy_collect_title">我們蒐集</string>
+    <string name="privacy_policy_collect_items">• 裝置品牌和型號\n• 系統與 LightNovelReader 版本\n• 基礎日活資訊（會話時間與時長）\n• 根據 IP 的模糊地區</string>
+    <string name="privacy_policy_not_collect_title">我們不蒐集</string>
+    <string name="privacy_policy_not_collect_items">上述之外的任何個人資料，包括但不限於：LightNovelReader 應用內資料，以及其他可能用於確定你的身份的資訊。</string>
+    <string name="privacy_policy_commitment_title">隱私承諾</string>
+    <string name="privacy_policy_commitment_items">LightNovelReader 不會利用上述任何分享給我們的資料進行廣告定向、資料挖掘或其他可能損害你隱私的活動。</string>
     <string name="experimental_settings">實驗性</string>
     <string name="debug_settings">除錯</string>
     <string name="item_view_details">查看詳細資訊</string>
@@ -408,6 +423,10 @@
     <string name="plugin_api_incompatible">此外掛基於舊版本的 LightNovelReader 建置，與目前版本不相容。更新外掛可能可以解決此問題。</string>
     <string name="plugin_install_cancelled">安裝已取消</string>
     <string name="plugin_install_failed_with_reason">安裝失敗：%1$s</string>
+    <string name="plugin_error_unsupported_api">不支援的 API 版本 %1$d，目前版本為 %2$d</string>
+    <string name="plugin_error_version_too_high">已安裝的外掛版本高於待安裝版本</string>
+    <string name="plugin_error_signature_mismatch">外掛簽名與已安裝版本不匹配</string>
+    <string name="plugin_error_unknown">未知錯誤：%1$s</string>
     <string name="plugin_install_conflict_app_plugin">安裝失敗：已存在相同 ID 的外掛應用程式，請先解除安裝該應用外掛。</string>
     <string name="plugin_install_signature_mismatch">安裝失敗：偵測到不同簽名，請先解除安裝已安裝版本後再安裝此外掛。</string>
     <string name="plugin_install_overwrite_prompt">偵測到已安裝外掛，是否覆蓋安裝？</string>
@@ -416,7 +435,15 @@
     <string name="plugin_install_verifying">正在驗證外掛…</string>
     <string name="plugin_install_installing">正在安裝外掛…</string>
     <string name="plugin_install_continue">繼續安裝…</string>
+    <string name="plugin_install_parse_package_info">正在解析套件資訊…</string>
+    <string name="plugin_install_parse_plugin_metadata">正在解析外掛元資料…</string>
+    <string name="plugin_install_clean">正在清理…</string>
+    <string name="plugin_install_check_legality">正在檢查安裝合法性…</string>
+    <string name="plugin_install_write_metadata">正在寫入外掛元資料…</string>
+    <string name="plugin_install_copy_plugin">正在複製外掛…</string>
     <string name="plugin_update_preparing">準備更新…</string>
+    <string name="plugin_delete_confirm_body">確定要刪除此外掛嗎？此操作不可撤銷。</string>
+    <string name="plugin_delete_confirm">刪除</string>
     <string name="plugin_delete_deleting">正在刪除…</string>
     <string name="plugin_delete_completed">刪除完成</string>
     <string name="plugin_delete_failed_with_reason">刪除失敗：%1$s</string>

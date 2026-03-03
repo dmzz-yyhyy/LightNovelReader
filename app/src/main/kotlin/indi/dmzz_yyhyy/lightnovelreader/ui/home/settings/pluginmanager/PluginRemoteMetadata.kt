@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class PluginMetadata(
+data class RemotePluginMetadata(
     val id: String,
     val version: Int,
     val name: String,

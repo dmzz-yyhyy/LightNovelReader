@@ -3,7 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web
 import indi.dmzz_yyhyy.lightnovelreader.utils.AdvancedPrioritySemaphore
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 
-class MutableWebDataSourceProvider(): WebBookDataSourceProvider {
+class MutableWebDataSourceProvider: WebBookDataSourceProvider {
     private var _value: WebBookDataSource = EmptyWebDataSource
         set(value) {
             advancedPrioritySemaphore = AdvancedPrioritySemaphore(value.permits)
@@ -38,11 +38,7 @@ class MutableWebDataSourceProvider(): WebBookDataSourceProvider {
     fun update(webBookDataSource: WebBookDataSource) {
                 _value = webBookDataSource
     }
-    val value =
-        if (_value.cache != null)
-            CacheWebBookDataSource(_value.cache!!, MargeWebBookDataSource(_value))
-        else
-            MargeWebBookDataSource(_value)
+    val value get() = _value
     override val highPriority: WebBookDataSource
         get() =
             if (highPriorityProcessedDataSource.id == _value.id) highPriorityProcessedDataSource

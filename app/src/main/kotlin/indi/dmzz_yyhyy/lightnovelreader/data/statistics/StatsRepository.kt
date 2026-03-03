@@ -1,9 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
-import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataContent
-import indi.dmzz_yyhyy.lightnovelreader.data.json.DailyReadingStats
-import indi.dmzz_yyhyy.lightnovelreader.data.json.toDailyStatsData
-import indi.dmzz_yyhyy.lightnovelreader.data.json.toEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity

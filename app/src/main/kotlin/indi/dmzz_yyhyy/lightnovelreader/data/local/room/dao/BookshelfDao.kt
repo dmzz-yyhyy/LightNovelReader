@@ -2,9 +2,12 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room.TypeConverters
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
@@ -14,8 +17,8 @@ import java.time.LocalDateTime
 @Dao
 interface BookshelfDao {
 
-    @Update
-    fun updateBookshelfEntity(bookshelfEntity: BookshelfEntity)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertBookshelf(bookshelfEntity: BookshelfEntity)
 
     @Insert
     fun createBookshelf(bookshelfEntity: BookshelfEntity)
@@ -54,13 +57,17 @@ interface BookshelfDao {
     @Query("select * from book_shelf_book_metadata where id=:id")
     fun getBookshelfBookMetadataEntityFlow(id: String): Flow<BookshelfBookMetadataEntity?>
 
+    @TypeConverters(LocalDateTimeConverter::class, ListConverter::class)
     @Query("replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
             " values (:id, :lastUpdate, :bookshelfIds)")
-    fun updateBookshelfBookMetaDataEntity(
+    fun insertBookshelfBookMetadata(
         id: String,
-        lastUpdate: String,
+        lastUpdate: LocalDateTime,
         bookshelfIds: String,
     )
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertBookshelfBookMetadata(entity: BookshelfBookMetadataEntity)
 
     @Query("select id from book_shelf")
     fun getAllBookshelfIds(): List<Int>
@@ -82,9 +89,9 @@ interface BookshelfDao {
     ) {
         getBookshelfBookMetadataEntity(id).let {
             if ( it == null)
-                updateBookshelfBookMetaDataEntity(id, lastUpdate.toString(), bookshelfIds.joinToString(","))
+                insertBookshelfBookMetadata(id, lastUpdate, ListConverter.intListToString(bookshelfIds))
             else
-                updateBookshelfBookMetaDataEntity(id, lastUpdate.toString(), (bookshelfIds + it.bookShelfIds).distinct().joinToString(","))
+                insertBookshelfBookMetadata(id, lastUpdate, ListConverter.intListToString((bookshelfIds + it.bookShelfIds).distinct()))
         }
     }
 

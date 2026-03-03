@@ -52,13 +52,16 @@ fun NavGraphBuilder.settingsPluginManagerNavigation() {
 }
 
 fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
-    composable<Route.Main.Settings.PluginManager.Home> {
+    composable<Route.Main.Settings.PluginManager.Home> { navBackStackEntry ->
         val navController = LocalNavController.current
         val context = LocalContext.current
-        val viewModel = hiltViewModel<PluginManagerViewModel>()
+        val parentEntry = remember(navBackStackEntry) {
+            navBackStackEntry.destination.parent?.route
+                ?.let(navController::getBackStackEntry)
+        }
+        val viewModel = hiltViewModel<PluginManagerViewModel>(parentEntry ?: navBackStackEntry)
         val enabledPluginList by viewModel.enabledPluginFlow.collectAsState(emptyList())
-        val enabledPluginPackageList by viewModel.enabledPluginPackagesFlow.collectAsState(emptyList())
-        val errorPluginIds by viewModel.errorPluginIdsFlow.collectAsState(emptySet())
+        val errorMessageMap = viewModel.errorMessageMap
         var showPluginNoSignatureDialog by remember { mutableStateOf(false) }
         var showPluginErrorDialog by remember { mutableStateOf(false) }
         var showPluginSignatureDialog: String? by remember { mutableStateOf(null) }
@@ -76,9 +79,6 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                 snackbarHostState.showSnackbar(message, withDismissAction = true)
             }
         }
-        LaunchedEffect(Unit) {
-            viewModel.refreshAppPlugins()
-        }
 
         val errorString = stringResource(R.string.plugin_snackbar_disabled_load_error)
         val notSignedString = stringResource(R.string.plugin_snackbar_not_signed)
@@ -88,8 +88,7 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
 
         PluginManagerScreen(
             enabledPluginList = enabledPluginList,
-            enabledPluginPackageList = enabledPluginPackageList,
-            errorPluginIds = errorPluginIds,
+            errorMessageMap = errorMessageMap,
             onClickBack = navController::popBackStackIfResumed,
             onClickPluginApps = navController::navigateToSettingsPluginAppListDestination,
             onClickDetail = navController::navigateToSettingsPluginManagerDetailDestination,
@@ -218,7 +217,7 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
             if (pluginIdToShow.isNotEmpty()) {
                 PluginSignatureDialog(
                     onClose = { showPluginSignatureDialog = null },
-                    signatureInfo = viewModel.pluginList.first { it.id == pluginIdToShow }.signatures
+                    signatureInfo = viewModel.getPluginSignatures(pluginIdToShow)
                 )
             }
         }

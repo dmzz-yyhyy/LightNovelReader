@@ -5,44 +5,33 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
-import io.nightfish.lightnovelreader.api.explore.ExplorePage
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
 
 object Wenku8TagsExploreTapPage: ExploreTapPageDataSource {
-    private var lock = false
-    private val exploreBooksRows: MutableStateFlow<List<ExploreBooksRow>> = MutableStateFlow(emptyList())
-
     override val title = "分类"
 
-    override fun getExplorePage(): ExplorePage  {
-        if (!lock) {
-            lock = true
-            CoroutineScope(Dispatchers.IO).launch {
-                autoReconnectionGetWithWenku8Cookie("${host}/modules/article/tags.php")
-                    ?.select("a[href~=tags\\.php\\?t=.*]")
-                    ?.slice(0..48)
-                    ?.map { "${host}/modules/article/" + it.attr("href") }
-                    ?.map {url ->
-                        val soup = autoReconnectionGetWithWenku8Cookie(url.split("=")[0] + "=" +
-                                URLEncoder.encode(url.split("=")[1], "gb2312"))
-                        exploreBooksRows.update {
-                            it + getExploreBookRow(
-                                soup = soup,
-                                title = url.split("=")[1]
-                            )
-                        }
-                    }
-            }
-        }
 
-        return ExplorePage("分类", exploreBooksRows)
+    override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
+        val rows = mutableListOf<ExploreBooksRow>()
+        autoReconnectionGetWithWenku8Cookie("${host}/modules/article/tags.php")
+            ?.select("a[href~=tags\\.php\\?t=.*]")
+            ?.slice(0..48)
+            ?.map { "${host}/modules/article/" + it.attr("href") }
+            ?.forEach { url ->
+                val soup = autoReconnectionGetWithWenku8Cookie(url.split("=")[0] + "=" +
+                        URLEncoder.encode(url.split("=")[1], "gb2312"))
+                rows.add(
+                    getExploreBookRow(
+                        soup = soup,
+                        title = url.split("=")[1]
+                    )
+                )
+                emit(rows)
+            }
     }
 
     private fun getExploreBookRow(title: String, soup: Document?): ExploreBooksRow {

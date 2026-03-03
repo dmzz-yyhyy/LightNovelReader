@@ -18,7 +18,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -40,7 +39,6 @@ fun ExploreScreen(
     val scope = rememberCoroutineScope()
     val rememberPullToRefreshState = rememberPullToRefreshState()
     val snackbarHostState = LocalSnackbarHost.current
-    val context = LocalContext.current
 
     AnimatedVisibility(
         modifier = modifier,
@@ -67,12 +65,14 @@ fun ExploreScreen(
                         title = stringResource(R.string.offline),
                         description = stringResource(R.string.offline_desc)
                     ) {
+                        val networkErrorMessage = stringResource(R.string.network_error_message)
+                        val ok = stringResource(android.R.string.ok)
                         IconButton({
                             showSnackbar(
                                 coroutineScope = scope,
                                 hostState = snackbarHostState,
-                                message = context.getString(R.string.network_error_message),
-                                actionLabel = context.getString(android.R.string.ok),
+                                message = networkErrorMessage,
+                                actionLabel = ok,
                                 duration = SnackbarDuration.Long
                             ) { }
                         }) {

@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginMetadata
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.RemotePluginMetadata
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -56,11 +56,11 @@ class PluginRepositoryViewModel @Inject constructor(
     pluginManager: PluginManager,
 ) : ViewModel() {
 
-    val pluginList = pluginManager.allPluginInfo
+    val pluginList = pluginManager.allPluginList
     val repositoryUiState = MutablePluginRepositoryUiState()
     private val json = Json { ignoreUnknownKeys = true }
 
-    private val repoInstallChannel = Channel<PluginMetadata>(Channel.UNLIMITED)
+    private val repoInstallChannel = Channel<RemotePluginMetadata>(Channel.UNLIMITED)
     private val taskStateMap = mutableStateMapOf<String, RepoTaskState>()
 
     private val _snackbarFlow = MutableSharedFlow<String>()
@@ -113,20 +113,20 @@ class PluginRepositoryViewModel @Inject constructor(
         }
     }
 
-    fun enqueueInstallFromRepository(meta: PluginMetadata) {
+    fun enqueueInstallFromRepository(meta: RemotePluginMetadata) {
         val id = meta.id
         val state = taskStateMap[id]
         repositoryUiState.progressMap.remove(id)
         if (state == RepoTaskState.Queued || state == RepoTaskState.Running) return
         taskStateMap[id] = RepoTaskState.Queued
-        repositoryUiState.queue = repositoryUiState.queue + id
+        repositoryUiState.queue += id
         repoInstallChannel.trySend(meta)
     }
 
     fun cancelQueuedInstall(id: String) {
         when (taskStateMap[id]) {
             RepoTaskState.Queued -> {
-                repositoryUiState.queue = repositoryUiState.queue - id
+                repositoryUiState.queue -= id
                 repositoryUiState.progressMap.remove(id)
                 taskStateMap[id] = RepoTaskState.Cancelled
             }
@@ -154,7 +154,7 @@ class PluginRepositoryViewModel @Inject constructor(
 
                 withContext(Dispatchers.Main) {
                     repositoryUiState.indexList = repoIndex.plugins
-                    repositoryUiState.pluginMetadataList = emptyList()
+                    repositoryUiState.remotePluginMetadataList = emptyList()
                 }
 
                 val semaphore = Semaphore(4)
@@ -166,7 +166,7 @@ class PluginRepositoryViewModel @Inject constructor(
                             val meta = loadPluginMetadata(entry.id, repoBaseUrl)
                             meta?.let {
                                 withContext(Dispatchers.Main) {
-                                    repositoryUiState.pluginMetadataList = repositoryUiState.pluginMetadataList + it
+                                    repositoryUiState.remotePluginMetadataList = repositoryUiState.remotePluginMetadataList + it
                                 }
                             }
                         } finally {
@@ -187,11 +187,11 @@ class PluginRepositoryViewModel @Inject constructor(
         }
     }
 
-    private fun loadPluginMetadata(pluginId: String, repoBaseUrl: String): PluginMetadata? {
+    private fun loadPluginMetadata(pluginId: String, repoBaseUrl: String): RemotePluginMetadata? {
         return try {
             val metadataUrl = "${repoBaseUrl.trimEnd('/')}/$pluginId/metadata.json"
             val body = Jsoup.connect(metadataUrl).ignoreContentType(true).timeout(10_000).execute().body()
-            val meta = json.decodeFromString(PluginMetadata.serializer(), body)
+            val meta = json.decodeFromString(RemotePluginMetadata.serializer(), body)
             if (meta.id != pluginId) meta.copy(id = pluginId) else meta
         } catch (t: Throwable) {
             t.printStackTrace()
@@ -201,14 +201,14 @@ class PluginRepositoryViewModel @Inject constructor(
 
     fun loadPluginMetadataIfNeeded(pluginId: String, repoBaseUrl: String = REPO_BASE_URL) {
         if (repositoryUiState.metadataLoadingStates[pluginId] == true ||
-            repositoryUiState.pluginMetadataList.any { it.id == pluginId }) return
+            repositoryUiState.remotePluginMetadataList.any { it.id == pluginId }) return
 
         viewModelScope.launch(Dispatchers.IO) {
             withContext(Dispatchers.Main) { repositoryUiState.metadataLoadingStates[pluginId] = true }
             try {
                 loadPluginMetadata(pluginId, repoBaseUrl)?.let { meta ->
                     withContext(Dispatchers.Main) {
-                        repositoryUiState.pluginMetadataList = repositoryUiState.pluginMetadataList + meta
+                        repositoryUiState.remotePluginMetadataList = repositoryUiState.remotePluginMetadataList + meta
                     }
                 }
             } finally {
@@ -217,7 +217,7 @@ class PluginRepositoryViewModel @Inject constructor(
         }
     }
 
-    private suspend fun installPluginFromRepository(metadata: PluginMetadata) = withContext(Dispatchers.IO) {
+    private suspend fun installPluginFromRepository(metadata: RemotePluginMetadata) = withContext(Dispatchers.IO) {
 
     }
 

@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,6 +38,7 @@ class ExploreHomeViewModel @Inject constructor(
 
     fun changePage(page: Int) {
         if (explorePageProvider !is ExplorePageProvider.DefaultExplorePageProvider) return
+        if (explorePageProvider.explorePageIdList.isEmpty()) return
         workingExplorePageJob?.cancel()
         workingExploreBooksRowsJob?.cancel()
         _uiState.selectedPage = page
@@ -44,18 +46,15 @@ class ExploreHomeViewModel @Inject constructor(
             val selectedId = explorePageProvider.explorePageIdList[page]
             val explorePageMap = explorePageProvider.exploreTapPageDataSourceMap
             _uiState.pageTitles = explorePageMap.map { it.value.title }
-            workingExploreBooksRowsJob = viewModelScope.launch {
-                explorePageMap[selectedId]?.getExplorePage()?.let { explorePage ->
-                    _uiState.explorePageTitle = textProcessingRepository.processText { explorePage.title }
-                    explorePage.rows.collect { exploreBooksRows ->
-                        _uiState.explorePageBooksRawList =
-                            exploreBooksRows.map { exploreBooksRow ->
-                                exploreBooksRow.copy(
-                                    bookList = exploreBooksRow.bookList.map {
-                                        textProcessingRepository.processExploreBooksRow(it)
-                                    }
-                                )
-                            }
+            workingExploreBooksRowsJob = viewModelScope.launch(Dispatchers.IO) {
+                explorePageMap[selectedId]?.getRowsFlow()?.collect { exploreBooksRows ->
+                    _uiState.explorePageBooksRawList = exploreBooksRows
+                        .map { exploreBooksRow ->
+                            exploreBooksRow.copy(
+                                bookList = exploreBooksRow.bookList.map {
+                                    textProcessingRepository.processExploreBooksRow(it)
+                                }
+                            )
                         }
                 }
             }

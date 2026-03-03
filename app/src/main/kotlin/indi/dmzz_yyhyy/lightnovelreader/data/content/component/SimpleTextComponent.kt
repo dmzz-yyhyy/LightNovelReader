@@ -5,8 +5,6 @@ import android.net.Uri
 import android.util.DisplayMetrics
 import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -27,19 +25,11 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.loadReaderFontFamilySafe
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderFontFamily
 import io.nightfish.lightnovelreader.api.content.component.AbstractDivisibleContentComponent
 import io.nightfish.lightnovelreader.api.content.component.SimpleTextComponentData
+import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import io.nightfish.lightnovelreader.api.ui.theme.AppTypography
 import io.nightfish.lightnovelreader.api.userdata.UriUserData
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi
-import kotlinx.coroutines.flow.combine
-
-data class ReaderStyle(
-    val fontSize: Float,
-    val fontLineHeight: Float,
-    val fontWeight: Float,
-    val textColor: Color,
-    val textDarkColor: Color
-)
 
 class SimpleTextComponent(
     data: SimpleTextComponentData,
@@ -70,30 +60,7 @@ class SimpleTextComponent(
 
     @Composable
     override fun Content(modifier: Modifier) {
-        val combinedStyle by remember {
-            combine(
-                fontSizeUserData.getFlowWithDefault(15f),
-                fontLineHeightUserData.getFlowWithDefault(7f),
-                fontWeightUserData.getFlowWithDefault(500f),
-                textColorUserData.getFlowWithDefault(Color.Unspecified),
-                textDarkColorUserData.getFlowWithDefault(Color.Unspecified)
-            ) { fontSize, lineHeight, weight, textColor, textDarkColor ->
-                ReaderStyle(
-                    fontSize = fontSize,
-                    fontLineHeight = lineHeight,
-                    fontWeight = weight,
-                    textColor = textColor,
-                    textDarkColor = textDarkColor,
-                )
-            }
-        }.collectAsState(initial = ReaderStyle(
-            fontSize = 15f,
-            fontLineHeight = 7f,
-            fontWeight = 500f,
-            textColor = Color.Unspecified,
-            textDarkColor = Color.Unspecified,
-        ))
-
+        val combinedStyle = LocalReaderStyle.current
         SimpleTextComponentContent(
             modifier = modifier,
             text = data.text,

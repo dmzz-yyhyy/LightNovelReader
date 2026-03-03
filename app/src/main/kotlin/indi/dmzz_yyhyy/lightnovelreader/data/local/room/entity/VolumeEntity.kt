@@ -5,7 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
+import kotlinx.serialization.Serializable
 
+@Serializable
 @TypeConverters(ListConverter::class)
 @Entity(tableName = "volume")
 data class VolumeEntity(
@@ -20,4 +22,6 @@ data class VolumeEntity(
     val chapterIds: List<String>,
     @ColumnInfo(name = "volume_index")
     val index: Int
-)
+): Mergeable<VolumeEntity> {
+    override fun merge(new: VolumeEntity): VolumeEntity = new
+}

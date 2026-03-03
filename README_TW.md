@@ -75,11 +75,6 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 - 保持提交原子化且描述清楚。
 - 若你的變更會影響版本，請在 `app/build.gradle.kts` 中更新。
 
-### 版本管理
-版本在 `app/build.gradle.kts` 中管理：
-- `versionName`：公開版本（例如 "1.3.1"）。遵循語義化版本（major.minor.patch）。
-- `versionCode`：隨著開發自然遞增。
-- 
 ## 支持專案
 
 [![支持我們 愛發電](https://img.shields.io/badge/❤%20支持我們-愛發電-orange)](https://www.ifdian.net/a/lightnovelreader)
@@ -95,16 +90,15 @@ LightNovelReader 是一個完全免費、開源的專案。
 Copyright (C) 2024 by NightFish <hk198580666@outlook.com>
 Copyright (C) 2024 by yukonisen <yukonisen@curiousers.org>
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    
+       http://www.apache.org/licenses/LICENSE-2.0
+    
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 ```

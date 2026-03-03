@@ -1,3 +1,5 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
 import android.content.Intent

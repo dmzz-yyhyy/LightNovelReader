@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import androidx.compose.animation.EnterTransition

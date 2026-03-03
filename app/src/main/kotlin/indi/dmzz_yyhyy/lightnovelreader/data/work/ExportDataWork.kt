@@ -2,136 +2,60 @@ package indi.dmzz_yyhyy.lightnovelreader.data.work
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toFile
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.runCatching
+import com.github.michaelbull.result.unwrapError
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.json.AppUserDataJsonBuilder
-import indi.dmzz_yyhyy.lightnovelreader.data.json.FormattingRuleData
-import indi.dmzz_yyhyy.lightnovelreader.data.json.toJsonData
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
-import io.nightfish.lightnovelreader.api.book.UserReadingData
-import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
-import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
-import io.nightfish.lightnovelreader.api.userdata.UserDataPath
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalDataManager
+import indi.dmzz_yyhyy.lightnovelreader.utils.writeAppLocalData
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.cbor.Cbor
+import kotlinx.serialization.encodeToByteArray
 import java.io.FileOutputStream
-import java.io.IOException
-import java.util.zip.ZipEntry
-import java.util.zip.ZipOutputStream
 
 @HiltWorker
 class ExportDataWork @AssistedInject constructor(
-    @Assisted appContext: Context,
+    @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val webBookDataSourceProvider: WebBookDataSourceProvider,
-    private val bookshelfRepository: BookshelfRepository,
-    private val bookRepository: BookRepository,
-    private val statsRepository: StatsRepository,
-    private val formatRepository: FormatRepository,
-    private val userDataDao: UserDataDao
+    private val localDataManager: LocalDataManager
 ) : CoroutineWorker(appContext, workerParams) {
+    companion object {
+        const val TAG = "ExportDataWork"
+    }
 
+    @OptIn(ExperimentalSerializationApi::class)
     override suspend fun doWork(): Result {
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
-        val exportBookshelf = inputData.getBoolean("exportBookshelf", false)
-        val exportReadingData = inputData.getBoolean("exportReadingData",false)
-        val exportSetting = inputData.getBoolean("exportSetting", false)
-
-        return try {
-            val json = buildJson(exportBookshelf, exportReadingData, exportSetting)
-            createFile(fileUri, json)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Result.failure()
+        val exportLocalBookCache = inputData.getBoolean("exportLocalBookCache", true)
+        val exportBookshelf = inputData.getBoolean("exportBookshelf", true)
+        val exportReadingData = inputData.getBoolean("exportReadingData", true)
+        val exportSetting = inputData.getBoolean("exportSetting", true)
+        val result = localDataManager.exportAppLocalData(
+            localBookCache = exportLocalBookCache,
+            bookshelf = exportBookshelf,
+            readingRecord = exportReadingData,
+            settings = exportSetting
+        ).andThen { appLocalData ->
+            runCatching {
+                applicationContext.contentResolver.openFileDescriptor(fileUri, "w")
+                    ?.use { parcelFileDescriptor ->
+                        FileOutputStream(parcelFileDescriptor.fileDescriptor).use {
+                            it.writeAppLocalData(Cbor.encodeToByteArray(appLocalData))
+                        }
+                    }
+            }
         }
-    }
 
-    private suspend fun buildJson(
-        exportBookshelf: Boolean,
-        exportReadingData: Boolean,
-        exportSetting: Boolean
-    ): String = withContext(Dispatchers.IO) {
-        val formattingRules = formatRepository
-            .getAllRules()
-            .map {
-                FormattingRuleData(
-                    bookId = it.bookId,
-                    name = it.name,
-                    isRegex = it.isRegex,
-                    match = it.match,
-                    replacement = it.replacement,
-                    isEnabled = it.isEnabled
-                )
-            }
-        return@withContext AppUserDataJsonBuilder()
-            .data {
-                webDataSourceId(webBookDataSourceProvider.default.id)
-                if (exportBookshelf) {
-                    bookshelfRepository.getAllBookshelfIds()
-                        .mapNotNull { (bookshelfRepository.getBookshelf(it)) }
-                        .map { (it as Bookshelf).toJsonData() }
-                        .forEach(::bookshelf)
-                    bookshelfRepository.getAllBookshelfBooksMetadata()
-                        .map(BookshelfBookMetadata::toJsonData)
-                        .forEach(::bookshelfBookMetaData)
-                }
-                if (exportReadingData) {
-                    bookRepository.getAllUserReadingData()
-                        .map(UserReadingData::toJsonData)
-                        .forEach(::bookUserData)
-                    userDataDao.getEntity(UserDataPath.ReadingBooks.path)
-                        ?.toJsonData()
-                        ?.let(::userData)
-                    statsRepository.getAllReadingStats()
-                        .forEach(::dailyReadingData)
-                    formattingRules.forEach(::formattingRule)
-                }
-                if (exportSetting) {
-                    userDataDao.getGroupValues(UserDataPath.Reader.path)
-                        .map(UserDataEntity::toJsonData)
-                        .forEach(::userData)
-                    userDataDao.getGroupValues(UserDataPath.Settings.App.path)
-                        .map(UserDataEntity::toJsonData)
-                        .forEach(::userData)
-                    userDataDao.getGroupValues(UserDataPath.Settings.Display.path)
-                        .map(UserDataEntity::toJsonData)
-                        .forEach(::userData)
-                }
-            }
-            .build()
-            .toJson()
-    }
-
-    private fun createFile(fileUri: Uri, json: String): Result {
-        return try {
-            File(applicationContext.filesDir, "data").apply { if (!exists()) mkdir() }
-            if (fileUri.scheme.equals("file")) {
-                val file = fileUri.toFile()
-                if (file.exists()) file.delete()
-                file.createNewFile()
-            }
-            applicationContext.contentResolver.openFileDescriptor(fileUri, "w")?.use { descriptor ->
-                ZipOutputStream(FileOutputStream(descriptor.fileDescriptor)).use {
-                    it.putNextEntry(ZipEntry("data.json"))
-                    it.write(json.toByteArray())
-                    it.closeEntry()
-                }
-            }
-            Result.success()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            Result.failure()
+        if (result.isErr) {
+            Log.e(TAG, "Failed to get AppLocalData")
+            result.unwrapError().printStackTrace()
+            return Result.failure()
         }
+        return Result.success()
     }
 }

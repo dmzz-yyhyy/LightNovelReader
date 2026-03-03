@@ -16,30 +16,25 @@ import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.pluginInstallerDialog() {
     dialog<Route.PluginInstallerDialog> { entry ->
-
         val snackbarHostState = LocalSnackbarHost.current
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<PluginInstallerDialogViewModel>()
-
         val route = entry.toRoute<Route.PluginInstallerDialog>()
         val source = route.source
 
         LaunchedEffect(source) {
             if (source.isNotBlank()) viewModel.setSource(source)
         }
-
         LaunchedEffect(viewModel) {
             viewModel.snackbarFlow.collect { message ->
                 snackbarHostState.showSnackbar(message, withDismissAction = true)
             }
         }
-
         val uiState = viewModel.uiState
 
         LaunchedEffect(uiState.closeSignal) {
             if (uiState.closeSignal > 0) navController.popBackStack()
         }
-
         when (uiState.mode) {
             PluginDialogMode.Install -> {
                 InstallProgressDialog(
@@ -52,7 +47,8 @@ fun NavGraphBuilder.pluginInstallerDialog() {
             PluginDialogMode.Uninstall -> {
                 DeleteProgressDialog(
                     uiState = uiState,
-                    onClose = { viewModel.onCloseDialog() }
+                    onClose = { viewModel.onCloseDialog() },
+                    onConfirmDelete = { viewModel.confirmDelete() }
                 )
             }
 
@@ -63,7 +59,6 @@ fun NavGraphBuilder.pluginInstallerDialog() {
                     onConfirmUpdate = { _ -> viewModel.respondUserDecision(true) }
                 )
             }
-
             PluginDialogMode.Hidden -> Unit
         }
     }

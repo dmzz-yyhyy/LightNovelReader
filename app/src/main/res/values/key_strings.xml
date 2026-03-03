@@ -18,7 +18,7 @@
     <!-- Distribution Platform -->
     <string name="key_platform_github" translatable="false">GitHub</string>
     <string name="key_platform_appcenter" translatable="false">AppCenter</string>
-    <string name="key_platform_lnr_api" translatable="false">yukonisen\'s LightNovelReader API</string>
+    <string name="key_platform_lnr_api" translatable="false">LightNovelReader API</string>
     <!-- Dark Mode -->
     <string name="key_dark_mode_follow_system">Follow System</string>
     <string name="key_dark_mode_enabled">Override Enabled</string>
@@ -32,9 +32,11 @@
     <string name="key_log_level_verbose">Verbose</string>
     <!-- Light Theme Name -->
     <string name="key_light_theme_default">Default</string>
+    <string name="key_light_theme_designer">Designer</string>
     <!-- Dark Theme Name -->
     <string name="key_dark_theme_default">Default</string>
     <string name="key_dark_theme_obsidian">Obsidian</string>
+    <string name="key_dark_theme_designer">Designer</string>
     <!-- Experimental Locale -->
     <string name="key_locale_none">Not set</string>
     <string name="key_locale_zh_cn" translatable="false">简体中文 (中国大陆)</string>

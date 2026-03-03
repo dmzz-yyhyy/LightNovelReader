@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.HiltViewModelFactory
@@ -99,6 +101,7 @@ fun NavController.navigateToColorPickerDialog(colorUserDataPath: String, colors:
     if (!this.isResumed()) return
     navigate(Route.Book.ColorPickerDialog(colorUserDataPath, colors.toLongArray()))
 }
+@SuppressLint("LocalContextGetResourceValueCall")
 private fun NavGraphBuilder.imageViewerDialog() {
     dialog<Route.Book.ImageViewerDialog>(
         dialogProperties = DialogProperties(
@@ -112,6 +115,9 @@ private fun NavGraphBuilder.imageViewerDialog() {
 
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
+
+        val savedToPicturesDir = stringResource(R.string.saved_to_pictures_dir, "")
+        val saveFailed = stringResource(R.string.save_failed, "")
 
         val createDocumentLauncher =
             rememberLauncherForActivityResult(
@@ -130,12 +136,11 @@ private fun NavGraphBuilder.imageViewerDialog() {
                                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
                             } ?: error("Cannot open output stream")
                         }
-
                         result.onSuccess {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.saved_to_pictures_dir, ""),
+                                    savedToPicturesDir,
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
@@ -143,7 +148,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
                                     context,
-                                    context.getString(R.string.save_failed),
+                                    saveFailed,
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -152,7 +157,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
-                                context.getString(R.string.save_failed),
+                                saveFailed,
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -183,7 +188,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
                                     .onFailure {
                                         Toast.makeText(
                                             context,
-                                            context.getString(R.string.save_failed),
+                                            saveFailed,
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }

@@ -116,7 +116,7 @@ class EpubBuilder {
                     contentChapters.add(it)
                     "${it.id}.xhtml"
                 } else null,
-                ol = if (it.chapters != null) it.chapters.toOl() else null
+                ol = it.chapters?.toOl()
             )
         }
     )

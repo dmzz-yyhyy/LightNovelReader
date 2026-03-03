@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name" translatable="false">LightNovelReader</string>
     <string name="language">English</string>
     <string name="language_translators">yukonisen, NightFish</string>
@@ -210,7 +210,23 @@
     <string name="settings_communication">Communication</string>
     <string name="settings_communication_desc">Join our QQ group for discussions and feedback</string>
     <string name="settings_statistics">Statistics</string>
-    <string name="settings_statistics_desc">We use Microsoft AppCenter to collect anonymous statistics to improve LightNovelReader</string>
+    <string name="settings_statistics_desc">We need to collect statistics to improve LightNovelReader</string>
+    <string name="settings_statistics_disable_dialog_title">Hold on…</string>
+    <string name="settings_statistics_disable_dialog_text">
+        Do you really want to turn off statistics? ο(=•ω＜=)ρ⌒☆
+        LightNovelReader only collects DAU and similar usage metrics.
+        No personal privacy data is involved, and all statistics are anonymous.
+        If you turn this off, NightFish can only cry at 0 DAU ≧ ﹏ ≦
+    </string>
+    <string name="settings_statistics_disable_dialog_confirm">Turn off</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="privacy_policy_title">What We Collect</string>
+    <string name="privacy_policy_collect_title">We Collect</string>
+    <string name="privacy_policy_collect_items">• Device brand and model\n• System and app version\n• Basic daily active usage (session time and duration)\n• Approximate geographic location based on IP address</string>
+    <string name="privacy_policy_not_collect_title">We Do NOT Collect</string>
+    <string name="privacy_policy_not_collect_items">Any personal data other than those listed above, including but not limited to: LightNovelReader in-app data, and any other information that could be used to identify you.</string>
+    <string name="privacy_policy_commitment_title">Our Privacy Commitment</string>
+    <string name="privacy_policy_commitment_items">LightNovelReader will not utilize any data shared with us for targeted advertising, data mining, or other privacy-harmful activities.</string>
     <string name="experimental_settings">Experimental</string>
     <string name="debug_settings">Debug</string>
     <string name="item_view_details">View Details</string>
@@ -422,6 +438,11 @@
     <string name="plugin_api_incompatible">This plugin was built for an older version of LightNovelReader and is not compatible with the current version.\nUpdating the plugin may resolve this issue.</string>
     <string name="plugin_install_cancelled">Installation cancelled</string>
     <string name="plugin_install_failed_with_reason">Installation failed: %1$s</string>
+    <string name="plugin_error_unsupported_api">Unsupported API version %1$d, current version is %2$d</string>
+    <string name="plugin_error_version_too_high">The installed plugin version is higher than the version being installed</string>
+    <string name="plugin_error_app_plugin_exist">There is already a app plugin which has the same package name with the installing plugin</string>
+    <string name="plugin_error_signature_mismatch">Plugin signature does not match the installed version</string>
+    <string name="plugin_error_unknown">Unknown error: %1$s</string>
     <string name="plugin_install_conflict_app_plugin">Installation failed: a plugin app with the same ID is installed. Please uninstall the app plugin first.</string>
     <string name="plugin_install_signature_mismatch">Installation failed: different signature detected. Please uninstall the installed version before installing this plugin.</string>
     <string name="plugin_install_overwrite_prompt">A plugin is already installed. Replace it?</string>
@@ -430,7 +451,15 @@
     <string name="plugin_install_verifying">Verifying plugin...</string>
     <string name="plugin_install_installing">Installing plugin...</string>
     <string name="plugin_install_continue">Continue installation...</string>
+    <string name="plugin_install_parse_package_info">Parsing package info…</string>
+    <string name="plugin_install_parse_plugin_metadata">Parsing plugin metadata…</string>
+    <string name="plugin_install_clean">Cleaning up…</string>
+    <string name="plugin_install_check_legality">Checking install legality…</string>
+    <string name="plugin_install_write_metadata">Writing plugin metadata…</string>
+    <string name="plugin_install_copy_plugin">Copying plugin…</string>
     <string name="plugin_update_preparing">Preparing update...</string>
+    <string name="plugin_delete_confirm_body">Are you sure you want to delete this plugin? This action cannot be undone.</string>
+    <string name="plugin_delete_confirm">Delete</string>
     <string name="plugin_delete_deleting">Deleting...</string>
     <string name="plugin_delete_completed">Deletion complete</string>
     <string name="plugin_delete_failed_with_reason">Deletion failed: %1$s</string>

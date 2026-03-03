@@ -38,9 +38,9 @@ fun DataSettingsList(
     val context = LocalContext.current
     val workManager = WorkManager.getInstance(context)
     val scope = rememberCoroutineScope()
-    val importDataLauncher = uriLauncher {
+    val importDataLauncher = uriLauncher { uri ->
         scope.launch {
-            workManager.getWorkInfoByIdFlow(importData(it).id).collect {
+            workManager.getWorkInfoByIdFlow(importData(uri).id).collect {
                 when (it?.state) {
                     WorkInfo.State.FAILED -> {
                         Toast.makeText(context, dataImportFailedText, Toast.LENGTH_SHORT).show()

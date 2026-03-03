@@ -173,7 +173,6 @@ class JsLoaderPlugin(
                     )
                 }
             }
-            val main = targetDir.resolve(packageInfo.webDataSourcePath)
             tempDir.deleteRecursively()
             loadJsWebDataSource(jsWebDataSourceDir.resolve(packageInfo.id.toString()))
             return true

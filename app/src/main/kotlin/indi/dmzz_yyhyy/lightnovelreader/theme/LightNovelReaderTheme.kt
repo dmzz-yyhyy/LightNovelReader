@@ -57,6 +57,7 @@ fun LightNovelReaderTheme(
             dynamicLightColorScheme(context)
         else when (lightThemeName) {
             "light_default" -> DefaultLightColorScheme
+            "light_designer" -> DesignerLightColorScheme
             else -> DefaultLightColorScheme
         }
     }
@@ -66,6 +67,7 @@ fun LightNovelReaderTheme(
             dynamicDarkColorScheme(context)
         else when (darkThemeName) {
             "dark_obsidian" -> DarkObsidianColorScheme
+            "dark_designer" -> DesignerDarkColorScheme
             else -> DefaultDarkColorScheme
         }
     }

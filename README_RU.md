@@ -68,28 +68,21 @@ LightNovelReader <sup>*Переработанная версия*</sup> — эт
 - Делайте коммиты атомарными и описательными.
 - Если ваше изменение влияет на версию, обновите её в `app/build.gradle.kts`.
 
-### Управление версиями
-Версии управляются в `app/build.gradle.kts`:
-- `versionNameStr`: Публичная версия (например, "1.3.1"). Следуйте семантическому версионированию (major.minor.patch).
-- `debugNumber`: Увеличивайте для сборок разработки (0 для релизов).
-- `versionCode`: Автоматически рассчитывается как major*1000000 + minor*10000 + patch*1000 + debugNumber.
-
-Для релизов обновите `versionNameStr` и сбросьте `debugNumber` до 0.
-
 ## Лицензия
 
 ```
-Авторские права (C) 2024 NightFish <hk198580666@outlook.com>
-Авторские права (C) 2024 yukonisen <yukonisen@curiousers.org>
+Copyright (C) 2024 by NightFish <hk198580666@outlook.com>
+Copyright (C) 2024 by yukonisen <yukonisen@curiousers.org>
 
-Данная программа является свободным программным обеспечением: вы можете распространять и/или изменять её
-в соответствии с условиями лицензии GNU General Public License, опубликованной
-Фондом свободного программного обеспечения, версии 3 лицензии или (по вашему выбору) любой более поздней версии.
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-Программа распространяется в надежде, что она будет полезной,
-но БЕЗ ЛЮБЫХ ГАРАНТИЙ, в том числе без явной или подразумеваемой гарантии
-КОММЕРЧЕСКОЙ ПРИГОДНОСТИ ИЛИ ПРИГОДНОСТИ ДЛЯ КОНКРЕТНОЙ ЦЕЛИ. Подробнее см. в лицензии GNU General Public License.
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Вы должны были получить копию GNU General Public License
-вместе с этой программой. Если нет, см. <http://www.gnu.org/licenses/>.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 ```

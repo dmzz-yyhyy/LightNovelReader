@@ -5,16 +5,16 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+
 @Composable
 fun AppSettingsList(
     settingState: SettingState,
@@ -22,7 +22,6 @@ fun AppSettingsList(
     onClickPluginManager: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
     val snackbarHostState = LocalSnackbarHost.current
 
     SettingsClickableEntry(
