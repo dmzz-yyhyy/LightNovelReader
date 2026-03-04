@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.serialier
+package indi.dmzz_yyhyy.lightnovelreader.data.serializer
 
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import kotlinx.serialization.KSerializer

@@ -1,20 +1,14 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
-
-data class ReadingStatsUpdate(
-    val bookId: String,
-    val secondDelta: Int = 0,
-    val readEventDelta: Int = 0,
-    val localTime: LocalTime = LocalTime.now()
-)
 
 data class TotalReadingSummary(
     val totalMinutes: Int,
@@ -23,7 +17,8 @@ data class TotalReadingSummary(
 
 @Singleton
 class StatsRepository @Inject constructor(
-    private val bookRecordDao: BookRecordDao
+    private val bookRecordDao: BookRecordDao,
+    private val dailyCountDao: DailyCountDao
 ) {
     private val bookReadTimeBuffer = mutableMapOf<String, Pair<LocalTime, Int>>()
 
@@ -59,72 +54,35 @@ class StatsRepository @Inject constructor(
         bookReadTimeBuffer.clear()
     }
 
-    fun getAllReadingStats(): List<DailyReadingStats> {
-        val recordsMap = bookRecordDao.getAllBookRecords().groupBy { it.date }
-        val allDates = recordsMap.keys.sorted()
-
-        return allDates.map { date ->
-            val records = recordsMap[date].orEmpty()
-            val totalCount = mergeCounts(records.map { it.readingTimeCount })
-            ReadingStatisticsEntity(date = date, readingTimeCount = totalCount)
-                .toDailyStatsData(records)
-        }
-    }
-
-    fun importReadingStats(data: AppUserDataContent) {
-        data.readingStatsData?.forEach { dailyStats ->
-            dailyStats.bookRecords.forEach {
-                bookRecordDao.insertBookRecord(it.toEntity())
-            }
-        }
-    }
-
-    suspend fun getReadingStatistics(start: LocalDate, end: LocalDate? = null): Map<LocalDate, ReadingStatisticsEntity> {
-        return if (end == null) {
-            val records = bookRecordDao.getBookRecordsForDate(start)
-            val mergedCount = mergeCounts(records.map { it.readingTimeCount })
-            mapOf(start to ReadingStatisticsEntity(start, mergedCount))
-        }
-        else {
-            val allDates = generateSequence(start) { it.plusDays(1) }
-                .takeWhile { !it.isAfter(end) }
-                .toList()
-
-            val fetched = bookRecordDao.getBookRecordsBetweenDates(allDates.first(), allDates.last())
-                .groupBy { it.date }
-
-            allDates.associateWith { date ->
-                val records = fetched[date].orEmpty()
-                val mergedCount = mergeCounts(records.map { it.readingTimeCount })
-                ReadingStatisticsEntity(date, mergedCount)
-            }
-        }
-    }
-
     suspend fun getBookRecords(
         start: LocalDate,
         end: LocalDate? = null
-    ): Map<LocalDate, List<BookRecordEntity>> {
-        val raw = if (end == null) {
-            val records = bookRecordDao.getBookRecordsForDate(start)
-            mapOf(start to records)
+    ): Map<LocalDate, List<BookRecord>> {
+        return if (end == null) {
+            bookRecordDao.getBookRecordsForDate(start)
+                .map { it.toData() }
+                .takeIf { it.isNotEmpty() }
+                ?.let { mapOf(start to it) }
+                ?: emptyMap()
+        } else {
+            bookRecordDao
+                .getBookRecordsBetweenDates(start, end)
+                .map { it.toData() }
+                .groupBy { it.date }
+                .filterValues { it.isNotEmpty() }
         }
-        else {
-            bookRecordDao.getBookRecordsBetweenDates(start, end).groupBy { it.date }
-        }
-
-        return raw.filterValues { it.isNotEmpty() }
     }
 
-    fun createStatsEntity(date: LocalDate) = ReadingStatisticsEntity(
-        date = date,
-        readingTimeCount = Count()
-    )
+    suspend fun getDailyCounts(start: LocalDate, end: LocalDate): Map<LocalDate, Count> {
+        return dailyCountDao.getBetween(start, end)
+            .associate { it.date to it.timeCount }
+    }
 
     fun getTotalReadingSummary(): TotalReadingSummary {
+        val dailyCounts = dailyCountDao.getAll()
         val records = bookRecordDao.getAllBookRecords()
-        val totalMinutes = records.sumOf { it.readingTimeCount.getTotalMinutes() }
-        val totalReadCount = records.sumOf { it.readCount }
+        val totalMinutes = dailyCounts.sumOf { it.timeCount.getTotalMinutes() }
+        val totalReadCount = records.sumOf { it.reads }
         return TotalReadingSummary(
             totalMinutes = totalMinutes,
             totalReadCount = totalReadCount
@@ -133,14 +91,24 @@ class StatsRepository @Inject constructor(
 
     suspend fun updateReadingStatistics(update: ReadingStatsUpdate) {
         val today = LocalDate.now()
+
+        // Update daily time-distribution count (one per day, shared across books)
+        val existingDailyCount = dailyCountDao.getByDate(today)
+            ?: DailyCountEntity(today, Count())
+        val updatedDailyCount = existingDailyCount.copy(
+            timeCount = updateCount(existingDailyCount.timeCount, update)
+        )
+        dailyCountDao.insert(updatedDailyCount)
+
+        // Update per-book record
         val existingRecord = bookRecordDao.getBookRecordByIdAndDate(update.bookId, today)
             ?: createRecordEntity(update.bookId, today)
 
         val updatedRecord = existingRecord.copy(
-            readingTimeCount = updateCount(existingRecord.readingTimeCount, update),
-            readCount = existingRecord.readCount + update.readEventDelta
+            reads = existingRecord.reads + update.readEventDelta,
+            seconds = existingRecord.seconds + update.secondDelta,
+            lastSeen = update.localTime,
         )
-
         bookRecordDao.insertBookRecord(updatedRecord)
         bookReadTimeBuffer.clear()
     }
@@ -152,6 +120,16 @@ class StatsRepository @Inject constructor(
 
         if (!existingRecord.isFinished) {
             bookRecordDao.insertBookRecord(existingRecord.copy(isFinished = true))
+        }
+    }
+
+    suspend fun markBookFavorited(bookId: String) {
+        val today = LocalDate.now()
+        val existingRecord = bookRecordDao.getBookRecordByIdAndDate(bookId, today)
+            ?: createRecordEntity(bookId, today)
+
+        if (!existingRecord.isFavorited) {
+            bookRecordDao.insertBookRecord(existingRecord.copy(isFavorited = true))
         }
     }
 
@@ -167,13 +145,17 @@ class StatsRepository @Inject constructor(
     suspend fun getBookFirstFinishedDateMap(): Map<String, LocalDate> =
         bookRecordDao.getFirstFinishedDates().associate { it.bookId to it.date }
 
-    private fun createRecordEntity(bookId: String, date: LocalDate): BookRecordEntity = BookRecordEntity(
-        bookId = bookId,
-        date = date,
-        readingTimeCount = Count(),
-        readCount = 0,
-        isFinished = false
-    )
+    private fun createRecordEntity(bookId: String, date: LocalDate): BookRecordEntity =
+        BookRecordEntity(
+            bookId = bookId,
+            date = date,
+            reads = 0,
+            seconds = 0,
+            isFinished = false,
+            isFavorited = false,
+            firstSeen = LocalTime.now(),
+            lastSeen = LocalTime.now(),
+        )
 
     private fun updateCount(count: Count, update: ReadingStatsUpdate): Count {
         val minutesDelta = update.secondDelta / 60
@@ -185,11 +167,8 @@ class StatsRepository @Inject constructor(
         return count
     }
 
-    private fun mergeCounts(counts: Iterable<Count>): Count {
-        return counts.fold(Count()) { acc, count -> acc + count }
-    }
-
     fun clear() {
         bookRecordDao.clear()
+        dailyCountDao.clear()
     }
 }

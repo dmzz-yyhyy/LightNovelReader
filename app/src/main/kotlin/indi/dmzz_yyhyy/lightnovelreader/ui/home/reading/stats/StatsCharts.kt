@@ -45,7 +45,7 @@ import com.patrykandpatrick.vico.core.cartesian.marker.ColumnCartesianLayerMarke
 import com.patrykandpatrick.vico.core.common.data.ExtraStore
 import com.patrykandpatrick.vico.core.common.shape.CorneredShape
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsDetailedUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.currentDateRange
 import java.text.DecimalFormat
@@ -72,7 +72,7 @@ private val EndAxisItemPlacer = VerticalAxis.ItemPlacer.step({ EndAxisStep })
 @Composable
 private fun HourlyReadingTimeChart(
     date: LocalDate,
-    statsMap: Map<LocalDate, ReadingStatisticsEntity>
+    statsMap: Map<LocalDate, Count>
 ) {
     val formatter = DateTimeFormatter.ofPattern("MM/dd", Locale.getDefault())
     val formattedDate = date.format(formatter)
@@ -81,7 +81,7 @@ private fun HourlyReadingTimeChart(
         text = stringResource(R.string.detail_of_date, formattedDate),
         style = typography.titleMedium
     )
-    val hourlyMap = statsMap[date]?.readingTimeCount?.getHourStatistics() ?: emptyMap()
+    val hourlyMap = statsMap[date]?.getHourStatistics() ?: emptyMap()
     val total = hourlyMap.values.sum()
     if (total < 1) {
         Box(
@@ -160,7 +160,7 @@ fun ReadingTimeChart(
     labelMapper: (LocalDate) -> String,
 ) {
     val range = uiState.currentDateRange
-    val statsMap = uiState.targetDateRangeStatsMap
+    val countMap = uiState.targetDateRangeCountMap
     val dates = remember(range.start, range.endInclusive) {
         generateSequence(range.start) { it.plusDays(1) }
             .takeWhile { it <= range.endInclusive }
@@ -174,8 +174,8 @@ fun ReadingTimeChart(
         dates.map { date -> formatter.format(date) }
     }
 
-    val values = remember(dates, statsMap) {
-        dates.map { statsMap[it]?.readingTimeCount?.getTotalMinutes()?.toFloat() ?: 0f }
+    val values = remember(dates, countMap) {
+        dates.map { countMap[it]?.getTotalMinutes()?.toFloat() ?: 0f }
     }
     var selectedIndex by remember { mutableStateOf(-1f) }
     LaunchedEffect(range.start, range.endInclusive) {
@@ -205,7 +205,7 @@ fun ReadingTimeChart(
             if (entry != null) {
                 val idx = entry.x.toInt().coerceIn(dates.indices)
                 val date = dates[idx]
-                val totalMin = statsMap[date]?.readingTimeCount?.getTotalMinutes() ?: 0
+                val totalMin = countMap[date]?.getTotalMinutes() ?: 0
                 SpannableStringBuilder().append(
                     "${dates[selectedIndex.toInt()]}: ${DecimalFormat("#,###").format(totalMin)}$minuteLabel",
                     ForegroundColorSpan(columnTarget.columns.first().color),
@@ -268,6 +268,6 @@ fun ReadingTimeChart(
     }
 
     if (selectedIndex.toInt() in dates.indices) {
-        HourlyReadingTimeChart(date = dates[selectedIndex.toInt()], statsMap = statsMap)
+        HourlyReadingTimeChart(date = dates[selectedIndex.toInt()], statsMap = countMap)
     }
 }

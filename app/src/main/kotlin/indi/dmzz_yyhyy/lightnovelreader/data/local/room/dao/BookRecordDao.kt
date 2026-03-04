@@ -19,9 +19,6 @@ interface BookRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertBookRecord(record: BookRecordEntity)
 
-    @Query("select * from book_records where id=:id")
-    suspend fun getEntity(id: Int?): BookRecordEntity?
-
     @Query("SELECT * FROM book_records")
     fun getAllBookRecords(): List<BookRecordEntity>
 
@@ -37,13 +34,13 @@ interface BookRecordDao {
     @Query("SELECT * FROM book_records WHERE book_id = :bookId")
     suspend fun getBookRecordsByBookId(bookId: String): List<BookRecordEntity>
 
-    @Query("SELECT MIN(date) FROM book_records WHERE book_id = :bookId AND read_count > 0")
+    @Query("SELECT MIN(date) FROM book_records WHERE book_id = :bookId AND reads > 0")
     suspend fun getFirstReadDate(bookId: String): LocalDate?
 
     @Query("SELECT MIN(date) FROM book_records WHERE book_id = :bookId AND is_finished = 1")
     suspend fun getFirstFinishedDate(bookId: String): LocalDate?
 
-    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE read_count > 0 GROUP BY book_id")
+    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE reads > 0 GROUP BY book_id")
     suspend fun getFirstReadDates(): List<BookDate>
 
     @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE is_finished = 1 GROUP BY book_id")

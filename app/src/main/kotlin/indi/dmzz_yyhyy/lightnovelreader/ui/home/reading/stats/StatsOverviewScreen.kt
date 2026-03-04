@@ -51,7 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.HeatMapCalendar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarDay
@@ -253,7 +253,7 @@ private fun DailyStatsBlock(
                     } else {
                         Column {
                             details?.timeDetails?.forEach {
-                                val duration = it.second.toDuration(DurationUnit.MINUTES)
+                                val duration = it.second.toDuration(DurationUnit.SECONDS)
                                 val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
                                 DataItem(it.first.title, formattedTime)
                             }
@@ -279,26 +279,26 @@ private fun NoRecords() {
 }
 
 private fun getDailyDetails(
-    records: List<BookRecordEntity>,
+    records: List<BookRecord>,
     bookInfoMap: Map<String, BookInformation>
 ): DailyDateDetails? {
     if (records.isEmpty()) return null
 
-    var totalMinutes = 0L
+    var totalSeconds = 0L
     val timeDetailsList = mutableListOf<Pair<BookInformation, Int>>()
 
     for (rec in records) {
-        val minutes = rec.readingTimeCount.getTotalMinutes()
-        totalMinutes += minutes
+        val seconds = rec.seconds
+        totalSeconds += seconds
 
         val book = bookInfoMap[rec.bookId] ?: BookInformation.empty()
-        timeDetailsList.add(book to minutes)
+        timeDetailsList.add(book to seconds)
     }
 
     val sortedTimeDetails = timeDetailsList.sortedByDescending { it.second }
 
     val formattedTotalTime = DurationFormat().format(
-        totalMinutes.toDuration(DurationUnit.MINUTES),
+        totalSeconds.toDuration(DurationUnit.SECONDS),
         DurationFormat.Unit.MINUTE
     )
 

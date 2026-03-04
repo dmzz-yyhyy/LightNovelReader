@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.serialier
+package indi.dmzz_yyhyy.lightnovelreader.data.serializer
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

@@ -16,8 +16,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
@@ -36,11 +36,11 @@ class LocalDataManager @Inject constructor(
     private val webDataSourceProvider: WebBookDataSourceProvider,
     private val bookBookInformationDao: BookInformationDao,
     private val bookRecordDao: BookRecordDao,
+    private val dailyCountDao: DailyCountDao,
     private val bookshelfDao: BookshelfDao,
     private val chapterContentDao: ChapterContentDao,
     private val bookVolumesDao: BookVolumesDao,
     private val formattingRuleDao: FormattingRuleDao,
-    private val readingStatisticsDao: ReadingStatisticsDao,
     private val userReadingDataDao: UserReadingDataDao,
     private val userDataDao: UserDataDao
 ) {
@@ -98,11 +98,11 @@ class LocalDataManager @Inject constructor(
         val exportOptionLocalData = ExportOptionLocalData(
             bookBookInformationDao = bookBookInformationDao,
             bookRecordDao = bookRecordDao,
+            dailyCountDao = dailyCountDao,
             bookshelfDao = bookshelfDao,
             chapterContentDao = chapterContentDao,
             bookVolumesDao = bookVolumesDao,
             formattingRuleDao = formattingRuleDao,
-            readingStatisticsDao = readingStatisticsDao,
             userReadingDataDao = userReadingDataDao,
             userDataDao = userDataDao,
             webDataSourceUserDataPathSet = webDataSourceUserDataPathSet
@@ -121,12 +121,12 @@ class LocalDataManager @Inject constructor(
                     webBookDataSourceId = webDataSourceProvider.default.id,
                     bookInformationEntities = exportOptionLocalData.bookInformationEntities,
                     bookRecordEntities = exportOptionLocalData.bookRecordEntities,
+                    dailyCountEntities = exportOptionLocalData.dailyCountEntities,
                     bookshelfEntities = exportOptionLocalData.bookshelfEntities,
                     bookshelfBookMetadataEntities = exportOptionLocalData.bookshelfBookMetadataEntities,
                     chapterContentEntities = exportOptionLocalData.chapterContentEntities,
                     chapterInformationEntities = exportOptionLocalData.chapterInformationEntities,
                     formattingRuleEntities = exportOptionLocalData.formattingRuleEntities,
-                    readingStatisticsEntities = exportOptionLocalData.readingStatisticsEntities,
                     userReadingDataEntities = exportOptionLocalData.userReadingDataEntities,
                     volumeEntities = exportOptionLocalData.volumeEntities,
                     userDataEntities = exportOptionLocalData.userDataEntities
@@ -177,7 +177,10 @@ class LocalDataManager @Inject constructor(
             *localData.bookInformationEntities.map { Pair(it.id, it) }.toTypedArray()
         )
         val newBookRecordEntitiesMap = mapOf(
-            *localData.bookRecordEntities.map { Pair(it.id, it) }.toTypedArray()
+            *localData.bookRecordEntities.map { Pair(Pair(it.bookId, it.date), it) }.toTypedArray()
+        )
+        val newDailyCountEntitiesMap = mapOf(
+            *localData.dailyCountEntities.map { Pair(it.date, it) }.toTypedArray()
         )
         val newBookshelfEntitiesMap = mapOf(
             *localData.bookshelfEntities.map { Pair(it.id, it) }.toTypedArray()
@@ -193,9 +196,6 @@ class LocalDataManager @Inject constructor(
         )
         val newFormattingRuleEntitiesMap = mapOf(
             *localData.formattingRuleEntities.map { Pair(it.id, it) }.toTypedArray()
-        )
-        val newReadingStatisticsEntitiesMap = mapOf(
-            *localData.readingStatisticsEntities.map { Pair(it.date, it) }.toTypedArray()
         )
         val newUserDataEntitiesMap = mapOf(
             *localData.userDataEntities.map { Pair(it.path, it) }.toTypedArray()
@@ -213,7 +213,12 @@ class LocalDataManager @Inject constructor(
                 } ?: old
             },
             bookRecordEntities = oldLocalData.bookRecordEntities.map { old ->
-                newBookRecordEntitiesMap[old.id]?.let {
+                newBookRecordEntitiesMap[Pair(old.bookId, old.date)]?.let {
+                    old.merge(it)
+                } ?: old
+            },
+            dailyCountEntities = oldLocalData.dailyCountEntities.map { old ->
+                newDailyCountEntitiesMap[old.date]?.let {
                     old.merge(it)
                 } ?: old
             },
@@ -239,11 +244,6 @@ class LocalDataManager @Inject constructor(
             },
             formattingRuleEntities = oldLocalData.formattingRuleEntities.map { old ->
                 newFormattingRuleEntitiesMap[old.id]?.let {
-                    old.merge(it)
-                } ?: old
-            },
-            readingStatisticsEntities = oldLocalData.readingStatisticsEntities.map { old ->
-                newReadingStatisticsEntitiesMap[old.date]?.let {
                     old.merge(it)
                 } ?: old
             },
@@ -277,9 +277,15 @@ class LocalDataManager @Inject constructor(
             )
         }
         for (entity in localData.bookRecordEntities) {
-            bookRecordDao.insertBookRecord(
-                bookRecordDao.getEntity(entity.id)?.let(entity::merge) ?: entity
-            )
+            val merged = bookRecordDao
+                .getBookRecordByIdAndDate(entity.bookId, entity.date)
+                ?.merge(entity)
+                ?: entity
+            bookRecordDao.insertBookRecord(merged)
+        }
+        for (entity in localData.dailyCountEntities) {
+            val merged = dailyCountDao.getEntity(entity.date)?.merge(entity) ?: entity
+            dailyCountDao.insert(merged)
         }
         for (entity in localData.bookshelfEntities) {
             bookshelfDao.insertBookshelf(
@@ -313,13 +319,6 @@ class LocalDataManager @Inject constructor(
                 formattingRuleDao.getBookRuleEntity(entity.id)?.let(entity::merge) ?: entity
             )
         }
-        for (entity in localData.readingStatisticsEntities) {
-            readingStatisticsDao.insertReadingStatistics(
-                readingStatisticsDao.getReadingStatisticsForDate(
-                    entity.date
-                )?.let(entity::merge) ?: entity
-            )
-        }
         for (entity in localData.userReadingDataEntities) {
             userReadingDataDao.insert(
                 userReadingDataDao.getEntity(entity.id)?.let(entity::merge) ?: entity
@@ -334,11 +333,11 @@ class LocalDataManager @Inject constructor(
     fun cleanDatabaseWithoutGlobalUserData() {
         bookBookInformationDao.clear()
         bookRecordDao.clear()
+        dailyCountDao.clear()
         bookshelfDao.clear()
         bookVolumesDao.clear()
         chapterContentDao.clear()
         formattingRuleDao.clear()
-        readingStatisticsDao.clear()
         userReadingDataDao.clear()
 
         for (entity in userDataDao.getAllEntities()) {
