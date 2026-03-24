@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.TimeBarItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -202,4 +203,14 @@ fun Modifier.fadeInOnce(key: Any): Modifier = composed {
         }
     }
     this.graphicsLayer { alpha = alphaAnim.value }
+}
+
+fun List<TimeBarItem>.normalize(): List<Pair<TimeBarItem, Float>> {
+    val total = sumOf { it.timeSeconds }.toFloat()
+    if (total <= 0f) {
+        return map { it to 1f }
+    }
+    return map {
+        it to (it.timeSeconds.toFloat() / total).coerceAtLeast(0.01f)
+    }
 }

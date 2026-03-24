@@ -6,8 +6,6 @@ import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,12 +13,10 @@ import javax.inject.Inject
 @HiltViewModel
 class AddToBookshelfDialogViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository,
-    private val bookRepository: BookRepository,
-    private val statsRepository: StatsRepository
+    private val bookRepository: BookRepository
 
 ) : ViewModel() {
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
-    val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     var navController: NavController? = null
     var bookId = ""
@@ -64,12 +60,6 @@ class AddToBookshelfDialogViewModel @Inject constructor(
                 bookRepository.getBookInformationFlow(bookId).collect { bookInformation ->
                     if (bookInformation.isEmpty()) return@collect
                     _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
-                        coroutineScope.launch(Dispatchers.IO) {
-                            statsRepository.updateBookStatus(
-                                bookId = bookId,
-                                isFavorite = true
-                            )
-                        }
                         bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
                     }
                 }

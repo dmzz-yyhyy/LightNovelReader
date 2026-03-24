@@ -24,7 +24,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.HeatMapCalendar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarDay
@@ -201,7 +200,7 @@ private fun DailyStatsBlock(
     val records = uiState.bookRecordsByDate[selectedDate] ?: emptyList()
     val bookInfoMap = uiState.bookInformationMap
 
-    val details = computeDailyDetails(records, bookInfoMap)
+    val details = getDailyDetails(records, bookInfoMap)
 
     Column(modifier = Modifier.padding(horizontal = 18.dp)) {
         Row(
@@ -254,39 +253,9 @@ private fun DailyStatsBlock(
                     } else {
                         Column {
                             details?.timeDetails?.forEach {
-                                val duration = it?.second?.toDuration(DurationUnit.SECONDS)
-                                val formattedTime = duration?.let { dur ->
-                                    DurationFormat().format(dur, DurationFormat.Unit.SECOND)
-                                }
-                                if (formattedTime != null) {
-                                    DataItem(it.first.title, formattedTime)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-
-            StatSection(
-                icon = painterResource(R.drawable.schedule_90dp),
-                title = stringResource(R.string.time_range),
-                value = ""
-            ) {
-                Crossfade(
-                    targetState = details?.firstBook == null && details?.lastBook == null,
-                    label = ""
-                ) { isEmpty ->
-                    if (isEmpty) {
-                        NoRecords()
-                    } else {
-                        Column {
-                            details?.firstBook?.let {
-                                DataItem(it.title, stringResource(R.string.first_seen, details.firstSeenTime.toString()))
-                            }
-                            details?.lastBook?.let {
-                                DataItem(it.title, stringResource(R.string.last_seen, details.lastSeenTime.toString()))
+                                val duration = it.second.toDuration(DurationUnit.SECONDS)
+                                val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
+                                DataItem(it.first.title, formattedTime)
                             }
                         }
                     }
@@ -309,48 +278,33 @@ private fun NoRecords() {
     )
 }
 
-private fun computeDailyDetails(
-    records: List<BookRecordEntity>,
+private fun getDailyDetails(
+    records: List<BookRecord>,
     bookInfoMap: Map<String, BookInformation>
 ): DailyDateDetails? {
     if (records.isEmpty()) return null
 
-    val dateFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
     var totalSeconds = 0L
-    var firstRecord: BookRecordEntity? = null
-    var lastRecord: BookRecordEntity? = null
     val timeDetailsList = mutableListOf<Pair<BookInformation, Int>>()
 
     for (rec in records) {
-        totalSeconds += rec.totalTime
-
-        if (firstRecord == null || rec.firstSeen.isBefore(firstRecord.firstSeen)) {
-            firstRecord = rec
-        }
-
-        if (lastRecord == null || rec.lastSeen.isAfter(lastRecord.lastSeen)) {
-            lastRecord = rec
-        }
+        val seconds = rec.seconds
+        totalSeconds += seconds
 
         val book = bookInfoMap[rec.bookId] ?: BookInformation.empty()
-        timeDetailsList.add(book to rec.totalTime)
+        timeDetailsList.add(book to seconds)
     }
 
     val sortedTimeDetails = timeDetailsList.sortedByDescending { it.second }
 
     val formattedTotalTime = DurationFormat().format(
         totalSeconds.toDuration(DurationUnit.SECONDS),
-        DurationFormat.Unit.SECOND
+        DurationFormat.Unit.MINUTE
     )
 
     return DailyDateDetails(
         formattedTotalTime = formattedTotalTime,
-        timeDetails = sortedTimeDetails,
-        firstBook = firstRecord?.let { bookInfoMap[it.bookId] },
-        firstSeenTime = firstRecord?.firstSeen?.format(dateFormatter),
-        lastBook = lastRecord?.let { bookInfoMap[it.bookId] },
-        lastSeenTime = lastRecord?.lastSeen?.format(dateFormatter)
+        timeDetails = sortedTimeDetails
     )
 }
 
@@ -434,14 +388,14 @@ fun TotalStatsBlock(
             state = lazyRowState,
             flingBehavior = rememberSnapFlingBehavior(lazyRowState)
         ) {
-            val totalSeconds = uiState.totalRecordEntity?.totalTime ?: 0
-            val totalSessions = uiState.totalRecordEntity?.sessions ?: 0
+            val totalMinutes = uiState.totalSummary?.totalMinutes ?: 0
+            val totalReadCount = uiState.totalSummary?.totalReadCount ?: 0
             item {
                 StatsCard(
                     modifier = Modifier.weight(1f),
                     icon = painterResource(R.drawable.outline_book_24px),
                     title = stringResource(R.string.reading_sessions),
-                    value = totalSessions.toString(),
+                    value = totalReadCount.toString(),
                     unit = stringResource(R.string.reading_sessions_unit)
                 )
             }
@@ -451,8 +405,8 @@ fun TotalStatsBlock(
                     modifier = Modifier.weight(1f),
                     icon = painterResource(R.drawable.schedule_90dp),
                     title = stringResource(R.string.reading_duration),
-                    value = "${totalSeconds / 3600}",
-                    unit = stringResource(R.string.reading_duration_unit, (totalSeconds % 3600) / 60)
+                    value = "${totalMinutes / 60}",
+                    unit = stringResource(R.string.reading_duration_unit, totalMinutes % 60)
                 )
             }
         }
