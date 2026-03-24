@@ -16,11 +16,13 @@ data class DurationFormat(val locale: Locale = Locale.getDefault()) {
         DAY, HOUR, MINUTE, SECOND, MILLISECOND
     }
 
-    fun format(duration: Duration, smallestUnit: Unit = Unit.SECOND): String {
+    fun format(duration: Duration, smallestUnit: Unit = Unit.SECOND, largestUnit: Unit = Unit.DAY): String {
         val formattedStringComponents = mutableListOf<String>()
         var remainder = duration
 
         for (unit in Unit.entries) {
+            if (unit.ordinal < largestUnit.ordinal) continue
+
             val component = calculateComponent(unit, remainder)
 
             remainder = when (unit) {

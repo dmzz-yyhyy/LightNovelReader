@@ -29,7 +29,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,8 +43,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.normalize
 import indi.dmzz_yyhyy.lightnovelreader.utils.stats.generateTimeBarItems
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import java.time.LocalDate
-import java.time.format.TextStyle
-import java.util.Locale
 import kotlin.random.Random
 
 val predefinedColors = listOf(
@@ -113,7 +110,7 @@ private fun BookActivitySection(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clipToBounds(),
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -146,15 +143,14 @@ private fun BookActivitySection(
         }
         Spacer(Modifier.width(12.dp))
         Box(
-            modifier = Modifier
-                .rotate(angle)
-                .offset(y = 16.dp)
+            modifier = Modifier.offset(y = 16.dp)
         ) {
             BookStack(
                 modifier = Modifier.clipToBounds(),
                 uiState = uiState,
                 books = bookIds,
-                count = 5
+                count = 5,
+                rotate = 3f
             )
         }
     }
@@ -171,8 +167,9 @@ fun ActivityStatsCard(
     val dateRange = uiState.currentDateRange
     val startedBooks = getBooksInRange(uiState.bookFirstReadDateMap, dateRange)
     val finishedBooks = getBooksInRange(uiState.bookFirstFinishedDateMap, dateRange)
+    val favoriteBooks = getBooksInRange(uiState.bookFavoriteDateMap, dateRange)
 
-    val hasActivity = startedBooks.isNotEmpty() || finishedBooks.isNotEmpty()
+    val hasActivity = startedBooks.isNotEmpty() || finishedBooks.isNotEmpty() || favoriteBooks.isNotEmpty()
     if (!hasActivity) return
 
     StatsCard(
@@ -180,24 +177,27 @@ fun ActivityStatsCard(
         title = stringResource(R.string.activity)
     ) {
         Column {
-            if (startedBooks.isNotEmpty()) {
+            val sections = listOf(
+                R.string.activity_first_read to startedBooks,
+                R.string.activity_collections to favoriteBooks,
+                R.string.activity_finished to finishedBooks
+            ).filter { it.second.isNotEmpty() }
+
+            sections.forEachIndexed { index, (title, books) ->
                 BookActivitySection(
-                    titleResId = R.string.activity_first_read,
-                    bookIds = startedBooks,
+                    titleResId = title,
+                    bookIds = books,
                     bookInfoMap = uiState.bookInformationMap,
                     uiState = uiState
                 )
-                if (finishedBooks.isNotEmpty()) {
-                    HorizontalDivider()
+
+                if (index != sections.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
                 }
-            }
-            if (finishedBooks.isNotEmpty()) {
-                BookActivitySection(
-                    titleResId = R.string.activity_finished,
-                    bookIds = finishedBooks,
-                    bookInfoMap = uiState.bookInformationMap,
-                    uiState = uiState
-                )
             }
         }
     }
@@ -216,63 +216,30 @@ fun ReadingDetailStatsCard(
         .values
         .flatten()
 
-    val books = allRecords.map { it.bookId }
-
     StatsCard(title = stringResource(R.string.reading_details)) {
         Column {
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val orderedBooks = allRecords
-                    .map { it.bookId to it.seconds }
-                    .groupBy({ it.first }, { it.second })
-                    .mapValues { (_, minutes) -> minutes.sum() }
-                    .toList()
-                    .sortedByDescending { it.second }
-                    .map { it.first }
+                val books = allRecords
+                    .sortedBy { it.lastSeen }
+                    .map { it.bookId }
+                    .distinct()
                 BookStack(
+                    modifier = Modifier,
                     uiState = uiState,
-                    books = orderedBooks,
-                    count = 8
+                    books = books,
+                    count = 8,
+                    compact = false
                 )
                 Spacer(Modifier.weight(1f))
             }
-            Spacer(Modifier.height(6.dp))
-            Text(stringResource(R.string.n_books, books.distinct().size))
+
             Spacer(Modifier.height(12.dp))
+
             ReadingTimeBar(
                 recordList = allRecords,
                 bookInformationMap = uiState.bookInformationMap
             )
-        }
-    }
-}
-
-@Composable
-fun WeeklyReadingTimeStatsCard(
-    uiState: StatsDetailedUiState,
-    modifier: Modifier = Modifier
-) {
-    StatsCard(
-        modifier = modifier,
-        title = stringResource(R.string.activity_reading_time)
-    ) {
-        ReadingTimeChart(uiState) { date ->
-            date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-        }
-    }
-}
-
-@Composable
-fun MonthlyReadingTimeStatsCard(
-    uiState: StatsDetailedUiState,
-    modifier: Modifier = Modifier
-) {
-    StatsCard(
-        modifier = modifier,
-        title = stringResource(R.string.activity_reading_time)
-    ) {
-        ReadingTimeChart(uiState) { date ->
-            date.dayOfMonth.toString()
         }
     }
 }
@@ -304,7 +271,7 @@ fun ReadingTimeBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
+                .height(14.dp)
                 .clip(RoundedCornerShape(16.dp))
         ) {
             normalizedItems.fastForEach { (item, ratio) ->

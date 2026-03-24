@@ -92,7 +92,6 @@ class StatsRepository @Inject constructor(
     suspend fun updateReadingStatistics(update: ReadingStatsUpdate) {
         val today = LocalDate.now()
 
-        // Update daily time-distribution count (one per day, shared across books)
         val existingDailyCount = dailyCountDao.getByDate(today)
             ?: DailyCountEntity(today, Count())
         val updatedDailyCount = existingDailyCount.copy(
@@ -100,7 +99,6 @@ class StatsRepository @Inject constructor(
         )
         dailyCountDao.insert(updatedDailyCount)
 
-        // Update per-book record
         val existingRecord = bookRecordDao.getBookRecordByIdAndDate(update.bookId, today)
             ?: createRecordEntity(update.bookId, today)
 
@@ -144,6 +142,9 @@ class StatsRepository @Inject constructor(
 
     suspend fun getBookFirstFinishedDateMap(): Map<String, LocalDate> =
         bookRecordDao.getFirstFinishedDates().associate { it.bookId to it.date }
+
+    suspend fun getBookFavoriteDateMap(): Map<String, LocalDate> =
+        bookRecordDao.getFirstFavoritedDates().associate { it.bookId to it.date }
 
     private fun createRecordEntity(bookId: String, date: LocalDate): BookRecordEntity =
         BookRecordEntity(

@@ -6,6 +6,7 @@ import android.icu.text.RelativeDateTimeFormatter.Direction
 import android.icu.text.RelativeDateTimeFormatter.RelativeUnit
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.minutes
 
 fun formTime(
     time: LocalDateTime,
@@ -49,3 +50,6 @@ fun formTime(
 
 fun formTime(time: LocalDateTime): String =
     formTime(time, DateFormat.fromString(FormattingSettings.dateFormat), FormattingSettings.useRelativeTime)
+
+fun formMinutes(totalMinutes: Int): String =
+    DurationFormat(appDisplayLocale).format(totalMinutes.minutes, DurationFormat.Unit.MINUTE, DurationFormat.Unit.HOUR)

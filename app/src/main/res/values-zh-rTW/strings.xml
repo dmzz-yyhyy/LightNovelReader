@@ -375,6 +375,8 @@
     <string name="unit_minutes">&#160;分鐘&#160;</string>
     <string name="unit_seconds">&#160;秒</string>
     <string name="detail_of_date">%1$s 的閱讀時長</string>
+    <string name="week_label_format">第%d週</string>
+    <string name="detail_of_week">第%d週的閱讀時長</string>
     <string name="book_rules">書本規則</string>
     <string name="detail_info_stats_content">%1$s 字\n共計 %2$d 卷, %3$d 章節</string>
     <string name="mark_all_read_desc">將這本書截至目前的所有章節標為已讀。後續更新的章節將不受影響。</string>

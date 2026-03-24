@@ -46,6 +46,9 @@ interface BookRecordDao {
     @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE is_finished = 1 GROUP BY book_id")
     suspend fun getFirstFinishedDates(): List<BookDate>
 
+    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE is_favorited = 1 GROUP BY book_id")
+    suspend fun getFirstFavoritedDates(): List<BookDate>
+
     @Query("DELETE FROM book_records")
     fun clearRecords()
 

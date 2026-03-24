@@ -56,6 +56,7 @@ class StatsDetailedViewModel @Inject constructor(
             statsRepository.getDailyCounts(startDate, endDate)
         val firstReadDateMap = statsRepository.getBookFirstReadDateMap()
         val firstFinishedDateMap = statsRepository.getBookFirstFinishedDateMap()
+        val favoriteDateMap = statsRepository.getBookFavoriteDateMap()
 
         val allDates = generateSequence(startDate) { it.plusDays(1) }
             .takeWhile { it <= endDate }
@@ -71,6 +72,7 @@ class StatsDetailedViewModel @Inject constructor(
         _uiState.targetDateRangeRecordsMap = recordsMap
         _uiState.bookFirstReadDateMap = firstReadDateMap
         _uiState.bookFirstFinishedDateMap = firstFinishedDateMap
+        _uiState.bookFavoriteDateMap = favoriteDateMap
 
         val bookIds = recordsMap.values.flatten().map { it.bookId }.toSet()
 

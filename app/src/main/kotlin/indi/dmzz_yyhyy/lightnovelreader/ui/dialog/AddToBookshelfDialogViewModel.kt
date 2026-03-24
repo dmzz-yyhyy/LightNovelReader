@@ -6,6 +6,7 @@ import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -13,8 +14,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AddToBookshelfDialogViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository,
-    private val bookRepository: BookRepository
-
+    private val bookRepository: BookRepository,
+    private val statsRepository: StatsRepository
 ) : ViewModel() {
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
 
@@ -55,6 +56,7 @@ class AddToBookshelfDialogViewModel @Inject constructor(
         navController?.popBackStack()
         if (bookId.isBlank()) return
         viewModelScope.launch(Dispatchers.IO) {
+            statsRepository.markBookFavorited(bookId)
             val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
             viewModelScope.launch(Dispatchers.IO) {
                 bookRepository.getBookInformationFlow(bookId).collect { bookInformation ->
