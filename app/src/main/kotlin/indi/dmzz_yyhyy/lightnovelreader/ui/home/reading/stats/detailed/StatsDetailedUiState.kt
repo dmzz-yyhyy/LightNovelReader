@@ -14,6 +14,7 @@ interface StatsDetailedUiState {
     val targetDateRangeStatsMap: Map<LocalDate, ReadingStatisticsEntity>
     val targetDateRangeRecordsMap: Map<LocalDate, List<BookRecordEntity>>
     val targetDateRange: Pair<LocalDate, LocalDate>
+    var selectedChartDateRange: Pair<LocalDate, LocalDate>?
     var selectedDate: LocalDate
     var selectedViewIndex: Int
     val isLoading: Boolean
@@ -24,6 +25,7 @@ class MutableStatsDetailedUiState : StatsDetailedUiState {
     override var targetDateRangeStatsMap: Map<LocalDate, ReadingStatisticsEntity> by mutableStateOf(emptyMap())
     override var targetDateRangeRecordsMap: Map<LocalDate, List<BookRecordEntity>> by mutableStateOf(emptyMap())
     override var targetDateRange: Pair<LocalDate, LocalDate> by mutableStateOf(LocalDate.now() to LocalDate.now())
+    override var selectedChartDateRange: Pair<LocalDate, LocalDate>? by mutableStateOf(null)
     override var selectedDate: LocalDate by mutableStateOf(LocalDate.now())
     override var selectedViewIndex: Int by mutableIntStateOf(0)
     override var isLoading: Boolean by mutableStateOf(false)

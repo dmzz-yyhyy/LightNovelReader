@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,15 +21,12 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -43,9 +39,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsDeta
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.currentDateRange
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import java.time.LocalDate
-import java.time.format.TextStyle
-import java.util.Locale
-import kotlin.random.Random
 
 val predefinedColors = listOf(
     Color(0xFF2196F3),
@@ -104,28 +97,39 @@ private fun BookActivitySection(
 ) {
     if (bookIds.isEmpty()) return
 
-    val angle by remember { mutableFloatStateOf(Random.nextInt(-5, 6).toFloat()) }
-    val displayedTitles = bookIds.distinct().mapNotNull { id ->
-        bookInfoMap[id]?.title
+    val angle = remember(titleResId) {
+        when (titleResId % 3) {
+            0 -> -1.2f
+            1 -> 0.6f
+            else -> 1.0f
+        }
+    }
+
+    val displayedTitles = bookIds.distinct().mapNotNull {
+        bookInfoMap[it]?.title
     }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clipToBounds(),
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         Column(
             modifier = Modifier
-                .padding(start = 24.dp)
-                .weight(1f, fill = true),
+                .padding(start = 12.dp)
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
+
             Text(
                 text = stringResource(titleResId),
                 style = typography.titleMedium
             )
+
             val titleList = displayedTitles.take(2)
+
             titleList.forEach {
                 Text(
                     text = it,
@@ -135,22 +139,29 @@ private fun BookActivitySection(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            if (displayedTitles.size > titleList.size)
+
+            if (displayedTitles.size > titleList.size) {
                 Text(
                     text = stringResource(R.string.activity_etc, displayedTitles.size),
                     style = typography.labelMedium,
                     maxLines = 1,
+                    color = colorScheme.secondary,
                     overflow = TextOverflow.Ellipsis
                 )
+            }
         }
-        Spacer(Modifier.width(12.dp))
+
+        Spacer(Modifier.width(8.dp))
+
         Box(
             modifier = Modifier
-                .rotate(angle)
-                .offset(y = 16.dp)
+                .padding(end = 8.dp)
+                .graphicsLayer {
+                    rotationZ = angle
+                    translationY = 10.dp.toPx()
+                }
         ) {
             BookStack(
-                modifier = Modifier.clipToBounds(),
                 uiState = uiState,
                 books = bookIds,
                 count = 5
@@ -182,32 +193,26 @@ fun ActivityStatsCard(
         title = stringResource(R.string.activity)
     ) {
         Column {
-            if (startedBooks.isNotEmpty()) {
+            val sections = listOf(
+                R.string.activity_first_read to startedBooks,
+                R.string.activity_collections to favoriteBooks,
+                R.string.activity_finished to finishedBooks
+            ).filter { it.second.isNotEmpty() }
+
+            sections.forEachIndexed { index, (title, books) ->
                 BookActivitySection(
-                    titleResId = R.string.activity_first_read,
-                    bookIds = startedBooks,
+                    titleResId = title,
+                    bookIds = books,
                     bookInfoMap = uiState.bookInformationMap,
                     uiState = uiState
                 )
-                HorizontalDivider()
-            }
-            if (favoriteBooks.isNotEmpty()) {
-                BookActivitySection(
-                    titleResId = R.string.activity_collections,
-                    bookIds = favoriteBooks,
-                    bookInfoMap = uiState.bookInformationMap,
-                    uiState = uiState
-                )
-                HorizontalDivider()
-            }
-            if (finishedBooks.isNotEmpty()) {
-                BookActivitySection(
-                    titleResId = R.string.activity_finished,
-                    bookIds = finishedBooks,
-                    bookInfoMap = uiState.bookInformationMap,
-                    uiState = uiState
-                )
-                HorizontalDivider()
+
+                if (index != sections.lastIndex) {
+                    Row {
+                        HorizontalDivider(modifier = Modifier.weight(4f))
+                        Spacer(Modifier.weight(6f))
+                    }
+                }
             }
         }
     }
@@ -226,8 +231,6 @@ fun ReadingDetailStatsCard(
         .values
         .flatten()
 
-    val books = allRecords.map { it.bookId }
-
     StatsCard(title = stringResource(R.string.reading_details)) {
         Column {
             Spacer(Modifier.height(12.dp))
@@ -239,47 +242,16 @@ fun ReadingDetailStatsCard(
                 BookStack(
                     uiState = uiState,
                     books = orderedBooks,
-                    count = 8
+                    count = 8,
+                    compact = false
                 )
                 Spacer(Modifier.weight(1f))
             }
-            Spacer(Modifier.height(6.dp))
-            Text(stringResource(R.string.n_books, books.distinct().size))
             Spacer(Modifier.height(12.dp))
             ReadingTimeBar(
                 recordList = allRecords,
                 bookInformationMap = uiState.bookInformationMap
             )
-        }
-    }
-}
-
-@Composable
-fun WeeklyReadingTimeStatsCard(
-    uiState: StatsDetailedUiState,
-    modifier: Modifier = Modifier
-) {
-    StatsCard(
-        modifier = modifier,
-        title = stringResource(R.string.activity_reading_time)
-    ) {
-        ReadingTimeChart(uiState) { date ->
-            date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-        }
-    }
-}
-
-@Composable
-fun MonthlyReadingTimeStatsCard(
-    uiState: StatsDetailedUiState,
-    modifier: Modifier = Modifier
-) {
-    StatsCard(
-        modifier = modifier,
-        title = stringResource(R.string.activity_reading_time)
-    ) {
-        ReadingTimeChart(uiState) { date ->
-            date.dayOfMonth.toString()
         }
     }
 }
@@ -333,7 +305,7 @@ fun ReadingTimeBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(30.dp)
+                .height(14.dp)
                 .clip(RoundedCornerShape(16.dp))
         ) {
             barItems.fastForEach { (_, pair, color) ->
