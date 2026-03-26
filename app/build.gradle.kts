@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import java.text.SimpleDateFormat
@@ -23,7 +24,7 @@ android {
         minSdk = 24
         targetSdk = 36
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_02_00_035
+        versionCode = 1_02_00_036
         versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -74,8 +75,8 @@ android {
 
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
@@ -100,14 +101,22 @@ androidComponents {
     }
 }
 
+kotlin {
+    jvmToolchain(21)
+}
+
 composeCompiler {
     includeSourceInformation = true
 }
 
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
-        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+        jvmTarget.set(JvmTarget.JVM_21)
+        jvmDefault.set(JvmDefaultMode.NO_COMPATIBILITY)
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.RequiresOptIn",
+            "-Xwhen-expressions=indy"
+        )
     }
 }
 
@@ -149,8 +158,9 @@ dependencies {
     // Navigation
     implementation(libs.navigation.ui.ktx)
     implementation(libs.navigation.compose)
-    // coil
+    // coil3
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     // jsoup
     implementation(libs.jsoup)
     // Markdown
