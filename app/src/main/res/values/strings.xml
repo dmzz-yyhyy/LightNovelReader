@@ -346,9 +346,10 @@
     <string name="detail_info_updated_on">Updated on</string>
     <string name="detail_info_tags">Tags</string>
     <string name="detail_info_stats">Stats</string>
-    <string name="view_daily">Day</string>
-    <string name="view_weekly">Week</string>
-    <string name="view_monthly">Month</string>
+    <string name="view_daily">Daily</string>
+    <string name="view_weekly">Weekly</string>
+    <string name="view_monthly">Monthly</string>
+    <string name="view_yearly">Yearly</string>
     <string name="activity">Activity</string>
     <string name="calendar">Calendar</string>
     <string name="activity_first_read">Started</string>

@@ -344,6 +344,7 @@
     <string name="view_daily">日</string>
     <string name="view_weekly">週</string>
     <string name="view_monthly">月</string>
+    <string name="view_yearly">年</string>
     <string name="activity">活動</string>
     <string name="calendar">日曆</string>
     <string name="activity_first_read">第一次讀了</string>

@@ -111,9 +111,9 @@ fun StatsDetailedScreen(
     uiState.selectedDate = targetDate
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val viewOptions = listOf(
-        stringResource(R.string.view_daily),
         stringResource(R.string.view_weekly),
-        stringResource(R.string.view_monthly)
+        stringResource(R.string.view_monthly),
+        stringResource(R.string.view_yearly)
     )
 
     LaunchedEffect(targetDate) {
