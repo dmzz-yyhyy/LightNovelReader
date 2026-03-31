@@ -83,13 +83,13 @@ object GithubParser {
                     .let(Jsoup::connect)
                     .header("Host", "github.com")
                     .get()
-                    .select("body > div.Box.Box--condensed.mt-3 > ul > li > div.d-flex.flex-justify-start.col-12.col-lg-9 > a")
+                    .select("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/download/"]""")
                     .map { it.attr("href") }
-                    .firstOrNull { it.endsWith("apk") }
-                    ?.let { "https://gh-proxy.com/github.com$it" } ?: Log.e("GithubParser", "failed to get downloadUrl").let { return null }
+                    ?.firstOrNull { it.endsWith("apk") }
+                    ?.let { "https://gh-proxy.com/github.com$it" }?: Log.e("GithubParser", "failed to get downloadUrl").let { return null }
                 updatePhase.tryEmit("GitHub步骤: 拉取远程分支版本号")
                 val gradle = releaseDocument
-                    .select("#repo-content-pjax-container > div > div > div > div.Box-body > div.mb-3.pb-md-4.border-md-bottom > div > div:nth-child(3) > a")
+                    .select("""a[href^="/dmzz-yyhyy/LightNovelReader/tree/"]""")
                     .attr("href")
                     .replace("/dmzz-yyhyy/LightNovelReader/tree/", "")
                     .let { "https://gh-proxy.com/raw.githubusercontent.com/dmzz-yyhyy/LightNovelReader/refs/tags/$it/app/build.gradle.kts" }
@@ -106,7 +106,7 @@ object GithubParser {
                 val versionName = versionNameRegex.find(gradle)?.groups?.get(1)?.value ?: Log.e("GithubParser", "failed to get versionName").also { return null }
                 updatePhase.tryEmit("GitHub步骤: 解析更新日志")
                 val releaseNotes = releaseDocument
-                    .select("#repo-content-pjax-container > div > div > div > div.Box-body > div.markdown-body.my-3")
+                    .selectFirst("div.markdown-body")
                     .toString()
                     .let(HtmlToMdUtil::convertHtml)
                 return GithubRelease(
@@ -129,8 +129,8 @@ object GithubParser {
                     if (host.startsWith("http://")) it.header("Host", "github.com")
                 }
                 .get()
-                .select("#repo-content-pjax-container > div > div > div > div.Layout-sidebar > div > div:nth-child(2) > div > a")
-                .attr("href")
+                .selectFirst("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/tag/"]""")
+                ?.attr("href")
                 .let { host+it }
                 .also { updatePhase.tryEmit("GitHub步骤: 获取最新Release") }
                 .let { progressReleasePage(it, updatePhase) }
@@ -147,8 +147,8 @@ object GithubParser {
                     if (host.startsWith("http://")) it.header("Host", "github.com")
                 }
                 .get()
-                .select("#repo-content-pjax-container > div > div:nth-child(3) > section:nth-child(1) > div > div.col-md-9 > div > div.Box-body > div.d-flex.flex-md-row.flex-column > div.d-flex.flex-row.flex-1.mb-3.wb-break-word > div.flex-1 > span.f1.text-bold.d-inline.mr-3 > a")
-                .attr("href")
+                .selectFirst("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/tag/"]""")
+                ?.attr("href")
                 .also { updatePhase.tryEmit("GitHub步骤: 获取最新Release") }
                 .let { host+it }
                 .let { progressReleasePage(it, updatePhase) }
