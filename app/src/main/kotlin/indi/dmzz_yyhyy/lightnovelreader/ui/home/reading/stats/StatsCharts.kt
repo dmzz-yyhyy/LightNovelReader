@@ -58,6 +58,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import kotlin.math.roundToInt
 import java.time.format.TextStyle as JavaTextStyle
 
 private val BottomAxisLabelKey = ExtraStore.Key<List<String>>()
@@ -66,7 +67,10 @@ private val BottomAxisValueFormatter = CartesianValueFormatter { context, x, _ -
     labels[x.toInt().coerceIn(labels.indices)]
 }
 
-private val EndAxisItemPlacer = VerticalAxis.ItemPlacer.count({ 7 })
+private val EndAxisItemPlacer = VerticalAxis.ItemPlacer.count({ 8 })
+
+private fun useHoursUnit(values: List<Float>): Boolean =
+    values.maxOrNull()?.let { it > 400f } == true
 
 @Composable
 fun rememberAxisLabelComponent(): TextComponent {
@@ -76,6 +80,19 @@ fun rememberAxisLabelComponent(): TextComponent {
             color = colorScheme.onSurfaceVariant
         )
     )
+}
+
+@Composable
+private fun rememberReadingTimeAxisFormatter(useHours: Boolean): CartesianValueFormatter {
+    return remember(useHours) {
+        CartesianValueFormatter { _, value, _ ->
+            if (useHours) {
+                (value / 60.0).roundToInt().toString()
+            } else {
+                value.toInt().toString()
+            }
+        }
+    }
 }
 
 @Composable
@@ -131,6 +148,8 @@ private fun DailyStatsChart(
     }
 
     val values = List(24) { hourlyMap[it]?.toFloat() ?: 0f }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
@@ -165,7 +184,7 @@ private fun DailyStatsChart(
                 label = rememberAxisLabelComponent(),
                 itemPlacer = VerticalAxis.ItemPlacer.count({ 5 }),
                 guideline = rememberAxisGuidelineComponent(),
-                valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                valueFormatter = axisValueFormatter
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberAxisLabelComponent(),
@@ -202,6 +221,8 @@ fun WeeklyStatsChart(
     val values = remember(dates, statsMap) {
         dates.map { statsMap[it]?.getTotalMinutes()?.toFloat() ?: 0f }
     }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
     val totalMinutes = values.sum()
     val average = remember(values) {
         totalMinutes / values.size
@@ -241,18 +262,18 @@ fun WeeklyStatsChart(
                 Text(
                     text = "总计",
                     style = typography.bodyMedium,
-                    color = colorScheme.secondary
-                    )
+                    color = colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = formMinutes(totalMinutes.toInt()),
                     style = typography.titleLarge,
-                    color = colorScheme.onSurfaceVariant,
+                    color = colorScheme.secondary,
                     modifier = Modifier.padding(end = 2.dp)
                 )
             }
             Spacer(Modifier.weight(1f))
             Text(
-                text = stringResource(R.string.unit_minutes),
+                text = stringResource(if (useHoursOnAxis) R.string.unit_hours else R.string.unit_minutes),
                 style = typography.labelSmall,
                 color = colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Bottom)
@@ -273,7 +294,7 @@ fun WeeklyStatsChart(
                     label = rememberAxisLabelComponent(),
                     itemPlacer = EndAxisItemPlacer,
                     guideline = rememberAxisGuidelineComponent(),
-                    valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                    valueFormatter = axisValueFormatter
                 ),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     label = rememberAxisLabelComponent(),
@@ -288,7 +309,8 @@ fun WeeklyStatsChart(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(230.dp),
-            scrollState = rememberVicoScrollState(scrollEnabled = false),
+            scrollState = rememberVicoScrollState(scrollEnabled = true),
+            zoomState = rememberVicoZoomState(zoomEnabled = false)
         )
 
         if (selectedIndex in dates.indices) {
@@ -332,6 +354,15 @@ private fun buildWeek(yearMonth: YearMonth): List<Week> {
     return buckets
 }
 
+private fun resolveExpandableWeekIndex(
+    targets: List<CartesianMarker.Target>,
+    weekBuckets: List<Week>,
+): Int {
+    val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
+    val index = target?.columns?.firstOrNull()?.entry?.x?.toInt() ?: return -1
+    return index.takeIf { (weekBuckets.getOrNull(it)?.days?.size ?: 0) > 1 } ?: -1
+}
+
 @Composable
 fun MonthlyStatsChart(
     statsMap: Map<LocalDate, Count>,
@@ -349,15 +380,11 @@ fun MonthlyStatsChart(
             }.toFloat()
         }
     }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
     val totalMinutes = values.sum()
-    val average = remember(weekBuckets, statsMap, yearMonth) {
-        val totalMinutes = weekBuckets.sumOf { bucket ->
-            bucket.days.sumOf { day ->
-                statsMap[day]?.getTotalMinutes() ?: 0
-            }
-        }
-        val totalDays = yearMonth.lengthOfMonth()
-        totalMinutes.toFloat() / totalDays
+    val average = remember(values) {
+        if (values.isEmpty()) 0f else totalMinutes / values.size
     }
 
     var selectedWeek by remember { mutableIntStateOf(-1) }
@@ -374,15 +401,13 @@ fun MonthlyStatsChart(
     val marker = readingTimeMarker()
     val averageLine = rememberAverageLine(average, showAverage)
 
-    val markerListener = remember {
+    val markerListener = remember(weekBuckets) {
         object : CartesianMarkerVisibilityListener {
             override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
-                target?.columns?.firstOrNull()?.entry?.let { selectedWeek = it.x.toInt() }
+                selectedWeek = resolveExpandableWeekIndex(targets, weekBuckets)
             }
             override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
-                val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
-                target?.columns?.firstOrNull()?.entry?.let { selectedWeek = it.x.toInt() }
+                selectedWeek = resolveExpandableWeekIndex(targets, weekBuckets)
             }
             override fun onHidden(marker: CartesianMarker) {}
         }
@@ -394,18 +419,18 @@ fun MonthlyStatsChart(
                 Text(
                     text = "总计",
                     style = typography.bodyMedium,
-                    color = colorScheme.secondary
+                    color = colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = formMinutes(totalMinutes.toInt()),
                     style = typography.titleLarge,
-                    color = colorScheme.onSurfaceVariant,
+                    color = colorScheme.secondary,
                     modifier = Modifier.padding(end = 2.dp)
                 )
             }
             Spacer(Modifier.weight(1f))
             Text(
-                text = stringResource(R.string.unit_minutes),
+                text = stringResource(if (useHoursOnAxis) R.string.unit_hours else R.string.unit_minutes),
                 style = typography.labelSmall,
                 color = colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Bottom)
@@ -426,7 +451,7 @@ fun MonthlyStatsChart(
                     label = rememberAxisLabelComponent(),
                     itemPlacer = EndAxisItemPlacer,
                     guideline = rememberAxisGuidelineComponent(),
-                    valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                    valueFormatter = axisValueFormatter
                 ),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     label = rememberAxisLabelComponent(),
@@ -472,6 +497,8 @@ private fun WeekDailyBreakdown(
     val values = remember(bucket, statsMap) {
         bucket.days.map { statsMap[it]?.getTotalMinutes()?.toFloat() ?: 0f }
     }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
 
     if (values.all { it == 0f }) {
         Box(
@@ -521,7 +548,7 @@ private fun WeekDailyBreakdown(
                 label = rememberAxisLabelComponent(),
                 itemPlacer = VerticalAxis.ItemPlacer.count({ 5 }),
                 guideline = rememberAxisGuidelineComponent(),
-                valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                valueFormatter = axisValueFormatter
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberAxisLabelComponent(),
@@ -535,6 +562,7 @@ private fun WeekDailyBreakdown(
             .fillMaxWidth()
             .height(200.dp),
         scrollState = rememberVicoScrollState(scrollEnabled = false),
+        zoomState = rememberVicoZoomState(zoomEnabled = false)
     )
 }
 
@@ -557,9 +585,12 @@ fun YearlyStatsChart(
             }.toFloat()
         }
     }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
     val totalMinutes = values.sum()
     val average = remember(values) {
-        if (values.isEmpty()) 0f else totalMinutes / values.size
+        val nonZeroValues = values.filter { it > 0f }
+        if (nonZeroValues.isEmpty()) 0f else nonZeroValues.sum() / nonZeroValues.size
     }
 
     var selectedMonth by remember { mutableIntStateOf(-1) }
@@ -596,18 +627,18 @@ fun YearlyStatsChart(
                 Text(
                     text = "总计",
                     style = typography.bodyMedium,
-                    color = colorScheme.secondary
+                    color = colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = formMinutes(totalMinutes.toInt()),
                     style = typography.titleLarge,
-                    color = colorScheme.onSurfaceVariant,
+                    color = colorScheme.secondary,
                     modifier = Modifier.padding(end = 2.dp)
                 )
             }
             Spacer(Modifier.weight(1f))
             Text(
-                text = stringResource(R.string.unit_minutes),
+                text = stringResource(if (useHoursOnAxis) R.string.unit_hours else R.string.unit_minutes),
                 style = typography.labelSmall,
                 color = colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Bottom)
@@ -628,7 +659,7 @@ fun YearlyStatsChart(
                     label = rememberAxisLabelComponent(),
                     itemPlacer = EndAxisItemPlacer,
                     guideline = rememberAxisGuidelineComponent(),
-                    valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                    valueFormatter = axisValueFormatter
                 ),
                 bottomAxis = HorizontalAxis.rememberBottom(
                     label = rememberAxisLabelComponent(),
@@ -683,6 +714,8 @@ private fun MonthWeeklyBreakdown(
             }.toFloat()
         }
     }
+    val useHoursOnAxis = remember(values) { useHoursUnit(values) }
+    val axisValueFormatter = rememberReadingTimeAxisFormatter(useHoursOnAxis)
 
     if (values.all { it == 0f }) {
         Box(
@@ -732,7 +765,7 @@ private fun MonthWeeklyBreakdown(
                 label = rememberAxisLabelComponent(),
                 itemPlacer = VerticalAxis.ItemPlacer.count({ 5 }),
                 guideline = rememberAxisGuidelineComponent(),
-                valueFormatter = CartesianValueFormatter { _, v, _ -> "${v.toInt()}" }
+                valueFormatter = axisValueFormatter
             ),
             bottomAxis = HorizontalAxis.rememberBottom(
                 label = rememberAxisLabelComponent(),
@@ -746,5 +779,6 @@ private fun MonthWeeklyBreakdown(
             .fillMaxWidth()
             .height(200.dp),
         scrollState = rememberVicoScrollState(scrollEnabled = false),
+        zoomState = rememberVicoZoomState(zoomEnabled = false)
     )
 }

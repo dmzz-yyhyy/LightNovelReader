@@ -59,7 +59,7 @@
     <string name="import_in_progress_title">正在匯入…</string>
     <string name="import_in_progress_desc">請稍候…</string>
     <string name="download_in_progress">進行中</string>
-    <string name="download_item_progress">%s 已下載 %d%%</string>
+    <string name="download_item_progress">%1$s 已下載 %2$d%%</string>
     <string name="download_item_finished">%s完成</string>
     <string name="download_item_failed">%s失敗, 請檢查您的網絡環境或尋求開發者幫助</string>
     <string name="book_updated_to_title">更新至:</string>

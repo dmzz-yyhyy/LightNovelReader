@@ -272,7 +272,7 @@ fun BookStack(
             } else 1f
 
             val offsetY = remember(bookId) {
-                Random.nextInt(-6, 7).dp
+                Random.nextInt(-3, 4).dp
             }
 
             Box(

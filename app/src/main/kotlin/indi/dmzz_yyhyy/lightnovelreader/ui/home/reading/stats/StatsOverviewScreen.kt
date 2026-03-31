@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,7 +26,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -49,7 +45,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
@@ -117,7 +112,6 @@ fun StatsOverviewScreen(
                         )
                     }
                     item { DailyStatsBlock(uiState, onClickDetailScreen) }
-                    item { TotalStatsBlock(uiState) }
                     navigationBarSpacer()
                 }
             }
@@ -362,112 +356,6 @@ private fun DataItem(leftText: String, rightText: String) {
             color = MaterialTheme.colorScheme.outline,
             maxLines = 1
         )
-    }
-}
-
-@Composable
-fun TotalStatsBlock(
-    uiState: StatsOverviewUiState
-) {
-    val lazyRowState = rememberLazyListState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.total_record),
-            style = typography.titleMedium,
-            fontWeight = FontWeight.W600
-        )
-        Spacer(Modifier.height(8.dp))
-        LazyRow (
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            state = lazyRowState,
-            flingBehavior = rememberSnapFlingBehavior(lazyRowState)
-        ) {
-            val totalMinutes = uiState.totalSummary?.totalMinutes ?: 0
-            val totalReadCount = uiState.totalSummary?.totalReadCount ?: 0
-            item {
-                StatsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = painterResource(R.drawable.outline_book_24px),
-                    title = stringResource(R.string.reading_sessions),
-                    value = totalReadCount.toString(),
-                    unit = stringResource(R.string.reading_sessions_unit)
-                )
-            }
-
-            item {
-                StatsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = painterResource(R.drawable.schedule_90dp),
-                    title = stringResource(R.string.reading_duration),
-                    value = "${totalMinutes / 60}",
-                    unit = stringResource(R.string.reading_duration_unit, totalMinutes % 60)
-                )
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-    }
-}
-
-@Composable
-fun StatsCard(
-    modifier: Modifier = Modifier,
-    icon: Painter,
-    title: String,
-    value: String,
-    unit: String
-) {
-    Surface(
-        modifier = modifier
-            .height(136.dp)
-            .padding(4.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shadowElevation = 2.dp
-    ) {
-        Box(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .width(100.dp)
-            )
-
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(26.dp)
-                    .align(Alignment.TopEnd)
-            )
-
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(bottom = 8.dp)
-            ) {
-                Text(
-                    text = value,
-                    fontSize = 32.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = unit,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 

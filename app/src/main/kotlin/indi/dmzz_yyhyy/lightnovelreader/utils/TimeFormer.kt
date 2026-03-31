@@ -53,3 +53,21 @@ fun formTime(time: LocalDateTime): String =
 
 fun formMinutes(totalMinutes: Int): String =
     DurationFormat(appDisplayLocale).format(totalMinutes.minutes, DurationFormat.Unit.MINUTE, DurationFormat.Unit.HOUR)
+
+fun formReadingDuration(totalMinutes: Int): String {
+    val df = DurationFormat(appDisplayLocale)
+
+    return if (totalMinutes < 60) {
+        df.format(
+            totalMinutes.minutes,
+            DurationFormat.Unit.MINUTE,
+            DurationFormat.Unit.MINUTE
+        )
+    } else {
+        df.format(
+            (totalMinutes / 60).minutes,
+            DurationFormat.Unit.HOUR,
+            DurationFormat.Unit.HOUR
+        )
+    }
+}

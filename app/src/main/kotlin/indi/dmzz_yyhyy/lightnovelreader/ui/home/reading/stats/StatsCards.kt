@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,13 +21,10 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +39,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.normalize
 import indi.dmzz_yyhyy.lightnovelreader.utils.stats.generateTimeBarItems
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import java.time.LocalDate
-import kotlin.random.Random
 
 val predefinedColors = listOf(
     Color(0xFF2196F3),
@@ -102,7 +97,6 @@ private fun BookActivitySection(
 ) {
     if (bookIds.isEmpty()) return
 
-    val angle by remember { mutableFloatStateOf(Random.nextInt(-5, 6).toFloat()) }
     val displayedTitles = bookIds.distinct().mapNotNull { id ->
         bookInfoMap[id]?.title
     }
@@ -115,7 +109,6 @@ private fun BookActivitySection(
     ) {
         Column(
             modifier = Modifier
-                .padding(start = 12.dp)
                 .weight(1f, fill = true),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
@@ -127,7 +120,7 @@ private fun BookActivitySection(
             titleList.forEach {
                 Text(
                     text = it,
-                    style = typography.labelMedium,
+                    style = typography.bodyMedium,
                     maxLines = 1,
                     color = colorScheme.secondary,
                     overflow = TextOverflow.Ellipsis
@@ -136,21 +129,20 @@ private fun BookActivitySection(
             if (displayedTitles.size > titleList.size)
                 Text(
                     text = stringResource(R.string.activity_etc, displayedTitles.size),
-                    style = typography.labelMedium,
+                    style = typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
         }
         Spacer(Modifier.width(12.dp))
-        Box(
-            modifier = Modifier.offset(y = 16.dp)
-        ) {
+        Box {
             BookStack(
-                modifier = Modifier.clipToBounds(),
+                modifier = Modifier,
                 uiState = uiState,
                 books = bookIds,
                 count = 5,
-                rotate = 3f
+                rotate = 4.5f,
+                scaleEnabled = false
             )
         }
     }
@@ -225,7 +217,6 @@ fun ReadingDetailStatsCard(
                     .map { it.bookId }
                     .distinct()
                 BookStack(
-                    modifier = Modifier,
                     uiState = uiState,
                     books = books,
                     count = 8,
@@ -233,7 +224,6 @@ fun ReadingDetailStatsCard(
                 )
                 Spacer(Modifier.weight(1f))
             }
-
             Spacer(Modifier.height(12.dp))
 
             ReadingTimeBar(
@@ -272,7 +262,7 @@ fun ReadingTimeBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(14.dp)
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(4.dp))
         ) {
             normalizedItems.fastForEach { (item, ratio) ->
                 Box(

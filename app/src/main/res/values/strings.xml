@@ -64,7 +64,7 @@
     <string name="import_in_progress_title">Importing…</string>
     <string name="import_in_progress_desc">Please wait…</string>
     <string name="download_in_progress">In Progress</string>
-    <string name="download_item_progress">%s downloaded %d%%</string>
+    <string name="download_item_progress">%1$s downloaded %2$d%%</string>
     <string name="download_item_finished">%s completed</string>
     <string name="download_item_failed">%s failed, please check your network or seek developer assistance</string>
     <string name="book_updated_to_title">Updated to:</string>
