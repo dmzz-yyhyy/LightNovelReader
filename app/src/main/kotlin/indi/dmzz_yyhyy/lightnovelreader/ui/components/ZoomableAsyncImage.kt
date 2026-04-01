@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -34,10 +35,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImagePainter
-import coil.compose.SubcomposeAsyncImage
-import coil.compose.SubcomposeAsyncImageContent
-import coil.request.ImageRequest
+import coil3.compose.AsyncImagePainter
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import kotlinx.coroutines.Dispatchers
 import indi.dmzz_yyhyy.lightnovelreader.R
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -59,17 +64,22 @@ fun ZoomableImage(
     ) {
         key(retryKey) {
             SubcomposeAsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(imageUri)
-                    .crossfade(true)
-                    .listener(
-                        onSuccess = { _, _ -> lastError = null },
-                        onError = { _, result -> lastError = result.throwable.localizedMessage }
-                    )
-                    .also { builder ->
-                        header.forEach { builder.addHeader(it.key, it.value) }
-                    }
-                    .build(),
+                model = remember(imageUri, header) {
+                    ImageRequest.Builder(context)
+                        .data(imageUri)
+                        .crossfade(true)
+                        .interceptorCoroutineContext(Dispatchers.Default)
+                        .listener(
+                            onSuccess = { _, _ -> lastError = null },
+                            onError = { _, result -> lastError = result.throwable.localizedMessage }
+                        )
+                        .httpHeaders(
+                            NetworkHeaders.Builder().apply {
+                                header.forEach { (key, value) -> add(key, value) }
+                            }.build()
+                        )
+                        .build()
+                },
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
@@ -78,7 +88,8 @@ fun ZoomableImage(
                     .align(Alignment.Center)
                     .padding(bottom = 8.dp)
             ) {
-                when (painter.state) {
+                val state by painter.state.collectAsState()
+                when (state) {
                     is AsyncImagePainter.State.Loading -> {
                         Box(
                             modifier = Modifier

@@ -5,8 +5,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ReadingStatisticsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
@@ -15,8 +15,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMeta
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
@@ -24,11 +24,11 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 class ExportOptionLocalData(
     private val bookBookInformationDao: BookInformationDao,
     private val bookRecordDao: BookRecordDao,
+    private val dailyCountDao: DailyCountDao,
     private val bookshelfDao: BookshelfDao,
     private val chapterContentDao: ChapterContentDao,
     private val bookVolumesDao: BookVolumesDao,
     private val formattingRuleDao: FormattingRuleDao,
-    private val readingStatisticsDao: ReadingStatisticsDao,
     private val userReadingDataDao: UserReadingDataDao,
     private val userDataDao: UserDataDao,
     webDataSourceUserDataPathSet: Set<String>
@@ -40,12 +40,12 @@ class ExportOptionLocalData(
     
     val bookInformationEntities = mutableListOf<BookInformationEntity>()
     val bookRecordEntities = mutableListOf<BookRecordEntity>()
+    val dailyCountEntities = mutableListOf<DailyCountEntity>()
     val bookshelfEntities = mutableListOf<BookshelfEntity>()
     val bookshelfBookMetadataEntities = mutableListOf<BookshelfBookMetadataEntity>()
     val chapterContentEntities = mutableListOf<ChapterContentEntity>()
     val chapterInformationEntities = mutableListOf<ChapterInformationEntity>()
     val formattingRuleEntities = mutableListOf<FormattingRuleEntity>()
-    val readingStatisticsEntities = mutableListOf<ReadingStatisticsEntity>()
     val userDataEntities = mutableListOf<UserDataEntity>()
     val userReadingDataEntities = mutableListOf<UserReadingDataEntity>()
     val volumeEntities = mutableListOf<VolumeEntity>()
@@ -70,8 +70,8 @@ class ExportOptionLocalData(
 
     val readingRecord = object : OptionSolver() {
         override suspend fun solve() {
-            readingStatisticsEntities.addAll(readingStatisticsDao.getAllReadingStatistics())
             bookRecordEntities.addAll(bookRecordDao.getAllBookRecords())
+            dailyCountEntities.addAll(dailyCountDao.getAll())
             userReadingDataEntities.addAll(userReadingDataDao.getAll())
             userDataEntities.addAll(userDataDao.getAllEntities().filter {
                 webDataSourceUserDataPathSet.contains(it.path)

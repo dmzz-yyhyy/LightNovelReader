@@ -13,10 +13,12 @@ local.properties
 .idea/misc.xml
 .idea/compiler.xml
 .DS_Store
-./build
 ./captures
 .externalNativeBuild
 .cxx
 ./local.properties
 .kotlin/
 /app/snapshot/
+/proxy/build/
+/app/build/
+/api/build/

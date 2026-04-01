@@ -37,6 +37,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DisplaySettingsList
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.ExtensionsSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.ReadingSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.UpdatesSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
@@ -68,16 +69,14 @@ fun SettingsScreen(
         ) {
             item {
                 SettingsCategory(
-                    title = stringResource(R.string.app_updates)
+                    title = stringResource(R.string.extensions_settings),
                 ) {
-                    UpdatesSettingsList(
-                        updatePhase = updatePhase,
-                        settingState = settingState,
-                        checkUpdate = checkUpdate,
+                    ExtensionsSettingsList(
+                        onClickChangeSource = onClickChangeSource,
+                        onClickPluginManager = onClickPluginManager
                     )
                 }
             }
-
             item {
                 SettingsCategory(
                     title = stringResource(R.string.reading_settings),
@@ -98,10 +97,20 @@ fun SettingsScreen(
             }
             item {
                 SettingsCategory(
+                    title = stringResource(R.string.app_updates)
+                ) {
+                    UpdatesSettingsList(
+                        updatePhase = updatePhase,
+                        settingState = settingState,
+                        checkUpdate = checkUpdate,
+                    )
+                }
+            }
+            item {
+                SettingsCategory(
                     title = stringResource(R.string.data_settings),
                 ) {
                     DataSettingsList(
-                        onClickChangeSource = onClickChangeSource,
                         onClickExportUserData = onClickExportUserData,
                         settingState = settingState,
                         importData = importData,
@@ -115,7 +124,6 @@ fun SettingsScreen(
                     AppSettingsList(
                         settingState = settingState,
                         onClickLogcat = onClickLogcat,
-                        onClickPluginManager = onClickPluginManager,
                     )
                 }
             }

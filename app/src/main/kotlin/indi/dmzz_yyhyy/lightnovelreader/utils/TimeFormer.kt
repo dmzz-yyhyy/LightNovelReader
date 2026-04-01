@@ -1,11 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.icu.text.RelativeDateTimeFormatter
-import android.icu.text.RelativeDateTimeFormatter.AbsoluteUnit
 import android.icu.text.RelativeDateTimeFormatter.Direction
 import android.icu.text.RelativeDateTimeFormatter.RelativeUnit
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration.Companion.minutes
 
 fun formTime(
     time: LocalDateTime,
@@ -29,23 +29,39 @@ fun formTime(
 
     val minutesAgo = ChronoUnit.MINUTES.between(time, now)
     val hoursAgo = ChronoUnit.HOURS.between(time, now)
-    val daysAgo = ChronoUnit.DAYS.between(time, now)
-    val yearsAgo = ChronoUnit.YEARS.between(time, now)
 
     val rdf = RelativeDateTimeFormatter.getInstance(locale)
 
     return when {
-        yearsAgo >= 1 -> time.format(absFormatter)
-        daysAgo > 30 -> time.format(absFormatter)
-        daysAgo == 1L -> rdf.format(Direction.LAST, AbsoluteUnit.DAY)
-        daysAgo == 2L -> rdf.format(2.0, Direction.LAST, RelativeUnit.DAYS)
-        daysAgo == 3L -> rdf.format(3.0, Direction.LAST, RelativeUnit.DAYS)
-        daysAgo >= 4 -> rdf.format(daysAgo.toDouble(), Direction.LAST, RelativeUnit.DAYS)
+        hoursAgo >= 72 -> time.format(absFormatter)
+        hoursAgo >= 24 -> rdf.format((hoursAgo / 24).toDouble(), Direction.LAST, RelativeUnit.DAYS)
         hoursAgo >= 1 -> rdf.format(hoursAgo.toDouble(), Direction.LAST, RelativeUnit.HOURS)
         minutesAgo >= 1 -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
-        else -> rdf.format(Direction.PLAIN, AbsoluteUnit.NOW)
+        minutesAgo in 0..1  -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
+        else -> time.format(absFormatter)
     }
 }
 
 fun formTime(time: LocalDateTime): String =
     formTime(time, DateFormat.fromString(FormattingSettings.dateFormat), FormattingSettings.useRelativeTime)
+
+fun formMinutes(totalMinutes: Int): String =
+    DurationFormat(appDisplayLocale).format(totalMinutes.minutes, DurationFormat.Unit.MINUTE, DurationFormat.Unit.HOUR)
+
+fun formReadingDuration(totalMinutes: Int): String {
+    val df = DurationFormat(appDisplayLocale)
+
+    return if (totalMinutes < 60) {
+        df.format(
+            totalMinutes.minutes,
+            DurationFormat.Unit.MINUTE,
+            DurationFormat.Unit.MINUTE
+        )
+    } else {
+        df.format(
+            (totalMinutes / 60).minutes,
+            DurationFormat.Unit.HOUR,
+            DurationFormat.Unit.HOUR
+        )
+    }
+}

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -63,12 +65,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberAsyncImagePainter
-import coil.imageLoader
-import coil.memory.MemoryCache
-import coil.request.CachePolicy
-import coil.request.ImageRequest
+import coil3.annotation.ExperimentalCoilApi
+import coil3.compose.rememberAsyncImagePainter
+import coil3.imageLoader
+import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.theme.AppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
@@ -86,6 +88,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerTextColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderFontFamily
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.Dispatchers
@@ -93,13 +96,18 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @Composable
 fun ThemeScreen(
     themeSettingState: SettingState,
     onClickBack: () -> Unit,
     onClickChangeTextColor: () -> Unit,
-    onClickChangeBackgroundColor: () -> Unit
+    onClickChangeBackgroundColor: () -> Unit,
+    onClickOpenPaletteSurface: () -> Unit,
+    onClickOpenPaletteBackground: () -> Unit
 ) {
     val context = LocalContext.current
     Column(
@@ -111,7 +119,7 @@ fun ThemeScreen(
                 DarkModeSettings(themeSettingState)
             }
             item {
-                ThemeSettingsList(themeSettingState)
+                ThemeSettingsList(themeSettingState, onClickOpenPaletteSurface, onClickOpenPaletteBackground)
             }
             item {
                 ReaderThemeSettingsList(themeSettingState, onClickChangeBackgroundColor)
@@ -241,6 +249,8 @@ fun DarkModeSettings(
 @Composable
 fun ThemeSettingsList(
     settingState: SettingState,
+    onClickOpenPaletteSurface: () -> Unit,
+    onClickOpenPaletteBackground: () -> Unit
 ) {
     SettingsCategory(
         title = stringResource(R.string.theme_settings),
@@ -264,6 +274,14 @@ fun ThemeSettingsList(
             checked = settingState.enableM3E,
             booleanUserData = settingState.enableM3EUserData
         )
+        SettingsSwitchEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.palette_24px),
+            title = "啟用覆蓋主題配色",
+            description = "覆蓋主題原有顏色，字定義配色",
+            checked = settingState.enableCostumeThemeScheme,
+            booleanUserData = settingState.enableCostumeThemeSchemeUserData
+        )
         if (!settingState.dynamicColorsKey) {
             SettingsMenuEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
@@ -282,6 +300,22 @@ fun ThemeSettingsList(
                 options = MenuOptions.DarkThemeNameOptions,
                 selectedOptionKey = settingState.darkThemeName,
                 onOptionChange = settingState.darkThemeNameUserData::asynchronousSet
+            )
+        }
+        if (settingState.enableCostumeThemeScheme) {
+            SettingsClickableEntry(
+                modifier = Modifier.background(colorScheme.surfaceContainer),
+                painter = painterResource(R.drawable.palette_24px),
+                title = "覆蓋主題Surface顏色",
+                description = "覆蓋主題原有Surface顏色",
+                onClick = onClickOpenPaletteSurface
+            )
+            SettingsClickableEntry(
+                modifier = Modifier.background(colorScheme.surfaceContainer),
+                painter = painterResource(R.drawable.palette_24px),
+                title = "覆蓋主題Background顏色",
+                description = "覆蓋主題原有Background顏色",
+                onClick = onClickOpenPaletteBackground
             )
         }
     }

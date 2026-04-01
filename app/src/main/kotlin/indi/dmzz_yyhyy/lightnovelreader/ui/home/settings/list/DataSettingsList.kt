@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun DataSettingsList(
-    onClickChangeSource: () -> Unit,
     onClickExportUserData: () -> Unit,
     settingState: SettingState,
     importData: (Uri, Boolean) -> OneTimeWorkRequest,
@@ -107,13 +106,6 @@ fun DataSettingsList(
         title = stringResource(R.string.settings_import_data),
         description = stringResource(R.string.settings_import_data_desc),
         onClick = { selectDataFile(importDataLauncher) }
-    )
-    SettingsClickableEntry(
-        modifier = Modifier.background(colorScheme.surfaceContainer),
-        painter = painterResource(R.drawable.public_24px),
-        title = stringResource(R.string.settings_select_data_source),
-        description = stringResource(R.string.settings_select_data_source_desc),
-        onClick = onClickChangeSource
     )
     SettingsSwitchEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),

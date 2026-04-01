@@ -162,7 +162,9 @@ class PluginRepositoryViewModel @Inject constructor(
                     async(Dispatchers.IO) {
                         semaphore.acquire()
                         try {
-                            withContext(Dispatchers.Main) { repositoryUiState.metadataLoadingStates[entry.id] = true }
+                            withContext(Dispatchers.Main) {
+                                repositoryUiState.metadataLoadingStates[entry.id] = true
+                            }
                             val meta = loadPluginMetadata(entry.id, repoBaseUrl)
                             meta?.let {
                                 withContext(Dispatchers.Main) {
@@ -170,7 +172,9 @@ class PluginRepositoryViewModel @Inject constructor(
                                 }
                             }
                         } finally {
-                            withContext(Dispatchers.Main) { repositoryUiState.metadataLoadingStates[entry.id] = false }
+                            withContext(Dispatchers.Main) {
+                                repositoryUiState.metadataLoadingStates[entry.id] = false
+                            }
                             semaphore.release()
                         }
                     }
@@ -204,15 +208,19 @@ class PluginRepositoryViewModel @Inject constructor(
             repositoryUiState.remotePluginMetadataList.any { it.id == pluginId }) return
 
         viewModelScope.launch(Dispatchers.IO) {
-            withContext(Dispatchers.Main) { repositoryUiState.metadataLoadingStates[pluginId] = true }
+            withContext(Dispatchers.Main) {
+                repositoryUiState.metadataLoadingStates[pluginId] = true
+            }
             try {
                 loadPluginMetadata(pluginId, repoBaseUrl)?.let { meta ->
                     withContext(Dispatchers.Main) {
-                        repositoryUiState.remotePluginMetadataList = repositoryUiState.remotePluginMetadataList + meta
+                        repositoryUiState.remotePluginMetadataList += meta
                     }
                 }
             } finally {
-                withContext(Dispatchers.Main) { repositoryUiState.metadataLoadingStates[pluginId] = false }
+                withContext(Dispatchers.Main) {
+                    repositoryUiState.metadataLoadingStates[pluginId] = false
+                }
             }
         }
     }

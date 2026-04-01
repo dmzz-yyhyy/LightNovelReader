@@ -30,10 +30,8 @@ class SettingState(
     val fastChapterChangeUserData = userDataRepository.booleanUserData(UserDataPath.Reader.FastChapterChange.path)
     val batteryIndicatorDisplayModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.BatteryIndicatorDisplayMode.path)
     val enableTimeIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableTimeIndicator.path)
-    val enableChapterTitleIndicatorUserData = userDataRepository.booleanUserData(
-        UserDataPath.Reader.EnableChapterTitleIndicator.path)
-    val enableReadingChapterProgressIndicatorUserData = userDataRepository.booleanUserData(
-        UserDataPath.Reader.EnableReadingChapterProgressIndicator.path)
+    val enableChapterTitleIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableChapterTitleIndicator.path)
+    val enableReadingChapterProgressIndicatorUserData = userDataRepository.booleanUserData(UserDataPath.Reader.EnableReadingChapterProgressIndicator.path)
     val autoPaddingUserData = userDataRepository.booleanUserData(UserDataPath.Reader.AutoPadding.path)
     val topPaddingUserData = userDataRepository.floatUserData(UserDataPath.Reader.TopPadding.path)
     val bottomPaddingUserData = userDataRepository.floatUserData(UserDataPath.Reader.BottomPadding.path)
@@ -49,9 +47,12 @@ class SettingState(
     val darkModeKeyUserData = userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
     val dynamicColorsKeyUserData = userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
     val enableM3EUserData = userDataRepository.booleanUserData(UserDataPath.Settings.Display.EnableM3E.path)
+    val enableCostumeThemeSchemeUserData = userDataRepository.booleanUserData(UserDataPath.Settings.Display.enableCostumeThemeScheme.path)
     val lightThemeNameUserData = userDataRepository.stringUserData(UserDataPath.Settings.Display.LightThemeName.path)
     val darkThemeNameUserData = userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkThemeName.path)
     val backBlockModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.BackBlockMode.path)
+    val costumeThemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSurface.path)
+    val costumeThemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeBackground.path)
 
     val fontSize by fontSizeUserData.safeAsState(15f)
     val fontLineHeight by fontLineHeightUserData.safeAsState(7f)
@@ -86,7 +87,10 @@ class SettingState(
     val darkModeKey by darkModeKeyUserData.safeAsState("FollowSystem")
     val dynamicColorsKey by dynamicColorsKeyUserData.safeAsState(false)
     val enableM3E by enableM3EUserData.safeAsState(false)
+    val enableCostumeThemeScheme by enableCostumeThemeSchemeUserData.safeAsState(false)
     val lightThemeName by lightThemeNameUserData.safeAsState("light_default")
     val darkThemeName by darkThemeNameUserData.safeAsState("dark_default")
     val backBlockMode by backBlockModeUserData.safeAsState("none")
+    val costumeThemeSurface by costumeThemeSurfaceUserData.safeAsState(Color.Unspecified)
+    val costumeThemeBackground by costumeThemeBackgroundUserData.safeAsState(Color.Unspecified)
 }

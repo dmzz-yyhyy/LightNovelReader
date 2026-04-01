@@ -48,6 +48,9 @@ class ExportBookToEPUBWork @AssistedInject constructor(
     private val downloadProgressRepository: DownloadProgressRepository,
     private val contentComponentRepository: ContentComponentRepository
 ) : CoroutineWorker(appContext, workerParams) {
+    companion object {
+        fun ofId(id: String): String = "export_to_epub:$id"
+    }
 
     private val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private var notification: Notification? = null

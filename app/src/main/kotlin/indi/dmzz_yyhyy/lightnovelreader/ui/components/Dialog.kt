@@ -614,7 +614,7 @@ fun SettingsDisableStatsDialog(
             text = stringResource(R.string.settings_statistics_disable_dialog_title),
             style = typography.titleLarge
         ) },
-        text = { 
+        text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = stringResource(R.string.settings_statistics_disable_dialog_text))
                 Spacer(modifier = Modifier.height(12.dp))
@@ -657,11 +657,11 @@ fun SettingsPrivacyPolicyDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { 
+        title = {
             Text(
                 text = stringResource(R.string.privacy_policy_title),
                 style = typography.titleLarge
-            ) 
+            )
         },
         text = {
             Column(
@@ -681,7 +681,7 @@ fun SettingsPrivacyPolicyDialog(
                     color = colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
+
                 Text(
                     text = stringResource(R.string.privacy_policy_not_collect_title),
                     style = typography.titleMedium,
@@ -694,7 +694,7 @@ fun SettingsPrivacyPolicyDialog(
                     color = colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
+
                 Text(
                     text = stringResource(R.string.privacy_policy_commitment_title),
                     style = typography.titleMedium,

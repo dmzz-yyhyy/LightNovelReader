@@ -129,7 +129,7 @@ class BookshelfRepository @Inject constructor(
                 )
                 .build()
             workManager.enqueueUniqueWork(
-                bookInformation.id,
+                CacheBookWork.ofId(bookInformation.id),
                 ExistingWorkPolicy.KEEP,
                 workRequest
             )

@@ -23,6 +23,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.LocalLightColorScheme
 import io.nightfish.lightnovelreader.api.ui.LocalTextLocaleList
 import io.nightfish.lightnovelreader.api.ui.appLocaleToTextLocaleList
 import io.nightfish.lightnovelreader.api.ui.theme.AppTypography
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 data class AppTheme(
     val isDark: Boolean,
@@ -34,6 +35,10 @@ data class AppTheme(
 fun LightNovelReaderTheme(
     darkMode: String,
     isDynamicColor: Boolean = true,
+    dynamicBlack: Boolean = false,
+    enableCostumeThemeScheme: Boolean = false,
+    costumeThemeSchemeSurface: ComposeColor = ComposeColor(0xFF0E0E12),
+    costumeThemeSchemeBackground: ComposeColor = ComposeColor(0xFF0E0E12),
     enableM3E: Boolean = false,
     lightThemeName: String,
     darkThemeName: String,
@@ -52,6 +57,7 @@ fun LightNovelReaderTheme(
         }
     }
 
+
     val lightColorScheme = remember(lightThemeName, isDynamicColor) {
         if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             dynamicLightColorScheme(context)
@@ -63,16 +69,37 @@ fun LightNovelReaderTheme(
     }
 
     val darkColorScheme = remember(darkThemeName, isDynamicColor) {
-        if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            dynamicDarkColorScheme(context)
-        else when (darkThemeName) {
+        if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val dyn = dynamicDarkColorScheme(context)
+            dyn
+        } else when (darkThemeName) {
             "dark_obsidian" -> DarkObsidianColorScheme
             "dark_designer" -> DesignerDarkColorScheme
             else -> DefaultDarkColorScheme
         }
     }
 
-    val colorScheme = if (isDark) darkColorScheme else lightColorScheme
+    val costumeColorScheme = remember(isDynamicColor, isDark, darkThemeName, lightThemeName, costumeThemeSchemeSurface, costumeThemeSchemeBackground) {
+        val scheme = if (isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicDarkColorScheme(context)
+        } else if (!isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicLightColorScheme(context)
+        } else if (isDark && Build.VERSION.SDK_INT < Build.VERSION_CODES.S){
+            DarkObsidianColorScheme
+        } else {
+            DefaultLightColorScheme
+        }
+        scheme.copy(
+            surface = costumeThemeSchemeSurface,
+            background = costumeThemeSchemeBackground
+        )
+    }
+
+    val colorScheme = when {
+        enableCostumeThemeScheme -> costumeColorScheme
+        isDark -> darkColorScheme
+        else -> lightColorScheme
+    }
 
     val appTheme = remember(isDark, colorScheme) {
         AppTheme(isDark = isDark, colorScheme = colorScheme)

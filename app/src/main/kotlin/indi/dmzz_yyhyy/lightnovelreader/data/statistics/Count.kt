@@ -1,8 +1,10 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
+import androidx.compose.runtime.Immutable
 import java.util.Base64
 import java.util.BitSet
 
+@Immutable
 class Count {
     private val bitSet = BitSet(144)
 

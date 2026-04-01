@@ -14,15 +14,20 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ImageRequest
+import coil3.request.crossfade
+import kotlinx.coroutines.Dispatchers
 import indi.dmzz_yyhyy.lightnovelreader.R
-import me.saket.telephoto.zoomable.coil.ZoomableAsyncImage
+import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
 
@@ -34,6 +39,19 @@ fun ImageViewerScreen(
     onLongClickSave: () -> Unit,
     header: Map<String, String> = emptyMap()
 ) {
+    val context = LocalContext.current
+    val request = remember(imageUri, header) {
+        ImageRequest.Builder(context)
+            .data(imageUri)
+            .crossfade(true)
+            .interceptorCoroutineContext(Dispatchers.Default)
+            .httpHeaders(
+                NetworkHeaders.Builder().apply {
+                    header.forEach { (key, value) -> add(key, value) }
+                }.build()
+            )
+            .build()
+    }
     val zoomableState = rememberZoomableState()
 
     Box(
@@ -45,15 +63,7 @@ fun ImageViewerScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .zoomable(state = zoomableState),
-            model = ImageRequest.Builder(LocalContext.current)
-                .also { builder ->
-                    header.forEach {
-                        builder.addHeader(it.key, it.value)
-                    }
-                }
-                .data(imageUri)
-                .crossfade(true)
-                .build(),
+            model = request,
             contentDescription = null
         )
 

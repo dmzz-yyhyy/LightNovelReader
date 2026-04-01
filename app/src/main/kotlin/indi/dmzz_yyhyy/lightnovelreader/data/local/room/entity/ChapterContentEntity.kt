@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.JsonObjectConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serialier.JsonObjectSerializer
+import indi.dmzz_yyhyy.lightnovelreader.data.serializer.JsonObjectSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 

@@ -61,6 +61,7 @@ class MainActivity : ComponentActivity() {
     private var darkMode by mutableStateOf("FollowSystem")
     private var dynamicColor by mutableStateOf(false)
     private var enableM3E by mutableStateOf(false)
+    private var enableCostumeThemeScheme by mutableStateOf(false)
     private var lightThemeName by mutableStateOf("light_default")
     private var darkThemeName by mutableStateOf("dark_default")
 
@@ -93,6 +94,8 @@ class MainActivity : ComponentActivity() {
         val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
         val textColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextColor.path)
         val textDarkColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextDarkColor.path)
+        val costumeThemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSurface.path)
+        val costumeThemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeBackground.path)
         setContent {
             val readerStyle by remember {
                 combine(
@@ -101,7 +104,7 @@ class MainActivity : ComponentActivity() {
                     fontWeightUserData.getFlowWithDefault(500f),
                     textColorUserData.getFlowWithDefault(Color.Unspecified),
                     textDarkColorUserData.getFlowWithDefault(Color.Unspecified)
-                ) { fontSize, lineHeight, weight, textColor, textDarkColor ->
+                ) { fontSize:Float, lineHeight:Float, weight:Float, textColor: Color, textDarkColor: Color ->
                     ReaderStyle(
                         fontSize = fontSize,
                         fontLineHeight = lineHeight,
@@ -122,8 +125,11 @@ class MainActivity : ComponentActivity() {
                 appLocale = appLocale,
                 isDynamicColor = dynamicColor,
                 enableM3E = enableM3E,
+                enableCostumeThemeScheme = enableCostumeThemeScheme,
                 lightThemeName = lightThemeName,
-                darkThemeName = darkThemeName
+                darkThemeName = darkThemeName,
+                costumeThemeSchemeSurface = costumeThemeSurfaceUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value,
+                costumeThemeSchemeBackground = costumeThemeBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value
             ) {
                 LightNovelReaderApp(
                     readerStyle = readerStyle,
@@ -180,6 +186,11 @@ class MainActivity : ComponentActivity() {
         coroutineScope.launch(Dispatchers.IO) {
             userDataRepository.booleanUserData(UserDataPath.Settings.Display.EnableM3E.path).getFlow().collect {
                 it?.let { enableM3E = it }
+            }
+        }
+        coroutineScope.launch(Dispatchers.IO) {
+            userDataRepository.booleanUserData(UserDataPath.Settings.Display.enableCostumeThemeScheme.path).getFlow().collect {
+                it?.let { enableCostumeThemeScheme = it }
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
