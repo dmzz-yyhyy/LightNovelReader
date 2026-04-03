@@ -5,8 +5,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,12 +36,12 @@ class ReadingHomeViewModel @Inject constructor(
     private val readingBooksUserData =
         userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
 
-    val recentReadingBookIds: SnapshotStateList<String> = mutableStateListOf()
-
+    private val _recentReadingBookIds = mutableStateListOf<String>()
+    val recentReadingBookIds: List<String> = _recentReadingBookIds
     private val _recentReadingBookInformationMap = mutableStateMapOf<String, BookInformation>()
+    val recentReadingBookInformationMap: Map<String, BookInformation> = _recentReadingBookInformationMap
     private val _recentReadingUserReadingDataMap = mutableStateMapOf<String, UserReadingData>()
-    val recentReadingBookInformationMap: SnapshotStateMap<String, BookInformation> = _recentReadingBookInformationMap
-    val recentReadingUserReadingDataMap: SnapshotStateMap<String, UserReadingData> = _recentReadingUserReadingDataMap
+    val recentReadingUserReadingDataMap: Map<String, UserReadingData> = _recentReadingUserReadingDataMap
 
     private val loadingIds = mutableSetOf<String>()
 
@@ -80,7 +78,7 @@ class ReadingHomeViewModel @Inject constructor(
             readingBooksUserData.getFlowWithDefault(emptyList()).collect { list ->
                 val next = list.reversed()
                     .filter(String::isNotBlank)
-                recentReadingBookIds.apply {
+                _recentReadingBookIds.apply {
                     clear()
                     addAll(next)
                 }
@@ -96,7 +94,7 @@ class ReadingHomeViewModel @Inject constructor(
                 .filter(String::isNotBlank)
 
             withContext(Dispatchers.Main) {
-                recentReadingBookIds.apply { clear(); addAll(ids) }
+                _recentReadingBookIds.apply { clear(); addAll(ids) }
             }
         }
     }

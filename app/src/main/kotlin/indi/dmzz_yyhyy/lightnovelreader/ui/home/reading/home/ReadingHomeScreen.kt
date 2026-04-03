@@ -51,8 +51,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -100,9 +98,9 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ReadingScreen(
     updateReadingBooks: () -> Unit,
-    recentReadingBookInformationMap: SnapshotStateMap<String, BookInformation>,
-    recentReadingUserReadingDataMap: SnapshotStateMap<String, UserReadingData>,
-    recentReadingBookIds: SnapshotStateList<String>,
+    recentReadingBookInformationMap: Map<String, BookInformation>,
+    recentReadingUserReadingDataMap: Map<String, UserReadingData>,
+    recentReadingBookIds: List<String>,
     onClickBook: (String) -> Unit,
     onClickContinueReading: (String, String) -> Unit,
     onClickDownloadManager: () -> Unit,
@@ -159,9 +157,9 @@ private fun ReadingContent(
     onClickContinueReading: (String, String) -> Unit,
     onAddBook: (String) -> Unit,
     onRemoveBook: (String) -> Unit,
-    recentReadingBookInformationMap: SnapshotStateMap<String, BookInformation>,
-    recentReadingUserReadingDataMap: SnapshotStateMap<String, UserReadingData>,
-    recentReadingBookIds: SnapshotStateList<String>,
+    recentReadingBookInformationMap: Map<String, BookInformation>,
+    recentReadingUserReadingDataMap: Map<String, UserReadingData>,
+    recentReadingBookIds: List<String>,
     loadBookInfo: (String) -> Unit,
     onClickOpenChapters: (String) -> Unit
 ) {
