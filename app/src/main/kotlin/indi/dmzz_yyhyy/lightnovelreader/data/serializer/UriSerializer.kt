@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.serialier
+package indi.dmzz_yyhyy.lightnovelreader.data.serializer
 
 import android.net.Uri
 import androidx.core.net.toUri

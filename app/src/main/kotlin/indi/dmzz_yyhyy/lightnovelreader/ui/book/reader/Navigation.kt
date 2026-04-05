@@ -24,8 +24,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
-import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerViewModel
@@ -130,7 +130,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
                         imageUri = route.imageUri.toUri(),
                         context = context,
                         header = viewModel.imageHeader
-                    ).onSuccess { bitmap ->
+                    ).onOk { bitmap ->
                         val result = runCatching {
                             context.contentResolver.openOutputStream(targetUri)?.use { out ->
                                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
@@ -153,7 +153,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
                                 ).show()
                             }
                         }
-                    }.onFailure {
+                    }.onErr {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 context,
@@ -174,34 +174,32 @@ private fun NavGraphBuilder.imageViewerDialog() {
                         imageUri = route.imageUri.toUri(),
                         context = context,
                         header = viewModel.imageHeader
-                    )
-                        .onSuccess {
-                            coroutineScope.launch {
-                                saveBitmapAsPng(context, it)
-                                    .onSuccess { path ->
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.saved_to_pictures_dir, path),
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                    .onFailure {
-                                        Toast.makeText(
-                                            context,
-                                            saveFailed,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                            }
+                    ).onOk {
+                        coroutineScope.launch {
+                            saveBitmapAsPng(context, it)
+                                .onOk { path ->
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.saved_to_pictures_dir, path),
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                                .onErr {
+                                    Toast.makeText(
+                                        context,
+                                        saveFailed,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                         }
-                        .onFailure {
-                            Log.d("ImageViewer", "Failed to save image: ${it.message}")
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.save_failed),
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                    }.onErr {
+                        Log.d("ImageViewer", "Failed to save image: ${it.message}")
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.save_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
             },
             onLongClickSave = {

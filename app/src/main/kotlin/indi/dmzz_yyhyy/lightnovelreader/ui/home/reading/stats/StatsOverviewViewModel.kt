@@ -1,20 +1,20 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import indi.dmzz_yyhyy.lightnovelreader.utils.DurationFormat
 import indi.dmzz_yyhyy.lightnovelreader.utils.quickSelect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import kotlin.collections.set
 import kotlin.time.DurationUnit
@@ -22,11 +22,13 @@ import kotlin.time.toDuration
 
 data class DailyDateDetails(
     val formattedTotalTime: String,
-    val timeDetails: List<Pair<BookInformation, Int>?>,
-    val firstBook: BookInformation?,
-    val firstSeenTime: String?,
-    val lastBook: BookInformation?,
-    val lastSeenTime: String?
+    val timeDetails: List<Pair<BookInformation, Int>>
+)
+
+data class TimeBarItem(
+    val title: String,
+    val timeSeconds: Int,
+    val color: Color
 )
 
 @HiltViewModel
@@ -48,11 +50,12 @@ class StatsOverviewViewModel @Inject constructor(
             val time = System.currentTimeMillis()
             Log.d("AppReadingStats", "Refresh started")
             _uiState.selectedDate = LocalDate.now()
-            _uiState.totalRecordEntity = statsRepository.getTotalBookRecord()
 
             val startDate = _uiState.startDate
             val endDate = LocalDate.now()
-            generateLevelMap(startDate, endDate)
+
+            val dailyCounts = statsRepository.getDailyCounts(startDate, endDate)
+            generateLevelMap(dailyCounts, startDate, endDate)
 
             val bookRecordsMap = statsRepository.getBookRecords(startDate, endDate)
             _uiState.bookRecordsByDate = bookRecordsMap
@@ -80,25 +83,15 @@ class StatsOverviewViewModel @Inject constructor(
             _uiState.selectedDateDetails = null
             return
         }
-        val dateFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
         var totalSeconds = 0L
-        var firstRecord: BookRecordEntity? = null
-        var lastRecord: BookRecordEntity? = null
         val detailsList = mutableListOf<Pair<BookInformation, Int>>()
 
         for (rec in records) {
-            totalSeconds += rec.totalTime
-
-            if (firstRecord == null || rec.firstSeen.isBefore(firstRecord.firstSeen)) {
-                firstRecord = rec
-            }
-            if (lastRecord == null || rec.lastSeen.isAfter(lastRecord.lastSeen)) {
-                lastRecord = rec
-            }
+            val seconds = rec.seconds
+            totalSeconds += seconds
 
             val bookInfo = _uiState.bookInformationMap[rec.bookId] ?: BookInformation.empty()
-            detailsList += bookInfo to rec.totalTime
+            detailsList += bookInfo to seconds
         }
 
         val sortedDetails = detailsList
@@ -106,32 +99,22 @@ class StatsOverviewViewModel @Inject constructor(
             .toMutableList()
 
         val formattedTotal = DurationFormat()
-            .format(totalSeconds.toDuration(DurationUnit.SECONDS), DurationFormat.Unit.SECOND)
+            .format(totalSeconds.toDuration(DurationUnit.SECONDS), DurationFormat.Unit.MINUTE)
 
         _uiState.selectedDateDetails = DailyDateDetails(
             formattedTotalTime = formattedTotal,
-            timeDetails = sortedDetails,
-            firstBook      = firstRecord?.let { _uiState.bookInformationMap[it.bookId] },
-            firstSeenTime  = firstRecord?.firstSeen?.format(dateFormatter),
-            lastBook       = lastRecord?.let  { _uiState.bookInformationMap[it.bookId] },
-            lastSeenTime   = lastRecord?.lastSeen?.format(dateFormatter)
+            timeDetails = sortedDetails
         )
     }
 
-
-    private suspend fun generateLevelMap(
+    private fun generateLevelMap(
+        dailyCounts: Map<LocalDate, Count>,
         startDate: LocalDate,
         endDate: LocalDate
     ) {
-        val dateStatsEntityMap = statsRepository.getReadingStatistics(startDate, endDate)
-        val localDateList = dateStatsEntityMap.values.map { it.date }.sorted()
-        val entityMap = dateStatsEntityMap.values.associateBy { it.date }
-
-        val dateTotalTimeMap = entityMap.mapValues { (_, entity) ->
-            entity.readingTimeCount.getTotalMinutes()
-        }
-
-        val readingTimes = localDateList.map { dateTotalTimeMap[it] ?: 0 }
+        val dateTotalTimeMap = dailyCounts.mapValues { (_, count) -> count.getTotalMinutes() }
+        val localDateList = dateTotalTimeMap.keys.sorted()
+        val readingTimes = dateTotalTimeMap.values.toList()
         val thresholds = readingTimes.filter { it > 0 }.run {
             if (isEmpty()) listOf(0, 0, 0) else listOf(
                 quickSelect(this, 0.25),

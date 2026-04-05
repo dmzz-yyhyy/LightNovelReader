@@ -1,13 +1,13 @@
 [versions]
 androidGradlePlugin = "9.0.1"
-apksig = "9.0.1"
+apksig = "9.1.0"
 cxhttp = "1.2.5"
 dom4j = "2.2.0"
 jaxen = "2.0.0"
 javet = "5.0.4"
 kotlin = "2.3.10"
 kotlinComposeCompilerPlugin = "2.1.20"
-kotlinResult = "2.1.0"
+kotlinResult = "2.3.1"
 ksp = "2.3.5"
 loggingInterceptor = "5.3.2"
 materialIconsCore = "1.7.8"
@@ -15,33 +15,33 @@ matomoSdkAndroid = "4.4"
 okhttp = "5.3.2"
 profileinstaller = "1.4.1"
 re2j = "1.8"
-runtime = "1.10.3"
-vico = "2.4.3"
+runtime = "1.10.6"
+vico = "3.0.3"
 hilt = "2.59.2"
 androidXHilt = "1.3.0"
 nav = "2.9.7"
-coreKtx = "1.17.0"
+coreKtx = "1.18.0"
 splashscreen = "1.2.0"
 lifecycle = "2.10.0"
-composeBom = "2026.02.00"
-composeMaterial3 = "1.5.0-alpha14"
-composeUi = "1.10.3"
-foundationLayout = "1.10.3"
-composeAnimationGraphics = "1.10.3"
-coil = "2.7.0"
+composeBom = "2026.03.01"
+composeMaterial3 = "1.5.0-alpha16"
+composeUi = "1.10.6"
+foundationLayout = "1.10.6"
+composeAnimationGraphics = "1.10.6"
+coil = "3.4.0"
 jsoup = "1.22.1"
 markdown = "0.5.7"
 room = "2.8.4"
-work = "2.11.1"
+work = "2.11.2"
 desugar = "2.1.5"
 junit = "4.13.2"
 swipe = "1.3.0"
 kotlinSerialization = "1.10.0"
 kotlinxCoroutinesCore = "1.10.2"
-aboutLibraries = "14.0.0-b02"
+aboutLibraries = "14.0.0-b03"
 zoomableImageCoil = "0.18.0"
 composeShimmer = "1.3.3"
-foundation = "1.10.3"
+foundation = "1.10.6"
 
 [libraries]
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
@@ -86,7 +86,8 @@ compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview"
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUi" }
 compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "composeUi" }
 compose-animation-graphics = { module = "androidx.compose.animation:animation-graphics-android", version.ref = "composeAnimationGraphics" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 markdown = { module = "com.github.jeziellago:compose-markdown", version.ref = "markdown" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -101,7 +102,7 @@ swipe = { module = "me.saket.swipe:swipe", version.ref = "swipe" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 kotlinx-serialization-cbor = { module = "org.jetbrains.kotlinx:kotlinx-serialization-cbor", version.ref = "kotlinSerialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
-zoomable-image-coil = { module = "me.saket.telephoto:zoomable-image-coil", version.ref = "zoomableImageCoil" }
+zoomable-image-coil = { module = "me.saket.telephoto:zoomable-image-coil3", version.ref = "zoomableImageCoil" }
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }

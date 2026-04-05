@@ -4,7 +4,6 @@ import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,18 +18,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,9 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.HeatMapCalendar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.core.CalendarDay
@@ -118,7 +112,6 @@ fun StatsOverviewScreen(
                         )
                     }
                     item { DailyStatsBlock(uiState, onClickDetailScreen) }
-                    item { TotalStatsBlock(uiState) }
                     navigationBarSpacer()
                 }
             }
@@ -201,7 +194,7 @@ private fun DailyStatsBlock(
     val records = uiState.bookRecordsByDate[selectedDate] ?: emptyList()
     val bookInfoMap = uiState.bookInformationMap
 
-    val details = computeDailyDetails(records, bookInfoMap)
+    val details = getDailyDetails(records, bookInfoMap)
 
     Column(modifier = Modifier.padding(horizontal = 18.dp)) {
         Row(
@@ -254,39 +247,9 @@ private fun DailyStatsBlock(
                     } else {
                         Column {
                             details?.timeDetails?.forEach {
-                                val duration = it?.second?.toDuration(DurationUnit.SECONDS)
-                                val formattedTime = duration?.let { dur ->
-                                    DurationFormat().format(dur, DurationFormat.Unit.SECOND)
-                                }
-                                if (formattedTime != null) {
-                                    DataItem(it.first.title, formattedTime)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-
-            StatSection(
-                icon = painterResource(R.drawable.schedule_90dp),
-                title = stringResource(R.string.time_range),
-                value = ""
-            ) {
-                Crossfade(
-                    targetState = details?.firstBook == null && details?.lastBook == null,
-                    label = ""
-                ) { isEmpty ->
-                    if (isEmpty) {
-                        NoRecords()
-                    } else {
-                        Column {
-                            details?.firstBook?.let {
-                                DataItem(it.title, stringResource(R.string.first_seen, details.firstSeenTime.toString()))
-                            }
-                            details?.lastBook?.let {
-                                DataItem(it.title, stringResource(R.string.last_seen, details.lastSeenTime.toString()))
+                                val duration = it.second.toDuration(DurationUnit.SECONDS)
+                                val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
+                                DataItem(it.first.title, formattedTime)
                             }
                         }
                     }
@@ -309,48 +272,33 @@ private fun NoRecords() {
     )
 }
 
-private fun computeDailyDetails(
-    records: List<BookRecordEntity>,
+private fun getDailyDetails(
+    records: List<BookRecord>,
     bookInfoMap: Map<String, BookInformation>
 ): DailyDateDetails? {
     if (records.isEmpty()) return null
 
-    val dateFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
     var totalSeconds = 0L
-    var firstRecord: BookRecordEntity? = null
-    var lastRecord: BookRecordEntity? = null
     val timeDetailsList = mutableListOf<Pair<BookInformation, Int>>()
 
     for (rec in records) {
-        totalSeconds += rec.totalTime
-
-        if (firstRecord == null || rec.firstSeen.isBefore(firstRecord.firstSeen)) {
-            firstRecord = rec
-        }
-
-        if (lastRecord == null || rec.lastSeen.isAfter(lastRecord.lastSeen)) {
-            lastRecord = rec
-        }
+        val seconds = rec.seconds
+        totalSeconds += seconds
 
         val book = bookInfoMap[rec.bookId] ?: BookInformation.empty()
-        timeDetailsList.add(book to rec.totalTime)
+        timeDetailsList.add(book to seconds)
     }
 
     val sortedTimeDetails = timeDetailsList.sortedByDescending { it.second }
 
     val formattedTotalTime = DurationFormat().format(
         totalSeconds.toDuration(DurationUnit.SECONDS),
-        DurationFormat.Unit.SECOND
+        DurationFormat.Unit.MINUTE
     )
 
     return DailyDateDetails(
         formattedTotalTime = formattedTotalTime,
-        timeDetails = sortedTimeDetails,
-        firstBook = firstRecord?.let { bookInfoMap[it.bookId] },
-        firstSeenTime = firstRecord?.firstSeen?.format(dateFormatter),
-        lastBook = lastRecord?.let { bookInfoMap[it.bookId] },
-        lastSeenTime = lastRecord?.lastSeen?.format(dateFormatter)
+        timeDetails = sortedTimeDetails
     )
 }
 
@@ -408,112 +356,6 @@ private fun DataItem(leftText: String, rightText: String) {
             color = MaterialTheme.colorScheme.outline,
             maxLines = 1
         )
-    }
-}
-
-@Composable
-fun TotalStatsBlock(
-    uiState: StatsOverviewUiState
-) {
-    val lazyRowState = rememberLazyListState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 18.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.total_record),
-            style = typography.titleMedium,
-            fontWeight = FontWeight.W600
-        )
-        Spacer(Modifier.height(8.dp))
-        LazyRow (
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            state = lazyRowState,
-            flingBehavior = rememberSnapFlingBehavior(lazyRowState)
-        ) {
-            val totalSeconds = uiState.totalRecordEntity?.totalTime ?: 0
-            val totalSessions = uiState.totalRecordEntity?.sessions ?: 0
-            item {
-                StatsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = painterResource(R.drawable.outline_book_24px),
-                    title = stringResource(R.string.reading_sessions),
-                    value = totalSessions.toString(),
-                    unit = stringResource(R.string.reading_sessions_unit)
-                )
-            }
-
-            item {
-                StatsCard(
-                    modifier = Modifier.weight(1f),
-                    icon = painterResource(R.drawable.schedule_90dp),
-                    title = stringResource(R.string.reading_duration),
-                    value = "${totalSeconds / 3600}",
-                    unit = stringResource(R.string.reading_duration_unit, (totalSeconds % 3600) / 60)
-                )
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-    }
-}
-
-@Composable
-fun StatsCard(
-    modifier: Modifier = Modifier,
-    icon: Painter,
-    title: String,
-    value: String,
-    unit: String
-) {
-    Surface(
-        modifier = modifier
-            .height(136.dp)
-            .padding(4.dp),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shadowElevation = 2.dp
-    ) {
-        Box(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                style = typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .width(100.dp)
-            )
-
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(26.dp)
-                    .align(Alignment.TopEnd)
-            )
-
-            Row(
-                verticalAlignment = Alignment.Bottom,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(bottom = 8.dp)
-            ) {
-                Text(
-                    text = value,
-                    fontSize = 32.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = unit,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val statsRepository: StatsRepository
 ) : ViewModel() {
 
     var bookVolumes by mutableStateOf(BookVolumes.empty())
@@ -54,6 +56,7 @@ class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
                     readingProgress = if (allChapterIds.isEmpty()) 0f else 1f
                 }
             }
+            statsRepository.markBookFinished(bookId)
         }
     }
 
@@ -72,6 +75,10 @@ class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
                     readingProgress = if (allChapterIds.isEmpty()) 0f
                     else userReadingData.currentChapterReadingProgressMap.values.sum() / allChapterIds.size
                 }
+            }
+            val readingData = bookRepository.getUserReadingData(bookId)
+            if (readingData.readingProgress >= 1f) {
+                statsRepository.markBookFinished(bookId)
             }
         }
     }

@@ -1,7 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -19,9 +19,6 @@ interface BookRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertBookRecord(record: BookRecordEntity)
 
-    @Query("select * from book_records where id=:id")
-    suspend fun getEntity(id: Int?): BookRecordEntity?
-
     @Query("SELECT * FROM book_records")
     fun getAllBookRecords(): List<BookRecordEntity>
 
@@ -37,14 +34,20 @@ interface BookRecordDao {
     @Query("SELECT * FROM book_records WHERE book_id = :bookId")
     suspend fun getBookRecordsByBookId(bookId: String): List<BookRecordEntity>
 
-    @Delete
-    suspend fun deleteBookRecord(record: BookRecordEntity)
+    @Query("SELECT MIN(date) FROM book_records WHERE book_id = :bookId AND reads > 0")
+    suspend fun getFirstReadDate(bookId: String): LocalDate?
 
-    @Query("SELECT * FROM book_records WHERE id = -721")
-    suspend fun getTotalRecord(): BookRecordEntity?
+    @Query("SELECT MIN(date) FROM book_records WHERE book_id = :bookId AND is_finished = 1")
+    suspend fun getFirstFinishedDate(bookId: String): LocalDate?
 
-    @Query("DELETE FROM book_records WHERE id = -721")
-    suspend fun deleteTotalRecord()
+    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE reads > 0 GROUP BY book_id")
+    suspend fun getFirstReadDates(): List<BookDate>
+
+    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE is_finished = 1 GROUP BY book_id")
+    suspend fun getFirstFinishedDates(): List<BookDate>
+
+    @Query("SELECT book_id, MIN(date) AS date FROM book_records WHERE is_favorited = 1 GROUP BY book_id")
+    suspend fun getFirstFavoritedDates(): List<BookDate>
 
     @Query("DELETE FROM book_records")
     fun clearRecords()
@@ -54,3 +57,10 @@ interface BookRecordDao {
         clearRecords()
     }
 }
+
+data class BookDate(
+    @ColumnInfo(name = "book_id")
+    val bookId: String,
+    @ColumnInfo(name = "date")
+    val date: LocalDate
+)

@@ -59,7 +59,7 @@
     <string name="import_in_progress_title">正在匯入…</string>
     <string name="import_in_progress_desc">請稍候…</string>
     <string name="download_in_progress">進行中</string>
-    <string name="download_item_progress">%s 已下載 %d%%</string>
+    <string name="download_item_progress">%1$s 已下載 %2$d%%</string>
     <string name="download_item_finished">%s完成</string>
     <string name="download_item_failed">%s失敗, 請檢查您的網絡環境或尋求開發者幫助</string>
     <string name="book_updated_to_title">更新至:</string>
@@ -344,6 +344,7 @@
     <string name="view_daily">日</string>
     <string name="view_weekly">週</string>
     <string name="view_monthly">月</string>
+    <string name="view_yearly">年</string>
     <string name="activity">活動</string>
     <string name="calendar">日曆</string>
     <string name="activity_first_read">第一次讀了</string>
@@ -375,6 +376,8 @@
     <string name="unit_minutes">&#160;分鐘&#160;</string>
     <string name="unit_seconds">&#160;秒</string>
     <string name="detail_of_date">%1$s 的閱讀時長</string>
+    <string name="week_label_format">第%d週</string>
+    <string name="detail_of_week">第%d週的閱讀時長</string>
     <string name="book_rules">書本規則</string>
     <string name="detail_info_stats_content">%1$s 字\n共計 %2$d 卷, %3$d 章節</string>
     <string name="mark_all_read_desc">將這本書截至目前的所有章節標為已讀。後續更新的章節將不受影響。</string>
