@@ -40,6 +40,7 @@ import java.io.File
 import java.util.zip.ZipFile
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.set
 
 @Singleton
 class PluginManager @Inject constructor(
@@ -56,6 +57,9 @@ class PluginManager @Inject constructor(
     val allPluginList: List<PluginMetadata> get() = mutableAllPluginMetadataList
     private val mutableLoadedPluginMap = mutableMapOf<String, LightNovelReaderPlugin>()
     val loadedPluginMap: Map<String, LightNovelReaderPlugin> get() = mutableLoadedPluginMap
+    private val mutableErrorPluginMap = mutableMapOf<String, String>()
+    val errorPluginMap: Map<String, String> get() = mutableErrorPluginMap
+
     private val enabledPluginsUserData =
         userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
 
@@ -84,6 +88,11 @@ class PluginManager @Inject constructor(
         loadedPluginMap[packageName]?.onUnload()
         mutableLoadedPluginMap.remove(packageName)
         webBookDataSourceManager.unloadWebDataSourcesFromClassLoader(packageName)
+        val enabledPlugins = enabledPluginsUserData.getOrDefault(emptyList()).toMutableList()
+        if (packageName in enabledPlugins) {
+            enabledPlugins -= packageName
+            enabledPluginsUserData.asynchronousSet(enabledPlugins)
+        }
     }
 
     fun initAllAppPlugin(): List<PluginAppInfo> {
@@ -399,6 +408,7 @@ class PluginManager @Inject constructor(
         error.outputStream().buffered().use {
             it.write(message.toByteArray())
         }
+        mutableErrorPluginMap[packageName] = message
     }
 
     fun getPluginError(packageName: String) {
@@ -423,6 +433,7 @@ class PluginManager @Inject constructor(
         }.andThen {
             getPluginMetadataAndPluginClass(packageInfo.packageName)
         }.andThen {
+            mutableErrorPluginMap.remove(pluginPackage)
             val pluginClazz = it.second
             val pluginContext = PluginContext(
                 dataDir = getPluginDataDir(pluginDir),
@@ -438,11 +449,21 @@ class PluginManager @Inject constructor(
 
             val classLoader = instance.javaClass.classLoader
             if (classLoader !is DexClassLoader) return@andThen Err(Error("Failed to get DexClassLoader from plugin instance, got: ${classLoader?.javaClass?.name}"))
-            webBookDataSourceManager.loadWebDataSourcesFromClassLoader(
-                classLoader,
-                pluginInjector,
-                pluginPackage
-            )
+            runCatching {
+                webBookDataSourceManager.loadWebDataSourcesFromClassLoader(
+                    classLoader,
+                    pluginInjector,
+                    pluginPackage
+                )
+            }.let { result ->
+                if (result.isErr) {
+                    val throwable = result.unwrapError()
+                    markPluginError(pluginPackage, throwable.message.toString())
+                    unloadPlugin(pluginPackage)
+                    return@andThen Err(throwable)
+                }
+            }
+
             mutableLoadedPluginMap[pluginPackage] = instance
             return@andThen Ok(it.first)
         }.also {

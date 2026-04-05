@@ -37,7 +37,7 @@ fun formTime(
         hoursAgo >= 24 -> rdf.format((hoursAgo / 24).toDouble(), Direction.LAST, RelativeUnit.DAYS)
         hoursAgo >= 1 -> rdf.format(hoursAgo.toDouble(), Direction.LAST, RelativeUnit.HOURS)
         minutesAgo >= 1 -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
-        minutesAgo in 0..1  -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.SECONDS)
+        minutesAgo in 0..1  -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
         else -> time.format(absFormatter)
     }
 }

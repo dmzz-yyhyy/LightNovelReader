@@ -231,14 +231,14 @@ fun ScrollContentTextComponent(
         uiState.writeProgressRightNow()
     }
     AnimatedVisibility(
-        uiState.contentList.isEmpty(),
+        uiState.contentList.getOrNull(1) == null,
         enter = fadeIn(),
         exit = fadeOut()
     ) {
         Loading()
     }
     AnimatedVisibility(
-        uiState.contentList.isNotEmpty(),
+        uiState.contentList.getOrNull(1) != null,
         enter = fadeIn(),
         exit = fadeOut()
     ) {

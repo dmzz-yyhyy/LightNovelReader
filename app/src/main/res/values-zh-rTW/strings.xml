@@ -506,6 +506,15 @@
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可載入的外掛</string>
     <string name="plugin_enable_label">啟用外掛</string>
+    <string name="plugin_detail_tab_overview">總覽</string>
+    <string name="plugin_detail_tab_settings">設定</string>
+    <string name="plugin_detail_summary_title">關於此外掛</string>
+    <string name="plugin_detail_info_title">外掛資訊</string>
+    <string name="plugin_detail_api_version">API 版本</string>
+    <string name="plugin_detail_signature_label">簽章</string>
+    <string name="plugin_detail_source_label">來源</string>
+    <string name="plugin_detail_source_local">本機套件</string>
+    <string name="plugin_detail_source_app">已安裝應用程式</string>
     <string name="plugin_third_party_title">第三方外掛</string>
     <string name="plugin_third_party_desc">此外掛由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>

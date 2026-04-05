@@ -29,7 +29,7 @@ class PluginManagerViewModel @Inject constructor(
     val enabledPluginFlow = enabledPluginUserData.getFlowWithDefault(emptyList())
 
     val pluginList: List<PluginMetadata> = pluginManager.allPluginList
-    val errorMessageMap: Map<String, String> = mutableStateMapOf()
+    val errorMessageMap: Map<String, String> = pluginManager.errorPluginMap
     val scannedPluginApps: List<PluginAppInfo> = pluginManager.appPluginInfos
 
     private val _snackbarFlow = MutableSharedFlow<String>()

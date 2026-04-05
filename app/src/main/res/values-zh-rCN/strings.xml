@@ -517,6 +517,15 @@
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可加载的插件</string>
     <string name="plugin_enable_label">启用插件</string>
+    <string name="plugin_detail_tab_overview">概览</string>
+    <string name="plugin_detail_tab_settings">设置</string>
+    <string name="plugin_detail_summary_title">关于此插件</string>
+    <string name="plugin_detail_info_title">插件信息</string>
+    <string name="plugin_detail_api_version">API 版本</string>
+    <string name="plugin_detail_signature_label">签名</string>
+    <string name="plugin_detail_source_label">来源</string>
+    <string name="plugin_detail_source_local">本地包</string>
+    <string name="plugin_detail_source_app">已安装应用</string>
     <string name="plugin_third_party_title">第三方插件</string>
     <string name="plugin_third_party_desc">该插件由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>

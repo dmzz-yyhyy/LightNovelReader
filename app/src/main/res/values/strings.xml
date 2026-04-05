@@ -526,8 +526,6 @@
     <string name="plugin_detail_tab_settings">Settings</string>
     <string name="plugin_detail_summary_title">About this plugin</string>
     <string name="plugin_detail_info_title">Plugin information</string>
-    <string name="plugin_detail_settings_title">Plugin settings</string>
-    <string name="plugin_detail_settings_desc">Adjust the options provided by %1$s.</string>
     <string name="plugin_detail_api_version">API version</string>
     <string name="plugin_detail_signature_label">Signature</string>
     <string name="plugin_detail_source_label">Source</string>
