@@ -3,7 +3,7 @@
     <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/background_dark</item>
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon_splash_screen</item>
         <item name="postSplashScreenTheme">@style/Theme.App</item>
         <item name="android:windowActionBar">false</item>
