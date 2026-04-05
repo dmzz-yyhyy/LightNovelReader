@@ -53,7 +53,7 @@ fun PluginManagerScreen(
     onClickBack: () -> Unit,
     onClickPluginApps: () -> Unit,
     onClickDetail: (String) -> Unit,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: (String, Boolean) -> Unit,
     onClickSwitch: (PluginMetadata) -> Unit,
     onClickKeyAlert: () -> Unit,
     onClickErrorAlert: () -> Unit,

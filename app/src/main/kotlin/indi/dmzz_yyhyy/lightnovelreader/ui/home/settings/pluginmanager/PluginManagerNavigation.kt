@@ -1,9 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -39,6 +42,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
+import androidx.core.net.toUri
 
 fun NavGraphBuilder.settingsPluginManagerNavigation() {
     navigation<Route.Main.Settings.PluginManager>(
@@ -65,8 +69,22 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
         var showPluginNoSignatureDialog by remember { mutableStateOf(false) }
         var showPluginErrorDialog by remember { mutableStateOf(false) }
         var showPluginSignatureDialog: String? by remember { mutableStateOf(null) }
-        var pendingInstallUri by remember { mutableStateOf<android.net.Uri?>(null) }
+        var pendingInstallUri by remember { mutableStateOf<Uri?>(null) }
         var pendingInstallName by remember { mutableStateOf("") }
+        var pendingUninstallId by remember { mutableStateOf<String?>(null) }
+        val uninstallLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) {
+            val id = pendingUninstallId ?: return@rememberLauncherForActivityResult
+            pendingUninstallId = null
+            val isUninstalled = runCatching {
+                context.packageManager.getPackageInfo(id, 0)
+                false
+            }.getOrDefault(true)
+            if (isUninstalled) {
+                viewModel.deletePlugin(id)
+            }
+        }
         val launcher = uriLauncher { uri ->
             pendingInstallUri = uri
             pendingInstallName = getDisplayName(context, uri)
@@ -93,8 +111,14 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
             onClickPluginApps = navController::navigateToSettingsPluginAppListDestination,
             onClickDetail = navController::navigateToSettingsPluginManagerDetailDestination,
             onClickSwitch = viewModel::onClickEnabledSwitch,
-            onClickDelete = { id ->
-                navController.navigateToPluginInstallerDialog("uninstall:$id")
+            onClickDelete = { id, uninstall ->
+                if (uninstall) {
+                    pendingUninstallId = id
+                    val intent = Intent(Intent.ACTION_DELETE, "package:$id".toUri())
+                    uninstallLauncher.launch(intent)
+                } else {
+                    navController.navigateToPluginInstallerDialog("uninstall:$id")
+                }
             },
             pluginInfoList = viewModel.pluginList,
             onClickCheckUpdate = { TODO() },
@@ -228,7 +252,7 @@ fun NavController.navigateToSettingsPluginManagerHomeDestination() {
     navigate(Route.Main.Settings.PluginManager.Home)
 }
 
-private fun getDisplayName(context: android.content.Context, uri: android.net.Uri): String {
+private fun getDisplayName(context: android.content.Context, uri: Uri): String {
     val resolver = context.contentResolver
     val name = resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
         ?.use { cursor ->

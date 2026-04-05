@@ -61,7 +61,7 @@ class PluginManager @Inject constructor(
 
     val pluginsDir: File = appContext.dataDir.resolve("plugins")
     val pluginsTempDir: File = appContext.cacheDir.resolve("plugins_tmp")
-   var appPluginInfos: List<PluginAppInfo> = emptyList()
+    var appPluginInfos: List<PluginAppInfo> = emptyList()
        private set
     fun getPluginDir(name: String): File = pluginsDir.resolve(name)
     fun getPluginDataDir(pluginDir: File) = pluginDir.resolve("data")
@@ -78,6 +78,12 @@ class PluginManager @Inject constructor(
         }?.forEach {
             it.deleteRecursively()
         }
+    }
+
+    fun unloadPlugin(packageName: String) {
+        loadedPluginMap[packageName]?.onUnload()
+        mutableLoadedPluginMap.remove(packageName)
+        webBookDataSourceManager.unloadWebDataSourcesFromClassLoader(packageName)
     }
 
     fun initAllAppPlugin(): List<PluginAppInfo> {
@@ -277,7 +283,9 @@ class PluginManager @Inject constructor(
         if (lock.exists()) {
             deletePluginWithoutData(pluginDir)
         }
-        loadedPluginMap[packageName]?.let(LightNovelReaderPlugin::onUnload)
+        loadedPluginMap[packageName]?.let {
+            unloadPlugin(packageName)
+        }
 
         emit(InstallState.Start.PrasePluginMetadata)
         val pluginMetadataResult = getPluginMetadata(plugin, packageName)
@@ -435,6 +443,7 @@ class PluginManager @Inject constructor(
                 pluginInjector,
                 pluginPackage
             )
+            mutableLoadedPluginMap[pluginPackage] = instance
             return@andThen Ok(it.first)
         }.also {
             if (it.isErr) {
@@ -450,15 +459,14 @@ class PluginManager @Inject constructor(
     }
 
     fun deletePlugin(packageName: String) {
-        loadedPluginMap[packageName]?.onUnload()
-        mutableLoadedPluginMap.remove(packageName)
-        webBookDataSourceManager.unloadWebDataSourcesFromClassLoader(packageName)
+        unloadPlugin(packageName)
         getPluginDir(packageName).deleteRecursively()
         mutableAllPluginMetadataList.removeAll { it.packageName == packageName }
     }
 
     private fun getPluginMetadata(file: File, packageName: String): Result<PluginMetadata, Throwable> =
         runCatching {
+            if (file.canWrite() && !file.setReadOnly()) error("Failed to set read-only plugin file")
             DexClassLoader(
                 file.absolutePath,
                 null,

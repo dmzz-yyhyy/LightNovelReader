@@ -48,6 +48,12 @@ class PluginManagerViewModel @Inject constructor(
         }
     }
 
+    fun deletePlugin(packageName: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            pluginManager.deletePlugin(packageName)
+        }
+    }
+
     fun showSnackbar(message: String) {
         viewModelScope.launch(Dispatchers.Main) { _snackbarFlow.emit(message) }
     }

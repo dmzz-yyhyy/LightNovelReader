@@ -894,8 +894,8 @@ fun PluginSignatureDialog(
                                             Text(
                                                 text = stringResource(
                                                     R.string.plugin_signature_public_key_value,
+                                                    sig.publicKeyLength,
                                                     sig.publicKeyAlgorithm,
-                                                    sig.publicKeyLength
                                                 ),
                                                 style = typography.bodyMedium,
                                                 color = colorScheme.onSurface

@@ -55,7 +55,7 @@ fun PluginCard(
     pluginInfo: PluginMetadata,
     onClickDetail: (String) -> Unit,
     onClickSwitch: (PluginMetadata) -> Unit,
-    onClickDelete: (String) -> Unit,
+    onClickDelete: (id: String, uninstall: Boolean) -> Unit,
     onClickKeyAlert: () -> Unit,
     onClickErrorAlert: () -> Unit,
     onClickIncompatibleAlert: () -> Unit,
@@ -268,7 +268,20 @@ fun PluginCard(
                         },
                         onClick = {
                             menuExpanded = false
-                            onClickDelete(pluginInfo.packageName)
+                            onClickDelete(pluginInfo.packageName, false)
+                        }
+                    )
+                } else {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "卸载并删除",
+                                style = typography.bodyLarge
+                            )
+                        },
+                        onClick = {
+                            menuExpanded = false
+                            onClickDelete(pluginInfo.packageName, true)
                         }
                     )
                 }
