@@ -116,6 +116,7 @@
 
     <!-- Settings -->
     <string name="reading_settings">Reading</string>
+    <string name="extensions_settings">Extensions</string>
     <string name="theme_settings">Theme</string>
     <string name="app_settings">App</string>
     <string name="app_updates">Updates</string>

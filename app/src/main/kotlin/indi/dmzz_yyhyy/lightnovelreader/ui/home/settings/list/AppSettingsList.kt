@@ -19,19 +19,10 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 fun AppSettingsList(
     settingState: SettingState,
     onClickLogcat: () -> Unit,
-    onClickPluginManager: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = LocalSnackbarHost.current
 
-    SettingsClickableEntry(
-        modifier = Modifier.background(colorScheme.surfaceContainer),
-        painter = painterResource(R.drawable.extension_24px),
-        title = stringResource(id = R.string.settings_plugins),
-        description = stringResource(id = R.string.settings_plugins_desc),
-        onClick = onClickPluginManager,
-        option = stringResource(R.string.item_view_details)
-    )
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
         painter = painterResource(R.drawable.bug_report_24px),
