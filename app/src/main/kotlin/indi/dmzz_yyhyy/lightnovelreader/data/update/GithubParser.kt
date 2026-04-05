@@ -85,7 +85,7 @@ object GithubParser {
                     .get()
                     .select("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/download/"]""")
                     .map { it.attr("href") }
-                    ?.firstOrNull { it.endsWith("apk") }
+                    .firstOrNull { it.endsWith("apk") }
                     ?.let { "https://gh-proxy.com/github.com$it" }?: Log.e("GithubParser", "failed to get downloadUrl").let { return null }
                 updatePhase.tryEmit("GitHub步骤: 拉取远程分支版本号")
                 val gradle = releaseDocument

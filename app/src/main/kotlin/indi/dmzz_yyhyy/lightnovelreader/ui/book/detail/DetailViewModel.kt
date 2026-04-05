@@ -116,7 +116,7 @@ class DetailViewModel @Inject constructor(
             )
             .build()
         workManager.enqueueUniqueWork(
-            bookId,
+            ExportBookToEPUBWork.ofId(bookId),
             ExistingWorkPolicy.KEEP,
             workRequest
         )

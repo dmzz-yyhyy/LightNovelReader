@@ -39,7 +39,7 @@ class AddToBookshelfDialogViewModel @Inject constructor(
                 field = value
             }
         }
-    val addToBookshelfDialogUiState = _addToBookshelfDialogUiState
+    val addToBookshelfDialogUiState: AddToBookshelfDialogUiState = _addToBookshelfDialogUiState
 
     fun onSelectBookshelf(bookshelfId: Int) {
         if (bookId.isBlank()) return

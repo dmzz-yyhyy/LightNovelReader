@@ -22,6 +22,9 @@ class CacheBookWork @AssistedInject constructor(
     private val webBookDataSourceProvider: WebBookDataSourceProvider,
     private val downloadProgressRepository: DownloadProgressRepository
 ) : CoroutineWorker(appContext, workerParams) {
+    companion object {
+        fun ofId(id: String): String = "cache:$id"
+    }
 
     override suspend fun doWork(): Result {
         val bookId = inputData.getString("bookId") ?: return Result.failure()

@@ -201,7 +201,7 @@ class BookRepository @Inject constructor(
             )
             .build()
         workManager.enqueueUniqueWork(
-            bookId,
+            CacheBookWork.ofId(bookId),
             ExistingWorkPolicy.KEEP,
             workRequest
         )
