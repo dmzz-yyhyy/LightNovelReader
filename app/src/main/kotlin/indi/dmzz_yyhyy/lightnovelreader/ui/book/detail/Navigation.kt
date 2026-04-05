@@ -65,6 +65,26 @@ fun NavGraphBuilder.bookDetailDestination() {
         LaunchedEffect(bookId) {
             viewModel.init(bookId)
         }
+        val cacheSnackbarState = viewModel.cacheSnackbarState
+        LaunchedEffect(cacheSnackbarState) {
+            val state = cacheSnackbarState ?: return@LaunchedEffect
+            val message = when(state){
+                WorkInfo.State.RUNNING -> context.getString(R.string.cache_book_running)
+                WorkInfo.State.SUCCEEDED -> context.getString(R.string.cache_book_finished)
+                WorkInfo.State.FAILED,
+                WorkInfo.State.CANCELLED -> context.getString(R.string.cache_book_error)
+                WorkInfo.State.ENQUEUED,
+                WorkInfo.State.BLOCKED -> context.getString(
+                    R.string.cache_book_started,
+                    viewModel.uiState.bookInformation.title.ifBlank { bookId }
+                )
+            }
+            showSnackbar(
+                coroutineScope = coroutineScope,
+                hostState = snackbarHostState,
+                message = message
+            )
+        }
         DetailScreen(
             uiState = viewModel.uiState,
             onClickExportToEpub = { settings ->
@@ -93,45 +113,7 @@ fun NavGraphBuilder.bookDetailDestination() {
                 }
             },
             cacheBook = { bookId ->
-                coroutineScope.launch {
-                    viewModel.cacheBook(bookId).collect {
-                        if (it == null) {
-                            showSnackbar(
-                                coroutineScope = coroutineScope,
-                                hostState = snackbarHostState,
-                                message = context.getString(
-                                    R.string.cache_book_started,
-                                    viewModel.uiState.bookInformation.title
-                                )
-                            ) { }
-                            return@collect
-                        }
-                        when (it.state) {
-                            WorkInfo.State.SUCCEEDED -> {
-                                showSnackbar(
-                                    coroutineScope = coroutineScope,
-                                    hostState = snackbarHostState,
-                                    message = context.getString(R.string.cache_book_finished)
-                                ) { }
-                            }
-                            WorkInfo.State.FAILED -> {
-                                showSnackbar(
-                                    coroutineScope = coroutineScope,
-                                    hostState = snackbarHostState,
-                                    message = context.getString(R.string.cache_book_error)
-                                ) { }
-                            }
-                            WorkInfo.State.RUNNING -> {
-                                showSnackbar(
-                                    coroutineScope = coroutineScope,
-                                    hostState = snackbarHostState,
-                                    message = context.getString(R.string.cache_book_running)
-                                ) { }
-                            }
-                            else -> {}
-                        }
-                    }
-                }
+                viewModel.cacheBook(bookId)
             },
             requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
             onClickTag = viewModel::onClickTag,

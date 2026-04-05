@@ -14,6 +14,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 
+private const val CACHE_BOOK_UNIQUE_WORK_PREFIX = "cache:"
+
+fun cacheBookUniqueWorkName(bookId: String): String = CACHE_BOOK_UNIQUE_WORK_PREFIX + bookId
+
 @HiltWorker
 class CacheBookWork @AssistedInject constructor(
     @Assisted appContext: Context,

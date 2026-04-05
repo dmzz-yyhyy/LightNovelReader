@@ -11,6 +11,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
+import indi.dmzz_yyhyy.lightnovelreader.data.work.cacheBookUniqueWorkName
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -201,7 +202,7 @@ class BookRepository @Inject constructor(
             )
             .build()
         workManager.enqueueUniqueWork(
-            bookId,
+            cacheBookUniqueWorkName(bookId),
             ExistingWorkPolicy.KEEP,
             workRequest
         )

@@ -18,6 +18,10 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.encodeToByteArray
 import java.io.FileOutputStream
 
+private const val EXPORT_BOOK_UNIQUE_WORK_PREFIX = "export:"
+
+fun exportBookUniqueWorkName(bookId: String): String = EXPORT_BOOK_UNIQUE_WORK_PREFIX + bookId
+
 @HiltWorker
 class ExportDataWork @AssistedInject constructor(
     @Assisted private val appContext: Context,

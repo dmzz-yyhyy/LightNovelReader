@@ -19,6 +19,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportBookToEPUBWork
+import indi.dmzz_yyhyy.lightnovelreader.data.work.cacheBookUniqueWorkName
+import indi.dmzz_yyhyy.lightnovelreader.data.work.exportBookUniqueWorkName
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -33,6 +35,10 @@ class DetailViewModel @Inject constructor(
     private val workManager: WorkManager
 ) : ViewModel() {
     private val _uiState = MutableDetailUiState()
+    private var currentCacheState: WorkInfo.State? = null
+    private var lastNotifiedCacheState: WorkInfo.State? = null
+    var cacheSnackbarState: WorkInfo.State? by mutableStateOf(null)
+        private set
     var exportSettings = ExportSettings()
     var navController: NavController? = null
     val uiState: DetailUiState = _uiState
@@ -77,24 +83,67 @@ class DetailViewModel @Inject constructor(
         }
         viewModelScope.launch(Dispatchers.IO) {
             downloadProgressRepository.downloadItemIdListFlow.collect { downloadItemList ->
-                _uiState.downloadItem = downloadItemList.findLast { it.bookId == _uiState.bookInformation.id && it.type == DownloadType.CACHE }
+                _uiState.downloadItem = downloadItemList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
             }
         }
+        startCacheWorkMonitor(bookId)
+    }
+    fun cacheBook(bookId: String){
+        if( currentCacheState == WorkInfo.State.RUNNING ||
+            currentCacheState == WorkInfo.State.ENQUEUED ||
+            currentCacheState == WorkInfo.State.BLOCKED
+            ){
+            return
+        }
+        bookRepository.cacheBook(bookId)
     }
 
-    fun cacheBook(bookId: String): Flow<WorkInfo?> {
-        val work = bookRepository.cacheBook(bookId)
-        val isCachedFlow = bookRepository.isCacheBookWorkFlow(work.id)
+    fun startCacheWorkMonitor(bookId:String){
         viewModelScope.launch(Dispatchers.IO) {
-            isCachedFlow.collect { workInfo ->
-                if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
-                    _uiState.isCached = bookRepository.getIsBookCached(bookId)
+            workManager.getWorkInfosForUniqueWorkFlow(cacheBookUniqueWorkName(bookId)).collect { workInfos ->
+                val states = workInfos.map{it.state}.toSet()
+                val state = listOf(
+                    WorkInfo.State.RUNNING,
+                    WorkInfo.State.ENQUEUED,
+                    WorkInfo.State.BLOCKED,
+                    WorkInfo.State.SUCCEEDED,
+                    WorkInfo.State.CANCELLED,
+                    WorkInfo.State.FAILED,
+                ).firstOrNull{it in states }
+                val previousCacheState = currentCacheState
+                currentCacheState = state
+                when(state){
+                    WorkInfo.State.RUNNING ->{
+                        notifyCacheState(state)
+                    }
+                    WorkInfo.State.ENQUEUED,
+                    WorkInfo.State.BLOCKED -> {
+                        notifyCacheState(state)
+                    }
+                    WorkInfo.State.SUCCEEDED -> {
+                        _uiState.isCached = bookRepository.getIsBookCached(bookId)
+                        if( previousCacheState == WorkInfo.State.RUNNING ||
+                            previousCacheState == WorkInfo.State.ENQUEUED ||
+                            previousCacheState == WorkInfo.State.BLOCKED
+                        ){
+                            notifyCacheState(state)
+                        }
+                    }
+                    WorkInfo.State.CANCELLED,
+                    WorkInfo.State.FAILED -> {
+                        notifyCacheState(state)
+                    }
+                    else -> Unit
                 }
             }
         }
-        return isCachedFlow
     }
 
+    private fun notifyCacheState(state: WorkInfo.State) {
+        if(lastNotifiedCacheState == state) return
+        lastNotifiedCacheState = state
+        cacheSnackbarState = state
+    }
     fun onClickTag(tag: String) {
         if (navController == null) return
         bookRepository.progressBookTagClick(tag, navController!!)
@@ -115,7 +164,7 @@ class DetailViewModel @Inject constructor(
             )
             .build()
         workManager.enqueueUniqueWork(
-            bookId,
+            exportBookUniqueWorkName(bookId),
             ExistingWorkPolicy.KEEP,
             workRequest
         )
