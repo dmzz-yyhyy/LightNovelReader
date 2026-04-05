@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ReadingStatisticsEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
+import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,35 +50,31 @@ class StatsDetailedViewModel @Inject constructor(
 
     private suspend fun loadStatistics() {
         val (startDate, endDate) = _uiState.targetDateRange
-        val bookRecordsMap: Map<LocalDate, List<BookRecordEntity>> =
+        val bookRecordsMap: Map<LocalDate, List<BookRecord>> =
             statsRepository.getBookRecords(startDate, endDate)
-        val statsEntitiesMap: Map<LocalDate, ReadingStatisticsEntity> =
-            statsRepository.getReadingStatistics(startDate, endDate)
+        val dailyCountsMap: Map<LocalDate, Count> =
+            statsRepository.getDailyCounts(startDate, endDate)
+        val firstReadDateMap = statsRepository.getBookFirstReadDateMap()
+        val firstFinishedDateMap = statsRepository.getBookFirstFinishedDateMap()
+        val favoriteDateMap = statsRepository.getBookFavoriteDateMap()
 
         val allDates = generateSequence(startDate) { it.plusDays(1) }
             .takeWhile { it <= endDate }
             .toList()
 
-        val statsMap: Map<LocalDate, ReadingStatisticsEntity> = allDates.associateWith { date ->
-            statsEntitiesMap[date] ?: statsRepository.createStatsEntity(date)
-        }.toSortedMap()
-
-        val recordsMap: Map<LocalDate, List<BookRecordEntity>> = allDates.associateWith { date ->
+        val recordsMap: Map<LocalDate, List<BookRecord>> = allDates.associateWith { date ->
             bookRecordsMap[date] ?: emptyList()
         }.toSortedMap()
 
-        _uiState.targetDateRangeStatsMap = statsMap
+        _uiState.targetDateRangeCountMap = allDates.associateWith { date ->
+            dailyCountsMap[date] ?: Count()
+        }.toSortedMap()
         _uiState.targetDateRangeRecordsMap = recordsMap
+        _uiState.bookFirstReadDateMap = firstReadDateMap
+        _uiState.bookFirstFinishedDateMap = firstFinishedDateMap
+        _uiState.bookFavoriteDateMap = favoriteDateMap
 
-        val bookIds = mutableSetOf<String>()
-        statsMap.values.forEach { entity ->
-            bookIds += entity.favoriteBooks
-            bookIds += entity.startedBooks
-            bookIds += entity.finishedBooks
-        }
-        recordsMap.values.flatten().forEach { rec ->
-            bookIds += rec.bookId
-        }
+        val bookIds = recordsMap.values.flatten().map { it.bookId }.toSet()
 
         bookIds.forEach { id ->
             _uiState.bookInformationMap[id] = bookRepository.getStateBookInformation(id, viewModelScope)

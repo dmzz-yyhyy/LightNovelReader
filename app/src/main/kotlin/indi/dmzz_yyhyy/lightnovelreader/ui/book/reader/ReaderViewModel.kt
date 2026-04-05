@@ -45,13 +45,8 @@ class ReaderViewModel @Inject constructor(
                 statsRepository.updateReadingStatistics(
                     ReadingStatsUpdate(
                         bookId = value,
-                        sessionDelta = 1
+                        readEventDelta = 1
                     )
-                )
-                val readingData = bookRepository.getUserReadingData(value)
-                statsRepository.updateBookStatus(
-                    bookId = value,
-                    isFirstReading = readingData.lastReadTime.year != 1971
                 )
             }
 
@@ -119,6 +114,10 @@ class ReaderViewModel @Inject constructor(
                         readingProgress = (userReadingData.maxChapterReadingProgressMap.values.sum() / total).coerceIn(0f, 1f)
                     }
                 }
+            }
+            val readingData = bookRepository.getUserReadingData(bookId)
+            if (readingData.readingProgress >= 1f) {
+                statsRepository.markBookFinished(bookId)
             }
         }
     }

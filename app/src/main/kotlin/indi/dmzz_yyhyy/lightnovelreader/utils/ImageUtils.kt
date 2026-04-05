@@ -3,14 +3,16 @@ package indi.dmzz_yyhyy.lightnovelreader.utils
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import coil.ImageLoader
-import coil.request.ErrorResult
-import coil.request.ImageRequest
-import coil.request.SuccessResult
+import coil3.BitmapImage
+import coil3.ImageLoader
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+import coil3.request.ErrorResult
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -26,23 +28,23 @@ object ImageUtils {
         try {
             val loader = ImageLoader(context)
             val request = ImageRequest.Builder(context)
-                .also { builder ->
-                    header.forEach {
-                        builder.addHeader(it.key, it.value)
-                    }
-                }
                 .data(imageUri)
-                .allowHardware(false)
+                .interceptorCoroutineContext(Dispatchers.IO)
+                .httpHeaders(
+                    NetworkHeaders.Builder().apply {
+                        header.forEach { (key, value) -> add(key, value) }
+                    }.build()
+                )
                 .build()
 
             val result = loader.execute(request)
 
             if (result is SuccessResult) {
-                val bitmap = (result.drawable as? BitmapDrawable)?.bitmap
+                val bitmap = (result.image as? BitmapImage)?.bitmap
                 if (bitmap != null) {
                     return@withContext Ok(bitmap)
                 } else {
-                    return@withContext Err(Throwable("Failed to cast drawable to BitmapDrawable"))
+                    return@withContext Err(Throwable("Failed to cast image to BitmapImage"))
                 }
             } else if (result is ErrorResult) {
                 return@withContext Err(result.throwable)

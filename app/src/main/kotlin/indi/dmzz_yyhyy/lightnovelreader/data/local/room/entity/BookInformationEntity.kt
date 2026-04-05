@@ -9,8 +9,8 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.UriConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.WorldCountConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serialier.LocalDateTimeSerializer
-import indi.dmzz_yyhyy.lightnovelreader.data.serialier.UriSerializer
+import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDateTimeSerializer
+import indi.dmzz_yyhyy.lightnovelreader.data.serializer.UriSerializer
 import io.nightfish.lightnovelreader.api.book.WordCount
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime

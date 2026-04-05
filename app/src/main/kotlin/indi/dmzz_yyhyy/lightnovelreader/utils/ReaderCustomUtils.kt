@@ -17,11 +17,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import coil.request.CachePolicy
-import coil.request.ImageRequest
-import coil.size.Scale
+import coil3.compose.AsyncImagePainter
+import coil3.compose.rememberAsyncImagePainter
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import coil3.size.Scale
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import io.nightfish.lightnovelreader.api.userdata.UriUserData
@@ -87,6 +87,7 @@ private fun rememberPaperPainter(
             .networkCachePolicy(CachePolicy.ENABLED)
             .memoryCacheKey(KRAFT_PAPER_CACHE_KEY)
             .diskCacheKey(KRAFT_PAPER_CACHE_KEY)
+            .interceptorCoroutineContext(Dispatchers.Default)
             .scale(Scale.FILL)
             .build()
     }
@@ -99,20 +100,22 @@ private fun rememberPaperPainter(
 
     var errorNotified by remember { mutableStateOf(false) }
 
-    LaunchedEffect(painter.state) {
-        when (painter.state) {
-            is AsyncImagePainter.State.Error -> {
-                if (!errorNotified) {
-                    errorNotified = true
-                    snackbarScope.launch {
-                        snackbarHostState.showSnackbar("自定义背景加载失败，已恢复为默认。")
+    LaunchedEffect(painter) {
+        painter.state.collect { state ->
+            when (state) {
+                is AsyncImagePainter.State.Error -> {
+                    if (!errorNotified) {
+                        errorNotified = true
+                        snackbarScope.launch {
+                            snackbarHostState.showSnackbar("自定义背景加载失败，已恢复为默认。")
+                        }
                     }
                 }
+                is AsyncImagePainter.State.Success -> {
+                    errorNotified = false
+                }
+                else -> Unit
             }
-            is AsyncImagePainter.State.Success -> {
-                errorNotified = false
-            }
-            else -> Unit
         }
     }
 

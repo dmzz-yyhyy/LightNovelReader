@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -32,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -48,36 +50,36 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ActivityStatsCard
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.MonthlyReadingTimeStatsCard
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.MonthlyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ReadingDetailStatsCard
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.WeeklyReadingTimeStatsCard
-import java.time.DayOfWeek
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.WeeklyStatsChart
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.YearlyStatsChart
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-import kotlin.math.min
+import kotlin.random.Random
 
 sealed class StatsViewOption(val viewIndex: Int) {
     abstract fun rangeFor(date: LocalDate): ClosedRange<LocalDate>
 
     object Daily : StatsViewOption(viewIndex = 0) {
         override fun rangeFor(date: LocalDate): ClosedRange<LocalDate> {
-            return date..date
+            return date.minusDays(6)..date
         }
     }
 
     object Weekly : StatsViewOption(viewIndex = 1) {
         override fun rangeFor(date: LocalDate): ClosedRange<LocalDate> {
-            val startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val endOfWeek = date.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-            return startOfWeek..endOfWeek
+            val startOfMonth = date.withDayOfMonth(1)
+            val endOfMonth = date.with(TemporalAdjusters.lastDayOfMonth())
+            return startOfMonth..endOfMonth
         }
     }
 
     object Monthly : StatsViewOption(viewIndex = 2) {
         override fun rangeFor(date: LocalDate): ClosedRange<LocalDate> {
-            val startOfMonth = date.withDayOfMonth(1)
-            val endOfMonth = date.with(TemporalAdjusters.lastDayOfMonth())
-            return startOfMonth..endOfMonth
+            val startOfYear = LocalDate.of(date.year, 1, 1)
+            val endOfYear = LocalDate.of(date.year, 12, 31)
+            return startOfYear..endOfYear
         }
     }
 
@@ -109,9 +111,9 @@ fun StatsDetailedScreen(
     uiState.selectedDate = targetDate
     val pinnedScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val viewOptions = listOf(
-        stringResource(R.string.view_daily),
         stringResource(R.string.view_weekly),
-        stringResource(R.string.view_monthly)
+        stringResource(R.string.view_monthly),
+        stringResource(R.string.view_yearly)
     )
 
     LaunchedEffect(targetDate) {
@@ -217,7 +219,7 @@ fun StatsCard(
         Spacer(Modifier.height(8.dp))
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = colorScheme.surfaceContainerLowest
+            color = colorScheme.surfaceContainer
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 content()
@@ -233,21 +235,58 @@ fun BookStack(
     uiState: StatsDetailedUiState,
     books: List<String>,
     count: Int,
+    scaleEnabled: Boolean = false,
+    compact: Boolean = true,
+    rotate: Float? = null,
 ) {
-    Box(
-        modifier = modifier
-            .wrapContentWidth()
-            .padding(end = min(books.size, count).dp * 20)
+    val displayBooks = books.distinct().take(count)
+
+    BoxWithConstraints(
+        modifier = modifier.then(
+            if (compact) {
+                Modifier
+                    .wrapContentWidth()
+                    .padding(end = (displayBooks.size * 20).dp)
+            } else {
+                Modifier.fillMaxWidth()
+            }
+        )
     ) {
-        books.distinct().take(count).fastForEachIndexed { index, bookId ->
-            val scale = 1f - (index * 0.01f).coerceAtMost(0.3f)
+        val baseWidth = 63.dp
+        val baseOffset = 20.dp
+
+        val offsetStep = if (compact) {
+            baseOffset
+        } else {
+            if (displayBooks.size <= 1) {
+                0.dp
+            } else {
+                val availableWidth = maxWidth - baseWidth
+                (availableWidth / (displayBooks.size - 1)).coerceAtMost(baseWidth)
+            }
+        }
+
+        displayBooks.fastForEachIndexed { index, bookId ->
+            val scale = if (scaleEnabled) {
+                1f - (index * 0.01f).coerceAtMost(0.3f)
+            } else 1f
+
+            val offsetY = remember(bookId) {
+                Random.nextInt(-3, 4).dp
+            }
+
             Box(
                 modifier = Modifier
                     .wrapContentHeight()
-                    .zIndex((books.size - index).toFloat())
-                    .offset(x = index.dp * 20)
-                    .graphicsLayer(scaleX = scale, scaleY = scale)
-                    .align(Alignment.CenterEnd),
+                    .zIndex((displayBooks.size - index).toFloat())
+                    .align(Alignment.CenterStart)
+                    .offset(
+                        x = offsetStep * index,
+                        y = offsetY
+                    )
+                    .graphicsLayer {
+                        rotationZ = rotate ?: 0f
+                    }
             ) {
                 uiState.bookInformationMap[bookId]?.let {
                     Cover(
@@ -267,6 +306,14 @@ private fun LazyListScope.dailyStatistics(uiState: StatsDetailedUiState) {
         ActivityStatsCard(uiState)
     }
     item {
+        StatsCard(title = stringResource(R.string.activity_reading_time)) {
+            WeeklyStatsChart(
+                statsMap = uiState.targetDateRangeCountMap,
+                selectedDate = uiState.selectedDate
+            )
+        }
+    }
+    item {
         ReadingDetailStatsCard(uiState)
     }
 }
@@ -276,7 +323,12 @@ private fun LazyListScope.weeklyStatistics(uiState: StatsDetailedUiState) {
         ActivityStatsCard(uiState)
     }
     item {
-        WeeklyReadingTimeStatsCard(uiState)
+        StatsCard(title = stringResource(R.string.activity_reading_time)) {
+            MonthlyStatsChart(
+                statsMap = uiState.targetDateRangeCountMap,
+                selectedDate = uiState.selectedDate
+            )
+        }
     }
     item {
         ReadingDetailStatsCard(uiState)
@@ -288,7 +340,12 @@ private fun LazyListScope.monthlyStatistics(uiState: StatsDetailedUiState) {
         ActivityStatsCard(uiState)
     }
     item {
-        MonthlyReadingTimeStatsCard(uiState)
+        StatsCard(title = stringResource(R.string.activity_reading_time)) {
+            YearlyStatsChart(
+                statsMap = uiState.targetDateRangeCountMap,
+                selectedDate = uiState.selectedDate
+            )
+        }
     }
     item {
         ReadingDetailStatsCard(uiState)

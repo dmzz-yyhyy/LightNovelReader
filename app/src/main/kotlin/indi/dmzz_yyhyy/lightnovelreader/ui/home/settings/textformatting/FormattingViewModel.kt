@@ -25,9 +25,10 @@ class FormattingViewModel @Inject constructor(
     var formattingGroups by mutableStateOf(emptyList<FormattingGroup>())
         private set
     var bookId = ""
-    var rules by mutableStateOf(listOf<FormattingRule>())
+    var rules by mutableStateOf(emptyList<FormattingRule>())
         private set
-    val bookInformationMap = mutableStateMapOf<String, BookInformation>()
+    private val _bookInformationMap = mutableStateMapOf<String, BookInformation>()
+    val bookInformationMap: Map<String, BookInformation> = _bookInformationMap.toMap()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -37,7 +38,7 @@ class FormattingViewModel @Inject constructor(
                 }
                 for (group in formattingGroups) {
                     if (group.id.isBlank()) continue
-                    bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id, viewModelScope)
+                    _bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id, viewModelScope)
                 }
             }
         }

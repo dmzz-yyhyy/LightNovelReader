@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serialier.LocalDateTimeSerializer
+import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 

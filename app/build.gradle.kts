@@ -149,8 +149,9 @@ dependencies {
     // Navigation
     implementation(libs.navigation.ui.ktx)
     implementation(libs.navigation.compose)
-    // coil
+    // coil3
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
     // jsoup
     implementation(libs.jsoup)
     // Markdown
