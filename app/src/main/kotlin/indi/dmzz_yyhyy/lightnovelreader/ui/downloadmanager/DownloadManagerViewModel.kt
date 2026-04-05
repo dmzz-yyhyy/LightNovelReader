@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.downloadmanager
 
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,9 @@ class DownloadManagerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            downloadProgressRepository.downloadItemIdListFlow.collect { downloadItems ->
+            snapshotFlow {
+                downloadProgressRepository.downloadItemIdList
+            }.collect { downloadItems ->
                 downloadItems.forEach { downloadItem ->
                     if (_bookInformationMap.containsKey(downloadItem.bookId))
                          return@forEach

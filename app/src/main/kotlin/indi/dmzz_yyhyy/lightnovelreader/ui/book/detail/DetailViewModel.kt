@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
@@ -75,9 +76,9 @@ class DetailViewModel @Inject constructor(
                 _uiState.isInBookshelf = it != null
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            downloadProgressRepository.downloadItemIdListFlow.collect { downloadItemList ->
-                _uiState.downloadItem = downloadItemList.findLast { it.bookId == _uiState.bookInformation.id && it.type == DownloadType.CACHE }
+        viewModelScope.launch {
+            snapshotFlow { downloadProgressRepository.downloadItemIdList }.collect {
+                _uiState.downloadItem = downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
             }
         }
     }

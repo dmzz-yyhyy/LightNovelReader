@@ -57,8 +57,7 @@ class DownloadProgressRepository @Inject constructor(
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val completedBookListUserData = IntUserData(UserDataPath.CompletedDownloadBookList.path, userDataDao)
     private val _downloadItemList = mutableStateListOf<DownloadItem>()
-    val downloadItemIdList: List<DownloadItem> = _downloadItemList
-    val downloadItemIdListFlow: Flow<List<DownloadItem>> = snapshotFlow { _downloadItemList.toList() }
+    val downloadItemIdList: List<DownloadItem> get() = _downloadItemList.toList()
 
     init {
         coroutineScope.launch {
