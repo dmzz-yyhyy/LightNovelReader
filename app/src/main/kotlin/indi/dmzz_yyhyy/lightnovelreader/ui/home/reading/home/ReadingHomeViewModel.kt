@@ -36,11 +36,12 @@ class ReadingHomeViewModel @Inject constructor(
     private val readingBooksUserData =
         userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
 
-    private val _recentReadingBookIds = mutableStateListOf<String>()
-    val recentReadingBookIds: List<String> = _recentReadingBookIds
+    var recentReadingBookIds: List<String> by mutableStateOf(listOf())
+        private set
+
     private val _recentReadingBookInformationMap = mutableStateMapOf<String, BookInformation>()
-    val recentReadingBookInformationMap: Map<String, BookInformation> = _recentReadingBookInformationMap
     private val _recentReadingUserReadingDataMap = mutableStateMapOf<String, UserReadingData>()
+    val recentReadingBookInformationMap: Map<String, BookInformation> = _recentReadingBookInformationMap
     val recentReadingUserReadingDataMap: Map<String, UserReadingData> = _recentReadingUserReadingDataMap
 
     private val loadingIds = mutableSetOf<String>()
@@ -75,13 +76,10 @@ class ReadingHomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            readingBooksUserData.getFlowWithDefault(emptyList()).collect { list ->
-                val next = list.reversed()
+            readingBooksUserData.getFlowWithDefault(emptyList()).collect {
+                recentReadingBookIds = it
+                    .reversed()
                     .filter(String::isNotBlank)
-                _recentReadingBookIds.apply {
-                    clear()
-                    addAll(next)
-                }
             }
         }
     }
@@ -94,7 +92,7 @@ class ReadingHomeViewModel @Inject constructor(
                 .filter(String::isNotBlank)
 
             withContext(Dispatchers.Main) {
-                _recentReadingBookIds.apply { clear(); addAll(ids) }
+                recentReadingBookIds = ids
             }
         }
     }
