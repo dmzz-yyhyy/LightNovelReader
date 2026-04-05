@@ -30,6 +30,7 @@
     <string name="follow_system">Follow System</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
+    <string name="not_applicable">Not applicable</string>
     <string name="install_update">Install Update</string>
     <string name="unspecified">Unspecified</string>
     <string name="ignore">Ignore</string>
@@ -94,6 +95,10 @@
         The operation will clear cached data and restart the app. Your current data can be restored when switching back to "%s".
     </string>
     <string name="settings_data_source_applying">Processing…</string>
+    <string name="plugin_invalid_title">Invalid plugin</string>
+    <string name="plugin_invalid_desc">Unable to get plugin info; the plugin may be invalid or corrupted.</string>
+    <string name="plugin_disabled">Unavailable</string>
+    <string name="plugin_disabled_desc">Enabling the plugin is required to adjust settings.</string>
 
     <!-- Snackbar Hints -->
     <string name="cache_book_started">Caching started: %1$s</string>
@@ -111,6 +116,7 @@
 
     <!-- Settings -->
     <string name="reading_settings">Reading</string>
+    <string name="extensions_settings">Extensions</string>
     <string name="theme_settings">Theme</string>
     <string name="app_settings">App</string>
     <string name="app_updates">Updates</string>
@@ -512,13 +518,19 @@
     <string name="plugin_signature_subject">Subject</string>
     <string name="plugin_signature_issuer">Issuer</string>
     <string name="plugin_signature_public_key_label">Public key</string>
-    <string name="plugin_signature_public_key_value">%1$s · %2$d bit</string>
+    <string name="plugin_signature_public_key_value">%1$s-bit %2$d </string>
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">Loadable plugin</string>
-    <string name="plugin_content_copied">Content copied</string>
-    <string name="plugin_invalid_title">Invalid plugin</string>
-    <string name="plugin_invalid_desc">Unable to get plugin info; the plugin may be invalid or corrupted.</string>
     <string name="plugin_enable_label">Enable plugin</string>
+    <string name="plugin_detail_tab_overview">Overview</string>
+    <string name="plugin_detail_tab_settings">Settings</string>
+    <string name="plugin_detail_summary_title">About this plugin</string>
+    <string name="plugin_detail_info_title">Plugin information</string>
+    <string name="plugin_detail_api_version">API version</string>
+    <string name="plugin_detail_signature_label">Signature</string>
+    <string name="plugin_detail_source_label">Source</string>
+    <string name="plugin_detail_source_local">Local package</string>
+    <string name="plugin_detail_source_app">Installed app</string>
     <string name="plugin_third_party_title">Third-party plugin</string>
     <string name="plugin_third_party_desc">This plugin is provided by a third party</string>
     <string name="plugin_info_id_label">ID</string>

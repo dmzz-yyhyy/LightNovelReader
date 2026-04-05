@@ -195,6 +195,7 @@ class PluginInstallerDialogViewModel @Inject constructor(
                     input.copyTo(output)
                 }
             }
+            tempFile.setReadOnly()
             tempFile
         } catch (_: Exception) {
             null

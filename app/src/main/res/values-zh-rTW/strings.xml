@@ -26,6 +26,7 @@
     <string name="follow_system">跟隨系統</string>
     <string name="enabled">啟用</string>
     <string name="disabled">停用</string>
+    <string name="not_applicable">不適用</string>
     <string name="install_update">安裝更新</string>
     <string name="ignore">忽略</string>
     <string name="ignore_version">忽略此版本</string>
@@ -89,6 +90,10 @@
         系統將清除快取並重新啟動。當下次切換回「%s」時，您目前的資料將可再次使用。
     </string>
     <string name="settings_data_source_applying">處理中……</string>
+    <string name="plugin_invalid_title">無效外掛</string>
+    <string name="plugin_invalid_desc">無法取得外掛資訊，外掛可能無效或損壞</string>
+    <string name="plugin_disabled">不可用</string>
+    <string name="plugin_disabled_desc">調整設定需要啟用外掛</string>
 
     <!-- Snackbar Hints -->
     <string name="cache_book_started">開始快取：%1$s</string>
@@ -106,6 +111,7 @@
 
     <!-- Settings -->
     <string name="reading_settings">閲讀</string>
+    <string name="extensions_settings">擴充功能</string>
     <string name="theme_settings">主題</string>
     <string name="app_settings">應用程式</string>
     <string name="app_updates">更新</string>
@@ -496,13 +502,19 @@
     <string name="plugin_signature_subject">主題</string>
     <string name="plugin_signature_issuer">簽發者</string>
     <string name="plugin_signature_public_key_label">公鑰</string>
-    <string name="plugin_signature_public_key_value">%1$s · %2$d 位</string>
+    <string name="plugin_signature_public_key_value">%1$s 位 %2$d</string>
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可載入的外掛</string>
-    <string name="plugin_content_copied">內容已複製</string>
-    <string name="plugin_invalid_title">無效外掛</string>
-    <string name="plugin_invalid_desc">無法取得外掛資訊，外掛可能無效或損壞</string>
     <string name="plugin_enable_label">啟用外掛</string>
+    <string name="plugin_detail_tab_overview">總覽</string>
+    <string name="plugin_detail_tab_settings">設定</string>
+    <string name="plugin_detail_summary_title">關於此外掛</string>
+    <string name="plugin_detail_info_title">外掛資訊</string>
+    <string name="plugin_detail_api_version">API 版本</string>
+    <string name="plugin_detail_signature_label">簽章</string>
+    <string name="plugin_detail_source_label">來源</string>
+    <string name="plugin_detail_source_local">本機套件</string>
+    <string name="plugin_detail_source_app">已安裝應用程式</string>
     <string name="plugin_third_party_title">第三方外掛</string>
     <string name="plugin_third_party_desc">此外掛由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>

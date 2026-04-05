@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.icu.text.RelativeDateTimeFormatter
-import android.icu.text.RelativeDateTimeFormatter.AbsoluteUnit
 import android.icu.text.RelativeDateTimeFormatter.Direction
 import android.icu.text.RelativeDateTimeFormatter.RelativeUnit
 import java.time.LocalDateTime
@@ -30,21 +29,16 @@ fun formTime(
 
     val minutesAgo = ChronoUnit.MINUTES.between(time, now)
     val hoursAgo = ChronoUnit.HOURS.between(time, now)
-    val daysAgo = ChronoUnit.DAYS.between(time, now)
-    val yearsAgo = ChronoUnit.YEARS.between(time, now)
 
     val rdf = RelativeDateTimeFormatter.getInstance(locale)
 
     return when {
-        yearsAgo >= 1 -> time.format(absFormatter)
-        daysAgo > 30 -> time.format(absFormatter)
-        daysAgo == 1L -> rdf.format(Direction.LAST, AbsoluteUnit.DAY)
-        daysAgo == 2L -> rdf.format(2.0, Direction.LAST, RelativeUnit.DAYS)
-        daysAgo == 3L -> rdf.format(3.0, Direction.LAST, RelativeUnit.DAYS)
-        daysAgo >= 4 -> rdf.format(daysAgo.toDouble(), Direction.LAST, RelativeUnit.DAYS)
+        hoursAgo >= 72 -> time.format(absFormatter)
+        hoursAgo >= 24 -> rdf.format((hoursAgo / 24).toDouble(), Direction.LAST, RelativeUnit.DAYS)
         hoursAgo >= 1 -> rdf.format(hoursAgo.toDouble(), Direction.LAST, RelativeUnit.HOURS)
         minutesAgo >= 1 -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
-        else -> rdf.format(Direction.PLAIN, AbsoluteUnit.NOW)
+        minutesAgo in 0..1  -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
+        else -> time.format(absFormatter)
     }
 }
 

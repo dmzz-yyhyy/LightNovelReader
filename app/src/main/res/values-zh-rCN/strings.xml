@@ -26,6 +26,7 @@
     <string name="follow_system">跟随系统</string>
     <string name="enabled">启用</string>
     <string name="disabled">关闭</string>
+    <string name="not_applicable">不适用</string>
     <string name="install_update">安装更新</string>
     <string name="unspecified">未指定</string>
     <string name="ignore">忽略</string>
@@ -90,7 +91,10 @@
         应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
     </string>
     <string name="settings_data_source_applying">进行中……</string>
-
+    <string name="plugin_invalid_title">无效插件</string>
+    <string name="plugin_invalid_desc">无法获取插件信息，插件可能无效或损坏</string>
+    <string name="plugin_disabled">不可用</string>
+    <string name="plugin_disabled_desc">调整设置需要启用插件</string>
 
     <!-- Snackbar Hints -->
     <string name="cache_book_started">开始缓存：%1$s</string>
@@ -108,6 +112,7 @@
 
     <!-- Settings -->
     <string name="reading_settings">阅读</string>
+    <string name="extensions_settings">扩展</string>
     <string name="theme_settings">主题</string>
     <string name="app_settings">应用</string>
     <string name="app_updates">更新</string>
@@ -504,17 +509,23 @@
     <string name="plugin_disabled_title">插件已被禁用</string>
     <string name="plugin_disabled_body">在加载该插件过程中发生错误，导致应用异常终止。\n\n出于稳定性考虑，该插件已被自动禁用。您可在插件管理界面手动重新启用。</string>
     <string name="plugin_signature_count">包含 %1$d 个签名</string>
-    <string name="plugin_signature_validity">有效期 %1$s - %2$s</string>
+    <string name="plugin_signature_validity">有效期 %1$s ～ %2$s</string>
     <string name="plugin_signature_subject">主题</string>
     <string name="plugin_signature_issuer">颁发者</string>
     <string name="plugin_signature_public_key_label">公钥</string>
-    <string name="plugin_signature_public_key_value">%1$s · %2$d 位</string>
+    <string name="plugin_signature_public_key_value">%1$d 位 %2$s</string>
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可加载的插件</string>
-    <string name="plugin_content_copied">内容已复制</string>
-    <string name="plugin_invalid_title">无效插件</string>
-    <string name="plugin_invalid_desc">无法获取插件信息，插件可能无效或损坏</string>
     <string name="plugin_enable_label">启用插件</string>
+    <string name="plugin_detail_tab_overview">概览</string>
+    <string name="plugin_detail_tab_settings">设置</string>
+    <string name="plugin_detail_summary_title">关于此插件</string>
+    <string name="plugin_detail_info_title">插件信息</string>
+    <string name="plugin_detail_api_version">API 版本</string>
+    <string name="plugin_detail_signature_label">签名</string>
+    <string name="plugin_detail_source_label">来源</string>
+    <string name="plugin_detail_source_local">本地包</string>
+    <string name="plugin_detail_source_app">已安装应用</string>
     <string name="plugin_third_party_title">第三方插件</string>
     <string name="plugin_third_party_desc">该插件由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>

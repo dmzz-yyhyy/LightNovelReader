@@ -40,6 +40,7 @@ import java.io.File
 import java.util.zip.ZipFile
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.set
 
 @Singleton
 class PluginManager @Inject constructor(
@@ -56,12 +57,15 @@ class PluginManager @Inject constructor(
     val allPluginList: List<PluginMetadata> get() = mutableAllPluginMetadataList
     private val mutableLoadedPluginMap = mutableMapOf<String, LightNovelReaderPlugin>()
     val loadedPluginMap: Map<String, LightNovelReaderPlugin> get() = mutableLoadedPluginMap
+    private val mutableErrorPluginMap = mutableMapOf<String, String>()
+    val errorPluginMap: Map<String, String> get() = mutableErrorPluginMap
+
     private val enabledPluginsUserData =
         userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
 
     val pluginsDir: File = appContext.dataDir.resolve("plugins")
     val pluginsTempDir: File = appContext.cacheDir.resolve("plugins_tmp")
-   var appPluginInfos: List<PluginAppInfo> = emptyList()
+    var appPluginInfos: List<PluginAppInfo> = emptyList()
        private set
     fun getPluginDir(name: String): File = pluginsDir.resolve(name)
     fun getPluginDataDir(pluginDir: File) = pluginDir.resolve("data")
@@ -77,6 +81,17 @@ class PluginManager @Inject constructor(
             it.name != "data"
         }?.forEach {
             it.deleteRecursively()
+        }
+    }
+
+    fun unloadPlugin(packageName: String) {
+        loadedPluginMap[packageName]?.onUnload()
+        mutableLoadedPluginMap.remove(packageName)
+        webBookDataSourceManager.unloadWebDataSourcesFromClassLoader(packageName)
+        val enabledPlugins = enabledPluginsUserData.getOrDefault(emptyList()).toMutableList()
+        if (packageName in enabledPlugins) {
+            enabledPlugins -= packageName
+            enabledPluginsUserData.asynchronousSet(enabledPlugins)
         }
     }
 
@@ -277,7 +292,9 @@ class PluginManager @Inject constructor(
         if (lock.exists()) {
             deletePluginWithoutData(pluginDir)
         }
-        loadedPluginMap[packageName]?.let(LightNovelReaderPlugin::onUnload)
+        loadedPluginMap[packageName]?.let {
+            unloadPlugin(packageName)
+        }
 
         emit(InstallState.Start.PrasePluginMetadata)
         val pluginMetadataResult = getPluginMetadata(plugin, packageName)
@@ -391,6 +408,7 @@ class PluginManager @Inject constructor(
         error.outputStream().buffered().use {
             it.write(message.toByteArray())
         }
+        mutableErrorPluginMap[packageName] = message
     }
 
     fun getPluginError(packageName: String) {
@@ -415,6 +433,7 @@ class PluginManager @Inject constructor(
         }.andThen {
             getPluginMetadataAndPluginClass(packageInfo.packageName)
         }.andThen {
+            mutableErrorPluginMap.remove(pluginPackage)
             val pluginClazz = it.second
             val pluginContext = PluginContext(
                 dataDir = getPluginDataDir(pluginDir),
@@ -430,11 +449,22 @@ class PluginManager @Inject constructor(
 
             val classLoader = instance.javaClass.classLoader
             if (classLoader !is DexClassLoader) return@andThen Err(Error("Failed to get DexClassLoader from plugin instance, got: ${classLoader?.javaClass?.name}"))
-            webBookDataSourceManager.loadWebDataSourcesFromClassLoader(
-                classLoader,
-                pluginInjector,
-                pluginPackage
-            )
+            runCatching {
+                webBookDataSourceManager.loadWebDataSourcesFromClassLoader(
+                    classLoader,
+                    pluginInjector,
+                    pluginPackage
+                )
+            }.let { result ->
+                if (result.isErr) {
+                    val throwable = result.unwrapError()
+                    markPluginError(pluginPackage, throwable.message.toString())
+                    unloadPlugin(pluginPackage)
+                    return@andThen Err(throwable)
+                }
+            }
+
+            mutableLoadedPluginMap[pluginPackage] = instance
             return@andThen Ok(it.first)
         }.also {
             if (it.isErr) {
@@ -450,15 +480,14 @@ class PluginManager @Inject constructor(
     }
 
     fun deletePlugin(packageName: String) {
-        loadedPluginMap[packageName]?.onUnload()
-        mutableLoadedPluginMap.remove(packageName)
-        webBookDataSourceManager.unloadWebDataSourcesFromClassLoader(packageName)
+        unloadPlugin(packageName)
         getPluginDir(packageName).deleteRecursively()
         mutableAllPluginMetadataList.removeAll { it.packageName == packageName }
     }
 
     private fun getPluginMetadata(file: File, packageName: String): Result<PluginMetadata, Throwable> =
         runCatching {
+            if (file.canWrite() && !file.setReadOnly()) error("Failed to set read-only plugin file")
             DexClassLoader(
                 file.absolutePath,
                 null,
