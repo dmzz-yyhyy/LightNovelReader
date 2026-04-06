@@ -40,13 +40,19 @@ fun NavGraphBuilder.settingsThemeDestination() {
             onClickOpenPaletteSurface = {
                 navController.navigateToColorPickerDialog(
                     UserDataPath.Settings.Display.CostumeThemeSurface.path,
-                    listOf(-1, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
+                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
                 )
             },
             onClickOpenPaletteBackground = {
                 navController.navigateToColorPickerDialog(
                     UserDataPath.Settings.Display.CostumeThemeBackground.path,
-                    listOf(-1, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
+                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
+                )
+            },
+            onClickOpenPalettePrimary = {
+                navController.navigateToColorPickerDialog(
+                    UserDataPath.Settings.Display.CostumeThemePrimary.path,
+                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
                 )
             },
         )

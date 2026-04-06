@@ -67,6 +67,7 @@ sealed class UserDataPath(
             data object enableCostumeThemeScheme : UserDataPath("enable_costume_theme_scheme", Display)
             data object CostumeThemeSurface : UserDataPath("costume_theme_surface", Display)
             data object CostumeThemeBackground : UserDataPath("costume_theme_background", Display)
+            data object CostumeThemePrimary : UserDataPath("costume_theme_primary", Display)
             data object EnableM3E : UserDataPath("enable_m3_expressive", Display)
             data object AppLocale : UserDataPath("app_locale", Display)
             data object LightThemeName : UserDataPath("light_theme_name", Display)

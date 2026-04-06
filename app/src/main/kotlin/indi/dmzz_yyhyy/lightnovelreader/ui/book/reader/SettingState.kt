@@ -53,6 +53,7 @@ class SettingState(
     val backBlockModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.BackBlockMode.path)
     val costumeThemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSurface.path)
     val costumeThemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeBackground.path)
+    val costumeThemePrimaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemePrimary.path)
 
     val fontSize by fontSizeUserData.safeAsState(15f)
     val fontLineHeight by fontLineHeightUserData.safeAsState(7f)
@@ -93,4 +94,5 @@ class SettingState(
     val backBlockMode by backBlockModeUserData.safeAsState("none")
     val costumeThemeSurface by costumeThemeSurfaceUserData.safeAsState(Color.Unspecified)
     val costumeThemeBackground by costumeThemeBackgroundUserData.safeAsState(Color.Unspecified)
+    val costumeThemePrimary by costumeThemePrimaryUserData.safeAsState(Color.Unspecified)
 }

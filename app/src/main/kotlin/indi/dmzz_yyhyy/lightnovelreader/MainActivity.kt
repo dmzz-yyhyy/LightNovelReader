@@ -96,6 +96,7 @@ class MainActivity : ComponentActivity() {
         val textDarkColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextDarkColor.path)
         val costumeThemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSurface.path)
         val costumeThemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeBackground.path)
+        val costumeThemePrimaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemePrimary.path)
         setContent {
             val readerStyle by remember {
                 combine(
@@ -129,7 +130,8 @@ class MainActivity : ComponentActivity() {
                 lightThemeName = lightThemeName,
                 darkThemeName = darkThemeName,
                 costumeThemeSchemeSurface = costumeThemeSurfaceUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value,
-                costumeThemeSchemeBackground = costumeThemeBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value
+                costumeThemeSchemeBackground = costumeThemeBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value,
+                costumeThemeSchemePrimary = costumeThemePrimaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value
             ) {
                 LightNovelReaderApp(
                     readerStyle = readerStyle,

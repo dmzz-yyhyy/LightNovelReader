@@ -39,6 +39,7 @@ fun LightNovelReaderTheme(
     enableCostumeThemeScheme: Boolean = false,
     costumeThemeSchemeSurface: ComposeColor = ComposeColor(0xFF0E0E12),
     costumeThemeSchemeBackground: ComposeColor = ComposeColor(0xFF0E0E12),
+    costumeThemeSchemePrimary: ComposeColor = ComposeColor(0xFF0E0E12),
     enableM3E: Boolean = false,
     lightThemeName: String,
     darkThemeName: String,
@@ -79,7 +80,7 @@ fun LightNovelReaderTheme(
         }
     }
 
-    val costumeColorScheme = remember(isDynamicColor, isDark, darkThemeName, lightThemeName, costumeThemeSchemeSurface, costumeThemeSchemeBackground) {
+    val costumeColorScheme = remember(isDynamicColor, isDark, darkThemeName, lightThemeName, costumeThemeSchemeSurface, costumeThemeSchemeBackground, costumeThemeSchemePrimary) {
         val scheme = if (isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             dynamicDarkColorScheme(context)
         } else if (!isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -91,7 +92,8 @@ fun LightNovelReaderTheme(
         }
         scheme.copy(
             surface = costumeThemeSchemeSurface,
-            background = costumeThemeSchemeBackground
+            background = costumeThemeSchemeBackground,
+            primary = costumeThemeSchemePrimary
         )
     }
 

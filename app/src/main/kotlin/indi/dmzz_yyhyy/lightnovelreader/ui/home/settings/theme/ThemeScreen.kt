@@ -107,7 +107,8 @@ fun ThemeScreen(
     onClickChangeTextColor: () -> Unit,
     onClickChangeBackgroundColor: () -> Unit,
     onClickOpenPaletteSurface: () -> Unit,
-    onClickOpenPaletteBackground: () -> Unit
+    onClickOpenPaletteBackground: () -> Unit,
+    onClickOpenPalettePrimary: () -> Unit
 ) {
     val context = LocalContext.current
     Column(
@@ -119,7 +120,7 @@ fun ThemeScreen(
                 DarkModeSettings(themeSettingState)
             }
             item {
-                ThemeSettingsList(themeSettingState, onClickOpenPaletteSurface, onClickOpenPaletteBackground)
+                ThemeSettingsList(themeSettingState, onClickOpenPaletteSurface, onClickOpenPaletteBackground, onClickOpenPalettePrimary)
             }
             item {
                 ReaderThemeSettingsList(themeSettingState, onClickChangeBackgroundColor)
@@ -250,7 +251,8 @@ fun DarkModeSettings(
 fun ThemeSettingsList(
     settingState: SettingState,
     onClickOpenPaletteSurface: () -> Unit,
-    onClickOpenPaletteBackground: () -> Unit
+    onClickOpenPaletteBackground: () -> Unit,
+    onClickOpenPalettePrimary: () -> Unit
 ) {
     SettingsCategory(
         title = stringResource(R.string.theme_settings),
@@ -316,6 +318,13 @@ fun ThemeSettingsList(
                 title = "覆蓋主題Background顏色",
                 description = "覆蓋主題原有Background顏色",
                 onClick = onClickOpenPaletteBackground
+            )
+            SettingsClickableEntry(
+                modifier = Modifier.background(colorScheme.surfaceContainer),
+                painter = painterResource(R.drawable.palette_24px),
+                title = "覆蓋主題Primary顏色",
+                description = "覆蓋主題原有Primary顏色",
+                onClick = onClickOpenPalettePrimary
             )
         }
     }
