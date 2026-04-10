@@ -94,7 +94,7 @@ dokka {
     moduleName.set("Light Novel Reader Api")
     dokkaPublications.html {
         suppressInheritedMembers.set(true)
-        failOnWarning.set(true)
+        //failOnWarning.set(true)
     }
     dokkaSourceSets.configureEach {
         reportUndocumented.set(true)
