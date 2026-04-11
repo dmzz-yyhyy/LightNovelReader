@@ -42,6 +42,7 @@ aboutLibraries = "14.0.0-b03"
 zoomableImageCoil = "0.19.0"
 composeShimmer = "1.3.3"
 foundation = "1.10.6"
+dokka = "2.2.0"
 
 [libraries]
 androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
@@ -118,3 +119,4 @@ google_dagger_hilt = { id = "com.google.dagger.hilt.android", version.ref = "hil
 google_ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 android-dynamic-feature = { id = "com.android.dynamic-feature", version.ref = "androidGradlePlugin" }
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

@@ -539,4 +539,13 @@
     <string name="plugin_repo_install_failed">安装 %1$s 失败：%2$s</string>
     <string name="plugin_repo_install_cancelled">已取消安装 %1$s</string>
     <string name="plugin_repo_parts_incomplete">分卷下载不完整: 已完成 %1$d/%2$d，缺失 %3$s</string>
+
+    <!-- Notifications -->
+    <string name="epub_export_notification_channel_name">EPUB 导出进度</string>
+    <string name="epub_export_notification_preparing">准备中…</string>
+    <string name="epub_export_notification_failed">导出失败</string>
+    <string name="epub_export_notification_success">已成功完成</string>
+    <string name="epub_export_notification_stage_chapters">章节 %1$d/%2$d -</string>
+    <string name="epub_export_notification_stage_images">图片 %1$d/%2$d -</string>
+    <string name="epub_export_notification_stage_save">正在保存为 EPUB</string>
 </resources>

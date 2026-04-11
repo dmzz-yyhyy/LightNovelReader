@@ -3,14 +3,14 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web
 import android.content.Context
 import android.net.Uri
 import androidx.navigation.NavController
-import indi.dmzz_yyhyy.lightnovelreader.utils.RequestMarge
+import indi.dmzz_yyhyy.lightnovelreader.utils.RequestMerge
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 
-class MargeWebBookDataSource(
+class MergeWebBookDataSource(
     val webBookDataSource: WebBookDataSource,
-    val requestMarge: RequestMarge = RequestMarge()
+    val requestMerge: RequestMerge = RequestMerge()
 ): WebBookDataSource {
     override val id = webBookDataSource.id
     override val permits get() = webBookDataSource.permits
@@ -32,15 +32,15 @@ class MargeWebBookDataSource(
     override val searchProvider get() = webBookDataSource.searchProvider
     override val explorePageProvider get() = webBookDataSource.explorePageProvider
 
-    override suspend fun getBookInformation(id: String) = requestMarge.margeRequest(id.hashCode()) {
+    override suspend fun getBookInformation(id: String) = requestMerge.mergeRequest(id.hashCode()) {
         webBookDataSource.getBookInformation(id)
     }
 
-    override suspend fun getBookVolumes(id: String) = requestMarge.margeRequest(id.hashCode()) {
+    override suspend fun getBookVolumes(id: String) = requestMerge.mergeRequest(id.hashCode()) {
         webBookDataSource.getBookVolumes(id)
     }
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String) = requestMarge.margeRequest((chapterId + bookId).hashCode()) {
+    override suspend fun getChapterContent(chapterId: String, bookId: String) = requestMerge.mergeRequest((chapterId + bookId).hashCode()) {
         webBookDataSource.getChapterContent(chapterId, bookId)
     }
 }

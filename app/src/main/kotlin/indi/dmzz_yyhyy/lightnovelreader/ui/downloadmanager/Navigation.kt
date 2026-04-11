@@ -16,6 +16,7 @@ fun NavGraphBuilder.downloadManager() {
         DownloadManagerScreen(
             downloadItemIdList = viewModel.downloadItemIdList,
             bookInformationMap = viewModel.bookInformationMap,
+            loadBookInfo = viewModel::loadBookInfo,
             onClickBack = navController::popBackStackIfResumed,
             onClickCancel = viewModel::onClickCancel,
             onClickClearCompleted = viewModel::onClickClearCompleted

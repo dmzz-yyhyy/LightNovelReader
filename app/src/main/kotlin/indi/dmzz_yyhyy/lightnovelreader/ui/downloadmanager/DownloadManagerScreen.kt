@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ fun DownloadManagerScreen(
     onClickBack: () -> Unit,
     downloadItemIdList: List<DownloadItem>,
     bookInformationMap: Map<String, BookInformation>,
+    loadBookInfo: (String) -> Unit,
     onClickCancel: (DownloadItem) -> Unit,
     onClickClearCompleted: () -> Unit
 ) {
@@ -77,6 +79,7 @@ fun DownloadManagerScreen(
             Content(
                 downloadItemIdList = downloadItemIdList,
                 bookInformationMap = bookInformationMap,
+                loadBookInfo = loadBookInfo,
                 onClickCancel = onClickCancel,
                 onClickClearCompleted = onClickClearCompleted
             )
@@ -88,6 +91,7 @@ fun DownloadManagerScreen(
 private fun Content(
     downloadItemIdList: List<DownloadItem>,
     bookInformationMap: Map<String, BookInformation>,
+    loadBookInfo: (String) -> Unit,
     onClickCancel: (DownloadItem) -> Unit,
     onClickClearCompleted: () -> Unit
 ) {
@@ -113,16 +117,18 @@ private fun Content(
             }
         items(
             items = downloadItemIdList.distinct().filter { it.progress < 1f }.reversed(),
-            key = { it.hashCode() }
+            key = { "dl_${it.type.name}_${it.bookId}_${it.startTime}" }
         ) { downloadItem ->
-            bookInformationMap[downloadItem.bookId]?.let {
-                Card(
-                    modifier = Modifier.animateItem(),
-                    bookInformation = it,
-                    downloadItem = downloadItem,
-                    onClickCancel = { onClickCancel(downloadItem) }
-                )
+            val bookInformation = bookInformationMap[downloadItem.bookId] ?: BookInformation.empty(downloadItem.bookId)
+            LaunchedEffect(downloadItem.bookId) {
+                loadBookInfo(downloadItem.bookId)
             }
+            Card(
+                modifier = Modifier.animateItem(),
+                bookInformation = bookInformation,
+                downloadItem = downloadItem,
+                onClickCancel = { onClickCancel(downloadItem) }
+            )
         }
         if (downloadItemIdList.any { it.progress >= 1f })
             item {
@@ -148,16 +154,18 @@ private fun Content(
             }
         items(
             items =  downloadItemIdList.distinct().filter { it.progress >= 1f }.reversed(),
-            key = { it.hashCode() }
+            key = { "finished_${it.type.name}_${it.bookId}_${it.startTime}" }
         ) { downloadItem ->
-            bookInformationMap[downloadItem.bookId]?.let {
-                Card(
-                    modifier = Modifier.animateItem(),
-                    bookInformation = it,
-                    downloadItem = downloadItem,
-                    onClickCancel = { onClickCancel(downloadItem) }
-                )
+            val bookInformation = bookInformationMap[downloadItem.bookId] ?: BookInformation.empty(downloadItem.bookId)
+            LaunchedEffect(downloadItem.bookId) {
+                loadBookInfo(downloadItem.bookId)
             }
+            Card(
+                modifier = Modifier.animateItem(),
+                bookInformation = bookInformation,
+                downloadItem = downloadItem,
+                onClickCancel = { onClickCancel(downloadItem) }
+            )
         }
         navigationBarSpacer()
     }

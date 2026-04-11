@@ -1,0 +1,42 @@
+name: CheckAndGenerateApiDoc
+on:
+  workflow_dispatch:
+  merge_group:
+  push:
+    branches: [refactoring]
+    paths:
+      - api/**
+
+jobs:
+  CheckAndGenerateApiDoc:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java 17
+        uses: actions/setup-java@v3.6.0
+        with:
+          distribution: zulu
+          java-version: 17
+
+      - name: Build with Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make gradle wrapper executable
+        if: ${{ runner.os != 'Windows' }}
+        run: chmod +x ./gradlew
+
+      - name: Check doc and generate html
+        run: ./gradlew api:dokkaGenerateHtml
+
+      - name: Copy doc html
+        run: rm -rf ./api/doc && mkdir ./api/doc && cp -rf ./api/build/dokka/html/** ./api/doc
+
+      - name: Commit doc Html
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: "Doc html"
+          commit_user_name: "Web Page Commit Github Bot"
+          file_pattern: './api/doc/**'
+          repository: ./api/doc

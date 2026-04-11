@@ -217,7 +217,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
             if (menu != null && menu.text().contains("小说目录")) {
                 val id = menu.attr("href").split("/").getOrNull(3)
                 if (id == null) {
-                    emit(SearchResult.Error("Failed to prase single book id"))
+                    emit(SearchResult.Error("Failed to parse single book id"))
                     return@flow
                 }
                 emit(SearchResult.SingleBook(id))

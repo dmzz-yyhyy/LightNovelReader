@@ -5,14 +5,14 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 
-class RequestMarge {
+class RequestMerge {
     data class Result(
         val value: Any
     )
 
     val resultMap: MutableMap<String, Result?> = mutableMapOf()
 
-    suspend inline fun <reified T: Any> margeRequest(id: Int, block: suspend () -> T): T {
+    suspend inline fun <reified T: Any> mergeRequest(id: Int, block: suspend () -> T): T {
         val key = T::class.hashCode().toString() + id
 
         if (!resultMap.contains(key)) {

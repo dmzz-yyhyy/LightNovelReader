@@ -1,9 +1,11 @@
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import java.net.URI
 
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.dokka)
     id("maven-publish")
 }
 
@@ -86,4 +88,27 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.dom4j)
+}
+
+dokka {
+    moduleName.set("Light Novel Reader Api")
+    dokkaPublications.html {
+        suppressInheritedMembers.set(true)
+        //failOnWarning.set(true)
+    }
+    dokkaSourceSets.configureEach {
+        reportUndocumented.set(true)
+        skipEmptyPackages.set(true)
+        skipDeprecated.set(false)
+
+        documentedVisibilities.set(
+            setOf(VisibilityModifier.Public)
+        )
+    }
+    dokkaSourceSets.create("main") {
+        perPackageOption {
+            matchingRegex.set(android.namespace)
+            suppress.set(false)
+        }
+    }
 }

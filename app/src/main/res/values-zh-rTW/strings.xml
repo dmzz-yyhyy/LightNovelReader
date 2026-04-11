@@ -206,6 +206,10 @@
     <string name="settings_theme_text_font">文字字型</string>
     <string name="settings_theme_text_font_desc">使用應用內建的字型或自訂字型檔案</string>
     <string name="settings_theme_text_font_weight">字重</string>
+    <string name="settings_theme_costume_color_scheme">自定意主題配色</string>
+    <string name="settings_theme_costume_color_scheme_desc">覆蓋主題原有顏色</string>
+    <string name="settings_theme_open_costume_color_scheme_screen">自定義配色設定</string>
+    <string name="settings_theme_open_costume_color_scheme_screen_desc">開啟自定義配色設定畫面</string>
 
     <string name="data_settings">資料</string>
     <string name="settings_snap_data">快照資料</string>
@@ -528,4 +532,13 @@
     <string name="plugin_repo_install_failed">安裝 %1$s 失敗：%2$s</string>
     <string name="plugin_repo_install_cancelled">已取消安裝 %1$s</string>
     <string name="plugin_repo_parts_incomplete">分卷下載不完整：已完成 %1$d/%2$d，缺失 %3$s</string>
+
+    <!-- Notifications -->
+    <string name="epub_export_notification_channel_name">EPUB 匯出進度</string>
+    <string name="epub_export_notification_preparing">準備中…</string>
+    <string name="epub_export_notification_failed">匯出失敗</string>
+    <string name="epub_export_notification_success">已成功完成</string>
+    <string name="epub_export_notification_stage_chapters">章節 %1$d/%2$d -</string>
+    <string name="epub_export_notification_stage_images">圖片 %1$d/%2$d -</string>
+    <string name="epub_export_notification_stage_save">正在儲存 EPUB</string>
 </resources>

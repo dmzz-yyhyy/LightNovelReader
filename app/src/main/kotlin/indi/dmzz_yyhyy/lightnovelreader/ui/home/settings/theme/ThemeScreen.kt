@@ -272,14 +272,7 @@ fun ThemeSettingsList(
             checked = settingState.enableM3E,
             booleanUserData = settingState.enableM3EUserData
         )
-        SettingsSwitchEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.palette_24px),
-            title = "啟用覆蓋主題配色",
-            description = "覆蓋主題原有顏色，字定義配色",
-            checked = settingState.enableCostumeThemeScheme,
-            booleanUserData = settingState.enableCostumeThemeSchemeUserData
-        )
+        
         if (!settingState.dynamicColorsKey) {
             SettingsMenuEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
@@ -300,12 +293,20 @@ fun ThemeSettingsList(
                 onOptionChange = settingState.darkThemeNameUserData::asynchronousSet
             )
         }
+        SettingsSwitchEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.palette_24px),
+            title = stringResource(R.string.settings_theme_costume_color_scheme),
+            description = stringResource(R.string.settings_theme_costume_color_scheme_desc),
+            checked = settingState.enableCostumeThemeScheme,
+            booleanUserData = settingState.enableCostumeThemeSchemeUserData
+        )
         if (settingState.enableCostumeThemeScheme) {
             SettingsClickableEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
                 painter = painterResource(R.drawable.palette_24px),
-                title = "覆蓋主題配色設定",
-                description = "開啟主題配色設定頁面調整所有配色",
+                title = stringResource(R.string.settings_theme_open_costume_color_scheme_screen),
+                description = stringResource(R.string.settings_theme_open_costume_color_scheme_screen_desc),
                 onClick = onClickOpenCostumeThemeScheme
             )
         }

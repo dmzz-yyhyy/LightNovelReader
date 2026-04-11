@@ -1,15 +1,16 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import com.github.michaelbull.result.get
 import cxhttp.CxHttp
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
+import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -164,11 +165,8 @@ object Wenku8Api : WebBookDataSource {
                     ?.forEach {
                         val uri = it["data"]?.jsonObject["uri"]?.jsonPrimitive?.content?.toUri()
                             ?: return null
-                        val options = BitmapFactory.Options()
-                        options.inJustDecodeBounds = true
-                        val inputStream = context.contentResolver.openInputStream(uri)
-                        BitmapFactory.decodeStream(inputStream, null, options)
-                        if (options.outHeight > options.outWidth) return uri
+                        val bitmap = ImageUtils.uriToBitmap(uri, context).get() ?: return@forEach
+                        if (bitmap.height > bitmap.width) return uri
                     }
                 return null
             }

@@ -5,7 +5,7 @@ on:
   push:
     branches: [refactoring]
     paths:
-      - .github/workflows/publish_epub.yml
+      - .github/workflows/publish_api.yml
       - api/**
 
 jobs:

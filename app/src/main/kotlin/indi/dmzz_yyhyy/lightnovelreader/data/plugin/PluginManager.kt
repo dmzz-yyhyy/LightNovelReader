@@ -275,7 +275,7 @@ class PluginManager @Inject constructor(
     fun installPlugin(
         plugin: File
     ): Flow<InstallState> = flow {
-        emit(InstallState.Start.PrasePackageInfo)
+        emit(InstallState.Start.ParsePackageInfo)
         val packageInfo = appContext.packageManager.getPackageArchiveInfo(
             plugin.path,
             PackageManager.GET_PERMISSIONS
@@ -296,7 +296,7 @@ class PluginManager @Inject constructor(
             unloadPlugin(packageName)
         }
 
-        emit(InstallState.Start.PrasePluginMetadata)
+        emit(InstallState.Start.ParsePluginMetadata)
         val pluginMetadataResult = getPluginMetadata(plugin, packageName)
         if (pluginMetadataResult.isErr) {
             emit(InstallState.Error(pluginMetadataResult.unwrapError()))

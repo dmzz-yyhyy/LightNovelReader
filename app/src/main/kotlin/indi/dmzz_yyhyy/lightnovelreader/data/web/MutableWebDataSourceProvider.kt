@@ -18,7 +18,7 @@ class MutableWebDataSourceProvider: WebBookDataSourceProvider {
         if (_value.cache != null)
             CacheWebBookDataSource(
                 _value.cache!!,
-                MargeWebBookDataSource(
+                MergeWebBookDataSource(
                     AdvancedPrioritySemaphoreWebBookDataSource(
                         _value,
                         advancedPrioritySemaphore,
@@ -27,7 +27,7 @@ class MutableWebDataSourceProvider: WebBookDataSourceProvider {
                 )
             )
         else
-            MargeWebBookDataSource(
+            MergeWebBookDataSource(
                 AdvancedPrioritySemaphoreWebBookDataSource(
                     _value,
                     advancedPrioritySemaphore,
