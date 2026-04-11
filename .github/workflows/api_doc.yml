@@ -38,5 +38,4 @@ jobs:
         with:
           commit_message: "Doc html"
           commit_user_name: "Web Page Commit Github Bot"
-          file_pattern: './api/doc/**'
-          repository: ./api/doc
+          file_pattern: "./api/doc/**"

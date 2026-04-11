@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>UserDataPath</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer="defer"></script>
+</head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+            <a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Light Novel Reader Api
+            </a>
+        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle"
+                type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true"
+                        data-filter=":api/release">release</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox"
+                        data-role="dropdown-toggle"
+                        aria-controls="platform-tags-listbox"
+                        aria-haspopup="listbox"
+                        aria-expanded="false"
+                        aria-label="Toggle source sets"
+                ></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":api/release"
+                                       data-filter=":api/release"/>
+                                <span class="checkbox--icon"></span>
+                                release
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button"
+                    type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config='{"defaultSize": 280, "minSize": 200, "maxSize": 400}'>
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list"
+                    data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Light Novel Reader Api
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="Light Novel Reader Api::io.nightfish.lightnovelreader.api.userdata/UserDataPath///PointingToDeclaration//1788699184">
+  <div class="breadcrumbs"><a href="../../../index.html">Light Novel Reader Api</a><span class="delimiter">/</span><a href="../index.html">io.nightfish.lightnovelreader.api.userdata</a><span class="delimiter">/</span><span class="current">UserDataPath</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>User</span><wbr></wbr><span>Data</span><wbr></wbr><span><span>Path</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">UserDataPath</a></div><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/index.html">Reader</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-font-size/index.html">FontSize</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-font-line-height/index.html">FontLineHeight</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-font-weigh/index.html">FontWeigh</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-keep-screen-on/index.html">KeepScreenOn</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-hide-status-bar/index.html">EnableHideStatusBar</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-background-image/index.html">EnableBackgroundImage</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-background-image-display-mode/index.html">BackgroundImageDisplayMode</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-is-using-flip-page/index.html">IsUsingFlipPage</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-is-using-click-flip-page/index.html">IsUsingClickFlipPage</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-is-using-continuous-scrolling/index.html">IsUsingContinuousScrolling</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-is-using-volume-key-flip/index.html">IsUsingVolumeKeyFlip</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-volume-key-continuous-flip-interval/index.html">VolumeKeyContinuousFlipInterval</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-flip-anime/index.html">FlipAnime</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-fast-chapter-change/index.html">FastChapterChange</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-battery-indicator-display-mode/index.html">BatteryIndicatorDisplayMode</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-time-indicator/index.html">EnableTimeIndicator</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-chapter-title-indicator/index.html">EnableChapterTitleIndicator</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-reading-chapter-progress-indicator/index.html">EnableReadingChapterProgressIndicator</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-enable-simplified-traditional-transform/index.html">EnableSimplifiedTraditionalTransform</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-auto-padding/index.html">AutoPadding</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-top-padding/index.html">TopPadding</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-bottom-padding/index.html">BottomPadding</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-left-padding/index.html">LeftPadding</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-right-padding/index.html">RightPadding</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-text-color/index.html">TextColor</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-text-dark-color/index.html">TextDarkColor</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-font-family-uri/index.html">FontFamilyUri</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-background-color/index.html">BackgroundColor</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-background-dark-color/index.html">BackgroundDarkColor</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-background-image-uri/index.html">BackgroundImageUri</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-background-dark-image-uri/index.html">BackgroundDarkImageUri</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reader/-back-block-mode/index.html">BackBlockMode</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-reading-books/index.html">ReadingBooks</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-search/index.html">Search</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-search/-history/index.html">History</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/index.html">Settings</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/index.html">App</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-auto-check-update/index.html">AutoCheckUpdate</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-update-channel/index.html">UpdateChannel</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-distribution-platform/index.html">DistributionPlatform</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-proxy-url/index.html">ProxyUrl</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-statistics/index.html">Statistics</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-app/-max-cache/index.html">MaxCache</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/index.html">Display</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-dark-mode/index.html">DarkMode</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-dynamic-colors/index.html">DynamicColors</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-enable-m3-e/index.html">EnableM3E</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-app-locale/index.html">AppLocale</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-light-theme-name/index.html">LightThemeName</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-dark-theme-name/index.html">DarkThemeName</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-date-style/index.html">DateStyle</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-date-show-year/index.html">DateShowYear</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-date-order/index.html">DateOrder</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-display/-relative-time-style/index.html">RelativeTimeStyle</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-data/index.html">Data</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-data/-web-data-source-id/index.html">WebDataSourceId</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-data/-log-level/index.html">LogLevel</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-settings/-data/-is-use-proxy/index.html">IsUseProxy</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-completed-download-book-list/index.html">CompletedDownloadBookList</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-plugin/index.html">Plugin</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-plugin/-enabled-plugins/index.html">EnabledPlugins</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-local-book/index.html">LocalBook</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-local-book/-local-book-ids/index.html">LocalBookIds</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="-349131292%2FClasslikes%2F1788699184" anchor-label="CompletedDownloadBookList" id="-349131292%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-completed-download-book-list/index.html"><span>Completed</span><wbr></wbr><span>Download</span><wbr></wbr><span>Book</span><wbr></wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-349131292%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-completed-download-book-list/index.html">CompletedDownloadBookList</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="537581674%2FClasslikes%2F1788699184" anchor-label="LocalBook" id="537581674%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-local-book/index.html"><span>Local</span><wbr></wbr><span><span>Book</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="537581674%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-local-book/index.html">LocalBook</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-603605807%2FClasslikes%2F1788699184" anchor-label="Plugin" id="-603605807%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-plugin/index.html"><span><span>Plugin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-603605807%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-plugin/index.html">Plugin</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="378449217%2FClasslikes%2F1788699184" anchor-label="Reader" id="378449217%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-reader/index.html"><span><span>Reader</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="378449217%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-reader/index.html">Reader</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="581468326%2FClasslikes%2F1788699184" anchor-label="ReadingBooks" id="581468326%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-reading-books/index.html"><span>Reading</span><wbr></wbr><span><span>Books</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="581468326%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-reading-books/index.html">ReadingBooks</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-775521284%2FClasslikes%2F1788699184" anchor-label="Search" id="-775521284%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-search/index.html"><span><span>Search</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-775521284%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-search/index.html">Search</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1526203681%2FClasslikes%2F1788699184" anchor-label="Settings" id="1526203681%2FClasslikes%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-settings/index.html"><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1526203681%2FClasslikes%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-settings/index.html">Settings</a> : <a href="index.html">UserDataPath</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="864279853%2FProperties%2F1788699184" anchor-label="groupChildren" id="864279853%2FProperties%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="group-children.html"><span>group</span><wbr></wbr><span><span>Children</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="864279853%2FProperties%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="group-children.html">groupChildren</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="index.html">UserDataPath</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2011548536%2FProperties%2F1788699184" anchor-label="groupChildrenPath" id="-2011548536%2FProperties%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="group-children-path.html"><span>group</span><wbr></wbr><span>Children</span><wbr></wbr><span><span>Path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2011548536%2FProperties%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="group-children-path.html">groupChildrenPath</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1003135446%2FProperties%2F1788699184" anchor-label="path" id="-1003135446%2FProperties%2F1788699184" data-filterable-set=":api/release"></a>
+          <div class="table-row table-row_content" data-filterable-current=":api/release" data-filterable-set=":api/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="path.html"><span><span>path</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1003135446%2FProperties%2F1788699184"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":api/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="path.html">path</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
