@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -743,6 +745,76 @@ fun ColorPickerDialog(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             colors.forEachIndexed { index, color ->
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clickable {
+                            currentColor = color
+                        }
+                ) {
+                    val secondary = colorScheme.secondary
+                    val surfaceContainer = colorScheme.surfaceContainer
+                    val blockIconId = painterResource(R.drawable.block_24px)
+                    Canvas(
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        if (color == currentColor)
+                            drawCircle(
+                                color = secondary,
+                                radius = 22.dp.toPx(),
+                            )
+                        drawCircle(
+                            color = surfaceContainer,
+                            radius = 20.dp.toPx(),
+                        )
+                        drawCircle(
+                            color = if (color.isUnspecified) surfaceContainer else color,
+                            radius = 20.dp.toPx(),
+                        )
+                    }
+                    if (index == 0)
+                        Icon(
+                            modifier = Modifier.align(Alignment.Center),
+                            painter = blockIconId,
+                            contentDescription = null
+                        )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CostumeColorPickerDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: (Color) -> Unit,
+    selectedColor: Color,
+    colors: List<Color>,
+) {
+    var currentColor by remember {
+        mutableStateOf(selectedColor)
+    }
+
+    BaseDialog (
+        icon = painterResource(R.drawable.palette_24px),
+        title = stringResource(R.string.dialog_color_picker),
+        description = "選擇一個顏色",
+        onDismissRequest = onDismissRequest,
+        onConfirmation = { onConfirmation(currentColor) },
+        dismissText = stringResource(R.string.cancel),
+        confirmationText = stringResource(R.string.apply),
+    ) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(5),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .padding(horizontal = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(colors.size) { index ->
+                val color = colors[index]
                 Box(
                     modifier = Modifier
                         .size(44.dp)

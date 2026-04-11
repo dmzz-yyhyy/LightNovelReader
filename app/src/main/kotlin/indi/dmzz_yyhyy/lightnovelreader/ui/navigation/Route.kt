@@ -86,7 +86,12 @@ object Route {
             @Serializable
             object Debug
             @Serializable
-            object Theme
+            object Theme {
+                @Serializable
+                object Main
+                @Serializable
+                object CostumeThemeScheme
+            }
             @Serializable
             object Licenses
             @Serializable
@@ -119,6 +124,29 @@ object Route {
                 if (javaClass != other?.javaClass) return false
 
                 other as ColorPickerDialog
+
+                if (colorUserDataPath != other.colorUserDataPath) return false
+                if (!colors.contentEquals(other.colors)) return false
+
+                return true
+            }
+
+            override fun hashCode(): Int {
+                var result = colorUserDataPath.hashCode()
+                result = 31 * result + colors.contentHashCode()
+                return result
+            }
+        }
+        @Serializable
+        data class CostumeColorPickerDialog(
+            val colorUserDataPath: String,
+            val colors: LongArray
+        ) {
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as CostumeColorPickerDialog
 
                 if (colorUserDataPath != other.colorUserDataPath) return false
                 if (!colors.contentEquals(other.colors)) return false

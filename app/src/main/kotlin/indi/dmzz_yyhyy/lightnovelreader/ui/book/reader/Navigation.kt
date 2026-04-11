@@ -30,6 +30,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ColorPickerDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.CostumeColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme.navigateToSettingsThemeDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.saveBitmapAsPng
@@ -62,6 +63,7 @@ fun NavGraphBuilder.bookReaderDestination() {
         )
     }
     colorPickerDialog()
+    costumeColorPickerDialog()
     imageViewerDialog()
 }
 
@@ -97,9 +99,32 @@ private fun NavGraphBuilder.colorPickerDialog() {
     }
 }
 
+private fun NavGraphBuilder.costumeColorPickerDialog() {
+    dialog<Route.Book.CostumeColorPickerDialog> { entry ->
+        val navController = LocalNavController.current
+        val viewModel = hiltViewModel<ColorPickerDialogViewModel>()
+        val route = entry.toRoute<Route.Book.CostumeColorPickerDialog>()
+        val selectedColor by viewModel.init(route.colorUserDataPath).collectAsState(Color.Unspecified)
+        CostumeColorPickerDialog(
+            onDismissRequest = { navController.popBackStack() },
+            onConfirmation = {
+                viewModel.changeBackgroundColor(it)
+                navController.popBackStack()
+            },
+            selectedColor = selectedColor ?: Color.Unspecified,
+            colors = route.colors.map { Color(if (it < 0) return@map Color.Unspecified else it) }
+        )
+    }
+}
+
 fun NavController.navigateToColorPickerDialog(colorUserDataPath: String, colors: List<Long>) {
     if (!this.isResumed()) return
     navigate(Route.Book.ColorPickerDialog(colorUserDataPath, colors.toLongArray()))
+}
+
+fun NavController.navigateToCostumeColorPickerDialog(colorUserDataPath: String, colors: List<Long>) {
+    if (!this.isResumed()) return
+    navigate(Route.Book.CostumeColorPickerDialog(colorUserDataPath, colors.toLongArray()))
 }
 @SuppressLint("LocalContextGetResourceValueCall")
 private fun NavGraphBuilder.imageViewerDialog() {

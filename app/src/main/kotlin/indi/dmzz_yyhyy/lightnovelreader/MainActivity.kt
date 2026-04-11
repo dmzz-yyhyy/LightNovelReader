@@ -94,9 +94,26 @@ class MainActivity : ComponentActivity() {
         val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
         val textColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextColor.path)
         val textDarkColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextDarkColor.path)
-        val costumeThemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSurface.path)
-        val costumeThemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeBackground.path)
-        val costumeThemePrimaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemePrimary.path)
+        //costume theme scheme
+        val costumeThemeSchemePrimaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemePrimary.path)
+        val costumeThemeSchemeOnPrimaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnPrimary.path)
+        val costumeThemeSchemePrimaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemePrimaryContainer.path)
+        val costumeThemeSchemeOnPrimaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnPrimaryContainer.path)
+        val costumeThemeSchemeSecondaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeSecondary.path)
+        val costumeThemeSchemeOnSecondaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnSecondary.path)
+        val costumeThemeSchemeSecondaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeSecondaryContainer.path)
+        val costumeThemeSchemeOnSecondaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnSecondaryContainer.path)
+        val costumeThemeSchemeTertiaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeTertiary.path)
+        val costumeThemeSchemeOnTertiaryUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnTertiary.path)
+        val costumeThemeSchemeTertiaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeTertiaryContainer.path)
+        val costumeThemeSchemeOnTertiaryContainerUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnTertiaryContainer.path)
+        val costumeThemeSchemeBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeBackground.path)
+        val costumeThemeSchemeOnBackgroundUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnBackground.path)
+        val costumeThemeSchemeSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeSurface.path)
+        val costumeThemeSchemeOnSurfaceUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnSurface.path)
+        val costumeThemeSchemeErrorUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeError.path)
+        val costumeThemeSchemeOnErrorUserData = userDataRepository.colorUserData(UserDataPath.Settings.Display.CostumeThemeSchemeOnError.path)
+
         setContent {
             val readerStyle by remember {
                 combine(
@@ -123,15 +140,31 @@ class MainActivity : ComponentActivity() {
             ))
             LightNovelReaderTheme(
                 darkMode = darkMode,
-                appLocale = appLocale,
                 isDynamicColor = dynamicColor,
-                enableM3E = enableM3E,
+                dynamicBlack = false,
                 enableCostumeThemeScheme = enableCostumeThemeScheme,
+                costumeThemeSchemePrimary = costumeThemeSchemePrimaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnPrimary = costumeThemeSchemeOnPrimaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemePrimaryContainer = costumeThemeSchemePrimaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnPrimaryContainer = costumeThemeSchemeOnPrimaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeSecondary = costumeThemeSchemeSecondaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnSecondary = costumeThemeSchemeOnSecondaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeSecondaryContainer = costumeThemeSchemeSecondaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnSecondaryContainer = costumeThemeSchemeOnSecondaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeTertiary = costumeThemeSchemeTertiaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnTertiary = costumeThemeSchemeOnTertiaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeTertiaryContainer = costumeThemeSchemeTertiaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnTertiaryContainer = costumeThemeSchemeOnTertiaryContainerUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeBackground = costumeThemeSchemeBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnBackground = costumeThemeSchemeOnBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeSurface = costumeThemeSchemeSurfaceUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnSurface = costumeThemeSchemeOnSurfaceUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeError = costumeThemeSchemeErrorUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                costumeThemeSchemeOnError = costumeThemeSchemeOnErrorUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Unspecified).value,
+                enableM3E = enableM3E,
                 lightThemeName = lightThemeName,
                 darkThemeName = darkThemeName,
-                costumeThemeSchemeSurface = costumeThemeSurfaceUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value,
-                costumeThemeSchemeBackground = costumeThemeBackgroundUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value,
-                costumeThemeSchemePrimary = costumeThemePrimaryUserData.getFlowWithDefault(Color.Unspecified).collectAsState(initial = Color.Black).value
+                appLocale = appLocale
             ) {
                 LightNovelReaderApp(
                     readerStyle = readerStyle,
@@ -191,7 +224,7 @@ class MainActivity : ComponentActivity() {
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.Display.enableCostumeThemeScheme.path).getFlow().collect {
+            userDataRepository.booleanUserData(UserDataPath.Settings.Display.EnableCostumeThemeScheme.path).getFlow().collect {
                 it?.let { enableCostumeThemeScheme = it }
             }
         }

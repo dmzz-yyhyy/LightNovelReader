@@ -106,9 +106,7 @@ fun ThemeScreen(
     onClickBack: () -> Unit,
     onClickChangeTextColor: () -> Unit,
     onClickChangeBackgroundColor: () -> Unit,
-    onClickOpenPaletteSurface: () -> Unit,
-    onClickOpenPaletteBackground: () -> Unit,
-    onClickOpenPalettePrimary: () -> Unit
+    onClickOpenCostumeThemeScheme: () -> Unit
 ) {
     val context = LocalContext.current
     Column(
@@ -120,7 +118,7 @@ fun ThemeScreen(
                 DarkModeSettings(themeSettingState)
             }
             item {
-                ThemeSettingsList(themeSettingState, onClickOpenPaletteSurface, onClickOpenPaletteBackground, onClickOpenPalettePrimary)
+                ThemeSettingsList(themeSettingState, onClickOpenCostumeThemeScheme)
             }
             item {
                 ReaderThemeSettingsList(themeSettingState, onClickChangeBackgroundColor)
@@ -250,9 +248,7 @@ fun DarkModeSettings(
 @Composable
 fun ThemeSettingsList(
     settingState: SettingState,
-    onClickOpenPaletteSurface: () -> Unit,
-    onClickOpenPaletteBackground: () -> Unit,
-    onClickOpenPalettePrimary: () -> Unit
+    onClickOpenCostumeThemeScheme: () -> Unit
 ) {
     SettingsCategory(
         title = stringResource(R.string.theme_settings),
@@ -308,23 +304,9 @@ fun ThemeSettingsList(
             SettingsClickableEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
                 painter = painterResource(R.drawable.palette_24px),
-                title = "覆蓋主題Surface顏色",
-                description = "覆蓋主題原有Surface顏色",
-                onClick = onClickOpenPaletteSurface
-            )
-            SettingsClickableEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.palette_24px),
-                title = "覆蓋主題Background顏色",
-                description = "覆蓋主題原有Background顏色",
-                onClick = onClickOpenPaletteBackground
-            )
-            SettingsClickableEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.palette_24px),
-                title = "覆蓋主題Primary顏色",
-                description = "覆蓋主題原有Primary顏色",
-                onClick = onClickOpenPalettePrimary
+                title = "覆蓋主題配色設定",
+                description = "開啟主題配色設定頁面調整所有配色",
+                onClick = onClickOpenCostumeThemeScheme
             )
         }
     }

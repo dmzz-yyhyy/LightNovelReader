@@ -7,13 +7,14 @@ import androidx.navigation.compose.composable
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ColorPickerDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToColorPickerDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToCostumeColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 
 fun NavGraphBuilder.settingsThemeDestination() {
-    composable<Route.Main.Settings.Theme> {
+    composable<Route.Main.Settings.Theme.Main> {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<ThemeViewModel>()
         val readerSettingState = viewModel.settingState
@@ -27,38 +28,43 @@ fun NavGraphBuilder.settingsThemeDestination() {
                 navController.navigateToColorPickerDialog(
                     if (isDark) UserDataPath.Reader.TextDarkColor.path
                     else UserDataPath.Reader.TextColor.path,
-                    listOf(-1, 0xFF1D1B20, 0xFFE6E0E9)
+                    listOf(-1L, 0xFF1D1B20L, 0xFFE6E0E9L)
                 )
             },
             onClickChangeBackgroundColor = {
                 navController.navigateToColorPickerDialog(
                     if (isDark) UserDataPath.Reader.BackgroundDarkColor.path
                     else UserDataPath.Reader.BackgroundColor.path,
-                    listOf(-1, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
+                    listOf(-1L, 0x38E8CCA5L, 0x38FF8080L, 0x38d3b17dL, 0x3834C759L, 0x3832ADE6L, 0x38007AFFL, 0x385856D6L, 0x38AF52DEL)
                 )
             },
-            onClickOpenPaletteSurface = {
-                navController.navigateToColorPickerDialog(
-                    UserDataPath.Settings.Display.CostumeThemeSurface.path,
-                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
-                )
+            onClickOpenCostumeThemeScheme = {
+                navController.navigateToCostumeThemeSchemeScreen()
             },
-            onClickOpenPaletteBackground = {
-                navController.navigateToColorPickerDialog(
-                    UserDataPath.Settings.Display.CostumeThemeBackground.path,
-                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
-                )
-            },
-            onClickOpenPalettePrimary = {
-                navController.navigateToColorPickerDialog(
-                    UserDataPath.Settings.Display.CostumeThemePrimary.path,
-                    listOf(-1, 0x000000, 0xffffff, 0x38E8CCA5, 0x38FF8080, 0x38d3b17d,0x3834C759, 0x3832ADE6, 0x38007AFF, 0x385856D6, 0x38AF52DE)
-                )
-            },
+        )
+    }
+    
+    composable<Route.Main.Settings.Theme.CostumeThemeScheme> {
+        val navController = LocalNavController.current
+        val viewModel = hiltViewModel<ThemeViewModel>()
+        val readerSettingState = viewModel.settingState
+        val isDark = LocalAppTheme.current.isDark
+        
+        CostumeThemeSchemeScreen(
+            settingState = readerSettingState,
+            onClickBack = navController::popBackStackIfResumed,
+            onClickOpenColorPicker = { colorPath ->
+                val colorList = listOf(-1L, 0x000000L, 0xffffffffL, 0x38E8CCA5L, 0x38FF8080L, 0x38d3b17dL, 0x3834C759L, 0x3832ADE6L, 0x38007AFFL, 0x385856D6L, 0x38AF52DEL)
+                navController.navigateToCostumeColorPickerDialog(colorPath, colorList)
+            }
         )
     }
 }
 
 fun NavController.navigateToSettingsThemeDestination() {
-    navigate(Route.Main.Settings.Theme)
+    navigate(Route.Main.Settings.Theme.Main)
+}
+
+fun NavController.navigateToCostumeThemeSchemeScreen() {
+    navigate(Route.Main.Settings.Theme.CostumeThemeScheme)
 }

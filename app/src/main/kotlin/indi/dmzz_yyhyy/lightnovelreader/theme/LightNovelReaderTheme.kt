@@ -37,9 +37,24 @@ fun LightNovelReaderTheme(
     isDynamicColor: Boolean = true,
     dynamicBlack: Boolean = false,
     enableCostumeThemeScheme: Boolean = false,
-    costumeThemeSchemeSurface: ComposeColor = ComposeColor(0xFF0E0E12),
-    costumeThemeSchemeBackground: ComposeColor = ComposeColor(0xFF0E0E12),
-    costumeThemeSchemePrimary: ComposeColor = ComposeColor(0xFF0E0E12),
+    costumeThemeSchemePrimary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnPrimary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemePrimaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnPrimaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSecondary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSecondary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSecondaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSecondaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeTertiary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnTertiary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeTertiaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnTertiaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeBackground: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnBackground: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSurface: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSurface: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeError: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnError: ComposeColor = ComposeColor.Unspecified,
     enableM3E: Boolean = false,
     lightThemeName: String,
     darkThemeName: String,
@@ -80,7 +95,20 @@ fun LightNovelReaderTheme(
         }
     }
 
-    val costumeColorScheme = remember(isDynamicColor, isDark, darkThemeName, lightThemeName, costumeThemeSchemeSurface, costumeThemeSchemeBackground, costumeThemeSchemePrimary) {
+    // 根據 isDark 選擇自定義顏色的基礎預設
+    val baseColorPreset = if (isDark) CostumeThemeColorsDark else CostumeThemeColorsLight
+
+    val costumeColorScheme = remember(
+        isDynamicColor, isDark, darkThemeName, lightThemeName,
+        costumeThemeSchemePrimary,costumeThemeSchemeOnPrimary,
+        costumeThemeSchemePrimaryContainer,costumeThemeSchemeOnPrimaryContainer,
+        costumeThemeSchemeSecondary,costumeThemeSchemeOnSecondary,
+        costumeThemeSchemeSecondaryContainer,costumeThemeSchemeOnSecondaryContainer,
+        costumeThemeSchemeTertiary,costumeThemeSchemeOnTertiary,costumeThemeSchemeTertiaryContainer,costumeThemeSchemeOnTertiaryContainer,
+        costumeThemeSchemeBackground,costumeThemeSchemeOnBackground,
+        costumeThemeSchemeSurface,costumeThemeSchemeOnSurface,
+        costumeThemeSchemeError,costumeThemeSchemeOnError
+    ) {
         val scheme = if (isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             dynamicDarkColorScheme(context)
         } else if (!isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -91,9 +119,24 @@ fun LightNovelReaderTheme(
             DefaultLightColorScheme
         }
         scheme.copy(
-            surface = costumeThemeSchemeSurface,
-            background = costumeThemeSchemeBackground,
-            primary = costumeThemeSchemePrimary
+            primary = costumeThemeSchemePrimary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.primary,
+            onPrimary = costumeThemeSchemeOnPrimary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onPrimary,
+            primaryContainer = costumeThemeSchemePrimaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.primaryContainer,
+            onPrimaryContainer = costumeThemeSchemeOnPrimaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onPrimaryContainer,
+            secondary = costumeThemeSchemeSecondary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.secondary,
+            onSecondary = costumeThemeSchemeOnSecondary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSecondary,
+            secondaryContainer = costumeThemeSchemeSecondaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.secondaryContainer,
+            onSecondaryContainer = costumeThemeSchemeOnSecondaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSecondaryContainer,
+            tertiary = costumeThemeSchemeTertiary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.tertiary,
+            onTertiary = costumeThemeSchemeOnTertiary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onTertiary,
+            tertiaryContainer = costumeThemeSchemeTertiaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.tertiaryContainer,
+            onTertiaryContainer = costumeThemeSchemeOnTertiaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onTertiaryContainer,
+            background = costumeThemeSchemeBackground.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.background,
+            onBackground = costumeThemeSchemeOnBackground.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onBackground,
+            surface = costumeThemeSchemeSurface.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.surface,
+            onSurface = costumeThemeSchemeOnSurface.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSurface,
+            error = costumeThemeSchemeError.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.error,
+            onError = costumeThemeSchemeOnError.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onError
         )
     }
 
