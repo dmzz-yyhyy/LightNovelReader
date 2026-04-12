@@ -5,10 +5,12 @@ on:
   pull_request:
     branches: [refactoring]
     paths:
+      - .github/workflows/api_doc.yml
       - api/**
   push:
     branches: [refactoring]
     paths:
+      - .github/workflows/api_doc.yml
       - api/**
 
 jobs:
