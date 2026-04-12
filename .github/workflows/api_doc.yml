@@ -37,9 +37,10 @@ jobs:
           name: api-doc
           path: api/build/dokka/
 
-  DeployApiDoc:
+  DeployPreviewApiDoc:
     runs-on: ubuntu-latest
     needs: CheckApiDoc
+    if: github.event_name == 'pull_request'
 
     steps:
       - uses: actions/checkout@v4
@@ -54,3 +55,22 @@ jobs:
 
       - name: Deploy to Vercel
         run: npx vercel deploy doc --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+  DeployProductionApiDoc:
+    runs-on: ubuntu-latest
+    needs: CheckApiDoc
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: npm install -g vercel
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: api-doc
+          path: doc
+
+      - name: Deploy to Vercel
+        run: npx vercel deploy doc --yes --token=${{ secrets.VERCEL_TOKEN }}
