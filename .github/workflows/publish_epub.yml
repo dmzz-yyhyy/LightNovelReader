@@ -6,7 +6,7 @@ on:
     branches: [refactoring]
     paths:
       - .github/workflows/publish_epub.yml
-      - api/**
+      - epub/**
 
 jobs:
   PublishApiArtifact:

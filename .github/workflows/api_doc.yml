@@ -2,6 +2,10 @@ name: ApiDoc
 on:
   workflow_dispatch:
   merge_group:
+  pull_request:
+    branches: [refactoring]
+    paths:
+      - api/**
   push:
     branches: [refactoring]
     paths:
