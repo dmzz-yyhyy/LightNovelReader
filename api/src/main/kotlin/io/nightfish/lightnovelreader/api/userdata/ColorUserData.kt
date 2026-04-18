@@ -1,5 +1,6 @@
 package io.nightfish.lightnovelreader.api.userdata
 
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -21,10 +22,22 @@ class ColorUserData (
     }
 
     override fun get(): Color? {
-        return userDataDao.get(path)?.toULong().let { Color(it?: return null) }
+        return try {
+            userDataDao.get(path)?.toULong().let { Color(it?: return null) }
+        } catch (e: NumberFormatException) {
+            Log.e("ColorUserData", "Failed to parse color value at path: $path", e)
+            null
+        }
     }
 
     override fun getFlow(): Flow<Color?> {
-        return userDataDao.getFlow(path).map { it?.toULong() }.map { Color(it?: return@map null) }
+        return userDataDao.getFlow(path).map { rawValue ->
+            try {
+                rawValue?.toULong().let { Color(it?: return@map null) }
+            } catch (e: NumberFormatException) {
+                Log.e("ColorUserData", "Failed to parse color value at path: $path", e)
+                null
+            }
+        }
     }
 }

@@ -23,6 +23,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.LocalLightColorScheme
 import io.nightfish.lightnovelreader.api.ui.LocalTextLocaleList
 import io.nightfish.lightnovelreader.api.ui.appLocaleToTextLocaleList
 import io.nightfish.lightnovelreader.api.ui.theme.AppTypography
+import androidx.compose.ui.graphics.Color as ComposeColor
 
 data class AppTheme(
     val isDark: Boolean,
@@ -34,6 +35,26 @@ data class AppTheme(
 fun LightNovelReaderTheme(
     darkMode: String,
     isDynamicColor: Boolean = true,
+    dynamicBlack: Boolean = false,
+    enableCostumeThemeScheme: Boolean = false,
+    costumeThemeSchemePrimary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnPrimary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemePrimaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnPrimaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSecondary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSecondary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSecondaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSecondaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeTertiary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnTertiary: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeTertiaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnTertiaryContainer: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeBackground: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnBackground: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeSurface: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnSurface: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeError: ComposeColor = ComposeColor.Unspecified,
+    costumeThemeSchemeOnError: ComposeColor = ComposeColor.Unspecified,
     enableM3E: Boolean = false,
     lightThemeName: String,
     darkThemeName: String,
@@ -52,6 +73,7 @@ fun LightNovelReaderTheme(
         }
     }
 
+
     val lightColorScheme = remember(lightThemeName, isDynamicColor) {
         if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             dynamicLightColorScheme(context)
@@ -63,16 +85,66 @@ fun LightNovelReaderTheme(
     }
 
     val darkColorScheme = remember(darkThemeName, isDynamicColor) {
-        if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            dynamicDarkColorScheme(context)
-        else when (darkThemeName) {
+        if (isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val dyn = dynamicDarkColorScheme(context)
+            dyn
+        } else when (darkThemeName) {
             "dark_obsidian" -> DarkObsidianColorScheme
             "dark_designer" -> DesignerDarkColorScheme
             else -> DefaultDarkColorScheme
         }
     }
 
-    val colorScheme = if (isDark) darkColorScheme else lightColorScheme
+    // 根據 isDark 選擇自定義顏色的基礎預設
+    val baseColorPreset = if (isDark) CostumeThemeColorsDark else CostumeThemeColorsLight
+
+    val costumeColorScheme = remember(
+        isDynamicColor, isDark, darkThemeName, lightThemeName,
+        costumeThemeSchemePrimary,costumeThemeSchemeOnPrimary,
+        costumeThemeSchemePrimaryContainer,costumeThemeSchemeOnPrimaryContainer,
+        costumeThemeSchemeSecondary,costumeThemeSchemeOnSecondary,
+        costumeThemeSchemeSecondaryContainer,costumeThemeSchemeOnSecondaryContainer,
+        costumeThemeSchemeTertiary,costumeThemeSchemeOnTertiary,costumeThemeSchemeTertiaryContainer,costumeThemeSchemeOnTertiaryContainer,
+        costumeThemeSchemeBackground,costumeThemeSchemeOnBackground,
+        costumeThemeSchemeSurface,costumeThemeSchemeOnSurface,
+        costumeThemeSchemeError,costumeThemeSchemeOnError
+    ) {
+        val scheme = if (isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicDarkColorScheme(context)
+        } else if (!isDark && isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dynamicLightColorScheme(context)
+        } else if (isDark && Build.VERSION.SDK_INT < Build.VERSION_CODES.S){
+            DarkObsidianColorScheme
+        } else {
+            DefaultLightColorScheme
+        }
+        scheme.copy(
+            primary = costumeThemeSchemePrimary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.primary,
+            onPrimary = costumeThemeSchemeOnPrimary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onPrimary,
+            primaryContainer = costumeThemeSchemePrimaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.primaryContainer,
+            onPrimaryContainer = costumeThemeSchemeOnPrimaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onPrimaryContainer,
+            secondary = costumeThemeSchemeSecondary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.secondary,
+            onSecondary = costumeThemeSchemeOnSecondary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSecondary,
+            secondaryContainer = costumeThemeSchemeSecondaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.secondaryContainer,
+            onSecondaryContainer = costumeThemeSchemeOnSecondaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSecondaryContainer,
+            tertiary = costumeThemeSchemeTertiary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.tertiary,
+            onTertiary = costumeThemeSchemeOnTertiary.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onTertiary,
+            tertiaryContainer = costumeThemeSchemeTertiaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.tertiaryContainer,
+            onTertiaryContainer = costumeThemeSchemeOnTertiaryContainer.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onTertiaryContainer,
+            background = costumeThemeSchemeBackground.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.background,
+            onBackground = costumeThemeSchemeOnBackground.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onBackground,
+            surface = costumeThemeSchemeSurface.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.surface,
+            onSurface = costumeThemeSchemeOnSurface.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onSurface,
+            error = costumeThemeSchemeError.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.error,
+            onError = costumeThemeSchemeOnError.takeIf { it != ComposeColor.Unspecified } ?: baseColorPreset.onError
+        )
+    }
+
+    val colorScheme = when {
+        enableCostumeThemeScheme -> costumeColorScheme
+        isDark -> darkColorScheme
+        else -> lightColorScheme
+    }
 
     val appTheme = remember(isDark, colorScheme) {
         AppTheme(isDark = isDark, colorScheme = colorScheme)

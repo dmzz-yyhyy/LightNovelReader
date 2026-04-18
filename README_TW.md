@@ -8,6 +8,7 @@
     <a href="http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526"><img alt="QQ Group" src="https://img.shields.io/badge/QQ讨论群-867785526-brightgreen.svg?logoColor=white&style=for-the-badge"></a>
     <a href="https://discord.gg/pnf4ABmDJt"><img alt="Discord" src="https://img.shields.io/badge/Discord-JOIN-4285F4.svg?logo=discord&logoColor=white&style=for-the-badge"></a>
     <a href="https://t.me/lightnoble"><img alt="Discord" src="https://img.shields.io/badge/Telegram-JOIN-188FCA.svg?logo=telegram&logoColor=white&style=for-the-badge"></a>
+    <a href="https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader/"><img alt="F-droid" src="https://img.shields.io/f-droid/v/indi.dmzz_yyhyy.lightnovelreader?style=for-the-badge&logo=fdroid&logoColor=white"></a>
     <p>輕小說閱讀軟體，使用 Jetpack Compose 框架開發</p>
     <img src="assets/header.png" alt="drawing" width="80%"/>
 </div>
@@ -56,7 +57,7 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 ## 軟體截圖
 
 |                             |
-|-----------------------------|
+| --------------------------- |
 | ![image](assets/light1.png) |
 | ![image](assets/light2.png) |
 | ![image](assets/light3.png) |

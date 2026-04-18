@@ -2,6 +2,10 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+<<<<<<< HEAD
+=======
+import androidx.compose.runtime.mutableStateMapOf
+>>>>>>> 5ea137dc (user costume color)
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -12,6 +16,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginManagerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginSignatureDialog
+<<<<<<< HEAD
+=======
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
+>>>>>>> 5ea137dc (user costume color)
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController

@@ -154,7 +154,12 @@ object Route {
             object Debug
             /** 主题设置界面路由 */
             @Serializable
-            object Theme
+            object Theme {
+                @Serializable
+                object Main
+                @Serializable
+                object CostumeThemeScheme
+            }
             /** 开源许可证界面路由 */
             @Serializable
             object Licenses
@@ -215,6 +220,46 @@ object Route {
                 if (javaClass != other?.javaClass) return false
 
                 other as ColorPickerDialog
+
+                if (colorUserDataPath != other.colorUserDataPath) return false
+                if (!colors.contentEquals(other.colors)) return false
+
+                return true
+            }
+
+            /**
+             * 基于[colorUserDataPath]和[colors]计算哈希值
+             *
+             * @return 哈希值
+             */
+            override fun hashCode(): Int {
+                var result = colorUserDataPath.hashCode()
+                result = 31 * result + colors.contentHashCode()
+                return result
+            }
+        }
+        /**
+         * 自定义颜色选择器对话框路由
+         *
+         * @param colorUserDataPath 颜色用户数据的路径字符串
+         * @param colors 可选颜色的ARGB值列表
+         */
+        @Serializable
+        data class CostumeColorPickerDialog(
+            val colorUserDataPath: String,
+            val colors: LongArray
+        ) {
+            /**
+             * 判断两个[CostumeColorPickerDialog]是否相等
+             *
+             * @param other 另一个对象
+             * @return 属性完全相同则返回true
+             */
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+
+                other as CostumeColorPickerDialog
 
                 if (colorUserDataPath != other.colorUserDataPath) return false
                 if (!colors.contentEquals(other.colors)) return false

@@ -133,7 +133,41 @@ sealed class UserDataPath(
             data object DarkMode : UserDataPath("dark_mode", Display)
             /** 动态颜色设置 @since Api 2 */
             data object DynamicColors : UserDataPath("dynamic_color", Display)
+<<<<<<< HEAD
+<<<<<<< HEAD
             /** 启用 Material 3 Expressive @since Api 2 */
+=======
+            data object enableCostumeThemeScheme : UserDataPath("enable_costume_theme_scheme", Display)
+            data object CostumeThemeSurface : UserDataPath("costume_theme_surface", Display)
+            data object CostumeThemeBackground : UserDataPath("costume_theme_background", Display)
+<<<<<<< HEAD
+>>>>>>> 5ea137dc (user costume color)
+=======
+            data object CostumeThemePrimary : UserDataPath("costume_theme_primary", Display)
+>>>>>>> 59a396c7 (add primary color)
+=======
+            // costume theme scheme
+            data object EnableCostumeThemeScheme : UserDataPath("enable_costume_theme_scheme", Display)
+            data object CostumeThemeSchemePrimary : UserDataPath("costume_theme_scheme_primary", Display)
+            data object CostumeThemeSchemeOnPrimary : UserDataPath("costume_theme_scheme_on_primary", Display)
+            data object CostumeThemeSchemePrimaryContainer : UserDataPath("costume_theme_scheme_primary_container", Display)
+            data object CostumeThemeSchemeOnPrimaryContainer : UserDataPath("costume_theme_scheme_on_primary_container", Display)
+            data object CostumeThemeSchemeSecondary : UserDataPath("costume_theme_scheme_secondary", Display)
+            data object CostumeThemeSchemeOnSecondary : UserDataPath("costume_theme_scheme_on_secondary", Display)
+            data object CostumeThemeSchemeSecondaryContainer : UserDataPath("costume_theme_scheme_secondary_container", Display)
+            data object CostumeThemeSchemeOnSecondaryContainer : UserDataPath("costume_theme_scheme_on_secondary_container", Display)
+            data object CostumeThemeSchemeTertiary : UserDataPath("costume_theme_scheme_tertiary", Display)
+            data object CostumeThemeSchemeOnTertiary : UserDataPath("costume_theme_scheme_on_tertiary", Display)
+            data object CostumeThemeSchemeTertiaryContainer : UserDataPath("costume_theme_scheme_tertiary_container", Display)
+            data object CostumeThemeSchemeOnTertiaryContainer : UserDataPath("costume_theme_scheme_on_tertiary_container", Display)
+            data object CostumeThemeSchemeBackground : UserDataPath("costume_theme_scheme_background", Display)
+            data object CostumeThemeSchemeOnBackground : UserDataPath("costume_theme_scheme_on_background", Display)
+            data object CostumeThemeSchemeSurface : UserDataPath("costume_theme_scheme_surface", Display)
+            data object CostumeThemeSchemeOnSurface : UserDataPath("costume_theme_scheme_on_surface", Display)
+            data object CostumeThemeSchemeError : UserDataPath("costume_theme_scheme_error", Display)
+            data object CostumeThemeSchemeOnError : UserDataPath("costume_theme_scheme_on_error", Display)
+            //
+>>>>>>> d10c874c (自定意顏色移至CostumeThemeSchemeScreen (獨立設定畫面))
             data object EnableM3E : UserDataPath("enable_m3_expressive", Display)
             /** 应用语言设置 @since Api 2 */
             data object AppLocale : UserDataPath("app_locale", Display)

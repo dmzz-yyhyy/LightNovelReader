@@ -26,9 +26,10 @@ class ColorPickerDialogViewModel @Inject constructor(
     fun changeBackgroundColor(color: Color) {
         if (colorUserData == null) {
             Log.e("ColorPickerDialogViewModel", "change color user data before init!")
+            return
         }
         CoroutineScope(Dispatchers.IO).launch {
-            colorUserData!!.set(color)
+            colorUserData?.set(color)
         }
     }
 }
