@@ -169,6 +169,12 @@
     <string name="settings_theme_dynamic_colors_desc">從系統主題套用動態配色</string>
     <string name="settings_theme_m3e">Material 3 Expressive</string>
     <string name="settings_theme_m3e_description">啟用 Material 3 Expressive 設計。此功能屬於實驗性內容，仍處於測試階段</string>
+
+    <string name="settings_theme_enable_costume_color_scheme">啟用覆蓋主題配色</string>
+    <string name="settings_theme_enable_costume_color_scheme_desc">覆蓋主題原有顏色，自定義配色</string>
+    <string name="settings_theme_open_costume_color_scheme">開啟覆蓋主題配色設定</string>
+    <string name="settings_theme_open_costume_color_scheme_desc">開啟主題配色設定頁面以調整配色</string>
+
     <string name="settings_formats">格式</string>
     <string name="settings_formats_desc">設定日期或文字格式</string>
     <string name="date_time_formats_settings">日期和時間</string>

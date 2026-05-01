@@ -133,20 +133,9 @@ sealed class UserDataPath(
             data object DarkMode : UserDataPath("dark_mode", Display)
             /** 动态颜色设置 @since Api 2 */
             data object DynamicColors : UserDataPath("dynamic_color", Display)
-<<<<<<< HEAD
-<<<<<<< HEAD
             /** 启用 Material 3 Expressive @since Api 2 */
-=======
-            data object enableCostumeThemeScheme : UserDataPath("enable_costume_theme_scheme", Display)
-            data object CostumeThemeSurface : UserDataPath("costume_theme_surface", Display)
-            data object CostumeThemeBackground : UserDataPath("costume_theme_background", Display)
-<<<<<<< HEAD
->>>>>>> 5ea137dc (user costume color)
-=======
-            data object CostumeThemePrimary : UserDataPath("costume_theme_primary", Display)
->>>>>>> 59a396c7 (add primary color)
-=======
-            // costume theme scheme
+            data object EnableM3E : UserDataPath("enable_m3_expressive", Display)
+            /* 自定義調色盤 */
             data object EnableCostumeThemeScheme : UserDataPath("enable_costume_theme_scheme", Display)
             data object CostumeThemeSchemePrimary : UserDataPath("costume_theme_scheme_primary", Display)
             data object CostumeThemeSchemeOnPrimary : UserDataPath("costume_theme_scheme_on_primary", Display)
@@ -166,9 +155,6 @@ sealed class UserDataPath(
             data object CostumeThemeSchemeOnSurface : UserDataPath("costume_theme_scheme_on_surface", Display)
             data object CostumeThemeSchemeError : UserDataPath("costume_theme_scheme_error", Display)
             data object CostumeThemeSchemeOnError : UserDataPath("costume_theme_scheme_on_error", Display)
-            //
->>>>>>> d10c874c (自定意顏色移至CostumeThemeSchemeScreen (獨立設定畫面))
-            data object EnableM3E : UserDataPath("enable_m3_expressive", Display)
             /** 应用语言设置 @since Api 2 */
             data object AppLocale : UserDataPath("app_locale", Display)
             /** 浅色主题名称 @since Api 2 */

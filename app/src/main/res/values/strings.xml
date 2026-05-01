@@ -181,6 +181,11 @@
         Enables the Material 3 Expressive design. This feature is experimental and still in beta
     </string>
 
+    <string name="settings_theme_enable_costume_color_scheme">Enable costume color scheme</string>
+    <string name="settings_theme_enable_costume_color_scheme_desc">Change color scheme</string>
+    <string name="settings_theme_open_costume_color_scheme">Open color scheme settings</string>
+    <string name="settings_theme_open_costume_color_scheme_desc">Open costume color scheme settings screen to change scheme</string>
+
     <string name="settings_formats">Formats</string>
     <string name="settings_formats_desc">Set date or text format</string>
     <string name="date_time_formats_settings">Date &amp; Time</string>

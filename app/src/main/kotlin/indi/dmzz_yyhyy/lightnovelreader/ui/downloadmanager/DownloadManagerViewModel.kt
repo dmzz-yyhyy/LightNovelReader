@@ -1,13 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.downloadmanager
 
-<<<<<<< HEAD
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-=======
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshotFlow
->>>>>>> 5ea137dc (user costume color)
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
@@ -32,7 +27,6 @@ class DownloadManagerViewModel @Inject constructor(
     val workManager: WorkManager
 ) : ViewModel() {
     val downloadItemIdList get() = downloadProgressRepository.downloadItemIdList
-<<<<<<< HEAD
     var bookInformationMap: Map<String, BookInformation> by mutableStateOf(emptyMap())
         private set
     private val loadingJobs = mutableMapOf<String, Job>()
@@ -46,23 +40,6 @@ class DownloadManagerViewModel @Inject constructor(
                 bookRepository.getBookInformationFlow(bookId).collect { bookInformation ->
                     withContext(Dispatchers.Main) {
                         bookInformationMap = bookInformationMap + (bookId to bookInformation)
-=======
-    private val _bookInformationMap = mutableStateMapOf<String, BookInformation>()
-    val bookInformationMap: Map<String, BookInformation> = _bookInformationMap
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            snapshotFlow {
-                downloadProgressRepository.downloadItemIdList
-            }.collect { downloadItems ->
-                downloadItems.forEach { downloadItem ->
-                    if (_bookInformationMap.containsKey(downloadItem.bookId))
-                         return@forEach
-                    viewModelScope.launch(Dispatchers.IO) {
-                        bookRepository.getBookInformationFlow(downloadItem.bookId).collect {
-                            _bookInformationMap[it.id] = it
-                        }
->>>>>>> 5ea137dc (user costume color)
                     }
                 }
             } finally {

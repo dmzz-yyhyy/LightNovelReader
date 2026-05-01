@@ -51,10 +51,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
         fun ofId(id: String): String = "export_to_epub:$id"
-<<<<<<< HEAD
         private const val TAG = "ExportEPUB"
-=======
->>>>>>> 5ea137dc (user costume color)
     }
 
     private val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

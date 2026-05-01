@@ -1,23 +1,16 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import indi.dmzz_yyhyy.lightnovelreader.theme.DEFAULT_COLOR_PRESETS
-import indi.dmzz_yyhyy.lightnovelreader.theme.DEFAULT_COLOR_PRESETS
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ColorPickerDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ColorPickerDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToCostumeColorPickerDialog
 import io.nightfish.lightnovelreader.api.Route
-=======
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToCostumeColorPickerDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
->>>>>>> d10c874c (自定意顏色移至CostumeThemeSchemeScreen (獨立設定畫面))
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -52,13 +45,13 @@ fun NavGraphBuilder.settingsThemeDestination() {
             },
         )
     }
-    
+
     composable<Route.Main.Settings.Theme.CostumeThemeScheme> {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<ThemeViewModel>()
         val readerSettingState = viewModel.settingState
         val isDark = LocalAppTheme.current.isDark
-        
+
         CostumeThemeSchemeScreen(
             settingState = readerSettingState,
             onClickBack = navController::popBackStackIfResumed,

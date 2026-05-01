@@ -33,11 +33,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.TimeBarItem
-<<<<<<< HEAD
 import io.nightfish.lightnovelreader.api.Route
-=======
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Route
->>>>>>> 5ea137dc (user costume color)
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

@@ -275,8 +275,8 @@ fun ThemeSettingsList(
         SettingsSwitchEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
             painter = painterResource(R.drawable.palette_24px),
-            title = "啟用覆蓋主題配色",
-            description = "覆蓋主題原有顏色，字定義配色",
+            title = stringResource(R.string.settings_theme_enable_costume_color_scheme),
+            description = stringResource(R.string.settings_theme_enable_costume_color_scheme_desc),
             checked = settingState.enableCostumeThemeScheme,
             booleanUserData = settingState.enableCostumeThemeSchemeUserData
         )
@@ -304,8 +304,8 @@ fun ThemeSettingsList(
             SettingsClickableEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
                 painter = painterResource(R.drawable.palette_24px),
-                title = "覆蓋主題配色設定",
-                description = "開啟主題配色設定頁面調整所有配色",
+                title = stringResource(R.string.settings_theme_open_costume_color_scheme),
+                description = stringResource(R.string.settings_theme_open_costume_color_scheme_desc),
                 onClick = onClickOpenCostumeThemeScheme
             )
         }
