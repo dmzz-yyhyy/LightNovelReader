@@ -14,7 +14,8 @@ object ApiCompat {
      */
     private val groups: List<Set<Int>> = listOf(
         setOf(1),
-        setOf(2, 3)
+        setOf(2, 3),
+        setOf(4)
     )
 
     private fun groupOf(v: Int): Int? =

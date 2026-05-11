@@ -13,5 +13,5 @@ object ApiMetadata {
      *
      * @since Api 2
      */
-    const val API_VERSION: Int = 3
+    const val API_VERSION: Int = 4
 }

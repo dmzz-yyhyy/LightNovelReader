@@ -1,9 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
-import dalvik.system.DexClassLoader
+import dalvik.system.PathClassLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInjector
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.utils.AnnotationScanner
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebBookDataSourceManagerApi
@@ -39,15 +38,14 @@ class WebBookDataSourceManager @Inject constructor (
 
     override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value
 
-    fun loadWebDataSourcesFromClassLoader(classLoader: DexClassLoader, injector: PluginInjector, packageName: String) {
+    fun loadWebDataSourcesFromClassLoader(classLoader: PathClassLoader, injector: PluginInjector, packageName: String, webDataSourceClassNames: List<String>) {
         val items = mutableListOf<WebDataSourceItem>()
-        AnnotationScanner.findAnnotatedClasses(classLoader, WebDataSource::class.java, packageName)
-            .component1()
-            ?.forEach {
-                if (!WebBookDataSource::class.java.isAssignableFrom(it)) return
-                val instance = injector.provide<WebBookDataSource>(it)
-                if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
-            }
+        webDataSourceClassNames.forEach { className ->
+            val clazz = runCatching { classLoader.loadClass(className) }.getOrNull() ?: return@forEach
+            if (!WebBookDataSource::class.java.isAssignableFrom(clazz)) return@forEach
+            val instance = injector.provide<WebBookDataSource>(clazz)
+            if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
+        }
         webDataSourceItemListMap[packageName] = items
     }
 

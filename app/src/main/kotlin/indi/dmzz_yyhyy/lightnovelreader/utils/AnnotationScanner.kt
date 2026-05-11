@@ -9,8 +9,8 @@ import com.github.michaelbull.result.andThen
 import com.github.michaelbull.result.runCatching
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
-import dalvik.system.DexClassLoader
 import dalvik.system.DexFile
+import dalvik.system.PathClassLoader
 import java.lang.reflect.Field
 
 @Suppress("DEPRECATION")
@@ -18,15 +18,15 @@ object AnnotationScanner {
     private const val TAG = "AnnotationScanner"
 
     /**
-     * 扫描DexClassLoader中带有指定注解的所有类
+     * 扫描PathClassLoader中带有指定注解的所有类
      *
-     * @param classLoader 要扫描的DexClassLoader
+     * @param classLoader 要扫描的PathClassLoader
      * @param annotationClass 要查找的注解类型
      * @return 带有指定注解的类列表
      */
     @SuppressLint("NewApi")
     fun findAnnotatedClasses(
-        classLoader: DexClassLoader,
+        classLoader: PathClassLoader,
         annotationClass: Class<out Annotation?>,
         scanPackage: String = "",
     ): Result<MutableList<Class<*>>, Throwable> =

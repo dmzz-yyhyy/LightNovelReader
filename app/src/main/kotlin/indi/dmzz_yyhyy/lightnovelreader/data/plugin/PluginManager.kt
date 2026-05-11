@@ -17,11 +17,11 @@ import com.github.michaelbull.result.runCatching
 import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dalvik.system.DexClassLoader
+import dalvik.system.PathClassLoader
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.utils.AnnotationScanner
+import indi.dmzz_yyhyy.lightnovelreader.utils.classLoader
 import indi.dmzz_yyhyy.lightnovelreader.utils.getApkSignatures
 import indi.dmzz_yyhyy.lightnovelreader.utils.isSignatureMatch
 import io.nightfish.lightnovelreader.api.ApiCompat
@@ -40,7 +40,6 @@ import java.io.File
 import java.util.zip.ZipFile
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.set
 
 @Singleton
 class PluginManager @Inject constructor(
@@ -434,9 +433,9 @@ class PluginManager @Inject constructor(
             plugin.setReadOnly()
         }.andThen {
             getPluginMetadataAndPluginClass(packageInfo.packageName)
-        }.andThen {
+        }.andThen { pair ->
             mutableErrorPluginMap.remove(pluginPackage)
-            val pluginClazz = it.second
+            val pluginClazz = pair.second
             val pluginContext = PluginContext(
                 dataDir = getPluginDataDir(pluginDir),
                 pluginFile = plugin,
@@ -450,12 +449,19 @@ class PluginManager @Inject constructor(
             instance.onLoad()
 
             val classLoader = instance.javaClass.classLoader
-            if (classLoader !is DexClassLoader) return@andThen Err(Error("Failed to get DexClassLoader from plugin instance, got: ${classLoader?.javaClass?.name}"))
+            if (classLoader !is PathClassLoader) return@andThen Err(Error("Failed to get DexClassLoader from plugin instance, got: ${classLoader?.javaClass?.name}"))
+            val webDataSourceClassNames = appContext.packageManager
+                .getPackageArchiveInfo(plugin.absolutePath, PackageManager.GET_META_DATA)
+                ?.applicationInfo?.metaData?.getString("lnr_web_data_source")
+                ?.split(";")
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
             runCatching {
                 webBookDataSourceManager.loadWebDataSourcesFromClassLoader(
                     classLoader,
                     pluginInjector,
-                    pluginPackage
+                    pluginPackage,
+                    webDataSourceClassNames
                 )
             }.let { result ->
                 if (result.isErr) {
@@ -467,7 +473,7 @@ class PluginManager @Inject constructor(
             }
 
             mutableLoadedPluginMap[pluginPackage] = instance
-            return@andThen Ok(it.first)
+            return@andThen Ok(pair.first)
         }.also {
             if (it.isErr) {
                 val error = it.unwrapError()
@@ -490,23 +496,15 @@ class PluginManager @Inject constructor(
     private fun getPluginMetadata(file: File, packageName: String): Result<PluginMetadata, Throwable> =
         runCatching {
             if (file.canWrite() && !file.setReadOnly()) error("Failed to set read-only plugin file")
-            DexClassLoader(
-                file.absolutePath,
-                null,
-                null,
-                this.javaClass.classLoader
-            )
-        }.andThen {
-            AnnotationScanner.findAnnotatedClasses(
-                classLoader = it,
-                annotationClass = Plugin::class.java,
-                scanPackage = packageName
-            )
+            val pluginClassName = appContext.packageManager
+                .getPackageArchiveInfo(file.absolutePath, PackageManager.GET_META_DATA)
+                ?.applicationInfo?.metaData?.getString("lnr_plugin")
+                ?: error("lnr_plugin not found in manifest meta-data of ${file.name}")
+            val cl = classLoader(file.absolutePath, null, this.javaClass.classLoader)
+            cl.loadClass(pluginClassName)
         }.andThen {
             runCatching {
-                val plugin = it
-                    .first(LightNovelReaderPlugin::class.java::isAssignableFrom)
-                    .getAnnotation(Plugin::class.java)
+                val plugin = it.getAnnotation(Plugin::class.java)
                     ?: return@andThen Err(Error("Failed to get plugin annotation from the plugin class"))
                 PluginMetadata.parse(plugin, packageName, getApkSignatures(file)?.isNotEmpty() == true)
             }
@@ -515,21 +513,20 @@ class PluginManager @Inject constructor(
     private fun getPluginMetadataAndPluginClass(packageName: String): Result<Pair<PluginMetadata, Class<*>>, Throwable> =
         runCatching {
             val pluginDir = getPluginDir(packageName)
-            DexClassLoader(
-                getPluginFile(pluginDir).absolutePath,
-                null,
+            val pluginFile = getPluginFile(pluginDir)
+            val pluginClassName = appContext.packageManager
+                .getPackageArchiveInfo(pluginFile.absolutePath, PackageManager.GET_META_DATA)
+                ?.applicationInfo?.metaData?.getString("lnr_plugin")
+                ?: error("lnr_plugin not found in manifest meta-data of $packageName")
+            val cl = classLoader(
+                pluginFile.absolutePath,
                 getPluginLibsDir(pluginDir).absolutePath,
                 this.javaClass.classLoader
             )
-        }.andThen {
-            AnnotationScanner.findAnnotatedClasses(
-                classLoader = it,
-                annotationClass = Plugin::class.java,
-                scanPackage = packageName
-            )
-        }.andThen {
+            Pair(cl, pluginClassName)
+        }.andThen { (cl, pluginClassName) ->
             runCatching {
-                val clazz = it.first(LightNovelReaderPlugin::class.java::isAssignableFrom)
+                val clazz = cl.loadClass(pluginClassName)
                 val plugin = clazz.getAnnotation(Plugin::class.java)
                     ?: return@andThen Err(Error("Failed to get plugin annotation from the plugin class"))
                 Pair(
