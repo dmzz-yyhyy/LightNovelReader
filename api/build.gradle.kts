@@ -30,7 +30,7 @@ android {
         multiDexEnabled = true
         minSdk = 24
     }
-    compileSdk = 36
+    compileSdk = 37
 
     buildFeatures {
         buildConfig = false
