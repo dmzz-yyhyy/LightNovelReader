@@ -635,4 +635,5 @@
     <string name="key_date_order_ymd">Year-Month-Day</string>
     <string name="key_date_order_dmy">Day-Month-Year</string>
     <string name="key_date_order_mdy">Month-Day-Year</string>
+    <string name="restart">Restart</string>
 </resources>

@@ -28,6 +28,7 @@ class PluginManagerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val enabledPluginUserData = userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
+    private val disenabledPlugin = mutableSetOf<String>()
     val enabledPluginFlow = enabledPluginUserData.getFlowWithDefault(emptyList())
 
     val pluginList: List<PluginMetadata> = pluginManager.allPluginList
@@ -44,10 +45,10 @@ class PluginManagerViewModel @Inject constructor(
             val currentList = enabledPluginUserData.getOrDefault(emptyList())
             if (currentList.contains(pluginInfo.packageName)) {
                 enabledPluginUserData.set(currentList - pluginInfo.packageName)
-                pluginManager.loadedPluginMap[pluginInfo.packageName]?.onUnload()
+                disenabledPlugin.add(pluginInfo.packageName)
             } else {
                 enabledPluginUserData.set(currentList + pluginInfo.packageName)
-                pluginManager.loadPlugin(pluginInfo.packageName)
+                disenabledPlugin.remove(pluginInfo.packageName)
             }
         }
     }
@@ -71,6 +72,12 @@ class PluginManagerViewModel @Inject constructor(
 
     fun getPluginFile(packageName: String): File =
         pluginManager.getPluginFile(pluginManager.getPluginDir(packageName))
+
+    fun unloadAllDisenablePlugin() {
+        for (packageName in disenabledPlugin) {
+            pluginManager.loadedPluginMap[packageName]?.onUnload()
+        }
+    }
 
     @Composable
     fun PluginContent(id: String, paddingValues: PaddingValues) {

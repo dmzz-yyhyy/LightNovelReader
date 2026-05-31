@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.sourcechange
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
@@ -17,6 +16,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.readAppLocalData
+import indi.dmzz_yyhyy.lightnovelreader.utils.restart
 import indi.dmzz_yyhyy.lightnovelreader.utils.writeAppLocalData
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
@@ -26,7 +26,6 @@ import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import javax.inject.Inject
-import kotlin.system.exitProcess
 
 @HiltViewModel
 class SourceChangeViewModel @Inject constructor(
@@ -97,7 +96,7 @@ class SourceChangeViewModel @Inject constructor(
                     if (isCleanedLocalData) rollbackData()
                     return@launch
                 } else {
-                    restartApp(appContext)
+                    restart(appContext)
                 }
                 _uiState.currentSourceId = newWebDataSourceId
             } finally {
@@ -120,12 +119,5 @@ class SourceChangeViewModel @Inject constructor(
                     }
             localDataManager.importLocalDataToDatabase(localData)
         }
-    }
-
-    private fun restartApp(context: Context) {
-        val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent)
-        exitProcess(0)
     }
 }
