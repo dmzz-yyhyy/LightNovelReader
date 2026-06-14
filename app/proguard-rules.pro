@@ -76,7 +76,7 @@
 -keepclassmembers, allowshrinking public class ** extends io.nightfish.lightnovelreader.api.** { public protected *; }
 -keep,includedescriptorclasses class io.nightfish.lightnovelreader.api.** { *; }
 # Kotlin
--keepclassmembers, allowshrinking, includedescriptorclasses class kotlin.** { *; }
--keepclassmembers, allowshrinking, includedescriptorclasses class kotlinx.** { *; }
+-keep, includedescriptorclasses class kotlin.** { *; }
+-keep, includedescriptorclasses class kotlinx.** { *; }
 # Compose
--keepclassmembers, allowshrinking, includedescriptorclasses class androidx.** { *; }
+-keep, includedescriptorclasses class androidx.** { *; }
