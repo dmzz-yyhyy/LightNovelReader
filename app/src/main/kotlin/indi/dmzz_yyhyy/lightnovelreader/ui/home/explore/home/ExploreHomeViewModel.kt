@@ -31,14 +31,27 @@ class ExploreHomeViewModel @Inject constructor(
 
     fun init() {
         when (explorePageProvider) {
-            is ExplorePageProvider.DefaultExplorePageProvider -> changePage(_uiState.selectedPage)
+            is ExplorePageProvider.DefaultExplorePageProvider -> {
+                if (_uiState.pageTitles.isEmpty()) {
+                    _uiState.pageTitles = explorePageProvider.exploreTapPageDataSourceMap.map { it.value.title }
+                }
+                if (_uiState.explorePageBooksRawList.isEmpty()) {
+                    loadPage(_uiState.selectedPage, forceRefresh = true)
+                }
+            }
             is ExplorePageProvider.CustomExplorePageProvider<*> -> explorePageProvider.init(viewModelScope)
         }
     }
 
     fun changePage(page: Int) {
+        loadPage(page)
+    }
+
+    private fun loadPage(page: Int, forceRefresh: Boolean = false) {
         if (explorePageProvider !is ExplorePageProvider.DefaultExplorePageProvider) return
         if (explorePageProvider.explorePageIdList.isEmpty()) return
+        val pageChanged = _uiState.selectedPage != page
+        if (!forceRefresh && !pageChanged && _uiState.explorePageBooksRawList.isNotEmpty()) return
         workingExplorePageJob?.cancel()
         workingExploreBooksRowsJob?.cancel()
         _uiState.selectedPage = page
@@ -63,6 +76,6 @@ class ExploreHomeViewModel @Inject constructor(
 
     fun refresh() {
         _uiState.explorePageBooksRawList = emptyList()
-        changePage(_uiState.selectedPage)
+        loadPage(_uiState.selectedPage, forceRefresh = true)
     }
 }

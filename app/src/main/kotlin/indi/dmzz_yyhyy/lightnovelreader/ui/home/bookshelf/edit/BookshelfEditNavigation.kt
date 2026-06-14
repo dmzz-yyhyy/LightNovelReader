@@ -29,6 +29,7 @@ fun NavGraphBuilder.bookshelfEditDestination() {
             },
             onClickDelete = navController::navigateToDeleteBookshelfDialog,
             onNameChange = editBookshelfViewModel::onNameChange,
+            onSortTypeChange = editBookshelfViewModel::onSortTypeChange,
             onAutoCacheChange = editBookshelfViewModel::onAutoCacheChange,
             onSystemUpdateReminderChange = editBookshelfViewModel::onSystemUpdateReminderChange,
         )

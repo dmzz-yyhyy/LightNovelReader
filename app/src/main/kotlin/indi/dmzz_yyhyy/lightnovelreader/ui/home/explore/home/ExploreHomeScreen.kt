@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -47,6 +48,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -74,8 +76,8 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
-import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
+import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import kotlinx.coroutines.delay
 
@@ -130,11 +132,26 @@ fun ExploreHomeScreen(
                 refresh = refresh,
                 uiState = exploreUiState
             ) {
+                val selectedIndex = exploreHomeUiState.selectedPage
                 Column {
-                    PrimaryTabRow(selectedTabIndex = exploreHomeUiState.selectedPage) {
+                    PrimaryTabRow(
+                        selectedTabIndex = selectedIndex,
+                        indicator = {
+                            SecondaryIndicator(
+                                modifier = Modifier
+                                    .tabIndicatorOffset(
+                                        selectedTabIndex = selectedIndex,
+                                        matchContentSize = true
+                                    )
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    ) {
                         exploreHomeUiState.pageTitles.forEachIndexed { index, title ->
                             Tab(
-                                selected = exploreHomeUiState.selectedPage == index,
+                                selected = selectedIndex == index,
                                 onClick = {
                                     changePage(index)
                                 },
@@ -231,6 +248,9 @@ fun TopBar(
             }
         },
         scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults.topAppBarColors(
+            scrolledContainerColor = MaterialTheme.colorScheme.background
+        )
     )
 }
 
@@ -244,9 +264,9 @@ fun ExplorePage(
     refresh: () -> Unit,
     pageKey: Int
 ) {
-    var isRefreshing by remember { mutableStateOf(false) }
-    val listState = remember(pageKey) { LazyListState() }
-    var initialScrollApplied by remember(pageKey) { mutableStateOf(false) }
+    var isRefreshing by rememberSaveable(pageKey) { mutableStateOf(false) }
+    val listState = rememberSaveable(pageKey, saver = LazyListState.Saver) { LazyListState() }
+    var initialScrollApplied by rememberSaveable(pageKey) { mutableStateOf(false) }
     val titleHeight = with(LocalDensity.current) {
         (16.sp * 2.2f).toDp()
     }

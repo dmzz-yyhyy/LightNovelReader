@@ -20,9 +20,11 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
+import indi.dmzz_yyhyy.lightnovelreader.data.storage.StorageUsageRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.readAppLocalData
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
@@ -42,7 +44,8 @@ class LocalDataManager @Inject constructor(
     private val bookVolumesDao: BookVolumesDao,
     private val formattingRuleDao: FormattingRuleDao,
     private val userReadingDataDao: UserReadingDataDao,
-    private val userDataDao: UserDataDao
+    private val userDataDao: UserDataDao,
+    private val storageUsageRepository: StorageUsageRepository
 ) {
     companion object {
         const val TAG = "LocalDataManager"
@@ -77,7 +80,8 @@ class LocalDataManager @Inject constructor(
         }.let(localDataList::add)
         val globalLocalData = LocalData.empty()
             .copy(userDataEntities = if (settings) userDataDao.getAllEntities().filter {
-                !webDataSourceUserDataPathSet.contains(it.path)
+                !webDataSourceUserDataPathSet.contains(it.path) &&
+                        it.path != UserDataPath.Settings.Data.StorageUsageSnapshot.path
             }
             else emptyList())
         return Ok(
@@ -146,6 +150,7 @@ class LocalDataManager @Inject constructor(
                 it.component1() ?: return it.asErr()
             }
         }
+        storageUsageRepository.invalidateSnapshot()
         return Ok(Unit)
     }
 
@@ -267,6 +272,10 @@ class LocalDataManager @Inject constructor(
             runCatching {
                 it.write(Cbor.encodeToByteArray(mergedLocalData))
             }
+        }.also {
+            runCatching {
+                runBlocking { storageUsageRepository.invalidateSnapshot() }
+            }
         }
     }
 
@@ -327,6 +336,7 @@ class LocalDataManager @Inject constructor(
         for (entity in localData.userDataEntities) {
             userDataDao.insert(userDataDao.getEntity(entity.path)?.let(entity::merge) ?: entity)
         }
+        storageUsageRepository.invalidateSnapshot()
         return Ok(Unit)
     }
 
@@ -343,6 +353,9 @@ class LocalDataManager @Inject constructor(
         for (entity in userDataDao.getAllEntities()) {
             if (!webDataSourceUserDataPathSet.contains(entity.path)) continue
             userDataDao.remove(entity.path)
+        }
+        runCatching {
+            runBlocking { storageUsageRepository.invalidateSnapshot() }
         }
     }
 

@@ -38,8 +38,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.markAllChaptersAsReadDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.pluginInstallerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.pluginStoreInstallBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.updatesAvailableDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.downloadmanager.downloadManager
+import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.bookManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.homeNavigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.storagemanager.storageManager
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.currentMainRoute
@@ -114,7 +115,8 @@ fun LightNovelReaderNavHost(
                         bookNavigation()
                         updatesAvailableDialog()
                         addBookToBookshelfDialog()
-                        downloadManager()
+                        bookManager()
+                        storageManager()
                         pluginInstallerDialog()
                         markAllChaptersAsReadDialog()
                         pluginStoreInstallBottomSheet()

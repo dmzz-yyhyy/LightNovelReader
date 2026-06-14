@@ -16,6 +16,8 @@ data class BookshelfEntity(
     val name: String,
     @ColumnInfo(name = "sort_type")
     val sortType: String,
+    @ColumnInfo(name = "sort_reversed")
+    val sortReversed: Boolean = false,
     @ColumnInfo(name = "auto_cache")
     val autoCache: Boolean,
     @ColumnInfo(name = "system_update_reminder")
@@ -32,6 +34,7 @@ data class BookshelfEntity(
             id = new.id,
             name = new.name,
             sortType = new.sortType,
+            sortReversed = new.sortReversed,
             autoCache = new.autoCache,
             systemUpdateReminder = new.systemUpdateReminder,
             allBookIds = (this.allBookIds + new.allBookIds).distinct(),

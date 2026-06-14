@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
+import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import io.nightfish.lightnovelreader.api.bookshelf.MutableBookshelf
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ class EditBookshelfViewModel @Inject constructor(
                 this@EditBookshelfViewModel._uiState.id = it.id
                 this@EditBookshelfViewModel._uiState.name = it.name
                 this@EditBookshelfViewModel._uiState.sortType = it.sortType
+                this@EditBookshelfViewModel._uiState.sortReversed = it.sortReversed
                 this@EditBookshelfViewModel._uiState.autoCache = it.autoCache
                 this@EditBookshelfViewModel._uiState.systemUpdateReminder = it.systemUpdateReminder
             }
@@ -42,12 +44,17 @@ class EditBookshelfViewModel @Inject constructor(
         _uiState.systemUpdateReminder = systemUpdateReminder
     }
 
+    fun onSortTypeChange(sortType: BookshelfSortType) {
+        _uiState.sortType = sortType
+    }
+
     fun save() {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.id == -1) {
                 bookshelfRepository.createBookShelf(
                     name = _uiState.name,
                     sortType = _uiState.sortType,
+                    sortReversed = _uiState.sortReversed,
                     autoCache = _uiState.autoCache,
                     systemUpdateReminder = _uiState.systemUpdateReminder
                 )

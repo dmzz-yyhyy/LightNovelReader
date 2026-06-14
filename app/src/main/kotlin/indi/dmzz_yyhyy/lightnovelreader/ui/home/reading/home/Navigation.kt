@@ -3,7 +3,8 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.home
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -12,7 +13,7 @@ import androidx.navigation.compose.composable
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ChapterSelectionBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDestination
-import indi.dmzz_yyhyy.lightnovelreader.ui.downloadmanager.navigateToDownloadManager
+import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.navigateToDownloadManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.navigateToReadingStatsDestination
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
@@ -27,7 +28,7 @@ fun NavGraphBuilder.readingHomeDestination(sharedTransitionScope: SharedTransiti
 
         val chapterSheetUi = viewModel.chapterSheetUi
         val volumesMap = viewModel.bookVolumesMap
-        val chapterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        val chapterSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
         ReadingScreen(
             updateReadingBooks = viewModel::updateReadingBooks,

@@ -142,7 +142,7 @@ interface BookshelfRepositoryApi {
      * @param name 书架名称
      * @param sortType 书架排序方式
      * @param autoCache 是否开启自动缓存
-     * @param systemUpdateReminder 是否开启系统更新提醒
+     * @param systemUpdateReminder 是否通过系统通知提醒更新
      *
      * @return 新建书架的id
      *
@@ -152,6 +152,7 @@ interface BookshelfRepositoryApi {
         id: Int = Instant.now().epochSecond.hashCode(),
         name: String,
         sortType: BookshelfSortType,
+        sortReversed: Boolean = false,
         autoCache: Boolean,
         systemUpdateReminder: Boolean
     ): Int

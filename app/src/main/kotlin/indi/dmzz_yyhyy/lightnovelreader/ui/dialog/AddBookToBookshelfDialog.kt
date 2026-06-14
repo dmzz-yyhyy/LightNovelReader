@@ -85,7 +85,7 @@ fun AddBookToBookshelfDialog(
                     modifier = Modifier
                         .wrapContentWidth()
                         .sizeIn(minWidth = 325.dp)
-                        .padding(horizontal = 14.dp),
+                        .padding(horizontal = 10.dp),
                     title = bookshelf.name,
                     supportingText = stringResource(R.string.bookshelf_book_count, bookshelf.allBookIds.size),
                     checked = selectedBookshelfIds.contains(bookshelf.id),
@@ -96,7 +96,7 @@ fun AddBookToBookshelfDialog(
                     }
                 )
                 if (index != allBookshelf.size - 1) {
-                    HorizontalDivider(Modifier.padding(horizontal = 14.dp))
+                    HorizontalDivider(Modifier.padding(horizontal = 10.dp))
                 }
             }
         }

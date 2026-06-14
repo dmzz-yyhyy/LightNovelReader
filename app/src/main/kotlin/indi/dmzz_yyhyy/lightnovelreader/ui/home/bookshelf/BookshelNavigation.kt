@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit.bookshelfEditDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.bookshelfHomeDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.reorder.bookshelfReorderDestination
 import io.nightfish.lightnovelreader.api.Route
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -16,6 +17,7 @@ fun NavGraphBuilder.bookshelfNavigation(sharedTransitionScope: SharedTransitionS
     ) {
         bookshelfHomeDestination(sharedTransitionScope)
         bookshelfEditDestination()
+        bookshelfReorderDestination()
     }
 }
 

@@ -1,25 +1,22 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -37,10 +34,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions.BookshelfSortTypeOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
+import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +55,7 @@ fun EditBookshelfScreen(
     onClickSave: () -> Unit,
     onClickDelete: (Int) -> Unit,
     onNameChange: (String) -> Unit,
+    onSortTypeChange: (BookshelfSortType) -> Unit,
     onAutoCacheChange: (Boolean) -> Unit,
     onSystemUpdateReminderChange: (Boolean) -> Unit,
 ) {
@@ -92,82 +95,85 @@ fun EditBookshelfScreen(
             SnackbarHost(LocalSnackbarHost.current)
         }
     ) {
-        Column(Modifier.padding(it)) {
-            OutlinedTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                value = bookshelf.name,
-                onValueChange = onNameChange,
-                label = { Text(stringResource(R.string.name)) },
-                supportingText = {
-                    if (isNameEmpty) {
-                        Text(
-                            text = bookshelfNamePlaceholder,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+        LazyColumn(Modifier.padding(it)) {
+            item {
+                OutlinedTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    value = bookshelf.name,
+                    onValueChange = onNameChange,
+                    label = { Text(stringResource(R.string.name)) },
+                    supportingText = {
+                        if (isNameEmpty) {
+                            Text(
+                                text = bookshelfNamePlaceholder,
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    },
+                    maxLines = 1,
+                    interactionSource = interactionSource,
+                    isError = isNameEmpty,
+                    trailingIcon = {
+                        IconButton(onClick = { onNameChange("") }) {
+                            Icon(
+                                painter = painterResource(R.drawable.cancel_24px),
+                                contentDescription = "cancel",
+                                tint =
+                                    if (isFocused) OutlinedTextFieldDefaults.colors().focusedTrailingIconColor
+                                    else OutlinedTextFieldDefaults.colors().unfocusedTrailingIconColor
+                            )
+                        }
                     }
-                },
-                maxLines = 1,
-                interactionSource = interactionSource,
-                isError = isNameEmpty,
-                trailingIcon = {
-                    IconButton(onClick = { onNameChange("") }) {
-                        Icon(
-                            painter = painterResource(R.drawable.cancel_24px),
-                            contentDescription = "cancel",
-                            tint =
-                            if (isFocused) OutlinedTextFieldDefaults.colors().focusedTrailingIconColor
-                            else OutlinedTextFieldDefaults.colors().unfocusedTrailingIconColor
-                        )
-                    }
-                }
-            )
-            SectionHeader(
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
-                text = stringResource(R.string.bookshelf_settings)
-            )
-            SwitchSettingItem(
-                iconRes = R.drawable.cloud_download_24px,
-                title = stringResource(R.string.settings_auto_cache),
-                description = stringResource(R.string.settings_auto_cache_desc),
-                value = bookshelf.autoCache,
-                onValueChange = onAutoCacheChange
-            )
-            SwitchSettingItem(
-                iconRes = R.drawable.outline_schedule_24px,
-                title = stringResource(R.string.settings_book_update_reminder),
-                description = stringResource(R.string.settings_book_update_reminder_desc),
-                value = bookshelf.systemUpdateReminder,
-                onValueChange = onSystemUpdateReminderChange
-            )
-            if (bookshelfId >= 0)
-                ListItem(
-                    modifier = Modifier.clickable {
-                        onClickDelete(bookshelfId)
-                    },
-                    leadingContent = {
-                        Icon(
-                            modifier = Modifier.padding(horizontal = 10.dp),
-                            painter = painterResource(R.drawable.delete_forever_24px),
-                            contentDescription = "Localized description",
-                        )
-                    },
-                    headlineContent = {
-                        Text(
-                            text = stringResource(R.string.settings_delete_bookshelf),
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(bottom = 2.dp)
-                        )
-                    },
-                    supportingContent = {
-                        Text(
-                            text = stringResource(R.string.settings_delete_bookshelf_desc),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
                 )
+            }
+            item {
+                SectionHeader(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
+                    text = stringResource(R.string.bookshelf_settings)
+                )
+            }
+            item {
+                SettingsMenuEntry(
+                    painter = painterResource(R.drawable.sort_24px),
+                    title = stringResource(R.string.bookshelf_sort_type),
+                    options = BookshelfSortTypeOptions,
+                    selectedOptionKey = bookshelf.sortType.key,
+                    onOptionChange = {
+                        onSortTypeChange(BookshelfSortTypeOptions.getOptionWithValue(it).value)
+                    }
+                )
+            }
+            item {
+                SettingsSwitchEntry(
+                    painter = painterResource(R.drawable.cloud_download_24px),
+                    title = stringResource(R.string.settings_auto_cache),
+                    description = stringResource(R.string.settings_auto_cache_desc),
+                    checked = bookshelf.autoCache,
+                    onCheckedChange = onAutoCacheChange
+                )
+            }
+            item {
+                SettingsSwitchEntry(
+                    painter = painterResource(R.drawable.outline_schedule_24px),
+                    title = stringResource(R.string.settings_book_update_reminder),
+                    description = stringResource(R.string.settings_book_update_reminder_desc),
+                    checked = bookshelf.systemUpdateReminder,
+                    onCheckedChange = onSystemUpdateReminderChange
+                )
+            }
+            if (bookshelfId >= 0) {
+                item {
+                    SettingsClickableEntry(
+                        painter = painterResource(R.drawable.delete_forever_24px),
+                        title = stringResource(R.string.settings_delete_bookshelf),
+                        description = stringResource(R.string.settings_delete_bookshelf_desc),
+                        onClick = { onClickDelete(bookshelfId) }
+                    )
+                }
+            }
         }
     }
 }
@@ -211,33 +217,5 @@ private fun TopBar(
             WindowInsetsSides.Horizontal + WindowInsetsSides.Top
         ),
         scrollBehavior = scrollBehavior
-    )
-}
-
-@Composable
-fun SwitchSettingItem(
-    iconRes: Int,
-    title: String,
-    description: String,
-    value: Boolean,
-    onValueChange: (Boolean) -> Unit,
-) {
-    ListItem(
-        modifier = Modifier.clickable {onValueChange(!value)},
-        headlineContent = { Text(text = title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 2.dp)) },
-        supportingContent = { Text(text = description, style = MaterialTheme.typography.bodyMedium) },
-        trailingContent = {
-            Switch(
-                checked = value,
-                onCheckedChange = onValueChange
-            )
-        },
-        leadingContent = {
-            Icon(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                painter = painterResource(iconRes),
-                contentDescription = "Localized description",
-            )
-        },
     )
 }

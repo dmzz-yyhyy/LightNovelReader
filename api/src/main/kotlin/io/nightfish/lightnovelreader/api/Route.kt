@@ -42,6 +42,17 @@ object Route {
             /** 书架主界面路由 */
             @Serializable
             object Home
+            /** 书本排序界面路由
+             *
+             * @param id 书架id
+             */
+            @Serializable
+            data class ReorderBooks(
+                val id: Int
+            )
+            /** 书架排序界面路由 */
+            @Serializable
+            object ReorderBookshelves
             /**
              * 书架编辑界面路由
              *
@@ -284,9 +295,13 @@ object Route {
     data class PluginInstallerDialog(
         val source: String
     )
-    /** 下载管理器路由 */
+    /** 书本管理器路由 */
     @Serializable
-    object DownloadManager
+    object BookManager
+
+    /** 存储空间管理器路由 */
+    @Serializable
+    object StorageManager
 
     /** 插件商店安装底栏
      *

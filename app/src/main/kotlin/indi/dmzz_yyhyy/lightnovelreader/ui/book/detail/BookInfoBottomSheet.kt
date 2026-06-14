@@ -180,8 +180,10 @@ fun BookInfoBottomSheet(
             InfoItem(
                 title = stringResource(R.string.detail_info_stats),
                 content = stringResource(
-                    R.string.detail_info_stats_content,
-                    bookInformation.wordCount.get(),
+                    R.string.detail_info_word_count_content,
+                    bookInformation.wordCount.get()
+                ) + "\n" + stringResource(
+                    R.string.detail_info_stats_count_content,
                     bookVolumes.volumes.count(),
                     bookVolumes.volumes.sumOf { it.chapters.size }
                 ),

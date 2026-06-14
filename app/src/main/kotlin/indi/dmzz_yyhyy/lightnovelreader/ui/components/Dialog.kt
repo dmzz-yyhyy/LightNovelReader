@@ -78,6 +78,7 @@ fun BaseDialog(
     onConfirmation: () -> Unit,
     dismissText: String,
     confirmationText: String,
+    confirmationEnabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     BaseDialog(
@@ -98,17 +99,16 @@ fun BaseDialog(
             ) {
                 Text(
                     text = dismissText,
-                    style = typography.labelMedium,
-                    color = colorScheme.primary,
+                    style = typography.labelMedium
                 )
             }
             TextButton(
-                onClick = onConfirmation
+                onClick = onConfirmation,
+                enabled = confirmationEnabled
             ) {
                 Text(
                     text = confirmationText,
-                    style = typography.labelMedium,
-                    color = colorScheme.primary,
+                    style = typography.labelMedium
                 )
             }
         }
@@ -153,7 +153,7 @@ fun BaseDialog(
                     .padding(horizontal = 24.dp),
                 textAlign = TextAlign.Start,
                 text = description,
-                style = typography.labelMedium,
+                style = typography.labelLarge,
                 color = colorScheme.onSurfaceVariant
             )
             Box(Modifier.height(16.dp))

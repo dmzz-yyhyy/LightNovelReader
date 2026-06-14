@@ -46,6 +46,9 @@ interface BookVolumesDao {
     @Query("select * from volume where book_id = :bookId")
     suspend fun getVolumeEntitiesByBookId(bookId: String): List<VolumeEntity>
 
+    @Query("select * from volume where book_id in (:bookIds)")
+    fun getVolumeEntitiesByBookIds(bookIds: List<String>): List<VolumeEntity>
+
     @Transaction
     suspend fun getBookVolumes(bookId: String): BookVolumes? {
         return BookVolumes(
@@ -65,8 +68,14 @@ interface BookVolumesDao {
     @Query("delete from volume")
     fun clearVolumes()
 
+    @Query("delete from volume where book_id in (:bookIds)")
+    fun deleteByBookIds(bookIds: List<String>)
+
     @Query("delete from chapter_information")
     fun clearChapterInformation()
+
+    @Query("delete from chapter_information where id in (:chapterIds)")
+    fun deleteChapterInformationByIds(chapterIds: List<String>)
 
     @Transaction
     fun clear() {

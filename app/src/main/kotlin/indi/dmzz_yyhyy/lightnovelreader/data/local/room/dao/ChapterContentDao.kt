@@ -48,6 +48,9 @@ interface ChapterContentDao {
     @Query("delete from chapter_content")
     fun clear()
 
+    @Query("delete from chapter_content where id in (:ids)")
+    fun deleteByIds(ids: List<String>)
+
     @Update
     fun updateEntities(vararg entities: ChapterContentEntity)
 

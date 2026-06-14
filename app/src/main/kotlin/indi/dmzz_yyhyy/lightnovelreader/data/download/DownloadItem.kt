@@ -32,8 +32,6 @@ class MutableDownloadItem(
     override fun hashCode(): Int {
         var result = type.hashCode()
         result = 31 * result + bookId.hashCode()
-        result = 31 * result + startTime.hashCode()
-        result = 31 * result + progress.hashCode()
         return result
     }
 }

@@ -239,7 +239,7 @@ fun BookCardContent(
 }
 
 @Composable
-private fun TagChip(
+fun TagChip(
     painter: Painter
 ) {
     Box(
@@ -256,7 +256,6 @@ private fun TagChip(
         )
     }
 }
-
 
 @Composable
 fun BookCardContentSkeleton(modifier: Modifier = Modifier) {
@@ -326,4 +325,3 @@ fun BookStatusIcon(isComplete: Boolean) {
         tint = colorScheme.outline
     )
 }
-

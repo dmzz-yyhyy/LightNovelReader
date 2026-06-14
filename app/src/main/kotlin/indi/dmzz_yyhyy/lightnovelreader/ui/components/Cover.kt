@@ -66,7 +66,7 @@ fun Cover(width: Dp, height: Dp, uri: Uri, rounded: Dp = 8.dp) {
                 ) {
                     CircularProgressIndicator(
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(width.times(0.33898306f))
+                        modifier = Modifier.size(width.times(0.3f))
                     )
                 }
             },

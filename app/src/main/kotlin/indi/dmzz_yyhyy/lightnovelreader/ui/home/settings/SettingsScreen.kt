@@ -58,6 +58,7 @@ fun SettingsScreen(
     onClickThemeSettings: () -> Unit,
     onClickPluginManager: () -> Unit,
     onClickTextFormatting: () -> Unit,
+    onClickStorageManager: () -> Unit,
     onOptOut: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -115,6 +116,7 @@ fun SettingsScreen(
                         onClickExportUserData = onClickExportUserData,
                         settingState = settingState,
                         importData = importData,
+                        onClickStorageManager = onClickStorageManager
                     )
                 }
             }

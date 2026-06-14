@@ -164,6 +164,7 @@ class MainActivity : ComponentActivity() {
                     id = 1145140721,
                     name = "已收藏",
                     sortType = BookshelfSortType.Default,
+                    sortReversed = false,
                     autoCache = false,
                     systemUpdateReminder = false
                 )

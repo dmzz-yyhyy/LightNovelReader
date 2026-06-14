@@ -105,6 +105,8 @@ sealed class UserDataPath(
     }
     /** 当前正在阅读的书籍列表路径 @since Api 2 */
     data object ReadingBooks : UserDataPath("reading_books")
+    /** 书架排序路径 @since Api 4 */
+    data object BookshelfOrder : UserDataPath("bookshelf_order")
     /** 搜索相关用户数据路径组 @since Api 2 */
     data object Search: UserDataPath("search") {
         /** 搜索历史记录 @since Api 2 */
@@ -158,6 +160,8 @@ sealed class UserDataPath(
             data object LogLevel : UserDataPath("log_level", Data)
             /** 是否使用代理 @since Api 2 */
             data object IsUseProxy : UserDataPath("is_use_proxy", Data)
+            /** 存储统计快照缓存 @since Api 4 */
+            data object StorageUsageSnapshot : UserDataPath("storage_usage_snapshot", Data)
         }
     }
     /** 已完成下载的书籍列表路径 @since Api 2 */

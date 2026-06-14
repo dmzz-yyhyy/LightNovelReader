@@ -21,6 +21,7 @@
     <string name="abort">中止</string>
     <string name="close">關閉</string>
     <string name="decline">拒絕</string>
+    <string name="options">更多</string>
     <string name="copied">內容已複製</string>
     <string name="select_all">全選</string>
     <string name="invert_selection">反選</string>
@@ -28,12 +29,13 @@
     <string name="undo">撤銷</string>
     <string name="manual_download">手動下載</string>
     <string name="follow_system">跟隨系統</string>
+    <string name="exit">退出</string>
     <string name="enabled">啟用</string>
     <string name="disabled">停用</string>
     <string name="not_applicable">不適用</string>
     <string name="install_update">安裝更新</string>
     <string name="plugin_install_alias_label">作為外掛安裝</string>
-    <string name="unspecified">Unspecified</string>
+    <string name="unspecified">未指定</string>
     <string name="ignore">忽略</string>
     <string name="ignore_version">忽略此版本</string>
     <string name="switch_and_restart">切換並重新啟動</string>
@@ -93,18 +95,19 @@
     <string name="settings_data_source_pending_title">切換到 %s</string>
     <string name="settings_data_source_pending_desc">        系統將清除快取並重新啟動。當下次切換回「%s」時，您目前的資料將可再次使用。
     </string>
-    <string name="settings_data_source_applying">處理中……</string>
     <string name="plugin_invalid_title">無效外掛</string>
     <string name="plugin_invalid_desc">無法取得外掛資訊，外掛可能無效或損壞</string>
     <string name="plugin_disabled">不可用</string>
     <string name="plugin_disabled_desc">調整設定需要啟用外掛</string>
+    <string name="confirm_exit">确认退出？</string>
+    <string name="hint_unsaved_changes_will_be_lost">若您現在退出，未儲存的變更將會遺失。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">開始快取：%1$s</string>
     <string name="cache_book_running">此書正在快取中</string>
     <string name="cache_book_finished">快取成功</string>
     <string name="cache_book_error">快取失敗</string>
     <string name="restart_to_apply_changes">重新啟動應用程式以套用變更</string>
-    <string name="network_error_message">        無法從資料來源取得資訊，這通常是網路問題所致。在提交問題前，請知晓：我們無法協助排查具體網路狀況，請先檢查您的網路連線。
+    <string name="network_error_message">無法從資料來源取得資訊，這通常是網路問題所致。在提交問題前，請知晓：我們無法協助排查具體網路狀況，請先檢查您的網路連線。
     </string>
     <string name="export_book_started">開始導出書本 %s</string>
     <string name="export_book_success">成功導出書本 %s</string>
@@ -271,7 +274,6 @@
     <string name="detail_introduction">介紹</string>
     <string name="detail_contents">目錄</string>
     <string name="detail_title">詳情</string>
-    <string name="book_management_title">書本管理</string>
     <string name="bookshelf_new_title">新建書架</string>
     <string name="bookshelf_edit_title">編輯書架</string>
     <string name="changelog">新版變化</string>
@@ -301,6 +303,15 @@
     <string name="bookshelf_name_placeholder">輸入書架名稱</string>
     <string name="bookshelf_settings">書架設定</string>
     <string name="bookshelf_create_title">建立書架</string>
+    <string name="bookshelf_sort_type">排序類型</string>
+    <string name="bookshelf_sort_default">預設</string>
+    <string name="bookshelf_sort_latest">最近更新</string>
+    <string name="bookshelf_sort_name">名稱</string>
+    <string name="bookshelf_sort_word_count">字數</string>
+    <string name="bookshelf_sort_reverse">反向</string>
+    <string name="bookshelf_adjust_order">調整排序</string>
+    <string name="bookshelf_adjust_bookshelf_order">調整書架排序</string>
+    <string name="bookshelf_adjust_order_locked">因當前排序類型鎖定</string>
     <string name="bookshelf_book_count">共 %d 本</string>
     <string name="share_bookshelf">分享書架</string>
     <string name="import_and_export">匯入和匯出……</string>
@@ -363,7 +374,6 @@
     <string name="no_records">沒有記錄</string>
     <string name="total_record">總記錄</string>
     <string name="reading_sessions">閱讀會話</string>
-    <string name="reading_sessions_unit"></string>
     <string name="reading_duration">閱讀時長</string>
     <string name="reading_duration_unit">時 %d 分</string>
     <string name="cached">已快取</string>
@@ -500,8 +510,6 @@
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可載入的外掛</string>
     <string name="plugin_enable_label">啟用外掛</string>
-    <string name="plugin_detail_tab_overview">總覽</string>
-    <string name="plugin_detail_tab_settings">設定</string>
     <string name="plugin_detail_summary_title">關於此外掛</string>
     <string name="plugin_detail_info_title">外掛資訊</string>
     <string name="plugin_detail_api_version">API 版本</string>

@@ -4,6 +4,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.update.APIParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.GithubParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateParser
+import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 
 @Suppress("PropertyName", "unused")
 sealed class MenuOptions {
@@ -180,5 +181,11 @@ sealed class MenuOptions {
         val Detailed = option("detailed", R.string.key_duration_style_detailed)
     }
 
+    data object BookshelfSortTypeOptions: MenuOptionsWithValues<BookshelfSortType>(
+        OptionWithValue(BookshelfSortType.Default.key, R.string.bookshelf_sort_default, BookshelfSortType.Default),
+        OptionWithValue(BookshelfSortType.Latest.key, R.string.bookshelf_sort_latest, BookshelfSortType.Latest),
+        OptionWithValue(BookshelfSortType.Name.key, R.string.bookshelf_sort_name, BookshelfSortType.Name),
+        OptionWithValue(BookshelfSortType.WordCount.key, R.string.bookshelf_sort_word_count, BookshelfSortType.WordCount)
+    )
 
 }

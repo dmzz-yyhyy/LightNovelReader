@@ -40,11 +40,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -119,8 +120,8 @@ fun ReaderScreen(
     var selectedVolumeId by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
-    val settingsBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    val chaptersBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val settingsBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+    val chaptersBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     val claim = LocalClaimSnackbarHost.current
 

@@ -32,7 +32,8 @@ class BookshelfRepository @Inject constructor(
         MutableBookshelf().apply {
             this.id =   bookshelfEntity.id
             this.name = bookshelfEntity.name
-            this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+            this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
+            this.sortReversed = bookshelfEntity.sortReversed
             this.autoCache = bookshelfEntity.autoCache
             this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
             this.allBookIds = bookshelfEntity.allBookIds
@@ -46,7 +47,8 @@ class BookshelfRepository @Inject constructor(
             MutableBookshelf().apply {
                 this.id =   bookshelfEntity.id
                 this.name = bookshelfEntity.name
-                this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+                this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
+                this.sortReversed = bookshelfEntity.sortReversed
                 this.autoCache = bookshelfEntity.autoCache
                 this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
                 this.allBookIds = bookshelfEntity.allBookIds
@@ -60,7 +62,8 @@ class BookshelfRepository @Inject constructor(
         val bookshelfEntity = bookshelfDao.getBookshelf(id) ?: return null
         this.id = id
         this.name = bookshelfEntity.name
-        this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+        this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
+        this.sortReversed = bookshelfEntity.sortReversed
         this.autoCache = bookshelfEntity.autoCache
         this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
         this.allBookIds = bookshelfEntity.allBookIds
@@ -75,7 +78,8 @@ class BookshelfRepository @Inject constructor(
             MutableBookshelf().apply {
                 this.id = id
                 this.name = bookshelfEntity.name
-                this.sortType = BookshelfSortType.entries.first { it.key == bookshelfEntity.sortType }
+                this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
+                this.sortReversed = bookshelfEntity.sortReversed
                 this.autoCache = bookshelfEntity.autoCache
                 this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
                 this.allBookIds = bookshelfEntity.allBookIds
@@ -88,6 +92,7 @@ class BookshelfRepository @Inject constructor(
         id: Int,
         name: String,
         sortType: BookshelfSortType,
+        sortReversed: Boolean,
         autoCache: Boolean,
         systemUpdateReminder: Boolean,
     ): Int {
@@ -95,6 +100,7 @@ class BookshelfRepository @Inject constructor(
             id = id,
             name = name,
             sortType = sortType.key,
+            sortReversed = sortReversed,
             autoCache = autoCache,
             systemUpdateReminder = systemUpdateReminder,
             allBookIds = emptyList(),
@@ -162,6 +168,7 @@ class BookshelfRepository @Inject constructor(
                         bookshelfId,
                         newBookshelf.name,
                         newBookshelf.sortType.key,
+                        newBookshelf.sortReversed,
                         newBookshelf.autoCache,
                         newBookshelf.systemUpdateReminder,
                         newBookshelf.allBookIds,

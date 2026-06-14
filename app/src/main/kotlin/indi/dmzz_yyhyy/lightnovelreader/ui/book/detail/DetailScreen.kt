@@ -54,13 +54,14 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -130,8 +131,8 @@ fun DetailScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = LocalSnackbarHost.current
 
-    val exportBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    val infoBottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val exportBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
 
     var showExportBottomSheet by remember { mutableStateOf(false) }
     var showInfoBottomSheet by remember { mutableStateOf(false) }

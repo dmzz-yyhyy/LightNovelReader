@@ -39,6 +39,9 @@ interface BookInformationDao {
     @Query("select * from book_information")
     suspend fun getAllEntities(): List<BookInformationEntity>
 
+    @Query("delete from book_information where id in (:ids)")
+    fun deleteByIds(ids: List<String>)
+
     @Transaction
     suspend fun get(id: String): BookInformation? {
         val entity = getEntity(id) ?: return null

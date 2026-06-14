@@ -35,6 +35,7 @@ fun DataSettingsList(
     onClickExportUserData: () -> Unit,
     settingState: SettingState,
     importData: (Uri, Boolean) -> OneTimeWorkRequest,
+    onClickStorageManager: () -> Unit,
 ) {
     val dataImportFailedText = stringResource(R.string.data_import_failed)
     val dataImportSuccessText = stringResource(R.string.data_import_success)
@@ -106,6 +107,13 @@ fun DataSettingsList(
         title = stringResource(R.string.settings_import_data),
         description = stringResource(R.string.settings_import_data_desc),
         onClick = { selectDataFile(importDataLauncher) }
+    )
+    SettingsClickableEntry(
+        modifier = Modifier.background(colorScheme.surfaceContainer),
+        painter = painterResource(R.drawable.database_24px),
+        title = stringResource(R.string.settings_storage_manager),
+        description = stringResource(R.string.settings_storage_manager_desc),
+        onClick = onClickStorageManager
     )
     SettingsSwitchEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),

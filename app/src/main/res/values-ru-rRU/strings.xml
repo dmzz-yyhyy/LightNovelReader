@@ -21,6 +21,7 @@
     <string name="abort">Abort</string>
     <string name="close">Close</string>
     <string name="decline">Отклонить</string>
+    <string name="options">More</string>
     <string name="copied">Content copied</string>
     <string name="select_all">Select All</string>
     <string name="invert_selection">Invert Selection</string>
@@ -28,6 +29,7 @@
     <string name="undo">Undo</string>
     <string name="manual_download">Вручную</string>
     <string name="follow_system">Следовать системе</string>
+    <string name="exit">Exit</string>
     <string name="enabled">Включено</string>
     <string name="disabled">Отключено</string>
     <string name="not_applicable">Not applicable</string>
@@ -93,11 +95,12 @@
     <string name="settings_data_source_pending_title">Switch to %s</string>
     <string name="settings_data_source_pending_desc">        The operation will clear cached data and restart the app. Your current data can be restored when switching back to \"%s\".
     </string>
-    <string name="settings_data_source_applying">Processing…</string>
     <string name="plugin_invalid_title">Invalid plugin</string>
     <string name="plugin_invalid_desc">Unable to get plugin info; the plugin may be invalid or corrupted.</string>
     <string name="plugin_disabled">Unavailable</string>
     <string name="plugin_disabled_desc">Enabling the plugin is required to adjust settings.</string>
+    <string name="confirm_exit">Confirm Exit?</string>
+    <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">Началось кэширование: %1$s</string>
     <string name="cache_book_running">Эта книга сейчас кэшируется</string>
@@ -272,7 +275,6 @@
     <string name="detail_introduction">Аннотация</string>
     <string name="detail_contents">Оглавление</string>
     <string name="detail_title">Детали</string>
-    <string name="book_management_title">Book Management</string>
     <string name="bookshelf_new_title">New Bookshelf</string>
     <string name="bookshelf_edit_title">Edit Bookshelf</string>
     <string name="changelog">История изменений</string>
@@ -302,6 +304,15 @@
     <string name="bookshelf_name_placeholder">Введите название полки</string>
     <string name="bookshelf_settings">Настройки полки</string>
     <string name="bookshelf_create_title">Создать полку</string>
+    <string name="bookshelf_sort_type">Sort Type</string>
+    <string name="bookshelf_sort_default">Default</string>
+    <string name="bookshelf_sort_latest">Recently Updated</string>
+    <string name="bookshelf_sort_name">Name</string>
+    <string name="bookshelf_sort_word_count">Word Count</string>
+    <string name="bookshelf_sort_reverse">Reverse</string>
+    <string name="bookshelf_adjust_order">Adjust Order</string>
+    <string name="bookshelf_adjust_bookshelf_order">Adjust Bookshelf Order</string>
+    <string name="bookshelf_adjust_order_locked">Locked by current sort</string>
     <string name="bookshelf_book_count">Всего: %d книг</string>
     <string name="share_bookshelf">Поделиться полкой</string>
     <string name="import_and_export">Импорт/экспорт…</string>
@@ -364,7 +375,6 @@
     <string name="no_records">Нет записей</string>
     <string name="total_record">Всего записей</string>
     <string name="reading_sessions">Сессии чтения</string>
-    <string name="reading_sessions_unit"></string>
     <string name="reading_duration">Длительность чтения</string>
     <string name="reading_duration_unit">ч %d мин</string>
     <string name="cached">В кэше</string>
@@ -504,8 +514,6 @@
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">Loadable plugin</string>
     <string name="plugin_enable_label">Enable plugin</string>
-    <string name="plugin_detail_tab_overview">Overview</string>
-    <string name="plugin_detail_tab_settings">Settings</string>
     <string name="plugin_detail_summary_title">About this plugin</string>
     <string name="plugin_detail_info_title">Plugin information</string>
     <string name="plugin_detail_api_version">API version</string>

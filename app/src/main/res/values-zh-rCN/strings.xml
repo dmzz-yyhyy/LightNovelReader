@@ -19,8 +19,9 @@
     <string name="done">完成</string>
     <string name="next">下一步</string>
     <string name="abort">中止</string>
-    <string name="close">Close</string>
+    <string name="close">关闭</string>
     <string name="decline">拒绝</string>
+    <string name="options">更多</string>
     <string name="copied">内容已复制</string>
     <string name="select_all">全选</string>
     <string name="invert_selection">反选</string>
@@ -28,6 +29,7 @@
     <string name="undo">撤销</string>
     <string name="manual_download">手动下载</string>
     <string name="follow_system">跟随系统</string>
+    <string name="exit">退出</string>
     <string name="enabled">启用</string>
     <string name="disabled">关闭</string>
     <string name="not_applicable">不适用</string>
@@ -93,11 +95,12 @@
     <string name="settings_data_source_pending_title">切换到 %s</string>
     <string name="settings_data_source_pending_desc">        应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
     </string>
-    <string name="settings_data_source_applying">进行中……</string>
     <string name="plugin_invalid_title">无效插件</string>
     <string name="plugin_invalid_desc">无法获取插件信息，插件可能无效或损坏</string>
     <string name="plugin_disabled">不可用</string>
     <string name="plugin_disabled_desc">调整设置需要启用插件</string>
+    <string name="confirm_exit">确认退出？</string>
+    <string name="hint_unsaved_changes_will_be_lost">如果现在退出，您未保存的更改将会丢失。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">开始缓存：%1$s</string>
     <string name="cache_book_running">此书本正在缓存中</string>
@@ -120,8 +123,8 @@
     <string name="settings_auto_check_updates_desc">应用启动后自动检查更新</string>
     <string name="settings_update_channel">测试更新渠道</string>
     <string name="settings_update_channel_desc">提前体验即将发布的新功能，并在稳定版发布前提供宝贵的反馈</string>
-    <string name="settings_get_updates">手动检查更新</string>
-    <string name="settings_get_updates_desc">手动获取应用更新</string>
+    <string name="settings_get_updates">检查更新</string>
+    <string name="settings_get_updates_desc">检查并安装最新版本</string>
     <string name="settings_distribution_platform">更新分发平台</string>
     <string name="settings_distribution_platform_settings_desc"><!--reserved--></string>
     <string name="reader_settings">阅读设置</string>
@@ -271,7 +274,6 @@
     <string name="detail_introduction">介绍</string>
     <string name="detail_contents">目录</string>
     <string name="detail_title">详情</string>
-    <string name="book_management_title">书本管理</string>
     <string name="bookshelf_new_title">新建书架</string>
     <string name="bookshelf_edit_title">编辑书架</string>
     <string name="changelog">新版变化</string>
@@ -301,6 +303,15 @@
     <string name="bookshelf_name_placeholder">输入书架名称</string>
     <string name="bookshelf_settings">书架设置</string>
     <string name="bookshelf_create_title">创建书架</string>
+    <string name="bookshelf_sort_type">排序方式</string>
+    <string name="bookshelf_sort_default">默认</string>
+    <string name="bookshelf_sort_latest">最近更新</string>
+    <string name="bookshelf_sort_name">名称</string>
+    <string name="bookshelf_sort_word_count">字数</string>
+    <string name="bookshelf_sort_reverse">反向</string>
+    <string name="bookshelf_adjust_order">调整排序</string>
+    <string name="bookshelf_adjust_bookshelf_order">调整书架排序</string>
+    <string name="bookshelf_adjust_order_locked">被当前排序模式锁定</string>
     <string name="bookshelf_book_count">共 %d 本</string>
     <string name="share_bookshelf">分享书架</string>
     <string name="import_and_export">导入和导出……</string>
@@ -363,7 +374,6 @@
     <string name="no_records">没有记录</string>
     <string name="total_record">总记录</string>
     <string name="reading_sessions">阅读会话</string>
-    <string name="reading_sessions_unit"></string>
     <string name="reading_duration">阅读时长</string>
     <string name="reading_duration_unit">时 %d 分</string>
     <string name="cached">已缓存</string>
@@ -438,9 +448,9 @@
     <string name="plugin_signature_public_key">公钥: %1$s，%2$d-bit</string>
     <string name="plugin_signature_sha256">SHA256: %1$s</string>
     <string name="plugin_install_plugin">安装插件</string>
-    <string name="plugin_app_list">Plugin apps</string>
-    <string name="plugin_app_empty_title">No plugin apps</string>
-    <string name="plugin_app_empty_desc">Install a plugin app to show it here</string>
+    <string name="plugin_app_list">插件应用</string>
+    <string name="plugin_app_empty_title">没有插件应用</string>
+    <string name="plugin_app_empty_desc">安装插件应用以显示</string>
     <string name="plugin_empty_title">没有插件</string>
     <string name="plugin_empty_desc">安装受支持的 .lnrp 格式插件</string>
     <string name="plugin_third_party_tips">        来自第三方的插件可以提供额外的数据源或功能。安装插件前，请确保其来源可信。\nLightNovelReader 不对插件可用性负责。
@@ -503,8 +513,6 @@
     <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可加载的插件</string>
     <string name="plugin_enable_label">启用插件</string>
-    <string name="plugin_detail_tab_overview">概览</string>
-    <string name="plugin_detail_tab_settings">设置</string>
     <string name="plugin_detail_summary_title">关于此插件</string>
     <string name="plugin_detail_info_title">插件信息</string>
     <string name="plugin_detail_api_version">API 版本</string>
@@ -513,17 +521,17 @@
     <string name="plugin_detail_source_local">本地包</string>
     <string name="plugin_detail_source_app">已安装应用</string>
     <!-- Plugin Store -->
-    <string name="plugin_store_install_title">Get Plugin</string>
-    <string name="plugin_store_load_failed">Failed to load</string>
-    <string name="plugin_store_load_failed_desc">Failed to get plugin info</string>
-    <string name="plugin_store_install_with_size">Install (%1$s)</string>
-    <string name="plugin_store_download_progress">%1$d%% downloaded</string>
+    <string name="plugin_store_install_title">获取插件</string>
+    <string name="plugin_store_load_failed">加载失败</string>
+    <string name="plugin_store_load_failed_desc">无法获取插件信息</string>
+    <string name="plugin_store_install_with_size">安装 (%1$s)</string>
+    <string name="plugin_store_download_progress">%1$d%% 已下载</string>
     <string name="plugin_third_party_title">第三方插件</string>
     <string name="plugin_third_party_desc">该插件由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>
     <string name="plugin_info_version_label">版本</string>
     <string name="plugin_info_author_label">作者</string>
-    <string name="plugin_app_conflict_message">Conflicts with installed plugin app; app plugin is preferred.</string>
+    <string name="plugin_app_conflict_message">与已安装的插件应用发生冲突，首选应用程序插件。</string>
     <!-- Notifications -->
     <string name="epub_export_notification_channel_name">EPUB 导出进度</string>
     <string name="epub_export_notification_preparing">准备中…</string>
@@ -554,12 +562,12 @@
     <string name="key_dark_mode_enabled">保持启用</string>
     <string name="key_dark_mode_disabled">保持禁用</string>
     <!-- Log Level -->
-    <string name="key_log_level_none">None</string>
-    <string name="key_log_level_error">Error</string>
-    <string name="key_log_level_warning">Warning</string>
-    <string name="key_log_level_info">Info</string>
-    <string name="key_log_level_debug">Debug</string>
-    <string name="key_log_level_verbose">Verbose</string>
+    <string name="key_log_level_none">无</string>
+    <string name="key_log_level_error">错误</string>
+    <string name="key_log_level_warning">警告</string>
+    <string name="key_log_level_info">信息</string>
+    <string name="key_log_level_debug">调试</string>
+    <string name="key_log_level_verbose">冗余</string>
     <!-- Light Theme Name -->
     <string name="key_light_theme_default">默认</string>
     <string name="key_light_theme_designer">Designer</string>
@@ -584,7 +592,7 @@
     <string name="key_reader_back_block_mode_double_press">双击</string>
     <string name="key_reader_back_block_mode_blocked">完全阻止</string>
     <!-- Date Time Style -->
-    <string name="key_date_time_style_system">Follow System</string>
+    <string name="key_date_time_style_system">跟随系统</string>
     <string name="key_date_time_style_short">短</string>
     <string name="key_date_time_style_medium">中</string>
     <string name="key_date_time_style_long">长</string>

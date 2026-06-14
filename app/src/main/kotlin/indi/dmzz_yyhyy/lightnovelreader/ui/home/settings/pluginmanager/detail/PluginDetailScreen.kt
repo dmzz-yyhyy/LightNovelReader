@@ -66,8 +66,8 @@ import kotlinx.coroutines.launch
 private enum class PluginDetailTab(
     val titleRes: Int
 ) {
-    Overview(R.string.plugin_detail_tab_overview),
-    Settings(R.string.plugin_detail_tab_settings)
+    Overview(R.string.overview),
+    Settings(R.string.settings)
 }
 
 private data class PluginInfoEntry(
