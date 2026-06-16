@@ -46,7 +46,7 @@ class ContentBuilder {
             putJsonArray("components") {
                 for (component in components) {
                     addJsonObject {
-                        put("id", component.id)
+                        put("id", component.id.toString())
                         put("data", component.toJsonElement())
                     }
                 }

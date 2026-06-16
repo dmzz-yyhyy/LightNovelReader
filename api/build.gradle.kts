@@ -12,6 +12,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
     id("maven-publish")
+    id("kotlin-parcelize")
 }
 
 java {
@@ -84,6 +85,8 @@ afterEvaluate {
 
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+    implementation(libs.kotlin.result)
+    implementation(libs.kotlin.result.coroutines)
     implementation(libs.androidx.foundation)
     implementation(libs.compose.ui.graphics)
     implementation(libs.androidx.runtime)

@@ -3,7 +3,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.content
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ErrorContentComponent
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ImageComponent
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.SimpleTextComponent
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInjectorProvider
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjectorProvider
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.content.ContentComponentRepositoryApi
 import io.nightfish.lightnovelreader.api.content.ContentData
 import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
@@ -33,10 +34,14 @@ class ContentComponentRepository @Inject constructor(
         jsonObject["components"]
             ?.jsonArray
             ?.mapNotNull { it.jsonObject }
-            ?.map {
-                val id = it["id"]?.jsonPrimitive?.content
+            ?.map { component ->
+                val id = component["id"]?.jsonPrimitive?.content
+                    ?.let {
+                        if (it.contains(":")) return@let it
+                        return@let "lightnovelreader:$it"
+                    }
                     ?: return@map ErrorContentComponent.of("component id not found")
-                val data = it["data"]?.jsonObject
+                val data = component["data"]?.jsonObject
                     ?: return@map ErrorContentComponent.of("component data not found\nid=$id")
                 val kClass = kClassMutableMap[id]
                     ?: return@map ErrorContentComponent.of("component class not found\nid=$id")
@@ -56,11 +61,11 @@ class ContentComponentRepository @Inject constructor(
     )
 
     interface Registrar: ContentComponentRepositoryApi.Registrar {
-        override fun id(id: String): RegisterBuilder
+        override fun id(id: Identifier): RegisterBuilder
     }
 
     override val registrar = object: Registrar {
-        override fun id(id: String) = RegisterBuilder(serializeMutableMap, kClassMutableMap, dataKClassMutableMap, id)
+        override fun id(id: Identifier) = RegisterBuilder(serializeMutableMap, kClassMutableMap, dataKClassMutableMap, id)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -68,7 +73,7 @@ class ContentComponentRepository @Inject constructor(
         private val serializerMap: MutableMap<String, ComponentDataJsonElementSerializer<out AbstractContentComponentData>>,
         private val kClassMap: MutableMap<String, KClass<out AbstractContentComponent<out AbstractContentComponentData>>>,
         private val dataKClassMap: MutableMap<String, KClass<out AbstractContentComponentData>>,
-        val id: String
+        val id: Identifier
     ): ContentComponentRepositoryApi.RegisterBuilder {
         var componentKClass: KClass<out AbstractContentComponent<out AbstractContentComponentData>>? = null
         var componentDataKClass: KClass<out AbstractContentComponentData>? = null
@@ -91,9 +96,9 @@ class ContentComponentRepository @Inject constructor(
 
         override fun register() {
             if (componentKClass == null || componentDataKClass == null ||serializer == null) throw Error("builder missing parameters")
-            kClassMap[id] = componentKClass!!
-            dataKClassMap[id] = componentDataKClass!!
-            serializerMap[id] = serializer!!
+            kClassMap[id.toString()] = componentKClass!!
+            dataKClassMap[id.toString()] = componentDataKClass!!
+            serializerMap[id.toString()] = serializer!!
         }
     }
     fun getDataFromJsonObject(content: JsonObject, block: (AbstractContentComponentData) -> Unit) {
@@ -113,14 +118,14 @@ class ContentComponentRepository @Inject constructor(
 
     init {
         registrar
-            .id(SimpleTextComponentData.ID)
+            .id(SimpleTextComponentData.id)
             .component(SimpleTextComponent::class)
             .data(SimpleTextComponentData::class)
             .serializer(SimpleTextComponentData.jsonSerializer)
             .register()
 
         registrar
-            .id(ImageComponentData.ID)
+            .id(ImageComponentData.id)
             .component(ImageComponent::class)
             .data(ImageComponentData::class)
             .serializer(ImageComponentData.jsonSerializer)

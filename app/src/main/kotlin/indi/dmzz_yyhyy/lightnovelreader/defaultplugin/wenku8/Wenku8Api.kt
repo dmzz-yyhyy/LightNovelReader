@@ -12,6 +12,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExplo
 import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
+import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
@@ -40,6 +41,7 @@ import org.jsoup.select.Elements
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @WebDataSource(
@@ -84,7 +86,7 @@ object Wenku8Api : WebBookDataSource {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay(if (offLine) 3000 else 100000)
+                delay((if (offLine) 3000 else 100000).milliseconds)
             }
         }
     }
@@ -122,7 +124,7 @@ object Wenku8Api : WebBookDataSource {
         return@withContext webSite(0) && webSite(1) && webSite(2)
     }
 
-    override val id: Int = "wenku8".hashCode()
+    override val id = "Wenku8".ofId()
 
     override suspend fun getBookInformation(id: String): BookInformation = ifCache(id) {
         bookRequestDispatcher.getBookInformation(id)
@@ -160,7 +162,7 @@ object Wenku8Api : WebBookDataSource {
                 chapterContent.content["components"]?.jsonArray
                     ?.mapNotNull { it.jsonObject }
                     ?.filter {
-                        it["id"]?.jsonPrimitive?.content == ImageComponentData.ID
+                        it["id"]?.jsonPrimitive?.content == ImageComponentData.id.toString()
                     }
                     ?.forEach {
                         val uri = it["data"]?.jsonObject["uri"]?.jsonPrimitive?.content?.toUri()

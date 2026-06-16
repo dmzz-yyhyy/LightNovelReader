@@ -80,3 +80,5 @@
 -keep, includedescriptorclasses class kotlinx.** { *; }
 # Compose
 -keep, includedescriptorclasses class androidx.** { *; }
+# Result
+-keep, includedescriptorclasses class com.github.michaelbull.result.** { *; }

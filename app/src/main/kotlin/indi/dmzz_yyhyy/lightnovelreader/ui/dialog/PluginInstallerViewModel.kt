@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.InstallState
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInstallError
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.InstallState
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.PluginInstallError
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.DeleteStepState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.InstallDecision

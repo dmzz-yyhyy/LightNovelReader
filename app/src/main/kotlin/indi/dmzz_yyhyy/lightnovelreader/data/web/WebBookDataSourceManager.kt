@@ -1,8 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
 import dalvik.system.PathClassLoader
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInjector
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjector
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.utils.convertOldId
+import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebBookDataSourceManagerApi
@@ -30,7 +33,7 @@ class WebBookDataSourceManager @Inject constructor (
         onWebDataSourceListChange()
     }
 
-    override fun unregisterWebDataSource(webDataSourceId: Int) {
+    override fun unregisterWebDataSource(webDataSourceId: Identifier) {
         _webDataSourceItems.removeAll { it.id == webDataSourceId }
         webBookDataSources.removeAll { it.id == webDataSourceId }
         onWebDataSourceListChange()
@@ -83,7 +86,10 @@ class WebBookDataSourceManager @Inject constructor (
     }
 
     fun onWebDataSourceListChange() {
-        val webDataSourcesId = userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).getOrDefault("wenku8".hashCode())
+        val webDataSourcesId = userDataRepository
+            .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+            .get()
+            ?.convertOldId() ?: "Wenku8".ofId()
         mutableWebDataSourceProvider.update(
             webBookDataSources
                 .find { it.id == webDataSourcesId }

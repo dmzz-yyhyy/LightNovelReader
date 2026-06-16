@@ -1,6 +1,7 @@
 package io.nightfish.lightnovelreader.api.content.component
 
 import android.content.Context
+import io.nightfish.lightnovelreader.api.identifier.ofAppId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -21,7 +22,7 @@ import org.dom4j.Element
 data class SimpleTextComponentData(
     val text: String
 ): AbstractContentComponentData() {
-    override val id: String = ID
+    override val id = Companion.id
     override fun toJsonElement(): JsonElement = Json.encodeToJsonElement(this)
 
     override fun toHtmlElement(context: Context): Element = DocumentHelper.createElement("div").apply {
@@ -41,7 +42,7 @@ data class SimpleTextComponentData(
      */
     companion object {
         /** 简单文本组件的唯一标识字符串 */
-        const val ID = "simple_text"
+        val id =  "simple_text".ofAppId()
         /** 默认JSON序列化器 */
         val jsonSerializer = object: ComponentDataJsonElementSerializer<SimpleTextComponentData> {
             override fun toJsonElement(data: SimpleTextComponentData): JsonElement = Json.encodeToJsonElement(data)

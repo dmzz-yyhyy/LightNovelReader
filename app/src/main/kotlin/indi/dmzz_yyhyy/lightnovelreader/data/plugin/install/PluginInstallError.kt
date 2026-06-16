@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.plugin
+package indi.dmzz_yyhyy.lightnovelreader.data.plugin.install
 
 import io.nightfish.lightnovelreader.api.ApiMetadata
 

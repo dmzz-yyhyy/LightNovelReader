@@ -1,6 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.dialog
 
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.StorePlugin
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.StorePlugin
 
 sealed interface StoreInstallState {
     data object Loading : StoreInstallState

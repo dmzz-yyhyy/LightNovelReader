@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.google.ksp)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.compose.compiler)
+    id("kotlin-parcelize")
     id("com.mikepenz.aboutlibraries.plugin.android")
 }
 
@@ -149,6 +150,7 @@ dependencies {
     // Junit
     testImplementation(libs.junit)
     // Hilt
+    ksp(libs.kotlin.metadata.jvm)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.common)

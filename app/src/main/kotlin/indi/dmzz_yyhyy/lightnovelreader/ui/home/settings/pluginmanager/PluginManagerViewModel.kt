@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginAppInfo
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginUpdateCheckRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.PluginUpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.utils.ApkSignatureInfo
 import indi.dmzz_yyhyy.lightnovelreader.utils.getApkSignatures

@@ -26,7 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.caoccao.javet.interop.NodeRuntime
 import com.caoccao.javet.interop.V8Host
-import io.nightfish.lightnovelreader.api.PluginContext
+import io.nightfish.lightnovelreader.api.plugin.PluginContext
 import io.nightfish.lightnovelreader.api.plugin.LightNovelReaderPlugin
 import io.nightfish.lightnovelreader.api.plugin.Plugin
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry

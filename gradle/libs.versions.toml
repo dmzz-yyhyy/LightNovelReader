@@ -1,18 +1,19 @@
 [versions]
 androidGradlePlugin = "9.2.1"
-apksig = "9.1.0"
+apksig = "9.2.1"
 cxhttp = "1.2.5"
 dom4j = "2.2.0"
 jaxen = "2.0.6"
 javet = "5.0.8"
 kotlin = "2.4.0"
 kotlinComposeCompilerPlugin = "2.1.20"
+kotlinMetadataJvm = "2.4.0"
 kotlinResult = "2.3.1"
 ksp = "2.3.7"
 loggingInterceptor = "5.4.0"
 materialIconsCore = "1.7.8"
 matomoSdkAndroid = "4.4"
-okhttp = "5.3.2"
+okhttp = "5.4.0"
 profileinstaller = "1.4.1"
 re2j = "1.8"
 reorderable = "3.1.0"
@@ -30,7 +31,7 @@ composeMaterial3 = "1.5.0-alpha21"
 composeUi = "1.11.2"
 foundationLayout = "1.11.2"
 composeAnimationGraphics = "1.11.2"
-coil = "3.4.0"
+coil = "3.5.0"
 jsoup = "1.22.2"
 markdown = "0.5.7"
 room = "2.8.4"
@@ -62,6 +63,7 @@ javet-node-macos-arm64 = { module = "com.caoccao.javet:javet-node-macos-arm64", 
 javet-node-linux-x86_x4 = { module = "com.caoccao.javet:javet-node-linux-x86_64", version.ref = "javet" }
 javet-node-windows-x86_x4 = { module = "com.caoccao.javet:javet-node-windows-x86_64", version.ref = "javet" }
 javet-node-macos-x86_x4 = { module = "com.caoccao.javet:javet-node-macos-x86_64", version.ref = "javet" }
+kotlin-metadata-jvm = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlinMetadataJvm" }
 kotlin-result = { module = "com.michael-bull.kotlin-result:kotlin-result", version.ref = "kotlinResult" }
 kotlin-result-coroutines = { module = "com.michael-bull.kotlin-result:kotlin-result-coroutines", version.ref = "kotlinResult" }
 matomo-sdk-android = { module = "com.github.matomo-org:matomo-sdk-android", version.ref = "matomoSdkAndroid" }

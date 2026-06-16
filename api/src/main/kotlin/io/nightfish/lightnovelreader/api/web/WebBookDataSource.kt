@@ -3,6 +3,7 @@ package io.nightfish.lightnovelreader.api.web
 import android.content.Context
 import android.net.Uri
 import androidx.navigation.NavController
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
@@ -39,9 +40,9 @@ interface WebBookDataSource {
     /**
      * 数据源的唯一整数标识
      *
-     * @since Api 2
+     * @since Api 4
      */
-    val id: Int
+    val id: Identifier
 
     /**
      * 当数据源被加载时调用

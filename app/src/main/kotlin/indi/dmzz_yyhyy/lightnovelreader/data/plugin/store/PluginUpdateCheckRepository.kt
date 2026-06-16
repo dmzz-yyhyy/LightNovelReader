@@ -1,7 +1,9 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.plugin
+package indi.dmzz_yyhyy.lightnovelreader.data.plugin.store
 
 import android.util.Log
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginSource
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

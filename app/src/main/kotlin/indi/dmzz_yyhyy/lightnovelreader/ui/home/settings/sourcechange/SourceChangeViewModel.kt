@@ -18,6 +18,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.readAppLocalData
 import indi.dmzz_yyhyy.lightnovelreader.utils.restart
 import indi.dmzz_yyhyy.lightnovelreader.utils.writeAppLocalData
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class SourceChangeViewModel @Inject constructor(
     }
     val uiState: SourceChangeUiState = _uiState
     @Suppress("OPT_IN_USAGE")
-    fun changeWebSource(newWebDataSourceId: Int) {
+    fun changeWebSource(newWebDataSourceId: Identifier) {
         if (newWebDataSourceId == _uiState.currentSourceId) return
         if (_uiState.isProcessing) return
 
@@ -84,7 +85,7 @@ class SourceChangeViewModel @Inject constructor(
                         }
                     }.andThen {
                         runCatching {
-                            userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).set(newWebDataSourceId)
+                            userDataRepository.stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path).set(newWebDataSourceId.toString())
                         }
                     }
                 if (result.isErr) {

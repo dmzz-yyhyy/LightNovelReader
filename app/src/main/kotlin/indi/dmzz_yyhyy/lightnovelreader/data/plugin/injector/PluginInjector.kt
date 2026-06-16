@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.plugin
+package indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -10,7 +10,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
-import io.nightfish.lightnovelreader.api.PluginContext
+import io.nightfish.lightnovelreader.api.plugin.PluginContext
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
 import io.nightfish.lightnovelreader.api.book.LocalBookDataSourceApi
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfRepositoryApi

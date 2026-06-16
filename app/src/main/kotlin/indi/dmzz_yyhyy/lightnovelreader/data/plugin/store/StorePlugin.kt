@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.plugin
+package indi.dmzz_yyhyy.lightnovelreader.data.plugin.store
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

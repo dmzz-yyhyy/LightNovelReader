@@ -1,5 +1,6 @@
-package io.nightfish.lightnovelreader.api
+package io.nightfish.lightnovelreader.api.plugin
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.io.File
 
 /**
@@ -12,6 +13,7 @@ import java.io.File
  * @since Api 2
  */
 class PluginContext(
+    val packageName: String,
     val dataDir: File,
     val pluginFile: File,
     private val assetDir: File
@@ -26,4 +28,13 @@ class PluginContext(
      * @since Api 2
      */
     fun getAsset(path: String) = assetDir.resolve(path)
+
+    /**
+     * 创建插件Id, 用于部分地方的注册
+     *
+     * @param id id名
+     *
+     * @since Api 4
+     */
+    fun ofId(id: String): Identifier = Identifier(packageName, id)
 }

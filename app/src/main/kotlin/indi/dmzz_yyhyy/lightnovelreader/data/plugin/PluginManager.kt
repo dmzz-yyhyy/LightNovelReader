@@ -18,6 +18,9 @@ import com.github.michaelbull.result.unwrap
 import com.github.michaelbull.result.unwrapError
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dalvik.system.PathClassLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjector
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.InstallState
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.PluginInstallError
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
@@ -25,7 +28,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.classLoader
 import indi.dmzz_yyhyy.lightnovelreader.utils.getApkSignatures
 import indi.dmzz_yyhyy.lightnovelreader.utils.isSignatureMatch
 import io.nightfish.lightnovelreader.api.ApiCompat
-import io.nightfish.lightnovelreader.api.PluginContext
+import io.nightfish.lightnovelreader.api.plugin.PluginContext
 import io.nightfish.lightnovelreader.api.plugin.LightNovelReaderPlugin
 import io.nightfish.lightnovelreader.api.plugin.Plugin
 import io.nightfish.lightnovelreader.api.plugin.PluginConstants
@@ -437,6 +440,7 @@ class PluginManager @Inject constructor(
             mutableErrorPluginMap.remove(pluginPackage)
             val pluginClazz = pair.second
             val pluginContext = PluginContext(
+                packageName = packageInfo.packageName,
                 dataDir = getPluginDataDir(pluginDir),
                 pluginFile = plugin,
                 assetDir = getPluginAssetDir(pluginDir)
