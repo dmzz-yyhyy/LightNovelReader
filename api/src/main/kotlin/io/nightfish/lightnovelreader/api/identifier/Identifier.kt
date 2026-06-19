@@ -1,5 +1,7 @@
 package io.nightfish.lightnovelreader.api.identifier
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 /**

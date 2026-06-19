@@ -1,8 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore
 
 import androidx.core.net.toUri
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
@@ -11,19 +10,22 @@ import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
 
-object Wenku8TagsExploreTapPage: ExploreTapPageDataSource {
+class Wenku8TagsExploreTapPage(
+    val host: String,
+    val wenku8Api: Wenku8Api
+): ExploreTapPageDataSource {
     override val title = "分类"
 
 
     override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
         val rows = mutableListOf<ExploreBooksRow>()
-        autoReconnectionGetWithWenku8Cookie("${host}/modules/article/tags.php")
+        wenku8Api.getWithWenku8Cookie("${host}/modules/article/tags.php").component1()
             ?.select("a[href~=tags\\.php\\?t=.*]")
             ?.slice(0..48)
             ?.map { "${host}/modules/article/" + it.attr("href") }
             ?.forEach { url ->
-                val soup = autoReconnectionGetWithWenku8Cookie(url.split("=")[0] + "=" +
-                        URLEncoder.encode(url.split("=")[1], "gb2312"))
+                val soup = wenku8Api.getWithWenku8Cookie(url.split("=").component1()[0] + "=" +
+                        URLEncoder.encode(url.split("=")[1], "gb2312")).component1()
                 rows.add(
                     getExploreBookRow(
                         soup = soup,

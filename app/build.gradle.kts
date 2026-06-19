@@ -172,7 +172,6 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
     // Splash API
-    implementation(libs.core.splashscreen)
     // WorkManager
     implementation(libs.work.runtime.ktx)
     // Potato EPUB
@@ -201,7 +200,6 @@ dependencies {
     // apksig
     implementation(libs.apksig)
     // http
-    implementation(libs.cxhttp)
     implementation(libs.okhttp)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.androidx.profileinstaller)
@@ -212,19 +210,28 @@ dependencies {
     // Reorderable
     implementation(libs.reorderable)
     // TinyPinyin
-    implementation(libs.tinypinyin)}
+    implementation(libs.tinypinyin)
+    // Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.logging)
+    // Logger
+    implementation(libs.slf4j.android)
+}
 
 configurations.implementation {
     exclude(group = "com.intellij", module = "annotations")
 }
 
 tasks.register("printVersion") {
+    description = "print the version name of the project"
     doFirst {
         println(android.defaultConfig.versionName)
     }
 }
 
 tasks.register("printVersionCode") {
+    description = "print the version code of the project"
     doFirst {
         println(android.defaultConfig.versionCode)
     }

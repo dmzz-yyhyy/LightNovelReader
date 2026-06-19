@@ -11,7 +11,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.PluginUpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
 import indi.dmzz_yyhyy.lightnovelreader.utils.analytics.MatomoAnalytics
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.potatoautoproxy.ProxyPool
@@ -51,7 +50,6 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG) {
             System.setProperty("kotlinx.coroutines.debug", "on")
         }
-        CxHttpInit.init()
         matomoAnalytics.initialize()
         matomoAnalytics.trackAppLaunch()
         pluginManager.initAllPlugin()

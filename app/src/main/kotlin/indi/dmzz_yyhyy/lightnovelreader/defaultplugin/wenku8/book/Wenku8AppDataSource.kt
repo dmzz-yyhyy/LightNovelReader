@@ -1,12 +1,15 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book
 
-import android.util.Log
 import androidx.core.net.toUri
-import cxhttp.CxHttp
-import cxhttp.response.Response
-import cxhttp.response.bodyOrNull
+import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
+import io.ktor.client.HttpClient
+import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.parameters
+import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
@@ -22,15 +25,10 @@ import io.nightfish.lightnovelreader.api.content.builder.simpleText
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withTimeoutOrNull
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
@@ -38,29 +36,24 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.io.encoding.Base64
-import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
-private val titleRegex = Regex("(.*) ?[(（](.*)[)）] ?$")
 
 class Wenku8AppDataSource(
+    val wenku8Api: Wenku8Api,
+    val ktorClient: HttpClient,
     val host: String,
     val ver: String,
     val ua: () -> String
 ) : Wenku8BookDataSource {
-    init {
-        CxHttpInit.init()
-    }
 
     private val cache = Cache(
         timeout = 2 * 60 * 60 * 1000
     )
+    private val titleRegex = Regex("(.*) ?[(（](.*)[)）] ?$")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private var allBookChapterListCache: List<ChapterInformation> = emptyList()
     private var allBookChapterListCacheId: String = ""
-
-
-    private val requestLimiter = Semaphore(1)
-    private val pendingJobs = Channel<Unit>(capacity = 25, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private inline fun <reified T> ifCache(id: String, block: () -> T): T {
         val cacheData = cache.getCache<T>(id.hashCode())
@@ -76,51 +69,22 @@ class Wenku8AppDataSource(
 
     suspend fun wenku8Api(request: String): Document? =
         ifCache(request) {
-            if (!pendingJobs.trySend(Unit).isSuccess) {
-                Log.w("Wenku8API", "request dropped: $request")
-            }
-            return try {
-                requestLimiter.withPermit {
-                    withTimeoutOrNull(15_000L) {
-                        delay(1)
-                        suspend fun post(): Response {
-                            return CxHttp
-                                .post(host) {
-                                    formBody {
-                                        append("request", Base64.encode(request.toByteArray()))
-                                        append("timetoken", Instant.now().toEpochMilli().toString())
-                                        append("appver", ver)
-                                    }
-                                    header("user-agent", ua.invoke())
-                                }
-                                .scope(this)
-                                .await()
-                        }
-
-                        var retryTime = 2
-                        var retryDelay = 2500L
-                        var response = post()
-                        while (!response.isSuccessful && retryTime >= 1) {
-                            response = post()
-                            retryTime--
-                            delay(retryDelay)
-                            retryDelay *= 2
-                        }
-                        delay(Random.nextLong(1500, 2000))
-                        val doc = response.bodyOrNull<String>()?.let(Jsoup::parse)
-                            ?.outputSettings(
-                                Document.OutputSettings()
-                                    .prettyPrint(false)
-                                    .syntax(Document.OutputSettings.Syntax.xml)
-                            )
-                        return@withTimeoutOrNull doc
-                    }.also {
-                        if (it == null) Log.w("Wenku8API", "request timeout: $request")
-                    }
-                }
-            } finally {
-                pendingJobs.tryReceive().getOrNull()
-            }
+            runCatching {
+                ktorClient.post(host) {
+                    userAgent(ua())
+                    setBody(FormDataContent(parameters {
+                        append("request", Base64.encode(request.toByteArray()))
+                        append("timetoken", Instant.now().toEpochMilli().toString())
+                        append("appver", ver)
+                    }))
+                }.bodyAsText()
+                    .let(Jsoup::parse)
+                    .outputSettings(
+                        Document.OutputSettings()
+                            .prettyPrint(false)
+                            .syntax(Document.OutputSettings.Syntax.xml)
+                    )
+            }.component1()
         }
 
     override suspend fun getBookInformation(id: String): BookInformation = ifCache(id) {
@@ -242,7 +206,7 @@ class Wenku8AppDataSource(
 
     override fun search(searchType: String, keyword: String): Flow<SearchResult> = flow {
         val encodedKeyword = URLEncoder.encode(keyword, "gb2312")
-        delay(1)
+        delay(1.milliseconds)
         val result = wenku8Api(
             "action=search&searchtype=$searchType&searchkey=${
                 URLEncoder.encode(
@@ -253,7 +217,7 @@ class Wenku8AppDataSource(
         )
             ?.select("item")
             ?.forEach { element ->
-                emit(SearchResult.MultipleBook(Wenku8Api.getBookInformation(element.attr("aid"))))
+                emit(SearchResult.MultipleBook(wenku8Api.getBookInformation(element.attr("aid"))))
             }
             ?.let {
                 emit(SearchResult.End())

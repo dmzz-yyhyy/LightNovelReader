@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book
 
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -8,13 +9,16 @@ import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.flow.Flow
 
-class BookRequestDispatcher: Wenku8BookDataSource {
+class BookRequestDispatcher(
+    val host: String,
+    wenku8Api: Wenku8Api
+): Wenku8BookDataSource {
     val source = listOf(
-        Wenku8WebsiteDataSource(),
-        Wenku8AppDataSource(update("eNpb85aBtYRBNqOkpKDYSl-_PDUvu9RCtyg1J7FSLze1vEIvvygdAO0UDQw").toString(), "1.24-pico-mochi") {
+        Wenku8WebsiteDataSource(host, wenku8Api),
+        Wenku8AppDataSource(wenku8Api, wenku8Api.ktorClient, update("eNpb85aBtYRBNqOkpKDYSl-_PDUvu9RCtyg1J7FSLze1vEIvvygdAO0UDQw").toString(), "1.24-pico-mochi") {
             "Dalvik/2.1.0 (Linux; U; Android 15; 23114RD76B Build/AQ3A.240912.001)"
         },
-        Wenku8AppDataSource(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString(), "1.21") {
+        Wenku8AppDataSource(wenku8Api, wenku8Api.ktorClient, update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString(), "1.21") {
             "wenku8"
         },
     )
