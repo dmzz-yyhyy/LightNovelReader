@@ -17,20 +17,25 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalBottomBarController
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalImageHeaderGetter
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.bookNavigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.bookManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrNavigationBar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.addBookToBookshelfDialog
@@ -38,7 +43,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.markAllChaptersAsReadDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.pluginInstallerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.pluginStoreInstallBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.updatesAvailableDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.bookManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.homeNavigation
 import indi.dmzz_yyhyy.lightnovelreader.ui.storagemanager.storageManager
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
@@ -48,10 +52,12 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.expandEnter
 import indi.dmzz_yyhyy.lightnovelreader.utils.expandExit
 import indi.dmzz_yyhyy.lightnovelreader.utils.expandPopEnter
 import indi.dmzz_yyhyy.lightnovelreader.utils.expandPopExit
+import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -60,7 +66,8 @@ fun LightNovelReaderNavHost(
     navController: NavHostController,
     onBuildNavHost: NavGraphBuilder.() -> Unit,
     readerStyle: ReaderStyle,
-    imageHeaderGetter: () -> Map<String, String>
+    imageHeaderGetter: () -> Map<String, String>,
+    webBookDataSourceFoundedFlow: Flow<Boolean>
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -80,6 +87,19 @@ fun LightNovelReaderNavHost(
         val currentDest = backStackEntry?.destination
         val selectedRoute = currentDest.currentMainRoute()
         val hasBottomBarByRoute = selectedRoute != null
+        val coroutineScope = rememberCoroutineScope()
+        val currentWebDataSourceNotFounded = stringResource(R.string.current_web_data_source_not_founded)
+
+        val webBookDataSourceFounded by webBookDataSourceFoundedFlow.collectAsState(true)
+        LaunchedEffect(webBookDataSourceFounded) {
+            if (!webBookDataSourceFounded) {
+                showSnackbar(
+                    coroutineScope = coroutineScope,
+                    hostState = snackbarHostState,
+                    message = currentWebDataSourceNotFounded
+                )
+            }
+        }
 
         LaunchedEffect(selectedRoute) {
             bottomBarVisible = true

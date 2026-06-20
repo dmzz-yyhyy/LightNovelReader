@@ -25,7 +25,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_02_01_006
+        versionCode = 1_02_01_007
         versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

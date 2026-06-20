@@ -95,7 +95,7 @@ class WebBookDataSourceManager @Inject constructor (
                 .find { it.id == webDataSourcesId }
                 .also {
                     it?.onLoad()
-                } ?: EmptyWebDataSource
+                } ?: NotFoundWebDataSource(webDataSourcesId)
         )
     }
 }

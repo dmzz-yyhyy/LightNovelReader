@@ -28,6 +28,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.NotFoundWebDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
@@ -43,6 +44,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -97,6 +99,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val webBookDataSourceFoundedFlow = flow {
+            emit(webBookDataSourceProvider.isWebDataSourceFounded())
+        }
+
         val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
         val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
         val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
@@ -142,7 +148,8 @@ class MainActivity : ComponentActivity() {
                             onBuildNavHost()
                         }
                     },
-                    imageHeaderGetter = { webBookDataSourceProvider.default.imageHeader }
+                    imageHeaderGetter = { webBookDataSourceProvider.default.imageHeader },
+                    webBookDataSourceFoundedFlow = webBookDataSourceFoundedFlow
                 )
             }
         }

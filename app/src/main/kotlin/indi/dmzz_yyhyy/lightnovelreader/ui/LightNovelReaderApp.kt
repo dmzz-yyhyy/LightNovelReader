@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -7,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.rememberNavController
-import android.content.Intent
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.UpdatesAvailableDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToPluginInstallerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToPluginStoreInstall
@@ -22,6 +22,7 @@ fun LightNovelReaderApp(
     readerStyle: ReaderStyle,
     imageHeaderGetter: () -> Map<String, String>,
     intentFlow: Flow<Intent>,
+    webBookDataSourceFoundedFlow: Flow<Boolean>,
 ) {
     val navController = rememberNavController()
     val updatesAvailableDialogViewModel = hiltViewModel<UpdatesAvailableDialogViewModel>()
@@ -45,5 +46,11 @@ fun LightNovelReaderApp(
             }
         }
     }
-    LightNovelReaderNavHost(navController, onBuildNavHost, readerStyle, imageHeaderGetter)
+    LightNovelReaderNavHost(
+        navController = navController,
+        onBuildNavHost = onBuildNavHost,
+        readerStyle = readerStyle,
+        imageHeaderGetter = imageHeaderGetter,
+        webBookDataSourceFoundedFlow = webBookDataSourceFoundedFlow
+    )
 }

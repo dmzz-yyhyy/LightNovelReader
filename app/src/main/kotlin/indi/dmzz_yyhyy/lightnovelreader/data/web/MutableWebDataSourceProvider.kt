@@ -14,6 +14,8 @@ class MutableWebDataSourceProvider: WebBookDataSourceProvider {
     private var lowPriorityProcessedDataSource: WebBookDataSource = EmptyWebDataSource
 
     private var advancedPrioritySemaphore = AdvancedPrioritySemaphore(_value.permits)
+
+    override fun isWebDataSourceFounded(): Boolean = _value !is NotFoundWebDataSource
     fun processDataSource(permits: Int) =
         if (_value.cache != null)
             CacheWebBookDataSource(
