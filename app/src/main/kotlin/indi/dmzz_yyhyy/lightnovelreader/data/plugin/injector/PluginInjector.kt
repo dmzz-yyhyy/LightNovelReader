@@ -5,17 +5,19 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingManager
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
-import io.nightfish.lightnovelreader.api.plugin.PluginContext
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
 import io.nightfish.lightnovelreader.api.book.LocalBookDataSourceApi
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfRepositoryApi
 import io.nightfish.lightnovelreader.api.content.ContentComponentRepositoryApi
+import io.nightfish.lightnovelreader.api.image.ImageTransPostProcessingManagerApi
 import io.nightfish.lightnovelreader.api.plugin.LightNovelReaderPlugin
+import io.nightfish.lightnovelreader.api.plugin.PluginContext
 import io.nightfish.lightnovelreader.api.text.TextProcessingRepositoryApi
 import io.nightfish.lightnovelreader.api.userdata.UserDataDaoApi
 import io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi
@@ -34,7 +36,8 @@ class PluginInjector @Inject constructor(
     bookshelfRepository: BookshelfRepository,
     localBookDataSource: LocalBookDataSource,
     bookRepository: BookRepository,
-    contentComponentRepository: ContentComponentRepository
+    contentComponentRepository: ContentComponentRepository,
+    imageTransPostProcessingManager: ImageTransPostProcessingManager
 ) {
     val injectMap = mapOf(
         Context::class.java to appContext,
@@ -45,7 +48,8 @@ class PluginInjector @Inject constructor(
         LocalBookDataSourceApi::class.java to localBookDataSource,
         BookRepositoryApi::class.java to bookRepository,
         BookshelfRepositoryApi::class.java to bookshelfRepository,
-        ContentComponentRepositoryApi::class.java to contentComponentRepository
+        ContentComponentRepositoryApi::class.java to contentComponentRepository,
+        ImageTransPostProcessingManagerApi::class.java to imageTransPostProcessingManager
     )
 
     init {

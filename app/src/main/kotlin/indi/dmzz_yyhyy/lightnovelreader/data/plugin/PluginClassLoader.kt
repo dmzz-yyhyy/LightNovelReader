@@ -35,7 +35,8 @@ class PluginClassLoader(
             "kotlin.",
             "kotlinx.",
             "androidx.",
-            "io.nightfish.lightnovelreader.api."
+            "j$.",
+            "io.nightfish.lightnovelreader.api.",
         )
     }
 }

@@ -1,4 +1,4 @@
-package io.nightfish.lightnovelreader.api.compiler
+﻿package io.nightfish.lightnovelreader.api.compiler
 
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
@@ -14,9 +14,13 @@ class EntryProcessor(
     private val codeGenerator: CodeGenerator
 ) : SymbolProcessor {
 
-    private fun generateManifest(pluginClass: String, webDataSourceClassList: List<String>) {
+    private fun generateManifest(
+        pluginClass: String,
+        webDataSourceClassList: List<String>,
+        dependencies: Dependencies
+    ) {
         val file = codeGenerator.createNewFile(
-            Dependencies(false),
+            dependencies,
             "",
             "auto_register_manifest",
             "xml"
@@ -45,10 +49,12 @@ class EntryProcessor(
         val pluginSymbols = resolver
             .getSymbolsWithAnnotation("io.nightfish.lightnovelreader.api.plugin.Plugin")
             .filterIsInstance<KSClassDeclaration>()
+            .toList()
 
         val webDataSourceSymbols = resolver
             .getSymbolsWithAnnotation("io.nightfish.lightnovelreader.api.web.WebDataSource")
             .filterIsInstance<KSClassDeclaration>()
+            .toList()
 
         val pluginClass = pluginSymbols.firstNotNullOfOrNull {
             it.qualifiedName?.asString()
@@ -56,9 +62,18 @@ class EntryProcessor(
 
         val dataSourceClassList = webDataSourceSymbols.mapNotNull {
             it.qualifiedName?.asString()
-        }.toList()
+        }
 
-        generateManifest(pluginClass, dataSourceClassList)
+        val sourceFiles = (pluginSymbols + webDataSourceSymbols)
+            .mapNotNull { it.containingFile }
+            .distinct()
+            .toTypedArray()
+
+        generateManifest(
+            pluginClass,
+            dataSourceClassList,
+            Dependencies(aggregating = true, *sourceFiles)
+        )
         return emptyList()
     }
 }

@@ -53,10 +53,6 @@
 -keep class org.dom4j.**{*;}
 -keep interface org.dom4j.** { *; }
 
-#CxHttp
--keep class * extends cxhttp.response.CxHttpResult {*;}
--keep class cxhttp.converter.* {*;}
-
 -dontwarn com.fasterxml.jackson.annotation.JsonInclude$Include
 -dontwarn com.fasterxml.jackson.core.json.JsonWriteFeature
 -dontwarn com.fasterxml.jackson.core.type.TypeReference
@@ -82,3 +78,5 @@
 -keep, includedescriptorclasses class androidx.** { *; }
 # Result
 -keep, includedescriptorclasses class com.github.michaelbull.result.** { *; }
+# j$
+-keep, includedescriptorclasses class j$.** { *; }

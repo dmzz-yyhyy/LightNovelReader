@@ -21,12 +21,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import kotlinx.coroutines.Dispatchers
+import coil3.request.transformations
+import coil3.transform.RoundedCornersTransformation
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
+import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
+import kotlinx.coroutines.Dispatchers
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
 import me.saket.telephoto.zoomable.rememberZoomableState
 import me.saket.telephoto.zoomable.zoomable
@@ -40,9 +45,14 @@ fun ImageViewerScreen(
     header: Map<String, String> = emptyMap()
 ) {
     val context = LocalContext.current
+    val imageTransPostProcessingViewModel = hiltViewModel<ImageTransPostProcessingViewModel>()
     val request = remember(imageUri, header) {
+        val transformations = imageTransPostProcessingViewModel
+            .imageTransPostProcessingManager
+            .getCoil3Transformations(ImagePostProcessingPipeline.imageComponent, imageUri)
         ImageRequest.Builder(context)
             .data(imageUri)
+            .transformations(RoundedCornersTransformation(2000F))
             .crossfade(true)
             .interceptorCoroutineContext(Dispatchers.Default)
             .httpHeaders(
