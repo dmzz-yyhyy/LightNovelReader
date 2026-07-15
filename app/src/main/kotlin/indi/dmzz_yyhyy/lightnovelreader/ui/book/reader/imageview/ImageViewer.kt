@@ -27,14 +27,11 @@ import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import coil3.request.transformations
-import coil3.transform.RoundedCornersTransformation
+import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
 import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
 import kotlinx.coroutines.Dispatchers
-import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
-import me.saket.telephoto.zoomable.rememberZoomableState
-import me.saket.telephoto.zoomable.zoomable
 
 @Composable
 fun ImageViewerScreen(
@@ -52,7 +49,7 @@ fun ImageViewerScreen(
             .getCoil3Transformations(ImagePostProcessingPipeline.imageComponent, imageUri)
         ImageRequest.Builder(context)
             .data(imageUri)
-            .transformations(RoundedCornersTransformation(2000F))
+            .transformations(transformations)
             .crossfade(true)
             .interceptorCoroutineContext(Dispatchers.Default)
             .httpHeaders(
@@ -62,21 +59,18 @@ fun ImageViewerScreen(
             )
             .build()
     }
-    val zoomableState = rememberZoomableState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.8f))
     ) {
-        ZoomableAsyncImage(
+        CoilZoomAsyncImage(
+            model = request,
+            contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .zoomable(state = zoomableState),
-            model = request,
-            contentDescription = null
         )
-
         IconButton(
             onClick = onDismissRequest,
             modifier = Modifier

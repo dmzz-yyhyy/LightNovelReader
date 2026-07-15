@@ -185,8 +185,6 @@ dependencies {
     implementation(libs.vico.compose.m3)
     // Potato Auto Proxy
     implementation(project(":proxy"))
-    // Telephoto
-    implementation(libs.zoomable.image.coil)
     // Shimmer
     implementation(libs.compose.shimmer)
     // About Libraries
@@ -217,6 +215,8 @@ dependencies {
     implementation(libs.ktor.client.logging)
     // Logger
     implementation(libs.slf4j.android)
+    // ZoomImage
+    implementation(libs.zoomimage.compose.coil3)
 }
 
 configurations.implementation {
