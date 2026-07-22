@@ -10,7 +10,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -28,13 +28,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.web.NotFoundWebDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork
 import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.FormattingSettings
 import indi.dmzz_yyhyy.lightnovelreader.utils.LogUtils
+import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
                         textDarkColor = textDarkColor,
                     )
                 }
-            }.collectAsState(initial = ReaderStyle(
+            }.collectAsStateWithLifecycle(initialValue = ReaderStyle(
                 fontSize = 15f,
                 fontLineHeight = 7f,
                 fontWeight = 500f,
@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity() {
                             onBuildNavHost()
                         }
                     },
-                    imageHeaderGetter = { webBookDataSourceProvider.default.imageHeader },
+                    imageHeaderGetter = { webBookDataSourceProvider.value.imageHeader },
                     webBookDataSourceFoundedFlow = webBookDataSourceFoundedFlow
                 )
             }
@@ -167,13 +167,15 @@ class MainActivity : ComponentActivity() {
     private fun initDefaultBookshelf() {
         coroutineScope.launch(Dispatchers.IO) {
             if (bookshelfRepository.getAllBookshelfIds().isEmpty())
-                bookshelfRepository.createBookShelf(
-                    id = 1145140721,
-                    name = "已收藏",
-                    sortType = BookshelfSortType.Default,
-                    sortReversed = false,
-                    autoCache = false,
-                    systemUpdateReminder = false
+                bookshelfRepository.addBookshelf(
+                    Bookshelf(
+                        id = 1145140721,
+                        name = "已收藏",
+                        sortType = BookshelfSortType.Default,
+                        sortReversed = false,
+                        autoCache = false,
+                        systemUpdateReminder = false
+                    )
                 )
         }
     }

@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
@@ -10,15 +11,12 @@ import java.time.LocalTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class TotalReadingSummary(
-    val totalMinutes: Int,
-    val totalReadCount: Int
-)
-
+@Suppress("unused")
 @Singleton
 class StatsRepository @Inject constructor(
     private val bookRecordDao: BookRecordDao,
-    private val dailyCountDao: DailyCountDao
+    private val dailyCountDao: DailyCountDao,
+    private val bookRepository: BookRepository
 ) {
     private val bookReadTimeBuffer = mutableMapOf<String, Pair<LocalTime, Int>>()
 
@@ -60,14 +58,14 @@ class StatsRepository @Inject constructor(
     ): Map<LocalDate, List<BookRecord>> {
         return if (end == null) {
             bookRecordDao.getBookRecordsForDate(start)
-                .map { it.toData() }
+                .map { it.toData(bookRepository) }
                 .takeIf { it.isNotEmpty() }
                 ?.let { mapOf(start to it) }
                 ?: emptyMap()
         } else {
             bookRecordDao
                 .getBookRecordsBetweenDates(start, end)
-                .map { it.toData() }
+                .map { it.toData(bookRepository) }
                 .groupBy { it.date }
                 .filterValues { it.isNotEmpty() }
         }
@@ -78,7 +76,7 @@ class StatsRepository @Inject constructor(
             .associate { it.date to it.timeCount }
     }
 
-    fun getTotalReadingSummary(): TotalReadingSummary {
+    suspend fun getTotalReadingSummary(): TotalReadingSummary {
         val dailyCounts = dailyCountDao.getAll()
         val records = bookRecordDao.getAllBookRecords()
         val totalMinutes = dailyCounts.sumOf { it.timeCount.getTotalMinutes() }
@@ -168,7 +166,7 @@ class StatsRepository @Inject constructor(
         return count
     }
 
-    fun clear() {
+    suspend fun clear() {
         bookRecordDao.clear()
         dailyCountDao.clear()
     }

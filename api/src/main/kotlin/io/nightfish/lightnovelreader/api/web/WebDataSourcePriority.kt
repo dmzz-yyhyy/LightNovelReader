@@ -6,11 +6,13 @@ package io.nightfish.lightnovelreader.api.web
  *
  * @since Api 2
  */
-enum class WebDataSourcePriority {
+enum class WebDataSourcePriority(
+    val priority: Int
+) {
     /** 高优先级 */
-    High,
+    High(1),
     /** 默认优先级 */
-    Default,
+    Default(0),
     /** 低优先级 */
-    Low
+    Low(-1)
 }

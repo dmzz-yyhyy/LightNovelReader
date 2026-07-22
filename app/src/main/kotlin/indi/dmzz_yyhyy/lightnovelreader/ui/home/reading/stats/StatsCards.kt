@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,15 +30,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.BookStack
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsDetailedUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.currentDateRange
-import indi.dmzz_yyhyy.lightnovelreader.utils.normalize
 import indi.dmzz_yyhyy.lightnovelreader.utils.stats.generateTimeBarItems
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import java.time.LocalDate
 
 val predefinedColors = listOf(
@@ -74,9 +81,9 @@ private fun assignColors(
  * @return startedBooks/finishedBooks 在日期范围内的 BookId 列表
  */
 private fun getBooksInRange(
-    bookDateMap: Map<String, LocalDate>,
+    bookDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>,
     dateRange: ClosedRange<LocalDate>
-): List<String> {
+): List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> {
     return bookDateMap
         .filterValues { it in dateRange }
         .toList()
@@ -90,16 +97,10 @@ private fun getBooksInRange(
 @Composable
 private fun BookActivitySection(
     titleResId: Int,
-    bookIds: List<String>,
-    bookInfoMap: Map<String, BookInformation>,
-    uiState: StatsDetailedUiState,
+    books: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>,
     modifier: Modifier = Modifier
 ) {
-    if (bookIds.isEmpty()) return
-
-    val displayedTitles = bookIds.distinct().mapNotNull { id ->
-        bookInfoMap[id]?.title
-    }
+    if (books.isEmpty()) return
 
     Row(
         modifier = modifier
@@ -116,19 +117,28 @@ private fun BookActivitySection(
                 text = stringResource(titleResId),
                 style = typography.titleMedium
             )
-            val titleList = displayedTitles.take(2)
-            titleList.forEach {
-                Text(
-                    text = it,
-                    style = typography.bodyMedium,
-                    maxLines = 1,
-                    color = colorScheme.secondary,
-                    overflow = TextOverflow.Ellipsis
-                )
+            val bookList = books
+                .take(2)
+                .map { it.second }
+            bookList.forEach { flow ->
+                val result by flow.collectAsStateWithLifecycle(null)
+                result?.onOk {
+                    Text(
+                        text = it.title,
+                        style = typography.bodyMedium,
+                        maxLines = 1,
+                        color = colorScheme.secondary,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }?.onErr {
+                    //TODO 错误显示
+                } ?: {
+                    //TODO 加载显示
+                }
             }
-            if (displayedTitles.size > titleList.size)
+            if (books.size > bookList.size)
                 Text(
-                    text = stringResource(R.string.activity_etc, displayedTitles.size),
+                    text = stringResource(R.string.activity_etc, books.size),
                     style = typography.bodyMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -138,8 +148,7 @@ private fun BookActivitySection(
         Box {
             BookStack(
                 modifier = Modifier,
-                uiState = uiState,
-                books = bookIds,
+                books = books,
                 count = 5,
                 rotate = 4.5f,
                 scaleEnabled = false
@@ -178,9 +187,7 @@ fun ActivityStatsCard(
             sections.forEachIndexed { index, (title, books) ->
                 BookActivitySection(
                     titleResId = title,
-                    bookIds = books,
-                    bookInfoMap = uiState.bookInformationMap,
-                    uiState = uiState
+                    books = books
                 )
 
                 if (index != sections.lastIndex) {
@@ -214,10 +221,9 @@ fun ReadingDetailStatsCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val books = allRecords
                     .sortedBy { it.lastSeen }
-                    .map { it.bookId }
+                    .map { it.bookId to it.bookInformationFlow }
                     .distinct()
                 BookStack(
-                    uiState = uiState,
                     books = books,
                     count = 8,
                     compact = false
@@ -228,7 +234,6 @@ fun ReadingDetailStatsCard(
 
             ReadingTimeBar(
                 recordList = allRecords,
-                bookInformationMap = uiState.bookInformationMap
             )
         }
     }
@@ -237,7 +242,6 @@ fun ReadingDetailStatsCard(
 @Composable
 fun ReadingTimeBar(
     recordList: List<BookRecord>?,
-    bookInformationMap: Map<String, BookInformation>
 ) {
 
     if (recordList.isNullOrEmpty()) return
@@ -246,13 +250,18 @@ fun ReadingTimeBar(
         assignColors(recordList)
     }
 
-    val barItems = remember(recordList) {
+    val barItemsFlow = remember(recordList) {
         generateTimeBarItems(
             recordList,
-            bookInformationMap,
             colorMap
-        )
+        ).let { flows ->
+            combine(flows) {
+                it.toList()
+            }
+        }
     }
+
+    val barItems by barItemsFlow.collectAsStateWithLifecycle(emptyList())
     val normalizedItems = remember(barItems) {
         barItems.normalize()
     }

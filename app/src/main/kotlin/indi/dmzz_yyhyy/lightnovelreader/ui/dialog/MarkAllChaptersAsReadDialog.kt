@@ -53,6 +53,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
@@ -69,20 +71,24 @@ fun NavGraphBuilder.markAllChaptersAsReadDialog() {
             viewModel.load(route.bookId)
         }
 
-        val bookVolumes = viewModel.bookVolumes
-
-        MarkAllChaptersAsReadDialog(
-            onDismissRequest = navController::popBackStack,
-            onConfirmAll = {
-                viewModel.markAllChaptersAsRead()
-                navController.popBackStack()
-            },
-            onConfirmRange = { ids ->
-                viewModel.markChaptersAsRead(ids)
-                navController.popBackStack()
-            },
-            volumes = bookVolumes.volumes
-        )
+        viewModel.bookVolumeResult?.onOk {
+            MarkAllChaptersAsReadDialog(
+                onDismissRequest = navController::popBackStack,
+                onConfirmAll = {
+                    viewModel.markAllChaptersAsRead()
+                    navController.popBackStack()
+                },
+                onConfirmRange = { ids ->
+                    viewModel.markChaptersAsRead(ids)
+                    navController.popBackStack()
+                },
+                volumes = it.volumes
+            )
+        }?.onErr {
+            //TODO 错误显示
+        } ?: {
+            //TODO 加载显示
+        }
     }
 }
 

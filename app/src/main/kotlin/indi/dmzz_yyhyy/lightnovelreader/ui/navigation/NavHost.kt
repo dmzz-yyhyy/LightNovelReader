@@ -17,7 +17,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -90,7 +90,7 @@ fun LightNovelReaderNavHost(
         val coroutineScope = rememberCoroutineScope()
         val currentWebDataSourceNotFounded = stringResource(R.string.current_web_data_source_not_founded)
 
-        val webBookDataSourceFounded by webBookDataSourceFoundedFlow.collectAsState(true)
+        val webBookDataSourceFounded by webBookDataSourceFoundedFlow.collectAsStateWithLifecycle(true)
         LaunchedEffect(webBookDataSourceFounded) {
             if (!webBookDataSourceFounded) {
                 showSnackbar(

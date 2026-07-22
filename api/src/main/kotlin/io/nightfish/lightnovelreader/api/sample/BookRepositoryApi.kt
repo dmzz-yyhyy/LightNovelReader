@@ -7,12 +7,12 @@ import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
  *
  * @param bookRepositoryApi 书本仓库 API 实例
  *
- * @since Api 2
+ * @since Api 4
  */
-fun updateUserReadingData(bookRepositoryApi: BookRepositoryApi) {
+suspend fun updateUserReadingData(bookRepositoryApi: BookRepositoryApi) {
     bookRepositoryApi.updateUserReadingData("ciallo") {
-        it.apply {
-            this.readingProgress = 1f
-        }
+        it.copy(
+            readingProgress = 1f
+        )
     }
 }

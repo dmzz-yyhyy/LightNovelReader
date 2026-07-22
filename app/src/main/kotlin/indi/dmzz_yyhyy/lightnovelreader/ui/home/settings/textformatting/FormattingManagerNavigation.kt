@@ -9,13 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.navigation
 import androidx.navigation.toRoute
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.EditTextFormattingRuleDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.navigateToSettingsTextFormattingRulesDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.settingsTextFormattingRulesDestination
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.editTextFormattingRuleDialog() {
     dialog<Route.Main.EditTextFormattingRuleDialog> {
@@ -68,8 +68,7 @@ fun NavGraphBuilder.settingsTextFormattingManagerDestination() {
         TextFormattingScreen(
             onClickBack = navController::popBackStackIfResumed,
             onClickGroup = navController::navigateToSettingsTextFormattingRulesDestination,
-            groups = viewModel.formattingGroups,
-            bookInformationMap = viewModel.bookInformationMap
+            groups = viewModel.formattingGroups
         )
     }
 }

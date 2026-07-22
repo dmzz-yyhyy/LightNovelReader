@@ -17,9 +17,9 @@ interface UserDataDaoApi {
      * @param type 数据类型名称字符串
      * @param value 序列化后的字符串值
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun insert(path: String, group: String, type: String, value: String)
+    suspend fun insert(path: String, group: String, type: String, value: String)
 
     /**
      * 通过路径读取用户数据的字符串值
@@ -28,9 +28,9 @@ interface UserDataDaoApi {
      *
      * @return 存储的字符串值, 如果不存在则返回null
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun get(path: String): String?
+    suspend fun get(path: String): String?
 
     /**
      * 获取用户数据字符串值的可观测流
@@ -48,7 +48,7 @@ interface UserDataDaoApi {
      *
      * @param path 要删除的数据路径
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun remove(path: String)
+    suspend fun remove(path: String)
 }

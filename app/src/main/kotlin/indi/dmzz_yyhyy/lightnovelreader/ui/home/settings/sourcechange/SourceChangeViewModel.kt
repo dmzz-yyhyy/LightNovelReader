@@ -40,7 +40,7 @@ class SourceChangeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableSourceChangeUiState().apply {
-        currentSourceId = webBookDataSourceProvider.default.id
+        currentSourceId = webBookDataSourceProvider.value.id
         webDataSourceItems = webBookDataSourceManager.webDataSourceItems
     }
     val uiState: SourceChangeUiState = _uiState
@@ -56,7 +56,7 @@ class SourceChangeViewModel @Inject constructor(
             localDataManager.exportCurrentLocalData()
                 .andThen { data ->
                     runCatching {
-                        val webBookDataSourceId = webBookDataSourceProvider.default.id
+                        val webBookDataSourceId = webBookDataSourceProvider.value.id
                         localDataManager.localDataDir
                             .resolve(webBookDataSourceId.toString())
                             .also {
@@ -107,7 +107,7 @@ class SourceChangeViewModel @Inject constructor(
     @Suppress("OPT_IN_USAGE")
     fun rollbackData() {
         CoroutineScope(Dispatchers.IO).launch {
-            val webBookDataSourceId = webBookDataSourceProvider.default.id
+            val webBookDataSourceId = webBookDataSourceProvider.value.id
             val localData =
                 localDataManager.localDataDir
                     .resolve(webBookDataSourceId.toString())

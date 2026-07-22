@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +47,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
@@ -54,6 +59,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.MonthlyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ReadingDetailStatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.WeeklyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.YearlyStatsChart
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import kotlin.random.Random
@@ -232,8 +240,7 @@ fun StatsCard(
 @Composable
 fun BookStack(
     modifier: Modifier = Modifier,
-    uiState: StatsDetailedUiState,
-    books: List<String>,
+    books: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>,
     count: Int,
     scaleEnabled: Boolean = false,
     compact: Boolean = true,
@@ -266,12 +273,12 @@ fun BookStack(
             }
         }
 
-        displayBooks.fastForEachIndexed { index, bookId ->
+        displayBooks.fastForEachIndexed { index, pair ->
             val scale = if (scaleEnabled) {
                 1f - (index * 0.01f).coerceAtMost(0.3f)
             } else 1f
 
-            val offsetY = remember(bookId) {
+            val offsetY = remember(pair.first) {
                 Random.nextInt(-3, 4).dp
             }
 
@@ -288,13 +295,18 @@ fun BookStack(
                         rotationZ = rotate ?: 0f
                     }
             ) {
-                uiState.bookInformationMap[bookId]?.let {
+                val result by pair.second.collectAsStateWithLifecycle(null)
+                result?.onOk {
                     Cover(
                         width = 63.dp * scale,
                         height = 90.dp * scale,
                         uri = it.coverUri,
                         rounded = 6.dp
                     )
+                }?.onErr {
+                    //TODO 错误显示
+                } ?: {
+                    //TODO 加载显示
                 }
             }
         }

@@ -2,7 +2,6 @@ package io.nightfish.lightnovelreader.api.bookshelf
 
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
 import java.time.LocalDateTime
 
 /**
@@ -16,18 +15,18 @@ interface BookshelfRepositoryApi {
      *
      * @return 书架id列表
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getAllBookshelfIds(): List<Int>
+    suspend fun getAllBookshelfIds(): List<Int>
 
     /**
      * 删除指定书架
      *
      * @param bookshelfId 需要删除的书架id
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun deleteBookshelf(bookshelfId: Int)
+    suspend fun deleteBookshelf(bookshelfId: Int)
 
     /**
      * 将书本添加到指定书架
@@ -35,9 +34,9 @@ interface BookshelfRepositoryApi {
      * @param bookshelfId 目标书架id
      * @param bookInformation 需要添加的书本详情
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun addBookIntoBookShelf(bookshelfId: Int, bookInformation: BookInformation)
+    suspend fun addBookIntoBookShelf(bookshelfId: Int, bookInformation: BookInformation)
 
     /**
      * 将书本标记为书架中已更新的书本
@@ -45,9 +44,9 @@ interface BookshelfRepositoryApi {
      * @param bookShelfId 目标书架id
      * @param bookId 需要标记的书本id
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: String)
+    suspend fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: String)
 
     /**
      * 获取所有书架中书本id的流
@@ -64,9 +63,9 @@ interface BookshelfRepositoryApi {
      * @param bookshelfId 目标书架id
      * @param bookId 需要移除的书本id
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun deleteBookFromBookshelf(bookshelfId: Int, bookId: String)
+    suspend fun deleteBookFromBookshelf(bookshelfId: Int, bookId: String)
 
     /**
      * 从指定书架的已更新列表中移除书本
@@ -74,9 +73,9 @@ interface BookshelfRepositoryApi {
      * @param bookshelfId 目标书架id
      * @param bookId 需要移除的书本id
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun deleteBookFromBookshelfUpdatedBookIds(bookshelfId: Int, bookId: String)
+    suspend fun deleteBookFromBookshelfUpdatedBookIds(bookshelfId: Int, bookId: String)
 
     /**
      * 更新书架书本元数据的最后更新时间
@@ -84,34 +83,34 @@ interface BookshelfRepositoryApi {
      * @param bookId 书本id
      * @param time 新的最后更新时间
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateBookshelfBookMetadataLastUpdateTime(bookId: String, time: LocalDateTime)
+    suspend fun updateBookshelfBookMetadataLastUpdateTime(bookId: String, time: LocalDateTime)
 
     /**
      * 清空所有书架数据
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun clear()
+    suspend fun clear()
 
     /**
      * 获取所有书架对象的流
      *
-     * @return [MutableBookshelf]列表的流
+     * @return [Bookshelf]列表的流
      *
      * @since Api 2
      */
-    fun getAllBookshelvesFlow(): Flow<List<MutableBookshelf>>
+    fun getAllBookshelvesFlow(): Flow<List<Bookshelf>>
 
     /**
      * 获取所有书架对象列表
      *
-     * @return [MutableBookshelf]列表
+     * @return [Bookshelf]列表
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getAllBookshelves(): List<MutableBookshelf>
+    suspend fun getAllBookshelves(): List<Bookshelf>
 
     /**
      * 通过id获取单个书架对象
@@ -120,61 +119,49 @@ interface BookshelfRepositoryApi {
      *
      * @return 书架对象, 如果不存在则返回null
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getBookshelf(id: Int): MutableBookshelf?
+    suspend fun getBookshelf(id: Int): Bookshelf?
 
     /**
      * 获取单个书架对象的流
      *
      * @param id 书架id
      *
-     * @return [MutableBookshelf]对象的流, 如果不存在则发射null
+     * @return [Bookshelf]对象的流, 如果不存在则发射null
      *
      * @since Api 2
      */
-    fun getBookshelfFlow(id: Int): Flow<MutableBookshelf?>
+    fun getBookshelfFlow(id: Int): Flow<Bookshelf?>
 
     /**
-     * 创建新书架
+     * 添加新的书架实例
      *
-     * @param id 书架id, 默认使用当前时间戳哈希值
-     * @param name 书架名称
-     * @param sortType 书架排序方式
-     * @param autoCache 是否开启自动缓存
-     * @param systemUpdateReminder 是否通过系统通知提醒更新
+     * @param bookshelf 书架实例
      *
-     * @return 新建书架的id
-     *
-     * @since Api 2
+     * @since Api 4
      */
-    fun createBookShelf(
-        id: Int = Instant.now().epochSecond.hashCode(),
-        name: String,
-        sortType: BookshelfSortType,
-        sortReversed: Boolean = false,
-        autoCache: Boolean,
-        systemUpdateReminder: Boolean
-    ): Int
+    suspend fun addBookshelf(bookshelf: Bookshelf)
 
     /**
      * 更新书架信息
+     * 如果书架不存在则不执行任何操作
      *
      * @param bookshelfId 需要更新的书架id
      * @param updater 接收当前书架对象并返回更新后书架对象的函数
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateBookshelf(bookshelfId: Int, updater: (MutableBookshelf) -> Bookshelf)
+    suspend fun updateBookshelf(bookshelfId: Int, updater: (Bookshelf) -> Bookshelf)
 
     /**
      * 获取所有书架书本的元数据列表
      *
      * @return [BookshelfBookMetadata]列表
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getAllBookshelfBooksMetadata(): List<BookshelfBookMetadata>
+    suspend fun getAllBookshelfBooksMetadata(): List<BookshelfBookMetadata>
 
     /**
      * 通过书本id获取书架书本元数据
@@ -183,9 +170,9 @@ interface BookshelfRepositoryApi {
      *
      * @return 书架书本元数据, 如果不存在则返回null
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata?
+    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata?
 
     /**
      * 获取书架书本元数据的流

@@ -57,7 +57,7 @@ fun BookshelfHomeTopBar(
     var exportImportMenuExpanded by remember { mutableStateOf(false) }
     var mainMenuItemHeight by remember { mutableStateOf(0.dp) }
     var exportImportMenuWidth by remember { mutableStateOf(0.dp) }
-    val sortLocked = uiState.selectedBookshelf.sortType != BookshelfSortType.Default
+    val sortLocked = uiState.selectedBookshelf?.sortType != BookshelfSortType.Default
 
     MediumTopAppBar(
         title = {
@@ -124,7 +124,7 @@ fun BookshelfHomeTopBar(
                                     },
                                     leadingIcon = {
                                         RadioButton(
-                                            selected = item.key == uiState.selectedBookshelf.sortType.key,
+                                            selected = item.key == uiState.selectedBookshelf?.sortType?.key,
                                             onClick = null
                                         )
                                     },
@@ -134,7 +134,7 @@ fun BookshelfHomeTopBar(
                                 )
                             }
                             DropdownMenuItem(
-                                enabled = uiState.selectedBookshelf.sortType != BookshelfSortType.Default,
+                                enabled = uiState.selectedBookshelf?.sortType != BookshelfSortType.Default,
                                 text = {
                                     Text(
                                         text = stringResource(R.string.bookshelf_sort_reverse),
@@ -143,15 +143,17 @@ fun BookshelfHomeTopBar(
                                 },
                                 leadingIcon = {
                                     Checkbox(
-                                        checked = uiState.selectedBookshelf.sortType != BookshelfSortType.Default &&
-                                            uiState.selectedBookshelf.sortReversed,
-                                        enabled = uiState.selectedBookshelf.sortType != BookshelfSortType.Default,
+                                        checked = uiState.selectedBookshelf?.sortType != BookshelfSortType.Default &&
+                                                uiState.selectedBookshelf?.sortReversed == true,
+                                        enabled = uiState.selectedBookshelf?.sortType != BookshelfSortType.Default,
                                         onCheckedChange = null
                                     )
                                 },
                                 onClick = {
-                                    if (uiState.selectedBookshelf.sortType == BookshelfSortType.Default) return@DropdownMenuItem
-                                    uiState.changeSortReversed(!uiState.selectedBookshelf.sortReversed)
+                                    if (uiState.selectedBookshelf?.sortType == BookshelfSortType.Default) return@DropdownMenuItem
+                                    uiState.selectedBookshelf?.sortReversed?.let {
+                                        uiState.changeSortReversed(!it)
+                                    }
                                 }
                             )
                         }
@@ -173,7 +175,7 @@ fun BookshelfHomeTopBar(
                             onDismissRequest = { mainMenuExpanded = false }
                         ) {
                             Text(
-                                text = uiState.selectedBookshelf.name,
+                                text = uiState.selectedBookshelf?.name ?: "",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Bold,

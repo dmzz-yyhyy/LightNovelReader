@@ -45,7 +45,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,8 +68,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -89,18 +90,18 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.removeFromBookshelfAction
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.UserReadingData
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ReadingScreen(
-    updateReadingBooks: () -> Unit,
-    recentReadingBookInformationMap: Map<String, BookInformation>,
-    recentReadingUserReadingDataMap: Map<String, UserReadingData>,
-    recentReadingBookIds: List<String>,
+    recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
     onClickBook: (String) -> Unit,
     onClickContinueReading: (String, String) -> Unit,
     onClickDownloadManager: () -> Unit,
@@ -108,12 +109,8 @@ fun ReadingScreen(
     onRemoveBook: (String) -> Unit,
     onAddBook: (String) -> Unit,
     @Suppress("unused") sharedTransitionScope: SharedTransitionScope,
-    loadBookInfo: (String) -> Unit,
     onClickOpenChapters: (String) -> Unit,
 ) {
-    LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
-        updateReadingBooks()
-    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopBar(
@@ -121,7 +118,7 @@ fun ReadingScreen(
             onClickStats = onClickStats
         )
 
-        if (recentReadingBookIds.isEmpty()) {
+        if (recentReadingBooks.isEmpty()) {
             EmptyPage(
                 modifier = Modifier
                     .fillMaxSize()
@@ -140,10 +137,7 @@ fun ReadingScreen(
                 onClickOpenChapters = onClickOpenChapters,
                 onAddBook = onAddBook,
                 onRemoveBook = onRemoveBook,
-                recentReadingBookInformationMap = recentReadingBookInformationMap,
-                recentReadingUserReadingDataMap = recentReadingUserReadingDataMap,
-                recentReadingBookIds = recentReadingBookIds,
-                loadBookInfo = loadBookInfo
+                recentReadingBooks = recentReadingBooks
             )
         }
     }
@@ -157,10 +151,7 @@ private fun ReadingContent(
     onClickContinueReading: (String, String) -> Unit,
     onAddBook: (String) -> Unit,
     onRemoveBook: (String) -> Unit,
-    recentReadingBookInformationMap: Map<String, BookInformation>,
-    recentReadingUserReadingDataMap: Map<String, UserReadingData>,
-    recentReadingBookIds: List<String>,
-    loadBookInfo: (String) -> Unit,
+    recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
     onClickOpenChapters: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -170,7 +161,7 @@ private fun ReadingContent(
 
     var started by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(1000)
+        delay(1.seconds)
         started = true
     }
 
@@ -179,15 +170,6 @@ private fun ReadingContent(
         highlightColor = colorScheme.surfaceContainerHigh
     )
 
-    val headerItems by remember(recentReadingBookIds) {
-        derivedStateOf {
-            recentReadingBookIds.take(3).mapNotNull { id ->
-                val info = recentReadingBookInformationMap[id]
-                val user = recentReadingUserReadingDataMap[id]
-                if (info != null && user != null && !info.isEmpty()) info to user else null
-            }
-        }
-    }
     val removedItemString = stringResource(R.string.removed_item)
     val undoString = stringResource(R.string.undo)
 
@@ -234,76 +216,66 @@ private fun ReadingContent(
         state = listState
     ) {
         if (
-            recentReadingBookIds.isNotEmpty()
-            && recentReadingUserReadingDataMap[recentReadingBookIds.first()] != null
-            && recentReadingBookInformationMap[recentReadingBookIds.first()] != null
+            recentReadingBooks.isNotEmpty()
         ) {
-            if (headerItems.isNotEmpty()) {
-                item {
-                    SectionHeader(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(bottom = 14.dp),
-                        text = stringResource(R.string.continue_reading)
-                    )
-                    ReadingHeaderCardPager(
-                        items = headerItems,
-                        modifier = Modifier
-                            .animateItem()
-                            .padding(horizontal = 8.dp),
-                        onClickContinueReading = onClickContinueReading,
-                        onClickOpenChapters = onClickOpenChapters,
-                        titleHeight = headerTitleHeight
-                    )
-                }
+            item {
+                SectionHeader(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 14.dp),
+                    text = stringResource(R.string.continue_reading)
+                )
+                ReadingHeaderCardPager(
+                    items = recentReadingBooks.take(3),
+                    modifier = Modifier
+                        .animateItem()
+                        .padding(horizontal = 8.dp),
+                    onClickContinueReading = onClickContinueReading,
+                    onClickOpenChapters = onClickOpenChapters,
+                    titleHeight = headerTitleHeight
+                )
             }
         }
-        if (recentReadingBookIds.isNotEmpty()) {
+        if (recentReadingBooks.isNotEmpty()) {
             item {
                 SectionHeader(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     text = stringResource(
-                        R.string.recent_reads, recentReadingBookIds.size,
+                        R.string.recent_reads, recentReadingBooks.size,
                     )
                 )
             }
         }
         items(
-            items = recentReadingBookIds,
-            key = { it },
+            items = recentReadingBooks,
+            key = { it.first },
             contentType = { "ReadingBookCard" }
-        ) { id ->
-            val info = recentReadingBookInformationMap[id]
-            val userData = recentReadingUserReadingDataMap[id]
-
-            LaunchedEffect(id) {
-                loadBookInfo(id)
-            }
-
+        ) { pair ->
             Box(
                 modifier = Modifier
                     .animateItem()
                     .padding(horizontal = 12.dp)
                     .height(146.dp)
             ) {
-                if (info != null && userData != null && info.isNotEmpty()) {
+                val result by pair.second.collectAsStateWithLifecycle(null)
+                result?.onOk {
                     ReadingBookCard(
-                        bookInformation = info,
-                        userReadingData = userData,
-                        onClick = { onClickBook(info.id) },
-                        swipeToLeftActions = remember(id, info.title) {
-                            listOf(deleteAction(id, info.title))
+                        bookInformation = it.bookInformation,
+                        userReadingData = it.userReadingData,
+                        onClick = { onClickBook(it.id) },
+                        swipeToLeftActions = remember(it.id, it.bookInformation.title) {
+                            listOf(deleteAction(it.id, it.bookInformation.title))
                         },
                         modifier = Modifier.fillMaxSize(),
                         titleHeight = titleHeight
                     )
-                } else {
-                    ReadingBookCardSkeleton(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(if (started) Modifier.shimmer(shimmerInstance) else Modifier)
-                    )
-                }
+                }?.onErr {
+                    print("")
+                } ?: ReadingBookCardSkeleton(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(if (started) Modifier.shimmer(shimmerInstance) else Modifier)
+                )
             }
         }
         navigationBarSpacer()
@@ -413,7 +385,12 @@ private fun ReadingBookCard(
     swipeToRightActions: List<SwipeAction> = emptyList(),
     swipeToLeftActions: List<SwipeAction> = emptyList(),
 ) {
-    val lastRead = remember(userReadingData.lastReadTime) { formTime(userReadingData.lastReadTime) }
+    val neverRead = stringResource(R.string.never_read)
+    val lastRead = remember(userReadingData.lastReadTime) {
+        userReadingData.lastReadTime?.let {
+            formTime(it)
+        } ?: return@remember neverRead
+    }
     val minutes = remember(userReadingData.totalReadTime) { formReadingDuration(userReadingData.totalReadTime) }
     val progress = remember(userReadingData.readingProgress) { "${(userReadingData.readingProgress * 100).toInt()}%" }
     val infoText = "$lastRead • $minutes • $progress"
@@ -492,7 +469,9 @@ private fun ReadingBookCard(
                     }
 
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 2.dp),
                         progress = { userReadingData.readingProgress }
                     )
                 }
@@ -504,7 +483,7 @@ private fun ReadingBookCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReadingHeaderCardPager(
-    items: List<Pair<BookInformation, UserReadingData>>,
+    items: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
     modifier: Modifier = Modifier,
     onClickContinueReading: (String, String) -> Unit,
     onClickOpenChapters: (String) -> Unit,
@@ -518,7 +497,7 @@ fun ReadingHeaderCardPager(
         if (pagerState.isScrollInProgress) {
             showIndicator.value = true
         } else {
-            delay(1800)
+            delay(1.800.seconds)
             showIndicator.value = false
         }
     }
@@ -550,7 +529,7 @@ fun ReadingHeaderCardPager(
             pageSpacing = 12.dp,
             flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
         ) { page ->
-            val (book, user) = items[page]
+            val recentReadingBookFlow = items[page].second
 
             ElasticPressContainer(
                 pagerState = pagerState,
@@ -560,14 +539,21 @@ fun ReadingHeaderCardPager(
                     .background(colorScheme.surfaceVariant.copy(alpha = 0.14f))
                     .padding(8.dp)
             ) {
-                ReadingHeaderCardPage(
-                    info = book,
-                    data = user,
-                    onClickContinueReading = onClickContinueReading,
-                    onClickOpenDetail = onClickOpenChapters,
-                    modifier = Modifier.matchParentSize(),
-                    titleHeight = titleHeight
-                )
+                val recentReadingBookResult by recentReadingBookFlow.collectAsStateWithLifecycle(null)
+                recentReadingBookResult?.onOk {
+                    ReadingHeaderCardPage(
+                        info = it.bookInformation,
+                        data = it.userReadingData,
+                        onClickContinueReading = onClickContinueReading,
+                        onClickOpenDetail = onClickOpenChapters,
+                        modifier = Modifier.matchParentSize(),
+                        titleHeight = titleHeight
+                    )
+                }?.onErr {
+                    //TODO 错误显示
+                } ?: {
+                    //TODO 加载显示
+                }
             }
         }
 
@@ -628,8 +614,8 @@ private fun ReadingHeaderCardPage(
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
 
-    val dateText = data.lastReadTime.format(dateFormatter)
-    val timeText = data.lastReadTime.format(timeFormatter)
+    val dateText = data.lastReadTime?.format(dateFormatter)
+    val timeText = data.lastReadTime?.format(timeFormatter)
 
     Row(
         modifier = modifier,
@@ -654,8 +640,16 @@ private fun ReadingHeaderCardPage(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                InfoChip(text = dateText, leadingPainter = painterResource(R.drawable.calendar_today_24px))
-                InfoChip(text = timeText, leadingPainter = painterResource(R.drawable.schedule_90dp))
+                if (dateText != null && timeText != null) {
+                    InfoChip(
+                        text = dateText,
+                        leadingPainter = painterResource(R.drawable.calendar_today_24px)
+                    )
+                    InfoChip(
+                        text = timeText,
+                        leadingPainter = painterResource(R.drawable.schedule_90dp)
+                    )
+                }
             }
 
             Text(
@@ -671,7 +665,7 @@ private fun ReadingHeaderCardPage(
             )
 
             Text(
-                text = data.lastReadChapterTitle,
+                text = data.lastReadChapterTitle ?: stringResource(R.string.never_read),
                 maxLines = 1,
                 style = typography.labelLarge,
                 color = colorScheme.tertiary,
@@ -698,7 +692,11 @@ private fun ReadingHeaderCardPage(
 
                 Button(
                     modifier = Modifier.weight(3f),
-                    onClick = { onClickContinueReading(info.id, data.lastReadChapterId) },
+                    onClick = {
+                        data.lastReadChapterId?.let {
+                            onClickContinueReading(info.id, it)
+                        }
+                    },
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                 ) {

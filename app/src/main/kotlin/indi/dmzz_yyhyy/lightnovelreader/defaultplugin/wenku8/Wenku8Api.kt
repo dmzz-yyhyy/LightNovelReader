@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrElse
@@ -32,13 +34,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.BookVolumes
-import io.nightfish.lightnovelreader.api.book.CanBeEmpty
 import io.nightfish.lightnovelreader.api.book.ChapterContent
-import io.nightfish.lightnovelreader.api.book.MutableBookInformation
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.component.ImageComponentData
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
@@ -138,9 +138,6 @@ class Wenku8Api : WebBookDataSource {
     override val cache = Cache(
         timeout = 2 * 60 * 60 * 1000
     )
-    private val _cache = Cache(
-        timeout = 2 * 60 * 60 * 1000
-    )
 
     override fun onLoad() {
         coroutineScope.launch {
@@ -150,17 +147,6 @@ class Wenku8Api : WebBookDataSource {
                 delay((if (offLine) 3000 else 100000).milliseconds)
             }
         }
-    }
-
-    private inline fun <reified T : CanBeEmpty> ifCache(id: String, block: () -> T): T {
-        val cacheData = _cache.getCache<T>(id.hashCode())
-        if (cacheData == null) {
-            val data = block.invoke()
-            if (data.isEmpty()) return data
-            _cache.cache(id.hashCode(), data)
-            return data
-        }
-        return cacheData
     }
 
     override var offLine: Boolean = true
@@ -229,18 +215,11 @@ class Wenku8Api : WebBookDataSource {
 
     override val id = "Wenku8".ofId()
 
-    override suspend fun getBookInformation(id: String): BookInformation = ifCache(id) {
-        bookRequestDispatcher.getBookInformation(id)
-    }
+    override suspend fun getBookInformation(id: String) = bookRequestDispatcher.getBookInformation(id)
 
-    override suspend fun getBookVolumes(id: String): BookVolumes = ifCache(id) {
-        bookRequestDispatcher.getBookVolumes(id)
-    }
+    override suspend fun getBookVolumes(id: String) = bookRequestDispatcher.getBookVolumes(id)
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String): ChapterContent =
-        ifCache(chapterId + bookId) {
-            bookRequestDispatcher.getChapterContent(chapterId, bookId)
-        }
+    override suspend fun getChapterContent(chapterId: String, bookId: String) = bookRequestDispatcher.getChapterContent(chapterId, bookId)
 
     override val searchProvider: SearchProvider = Wenku8SearchProvider(bookRequestDispatcher)
     override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider(host, this)
@@ -261,7 +240,6 @@ class Wenku8Api : WebBookDataSource {
             .find { it.title.endsWith("插图") }
             ?.let { chapterInformation ->
                 val chapterContent = volumeChapterContentMap[chapterInformation.id] ?: return null
-                if (chapterContent.isEmpty()) return null
                 chapterContent.content["components"]?.jsonArray
                     ?.mapNotNull { it.jsonObject }
                     ?.filter {
@@ -277,44 +255,37 @@ class Wenku8Api : WebBookDataSource {
             }
     }
 
-    fun getBookInformationListFromBookCards(elements: Elements): List<BookInformation> =
+    fun getBookInformationListFromBookCards(elements: Elements): List<Pair<String, Result<BookInformation, WebRequestError>>> =
         elements
-            .map { element ->
+            .mapNotNull { element ->
                 if (element.text().contains("因版权问题")) {
                     val id = element
                         .selectFirst("div > div:nth-child(1) > a")
                         ?.attr("href")
                         ?.replace("/book/", "")
-                        ?.replace(".htm", "") ?: ""
-                    val bookInformation = MutableBookInformation.empty()
-                    bookInformation.id = id
-                    coroutineScope.launch(Dispatchers.IO) {
-                        val new = getBookInformation(
-                            element
-                                .selectFirst("div > div:nth-child(1) > a")
-                                ?.attr("href")
-                                ?.replace("/book/", "")
-                                ?.replace(".htm", "") ?: ""
-                        )
-                        if (new.isNotEmpty()) {
-                            bookInformation.update(new)
-                        }
-                    }
-                    bookInformation
-                } else {
+                        ?.replace(".htm", "") ?: return@mapNotNull null
                     val titleGroup = element.selectFirst("div > div:nth-child(1) > a")
                         ?.attr("title")
                         ?.let { it1 -> titleRegex.find(it1)?.groups }
-                    MutableBookInformation(
-                        id = element.selectFirst("div > div:nth-child(1) > a")
-                            ?.attr("href")
-                            ?.replace("/book/", "")
-                            ?.replace(".htm", "") ?: "",
+                    val title = titleGroup?.get(1)?.value
+                        ?: element.selectFirst("div > div:nth-child(1) > a")
+                            ?.attr("title") ?: ""
+                    id to Err(WebRequestError("版权错误", "由于「$title」为Wenku8的版权"))
+                } else {
+                    val id = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("href")
+                        ?.replace("/book/", "")
+                        ?.replace(".htm", "") ?: ""
+                    val titleGroup = element.selectFirst("div > div:nth-child(1) > a")
+                        ?.attr("title")
+                        ?.let { it1 -> titleRegex.find(it1)?.groups }
+                    id to BookInformation(
+                        id = id,
                         title = titleGroup?.get(1)?.value
                             ?: element.selectFirst("div > div:nth-child(1) > a")
                                 ?.attr("title") ?: "",
                         subtitle = titleGroup?.get(2)?.value ?: "",
-                        coverUrl = element.selectFirst("div > div:nth-child(1) > a > img")
+                        coverUri = element.selectFirst("div > div:nth-child(1) > a > img")
                             ?.attr("src")?.toUri() ?: Uri.EMPTY,
                         author = element.selectFirst("div > div:nth-child(2) > p:nth-child(2)")
                             ?.text()?.split("/")?.getOrNull(0)
@@ -341,7 +312,7 @@ class Wenku8Api : WebBookDataSource {
                             ?.atStartOfDay() ?: LocalDateTime.MIN,
                         isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
                             ?.text()?.split("/")?.getOrNull(2) == "已完结"
-                    )
+                    ).let { Ok(it) }
                 }
             }
 

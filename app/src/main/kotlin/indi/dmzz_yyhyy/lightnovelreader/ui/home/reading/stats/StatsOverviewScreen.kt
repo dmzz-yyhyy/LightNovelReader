@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +46,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
@@ -58,6 +63,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.calendar.rememberHeatMapCa
 import indi.dmzz_yyhyy.lightnovelreader.utils.DurationFormat
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
@@ -192,9 +199,8 @@ private fun DailyStatsBlock(
 ) {
     val selectedDate = uiState.selectedDate
     val records = uiState.bookRecordsByDate[selectedDate] ?: emptyList()
-    val bookInfoMap = uiState.bookInformationMap
 
-    val details = getDailyDetails(records, bookInfoMap)
+    val details = getDailyDetails(records)
 
     Column(modifier = Modifier.padding(horizontal = 18.dp)) {
         Row(
@@ -246,10 +252,17 @@ private fun DailyStatsBlock(
                         NoRecords()
                     } else {
                         Column {
-                            details?.timeDetails?.forEach {
-                                val duration = it.second.toDuration(DurationUnit.SECONDS)
+                            details?.timeDetails?.forEach { pair ->
+                                val duration = pair.second.toDuration(DurationUnit.SECONDS)
                                 val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
-                                DataItem(it.first.title, formattedTime)
+                                val bookInformation by pair.first.collectAsStateWithLifecycle(null)
+                                bookInformation?.onOk {
+                                    DataItem(it.title, formattedTime)
+                                }?.onErr {
+                                    //TODO 错误显示
+                                } ?: {
+                                    //TODO 加载显示
+                                }
                             }
                         }
                     }
@@ -272,21 +285,17 @@ private fun NoRecords() {
     )
 }
 
-private fun getDailyDetails(
-    records: List<BookRecord>,
-    bookInfoMap: Map<String, BookInformation>
-): DailyDateDetails? {
+private fun getDailyDetails(records: List<BookRecord>): DailyDateDetails? {
     if (records.isEmpty()) return null
 
     var totalSeconds = 0L
-    val timeDetailsList = mutableListOf<Pair<BookInformation, Int>>()
+    val timeDetailsList = mutableListOf<Pair<Flow<Result<BookInformation, WebRequestError>>, Int>>()
 
     for (rec in records) {
         val seconds = rec.seconds
         totalSeconds += seconds
 
-        val book = bookInfoMap[rec.bookId] ?: BookInformation.empty()
-        timeDetailsList.add(book to seconds)
+        timeDetailsList.add(rec.bookInformationFlow to seconds)
     }
 
     val sortedTimeDetails = timeDetailsList.sortedByDescending { it.second }

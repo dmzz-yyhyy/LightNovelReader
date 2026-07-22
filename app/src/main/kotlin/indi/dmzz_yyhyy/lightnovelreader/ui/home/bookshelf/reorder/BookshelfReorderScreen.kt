@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,14 +47,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfBookItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeUiState
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
-import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
-import kotlinx.coroutines.flow.StateFlow
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -66,7 +68,6 @@ fun BookshelfReorderBooksScreen(
     uiState: BookshelfHomeUiState,
     prepare: (Int) -> Unit,
     onExit: () -> Unit,
-    getBookInfoFlow: (String) -> StateFlow<BookInformation>,
     moveBook: (Int, Int) -> Unit,
     onClickBack: () -> Unit,
 ) {
@@ -86,9 +87,8 @@ fun BookshelfReorderBooksScreen(
             }
         )
         BookshelfReorderContent(
-            reorderBookIds = uiState.reorderBookIds,
+            reorderBooks = uiState.reorderBookIds,
             nestedScrollConnection = TopAppBarDefaults.pinnedScrollBehavior().nestedScrollConnection,
-            getBookInfoFlow = getBookInfoFlow,
             moveBook = moveBook,
         )
     }
@@ -146,9 +146,8 @@ fun BookshelfReorderBookshelvesScreen(
 
 @Composable
 fun BookshelfReorderContent(
-    reorderBookIds: List<String>,
+    reorderBooks: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
     nestedScrollConnection: NestedScrollConnection,
-    getBookInfoFlow: (String) -> StateFlow<BookInformation>,
     moveBook: (Int, Int) -> Unit,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
@@ -170,78 +169,78 @@ fun BookshelfReorderContent(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         items(
-            items = reorderBookIds,
-            key = { it }
-        ) { id ->
-            ReorderableItem(reorderableLazyListState, key = id) { isDragging ->
-                val infoFlow = remember(id) { getBookInfoFlow(id) }
-                val info by infoFlow.collectAsStateWithLifecycle()
+            items = reorderBooks,
+            key = { it.first }
+        ) { pair ->
+            ReorderableItem(reorderableLazyListState, key = pair.first) { isDragging ->
+                val result by pair.second.collectAsStateWithLifecycle(null)
                 val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp)
-                        .zIndex(if (isDragging) 1f else 0f),
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = elevation
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.padding(all = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(width = 60.dp, height = 88.dp)
-                                    .clip(RoundedCornerShape(6.dp))
+                result?.onOk { item ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                            .zIndex(if (isDragging) 1f else 0f),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surface,
+                        shadowElevation = elevation
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.padding(all = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Cover(
-                                    width = 60.dp,
-                                    height = 88.dp,
-                                    uri = info.coverUri
-                                )
-                            }
+                                Box(
+                                    modifier = Modifier
+                                        .size(width = 60.dp, height = 88.dp)
+                                        .clip(RoundedCornerShape(6.dp))
+                                ) {
+                                    Cover(
+                                        width = 60.dp,
+                                        height = 88.dp,
+                                        uri = item.bookInformation.coverUri
+                                    )
+                                }
 
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = 12.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    text = info.title,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.W600
-                                )
-                                Text(
-                                    text = info.author,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.W500,
-                                    letterSpacing = 0.15.sp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(start = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = item.bookInformation.title,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.W600
+                                    )
+                                    Text(
+                                        text = item.bookInformation.author,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.W500,
+                                        letterSpacing = 0.15.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
 
-                            IconButton(
-                                modifier = Modifier.draggableHandle(
-                                    onDragStarted = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
-                                    },
-                                    onDragStopped = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                    }
-                                ),
-                                onClick = {}
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.drag_indicator_24px),
-                                    contentDescription = stringResource(R.string.bookshelf_adjust_order),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                IconButton(
+                                    modifier = Modifier.draggableHandle(
+                                        onDragStarted = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureThresholdActivate)
+                                        },
+                                        onDragStopped = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                        }
+                                    ),
+                                    onClick = {}
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.drag_indicator_24px),
+                                        contentDescription = stringResource(R.string.bookshelf_adjust_order),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -256,7 +255,7 @@ fun BookshelfReorderContent(
             ) {
                 Text(
                     modifier = Modifier.padding(vertical = 18.dp),
-                    text = stringResource(R.string.n_books, reorderBookIds.size),
+                    text = stringResource(R.string.n_books, reorderBooks.size),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.outline
@@ -272,7 +271,7 @@ fun BookshelfReorderContent(
 @Composable
 fun BookshelfListReorderContent(
     reorderBookshelfIds: List<Int>,
-    bookshelfList: List<Bookshelf>,
+    bookshelfList: List<BookshelfUiState>,
     nestedScrollConnection: NestedScrollConnection,
     moveBookshelf: (Int, Int) -> Unit,
     onClickEditBookshelf: (Int) -> Unit
@@ -329,7 +328,7 @@ fun BookshelfListReorderContent(
                                 fontWeight = FontWeight.W600
                             )
                             Text(
-                                text = stringResource(R.string.n_books, bookshelf.allBookIds.size),
+                                text = stringResource(R.string.n_books, bookshelf.allBookFlows.size),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

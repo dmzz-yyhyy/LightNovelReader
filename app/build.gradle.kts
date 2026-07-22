@@ -217,6 +217,8 @@ dependencies {
     implementation(libs.slf4j.android)
     // ZoomImage
     implementation(libs.zoomimage.compose.coil3)
+    // Resilient
+    implementation(libs.resilient)
 }
 
 configurations.implementation {

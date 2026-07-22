@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail
 
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -10,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -39,7 +39,7 @@ fun NavGraphBuilder.settingsPluginManagerDetailDestination() {
 
         val pluginId = navBackStackEntry.toRoute<Route.Main.Settings.PluginManager.Detail>().id
         val plugin = viewModel.pluginList.find { it.packageName == pluginId }
-        val enabledPluginList by viewModel.enabledPluginFlow.collectAsState(emptyList())
+        val enabledPluginList by viewModel.enabledPluginFlow.collectAsStateWithLifecycle(emptyList())
         val enabled = enabledPluginList.contains(pluginId)
 
         val restartToApply = stringResource(R.string.restart_to_apply_changes)

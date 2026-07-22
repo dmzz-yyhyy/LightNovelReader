@@ -13,7 +13,7 @@ import java.time.LocalDate
 @TypeConverters(LocalDateTimeConverter::class)
 interface DailyCountDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(entity: DailyCountEntity)
+    suspend fun insert(entity: DailyCountEntity)
 
     @Query("SELECT * FROM daily_count WHERE date = :date")
     suspend fun getByDate(date: LocalDate): DailyCountEntity?
@@ -22,11 +22,11 @@ interface DailyCountDao {
     suspend fun getBetween(start: LocalDate, end: LocalDate): List<DailyCountEntity>
 
     @Query("SELECT * FROM daily_count")
-    fun getAll(): List<DailyCountEntity>
+    suspend  fun getAll(): List<DailyCountEntity>
 
     @Query("SELECT * FROM daily_count WHERE date = :date")
-    fun getEntity(date: LocalDate): DailyCountEntity?
+    suspend fun getEntity(date: LocalDate): DailyCountEntity?
 
     @Query("DELETE FROM daily_count")
-    fun clear()
+    suspend fun clear()
 }

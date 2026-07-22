@@ -15,21 +15,21 @@ interface ChapterContentDao {
     @TypeConverters(JsonObjectConverter::class)
     @Query("replace into chapter_content (id, title, content, lastChapter, nextChapter) " +
             "values (:id, :title, :content, :lastChapter, :nextChapter)")
-    fun update(id: String, title: String, content: JsonObject, lastChapter: String, nextChapter: String)
+    suspend fun update(id: String, title: String, content: JsonObject, lastChapter: String, nextChapter: String)
 
     @Transaction
-    fun update(chapterContent: ChapterContent) {
+    suspend fun update(chapterContent: ChapterContent) {
         update(
             chapterContent.id,
             chapterContent.title,
             chapterContent.content,
-            chapterContent.lastChapter,
-            chapterContent.nextChapter
+            chapterContent.lastChapter ?: "",
+            chapterContent.nextChapter ?: ""
         )
     }
 
     @Transaction
-    fun update(chapterContent: ChapterContentEntity) {
+    suspend fun update(chapterContent: ChapterContentEntity) {
         update(
             chapterContent.id,
             chapterContent.title,
@@ -46,14 +46,14 @@ interface ChapterContentDao {
     suspend fun getId(id: String): String?
 
     @Query("delete from chapter_content")
-    fun clear()
+    suspend fun clear()
 
     @Query("delete from chapter_content where id in (:ids)")
-    fun deleteByIds(ids: List<String>)
+    suspend fun deleteByIds(ids: List<String>)
 
     @Update
-    fun updateEntities(vararg entities: ChapterContentEntity)
+    suspend fun updateEntities(vararg entities: ChapterContentEntity)
 
     @Query("select * from chapter_content")
-    fun getAllEntities(): List<ChapterContentEntity>
+    suspend fun getAllEntities(): List<ChapterContentEntity>
 }

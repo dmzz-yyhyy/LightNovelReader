@@ -11,6 +11,7 @@ import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebBookDataSourceManagerApi
 import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,7 +40,7 @@ class WebBookDataSourceManager @Inject constructor (
         onWebDataSourceListChange()
     }
 
-    override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value
+    override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value.origin
 
     fun loadWebDataSourcesFromClassLoader(classLoader: PathClassLoader, injector: PluginInjector, packageName: String, webDataSourceClassNames: List<String>) {
         val items = mutableListOf<WebDataSourceItem>()
@@ -85,7 +86,7 @@ class WebBookDataSourceManager @Inject constructor (
         return mutableWebDataSourceProvider
     }
 
-    fun onWebDataSourceListChange() {
+    fun onWebDataSourceListChange() = runBlocking {
         val webDataSourcesId = userDataRepository
             .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
             .get()

@@ -32,26 +32,15 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
-import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.BookVolumes
-import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
-
-data class BookshelfHomeDataSources(
-    val getBookInfoFlow: (String) -> StateFlow<BookInformation>,
-    val getBookVolumesFlow: (String) -> StateFlow<BookVolumes>,
-    val getBookMetadataFlow: (String) -> StateFlow<BookshelfBookMetadata?>,
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfHomeScreen(
     init: () -> Unit,
     uiState: BookshelfHomeUiState,
-    dataSources: BookshelfHomeDataSources,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -131,10 +120,12 @@ fun BookshelfHomeScreen(
             uiState = uiState,
             onShareBookshelf = shareBookshelf,
             onSaveThisBookshelf = {
-                createBookshelfDataFile(
-                    uiState.selectedBookshelf.name,
-                    saveThisBookshelfLauncher
-                )
+                uiState.selectedBookshelf?.name?.let {
+                    createBookshelfDataFile(
+                        it,
+                        saveThisBookshelfLauncher
+                    )
+                }
             },
             onSaveAllBookshelf = {
                 createBookshelfDataFile("bookshelves", saveAllBookshelfLauncher)
@@ -146,7 +137,6 @@ fun BookshelfHomeScreen(
 
         BookshelfHomeContent(
             uiState = uiState,
-            dataSources = dataSources,
             listState = listState,
             scrollBehavior = scrollBehavior
         )

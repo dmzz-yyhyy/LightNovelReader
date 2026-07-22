@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
@@ -10,7 +11,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -53,8 +53,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -84,11 +84,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.get
@@ -111,6 +117,7 @@ import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -130,6 +137,7 @@ fun DetailScreen(
     val navController = LocalNavController.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = LocalSnackbarHost.current
+    val context = LocalContext.current
 
     val exportBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
@@ -139,7 +147,7 @@ fun DetailScreen(
     var exportSettings by remember { mutableStateOf(ExportSettings()) }
 
     val lazyListState = rememberLazyListState()
-    val volumesEmpty = uiState.bookVolumes.volumes.isEmpty()
+    val volumesEmpty = uiState.bookVolumes == null
 
     val isCollapsed by remember {
         derivedStateOf {
@@ -157,9 +165,9 @@ fun DetailScreen(
     }
 
     val scrollingUp by lazyListState.isScrollingUp()
-    val fabVisible by remember(uiState.bookVolumes.volumes, lazyListState) {
+    val fabVisible by remember(uiState.bookVolumes, lazyListState) {
         derivedStateOf {
-            val hasVolumes = uiState.bookVolumes.volumes.isNotEmpty()
+            val hasVolumes = uiState.bookVolumes != null
             val allowByDirection = !lazyListState.isScrollInProgress || scrollingUp
             val canGoForward = lazyListState.canScrollForward
 
@@ -168,7 +176,7 @@ fun DetailScreen(
     }
 
 
-    val isStartReading = uiState.userReadingData.lastReadChapterId.isBlank()
+    val isStartReading = uiState.userReadingData?.lastReadChapterId != null
     val fabTextRes = if (isStartReading) R.string.start_reading else R.string.continue_reading
 
     val fabContent = remember {
@@ -234,15 +242,19 @@ fun DetailScreen(
                 .padding(innerPadding)
         ) {
             TopBar(
-                title = uiState.bookInformation.title,
-                readingProgress = uiState.userReadingData.readingProgress,
+                title = uiState.bookInformation?.map { it.title }?.getOrElse { "" } ?: "",
+                readingProgress = uiState.userReadingData?.readingProgress ?: 0f,
                 volumesEmpty = volumesEmpty,
                 onClickBackButton = onClickBackButton,
                 onClickExport = { showExportBottomSheet = true },
                 onClickTextFormatting = {
-                    navController.navigateToSettingsTextFormattingRulesDestination(
-                        uiState.bookInformation.id
-                    )
+                    uiState.bookInformation?.onOk {
+                        navController.navigateToSettingsTextFormattingRulesDestination(
+                            it.id
+                        )
+                    }?.onErr {
+                        Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onClickMarkAsRead = onClickMarkAsRead,
                 scrollBehavior = scrollBehavior,
@@ -250,22 +262,17 @@ fun DetailScreen(
             )
 
             Crossfade(
-                targetState = uiState.isLoading || uiState.bookInformation.title.isEmpty(),
+                targetState = uiState.bookInformation,
                 animationSpec = tween(300),
                 label = "DetailScreenCrossfade"
-            ) { empty ->
-                if (empty) {
-                    DetailContentSkeleton(
-                        Modifier
-                            .fillMaxSize()
-                            .background(colorScheme.surface)
-                    )
-                } else {
+            ) { result ->
+                result?.onOk {
                     DetailContent(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(colorScheme.surface),
                         uiState = uiState,
+                        bookInformation = it,
                         onClickChapter = onClickChapter,
                         lazyListState = lazyListState,
                         cacheBook = cacheBook,
@@ -274,29 +281,41 @@ fun DetailScreen(
                         onClickCover = onClickCover,
                         onClickShowInfo = { showInfoBottomSheet = true }
                     )
-                }
+                }?.onErr {
+                    //TODO 错误显示
+                } ?: DetailContentSkeleton(
+                        Modifier
+                            .fillMaxSize()
+                            .background(colorScheme.surface)
+                    )
             }
         }
 
+
         if (showExportBottomSheet) {
-            ExportBottomSheet(
-                sheetState = exportBottomSheetState,
-                bookVolumes = uiState.bookVolumes,
-                settings = exportSettings,
-                onSettingsChange = { exportSettings = it },
-                onDismissRequest = { showExportBottomSheet = false },
-                onClickExport = onClickExportToEpub
-            )
+            uiState.bookVolumes?.onOk { bookVolumes ->
+                ExportBottomSheet(
+                    sheetState = exportBottomSheetState,
+                    bookVolumes = bookVolumes,
+                    settings = exportSettings,
+                    onSettingsChange = { exportSettings = it },
+                    onDismissRequest = { showExportBottomSheet = false },
+                    onClickExport = onClickExportToEpub
+                )
+            }
         }
         AnimatedVisibility(visible = showInfoBottomSheet) {
-            BookInfoBottomSheet(
-                bookInformation = uiState.bookInformation,
-                bookVolumes = uiState.bookVolumes,
-                sheetState = infoBottomSheetState,
-                onDismissRequest = { showInfoBottomSheet = false }
-            )
+            uiState.bookVolumes?.onOk { bookVolumes ->
+                uiState.bookInformation?.onOk { bookInformation ->
+                    BookInfoBottomSheet(
+                        bookInformation = bookInformation,
+                        bookVolumes = bookVolumes,
+                        sheetState = infoBottomSheetState,
+                        onDismissRequest = { showInfoBottomSheet = false }
+                    )
+                }
+            }
         }
-
     }
 }
 
@@ -307,7 +326,7 @@ private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
     var started by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        delay(500)
+        delay(0.5.seconds)
         started = true
     }
 
@@ -423,6 +442,7 @@ private val itemVerticalPadding = 8.dp
 private fun DetailContent(
     modifier: Modifier = Modifier,
     uiState: DetailUiState,
+    bookInformation: BookInformation,
     lazyListState: LazyListState,
     onClickChapter: (String) -> Unit,
     cacheBook: (String) -> Unit,
@@ -449,7 +469,7 @@ private fun DetailContent(
     ) {
         if (visible >= 1) item {
             BookCardBlock(
-                bookInformation = uiState.bookInformation,
+                bookInformation = bookInformation,
                 modifier = Modifier
                     .fadeInOnce("book")
                     .graphicsLayer {
@@ -463,7 +483,7 @@ private fun DetailContent(
         if (visible >= 2) item {
             TagsBlock(
                 modifier = Modifier.fadeInOnce("tags"),
-                bookInformation = uiState.bookInformation,
+                bookInformation = bookInformation,
                 onClickTag = onClickTag
             )
         }
@@ -474,8 +494,8 @@ private fun DetailContent(
                 isInBookshelf = uiState.isInBookshelf,
                 isCached = uiState.isCached,
                 downloadItem = uiState.downloadItem,
-                onClickAddToBookShelf = { requestAddBookToBookshelf(uiState.bookInformation.id) },
-                onClickCache = { cacheBook(uiState.bookInformation.id) },
+                onClickAddToBookShelf = { requestAddBookToBookshelf(bookInformation.id) },
+                onClickCache = { cacheBook(bookInformation.id) },
                 onClickShowInfo = onClickShowInfo
             )
         }
@@ -483,7 +503,7 @@ private fun DetailContent(
         if (visible >= 4) item {
             IntroBlock(
                 modifier = Modifier.fadeInOnce("intro"),
-                description = uiState.bookInformation.description
+                description = bookInformation.description
             )
         }
 
@@ -508,13 +528,25 @@ private fun DetailContent(
             }
         }
 
-        if (visible >= 6) item {
-            AnimatedVisibility(
-                modifier = Modifier.fadeInOnce("loading"),
-                visible = uiState.bookVolumes.volumes.isEmpty(),
-                enter = fadeIn(tween(300, 1000)),
-                exit = shrinkVertically() + fadeOut()
-            ) {
+        if (visible >= 6) {
+            uiState.bookVolumes?.onOk { bookVolumes ->
+                items(
+                    items = bookVolumes.volumes,
+                    key = { it.volumeId }
+                ) { volume ->
+                    VolumeItem(
+                        modifier = Modifier.fadeInOnce(volume.volumeId),
+                        volume = volume,
+                        hideReadChapters = hideReadChapters,
+                        readCompletedChapterIds = uiState.userReadingData?.currentChapterReadingProgressMap?.filterValues { it >= 1f }?.keys?.toList() ?: emptyList(),
+                        onClickChapter = onClickChapter,
+                        volumesSize = bookVolumes.volumes.size,
+                        lastReadingChapterId = uiState.userReadingData?.lastReadChapterId
+                    )
+                }
+            }?.onErr {
+                //TODO 错误显示
+            } ?: item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -524,21 +556,6 @@ private fun DetailContent(
                     Loading()
                 }
             }
-        }
-
-        if (visible >= 6) items(
-            items = uiState.bookVolumes.volumes,
-            key = { it.volumeId }
-        ) { volume ->
-            VolumeItem(
-                modifier = Modifier.fadeInOnce(volume.volumeId),
-                volume = volume,
-                hideReadChapters = hideReadChapters,
-                readCompletedChapterIds = uiState.userReadingData.currentChapterReadingProgressMap.filterValues { it >= 1f }.keys.toList(),
-                onClickChapter = onClickChapter,
-                volumesSize = uiState.bookVolumes.volumes.size,
-                lastReadingChapterId = uiState.userReadingData.lastReadChapterId
-            )
         }
 
         item {
@@ -593,7 +610,12 @@ private fun TopBar(
                         maxLines = 1,
                         style = typography.displayLarge,
                         modifier = Modifier
-                            .offset(y = (-offset * titleProgress))
+                            .offset {
+                                IntOffset(
+                                    x = 0,
+                                    y = (-offset * titleProgress).toPx().toInt()
+                                )
+                            }
                             .graphicsLayer { alpha = 1f - titleProgress }
                     )
                     Text(
@@ -602,7 +624,12 @@ private fun TopBar(
                         style = typography.displayLarge,
                         modifier = Modifier
                             .horizontalScroll(rememberScrollState())
-                            .offset(y = (offset * (1f - titleProgress)))
+                            .offset {
+                                IntOffset(
+                                    x = 0,
+                                    y = (offset * (1f - titleProgress)).toPx().toInt()
+                                )
+                            }
                             .graphicsLayer { alpha = titleProgress }
                     )
                 }
@@ -1012,7 +1039,7 @@ private fun VolumeItem(
     readCompletedChapterIds: List<String>,
     onClickChapter: (String) -> Unit,
     volumesSize: Int,
-    lastReadingChapterId: String
+    lastReadingChapterId: String?
 ) {
     val readIds = remember(readCompletedChapterIds) { readCompletedChapterIds.toSet() }
     val (readCount, totalCount) = remember(volume.volumeId, readIds) {

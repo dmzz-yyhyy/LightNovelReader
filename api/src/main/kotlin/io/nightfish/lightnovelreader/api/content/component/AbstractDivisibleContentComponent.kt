@@ -23,5 +23,5 @@ abstract class AbstractDivisibleContentComponent<T: AbstractContentComponent<Dat
      *
      * @since Api 2
      */
-    abstract fun split(height: Int, width: Int): List<T>
+    abstract suspend fun split(height: Int, width: Int): List<T>
 }

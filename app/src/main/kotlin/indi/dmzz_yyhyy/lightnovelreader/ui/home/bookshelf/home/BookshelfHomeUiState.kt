@@ -4,23 +4,22 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.github.michaelbull.result.Result
 import com.google.android.material.bottomsheet.BottomSheetBehavior.State
-import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfBookItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfUiState
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
-import io.nightfish.lightnovelreader.api.bookshelf.MutableBookshelf
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 
 @State
 interface BookshelfHomeUiState {
-    val bookshelfList: List<Bookshelf>
+    val bookshelfList: List<BookshelfUiState>
     val selectedBookshelfId: Int
-    val bookInformationMap: Map<String, BookInformation>
-    val bookLastChapterTitleMap: Map<String, String>
     val selectedTabIndex get() = bookshelfList.indexOfFirst { it.id == selectedBookshelfId }
-    val selectedBookshelf: Bookshelf get() = if (selectedTabIndex != -1) bookshelfList[selectedTabIndex] else MutableBookshelf()
+    val selectedBookshelf: BookshelfUiState? get() = if (selectedTabIndex != -1) bookshelfList[selectedTabIndex] else null
     val selectMode: Boolean
     val reorderMode: Boolean
     val reorderBookshelfMode: Boolean
@@ -28,7 +27,7 @@ interface BookshelfHomeUiState {
     var pinnedExpanded: Boolean
     var allExpanded: Boolean
     val selectedBookIds: List<String>
-    val reorderBookIds: List<String>
+    val reorderBookIds: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>
     val reorderBookshelfIds: List<Int>
     val toast: String
     val changePage: (Int) -> Unit
@@ -81,10 +80,8 @@ class MutableBookshelfHomeUiState(
     override val importBookshelf: (Uri) -> Unit = {},
     override val clearToast: () -> Unit = {},
 ) : BookshelfHomeUiState {
-    override var bookshelfList by mutableStateOf(emptyList<MutableBookshelf>())
+    override var bookshelfList by mutableStateOf(emptyList<BookshelfUiState>())
     override var selectedBookshelfId by mutableIntStateOf(-1)
-    override var bookInformationMap = mutableStateMapOf<String, BookInformation>()
-    override var bookLastChapterTitleMap = mutableStateMapOf<String, String>()
     override var selectMode by mutableStateOf(false)
     override var reorderMode by mutableStateOf(false)
     override var reorderBookshelfMode by mutableStateOf(false)
@@ -92,7 +89,7 @@ class MutableBookshelfHomeUiState(
     override var pinnedExpanded by mutableStateOf(true)
     override var allExpanded by mutableStateOf(true)
     override val selectedBookIds: MutableList<String> = mutableStateListOf()
-    override val reorderBookIds: MutableList<String> = mutableStateListOf()
+    override val reorderBookIds: MutableList<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>> = mutableStateListOf()
     override val reorderBookshelfIds: MutableList<Int> = mutableStateListOf()
     override var toast by mutableStateOf("")
 }

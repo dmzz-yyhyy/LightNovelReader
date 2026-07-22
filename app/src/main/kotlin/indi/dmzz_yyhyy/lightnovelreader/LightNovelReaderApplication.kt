@@ -18,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import javax.inject.Inject
 
@@ -50,14 +51,15 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG) {
             System.setProperty("kotlinx.coroutines.debug", "on")
         }
-        matomoAnalytics.initialize()
-        matomoAnalytics.trackAppLaunch()
-        pluginManager.initAllPlugin()
-        coroutineScope.launch(Dispatchers.IO) {
-            loggerRepository.logLevel = LogLevel.from(userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path).getOrDefault("none"))
-            loggerRepository.startLogging()
+        // We have to ensure the plugin load before the activity start up, so we use run blocking here though it will block the main theard
+        runBlocking {
+            pluginManager.initAllPlugin()
         }
         coroutineScope.launch(Dispatchers.IO) {
+            matomoAnalytics.initialize()
+            matomoAnalytics.trackAppLaunch()
+            loggerRepository.logLevel = LogLevel.from(userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path).getOrDefault("none"))
+            loggerRepository.startLogging()
             ProxyPool.enable = userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path).getOrDefault(false)
         }
         WorkManager.getInstance(this).cancelAllWork()

@@ -1,8 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
@@ -36,9 +39,12 @@ class NotFoundWebDataSource(override val id: Identifier): WebBookDataSource {
         }
 
     }
-    override suspend fun getBookInformation(id: String): BookInformation = BookInformation.empty()
+    override suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError> =
+        Err(WebRequestError("Data source not founded", "Did not found the current data source($id) from plugins. Please check your plugin settings"))
 
-    override suspend fun getBookVolumes(id: String): BookVolumes = BookVolumes.empty("")
+    override suspend fun getBookVolumes(id: String): Result<BookVolumes, WebRequestError> =
+        Err(WebRequestError("Data source not founded", "Did not found the current data source($id) from plugins. Please check your plugin settings"))
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String): ChapterContent = ChapterContent.empty()
+    override suspend fun getChapterContent(chapterId: String, bookId: String): Result<ChapterContent, WebRequestError> =
+        Err(WebRequestError("Data source not founded", "Did not found the current data source($id) from plugins. Please check your plugin settings"))
 }

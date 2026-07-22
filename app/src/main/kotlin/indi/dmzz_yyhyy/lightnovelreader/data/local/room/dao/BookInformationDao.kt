@@ -7,15 +7,14 @@ import androidx.room.Query
 import androidx.room.Transaction
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.MutableBookInformation
 
 @Dao
 interface BookInformationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(information: BookInformationEntity)
+    suspend fun insert(information: BookInformationEntity)
 
     @Transaction
-    fun insert(information: BookInformation) {
+    suspend fun insert(information: BookInformation) {
         insert(
             BookInformationEntity(
                 id = information.id,
@@ -40,12 +39,12 @@ interface BookInformationDao {
     suspend fun getAllEntities(): List<BookInformationEntity>
 
     @Query("delete from book_information where id in (:ids)")
-    fun deleteByIds(ids: List<String>)
+    suspend fun deleteByIds(ids: List<String>)
 
     @Transaction
     suspend fun get(id: String): BookInformation? {
         val entity = getEntity(id) ?: return null
-        return MutableBookInformation(
+        return BookInformation(
             entity.id,
             entity.title,
             entity.subtitle,
@@ -66,5 +65,5 @@ interface BookInformationDao {
     }
 
     @Query("delete from book_information")
-    fun clear()
+    suspend fun clear()
 }

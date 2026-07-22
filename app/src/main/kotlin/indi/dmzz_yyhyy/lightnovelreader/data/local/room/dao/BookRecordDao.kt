@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
-import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -8,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookDate
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import java.time.LocalDate
 
@@ -17,10 +17,10 @@ import java.time.LocalDate
 )
 interface BookRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBookRecord(record: BookRecordEntity)
+    suspend fun insertBookRecord(record: BookRecordEntity)
 
     @Query("SELECT * FROM book_records")
-    fun getAllBookRecords(): List<BookRecordEntity>
+    suspend fun getAllBookRecords(): List<BookRecordEntity>
 
     @Query("SELECT * FROM book_records WHERE date = :date")
     suspend fun getBookRecordsForDate(date: LocalDate): List<BookRecordEntity>
@@ -50,17 +50,11 @@ interface BookRecordDao {
     suspend fun getFirstFavoritedDates(): List<BookDate>
 
     @Query("DELETE FROM book_records")
-    fun clearRecords()
+    suspend fun clearRecords()
 
     @Transaction
-    fun clear() {
+    suspend fun clear() {
         clearRecords()
     }
 }
 
-data class BookDate(
-    @ColumnInfo(name = "book_id")
-    val bookId: String,
-    @ColumnInfo(name = "date")
-    val date: LocalDate
-)

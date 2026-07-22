@@ -14,7 +14,7 @@ abstract class AbstractSettingState(
 
     @StateFactoryMarker
     protected fun <T> UserData<T>.asState(initial: T): State<T> {
-        val state = mutableStateOf(getOrDefault(initial))
+        val state = mutableStateOf(initial)
         coroutineScope.launch(Dispatchers.IO) {
             getFlowWithDefault(initial).collect {
                 state.value = it

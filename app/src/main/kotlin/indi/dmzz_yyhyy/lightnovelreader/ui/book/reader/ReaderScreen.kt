@@ -36,12 +36,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -49,7 +49,6 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -75,7 +74,13 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentComponent
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
@@ -88,13 +93,12 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
-import io.nightfish.lightnovelreader.api.book.ChapterContent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
 import java.util.Locale
+import kotlin.time.Duration.Companion.seconds
 
-@Suppress("AssignedValueIsNeverRead")
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,7 +173,10 @@ fun ReaderScreen(
             ) {
                 TopBar(
                     onClickBackButton = onClickBackButton,
-                    title = readingScreenUiState.contentUiState.readingChapterContent.title,
+                    title = readingScreenUiState.contentUiState?.readingChapterContent
+                        ?.map { it.title }
+                        ?.getOrElse { "Unknowing" }
+                        ?: "Unknowing",
                     scrollBehavior
                 )
             }
@@ -190,7 +197,12 @@ fun ReaderScreen(
                 exit = shrinkVertically()
             ) {
                 BottomBar(
-                    chapterContent = readingScreenUiState.contentUiState.readingChapterContent,
+                    hasNextChapter = readingScreenUiState.contentUiState?.readingChapterContent
+                        ?.get()
+                        ?.hasNextChapter() ?: false,
+                    hasPrevChapter = readingScreenUiState.contentUiState?.readingChapterContent
+                        ?.get()
+                        ?.hasPrevChapter() ?: false,
                     onClickPrevChapter = onClickPrevChapter,
                     onClickNextChapter = onClickNextChapter,
                     onClickSettings = { showSettingsBottomSheet = true },
@@ -205,7 +217,7 @@ fun ReaderScreen(
             val bgPainter = rememberReaderBackgroundPainter(settingState)
             val bgState by remember(bgPainter) {
                 (bgPainter as? AsyncImagePainter)?.state
-            }?.collectAsState() ?: remember { mutableStateOf(null) }
+            }?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(null) }
 
             key(bgState) {
                 Image(
@@ -245,30 +257,53 @@ fun ReaderScreen(
     }
 
     AnimatedVisibility(visible = showChapterSelectionBottomSheet) {
-        ChapterSelectionBottomSheet(
-            sheetState = chaptersBottomSheetState,
-            selectedVolumeId = selectedVolumeId,
-            bookVolumes = readingScreenUiState.bookVolumes,
-            readingChapterId = readingScreenUiState.contentUiState.readingChapterContent.id,
-            onDismissRequest = {
-                coroutineScope.launch { chaptersBottomSheetState.hide() }.invokeOnCompletion {
-                    if (!chaptersBottomSheetState.isVisible) {
-                        showChapterSelectionBottomSheet = false
+        readingScreenUiState.contentUiState?.let { contentUiState ->
+            readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
+                contentUiState.readingChapterId?.let { readingChapterId ->
+                    ChapterSelectionBottomSheet(
+                        sheetState = chaptersBottomSheetState,
+                        selectedVolumeId = selectedVolumeId,
+                        bookVolumes = bookVolumes,
+                        readingChapterId = readingChapterId,
+                        onDismissRequest = {
+                            coroutineScope.launch { chaptersBottomSheetState.hide() }
+                                .invokeOnCompletion {
+                                    if (!chaptersBottomSheetState.isVisible) {
+                                        showChapterSelectionBottomSheet = false
+                                    }
+                                }
+                            showChapterSelectionBottomSheet = false
+                            selectedVolumeId =
+                                bookVolumes.volumes.firstOrNull { volume ->
+                                    volume.chapters.any {
+                                        it.id == readingChapterId
+                                    }
+                                }?.volumeId ?: ""
+                        },
+                        onClickChapter = onChangeChapter,
+                        onChangeSelectedVolumeId = {
+                            selectedVolumeId = it
+                        }
+                    )
+                }
+            }?.onErr {
+                //TODO 错误显示
+            } ?: {
+                //TODO 加载显示
+            }
+
+            LaunchedEffect(readingScreenUiState.bookVolumes) {
+                contentUiState.readingChapterId?.let { chapterId ->
+                    readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
+                        selectedVolumeId = bookVolumes.volumes.firstOrNull { volume ->
+                            volume.chapters.any {
+                                it.id == chapterId
+                            }
+                        }?.volumeId ?: ""
                     }
                 }
-                showChapterSelectionBottomSheet = false
-                selectedVolumeId =
-                    readingScreenUiState.bookVolumes.volumes.firstOrNull { volume -> volume.chapters.any { it.id == readingScreenUiState.contentUiState.readingChapterContent.id } }?.volumeId
-                        ?: ""
-            },
-            onClickChapter = onChangeChapter,
-            onChangeSelectedVolumeId = {
-                selectedVolumeId = it
             }
-        )
-    }
-    LaunchedEffect(readingScreenUiState.bookVolumes) {
-        selectedVolumeId = readingScreenUiState.bookVolumes.volumes.firstOrNull { volume -> volume.chapters.any { it.id == readingScreenUiState.contentUiState.readingChapterContent.id } }?.volumeId ?: ""
+        }
     }
 }
 
@@ -342,7 +377,9 @@ fun Content(
         onPauseOrDispose {
             isRunning = false
             if (totalReadingTime <= 60) {
-                updateTotalReadingTime(readingScreenUiState.bookId, totalReadingTime)
+                readingScreenUiState.bookId?.let {
+                    updateTotalReadingTime(it, totalReadingTime)
+                }
             } else {
                 Log.e("ReaderScreen", "time counter error, time now is $totalReadingTime over 60s")
             }
@@ -359,23 +396,29 @@ fun Content(
         while (isRunning) {
             totalReadingTime += 1
             if (totalReadingTime > 60) {
-                updateTotalReadingTime(readingScreenUiState.bookId, totalReadingTime)
+                readingScreenUiState.bookId?.let {
+                    updateTotalReadingTime(it, totalReadingTime)
+                }
                 totalReadingTime = 0
             }
-            delay(1000)
+            delay(1.seconds)
         }
     }
 
     LaunchedEffect(isRunning) {
         while (isRunning) {
-            accumulateReadingTime(readingScreenUiState.bookId, 1)
-            delay(1000)
+            readingScreenUiState.bookId?.let {
+                accumulateReadingTime(it, 1)
+            }
+            delay(1.seconds)
         }
     }
 
     LifecycleResumeEffect(Unit) {
         onPauseOrDispose {
-            accumulateReadingTime(readingScreenUiState.bookId, -1)
+            readingScreenUiState.bookId?.let {
+                accumulateReadingTime(it, -1)
+            }
         }
     }
 
@@ -383,7 +426,9 @@ fun Content(
         onDispose {
             activity.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             if (totalReadingTime <= 60) {
-                updateTotalReadingTime(readingScreenUiState.bookId, totalReadingTime)
+                readingScreenUiState.bookId?.let {
+                    updateTotalReadingTime(it, totalReadingTime)
+                }
             } else {
                 Log.e("ReaderScreen", "time counter error, time now is $totalReadingTime over 60s")
             }
@@ -450,9 +495,12 @@ fun Content(
                     enableBatteryIndicator = settingState.batteryIndicatorDisplayMode == "classic",
                     enableTimeIndicator = settingState.enableTimeIndicator,
                     enableChapterTitle = settingState.enableChapterTitleIndicator,
-                    chapterTitle = readingScreenUiState.contentUiState.readingChapterContent.title,
+                    chapterTitle = readingScreenUiState.contentUiState?.readingChapterContent
+                        ?.map { it.title }
+                        ?.getOrElse { "Unknowing" }
+                        ?: "Unknowing",
                     enableReadingChapterProgressIndicator = settingState.enableReadingChapterProgressIndicator,
-                    readingChapterProgress = readingScreenUiState.contentUiState.readingProgress,
+                    readingChapterProgress = readingScreenUiState.contentUiState?.readingProgress ?: 0f,
                 )
             }
         }
@@ -526,7 +574,8 @@ private fun TopBar(
 
 @Composable
 private fun BottomBar(
-    chapterContent: ChapterContent,
+    hasPrevChapter: Boolean,
+    hasNextChapter: Boolean,
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
     onClickSettings: () -> Unit,
@@ -542,7 +591,7 @@ private fun BottomBar(
         ) {
             TextButton(
                 onClick = onClickPrevChapter,
-                enabled = chapterContent.hasPrevChapter()
+                enabled = hasPrevChapter
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 6.dp),
@@ -593,7 +642,7 @@ private fun BottomBar(
 
             TextButton(
                 onClick = onClickNextChapter,
-                enabled = chapterContent.hasNextChapter()
+                enabled = hasNextChapter
             ) {
                 Column(
                     modifier = Modifier.padding(horizontal = 6.dp),

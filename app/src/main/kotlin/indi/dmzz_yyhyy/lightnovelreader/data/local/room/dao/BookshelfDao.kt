@@ -18,16 +18,16 @@ import java.time.LocalDateTime
 interface BookshelfDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBookshelf(bookshelfEntity: BookshelfEntity)
+    suspend fun insertBookshelf(bookshelfEntity: BookshelfEntity)
 
     @Insert
-    fun createBookshelf(bookshelfEntity: BookshelfEntity)
+    suspend fun createBookshelf(bookshelfEntity: BookshelfEntity)
 
     @Query("delete from book_shelf where id=:id")
-    fun deleteBookshelf(id: Int)
+    suspend fun deleteBookshelf(id: Int)
 
     @Query("select * from book_shelf where id=:id")
-    fun getBookshelf(id: Int): BookshelfEntity?
+    suspend fun getBookshelf(id: Int): BookshelfEntity?
 
     @Query("select * from book_shelf where id=:id")
     fun getBookShelfFlow(id: Int): Flow<BookshelfEntity?>
@@ -36,13 +36,13 @@ interface BookshelfDao {
     fun getAllBookshelvesFlow(): Flow<List<BookshelfEntity>>
 
     @Query("select * from book_shelf")
-    fun getAllBookshelves(): List<BookshelfEntity>
+    suspend fun getAllBookshelves(): List<BookshelfEntity>
 
     @Query("select * from book_shelf_book_metadata")
-    fun getAllBookshelfBookMetadataEntities(): List<BookshelfBookMetadataEntity>
+    suspend fun getAllBookshelfBookMetadataEntities(): List<BookshelfBookMetadataEntity>
 
     @Transaction
-    fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> = getAllBookshelfBookMetadataEntities()
+    suspend fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> = getAllBookshelfBookMetadataEntities()
         .map {
             BookshelfBookMetadata(
                 it.id,
@@ -52,7 +52,7 @@ interface BookshelfDao {
         }
 
     @Query("select * from book_shelf_book_metadata where id=:id")
-    fun getBookshelfBookMetadataEntity(id: String): BookshelfBookMetadataEntity?
+    suspend fun getBookshelfBookMetadataEntity(id: String): BookshelfBookMetadataEntity?
 
     @Query("select * from book_shelf_book_metadata where id=:id")
     fun getBookshelfBookMetadataEntityFlow(id: String): Flow<BookshelfBookMetadataEntity?>
@@ -60,20 +60,20 @@ interface BookshelfDao {
     @TypeConverters(LocalDateTimeConverter::class, ListConverter::class)
     @Query("replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
             " values (:id, :lastUpdate, :bookshelfIds)")
-    fun insertBookshelfBookMetadata(
+    suspend fun insertBookshelfBookMetadata(
         id: String,
         lastUpdate: LocalDateTime,
         bookshelfIds: String,
     )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertBookshelfBookMetadata(entity: BookshelfBookMetadataEntity)
+    suspend fun insertBookshelfBookMetadata(entity: BookshelfBookMetadataEntity)
 
     @Query("select id from book_shelf")
-    fun getAllBookshelfIds(): List<Int>
+    suspend fun getAllBookshelfIds(): List<Int>
 
     @Transaction
-    fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? = getBookshelfBookMetadataEntity(id)?.let {
+    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? = getBookshelfBookMetadataEntity(id)?.let {
         BookshelfBookMetadata(
             it.id,
             it.lastUpdate,
@@ -82,7 +82,7 @@ interface BookshelfDao {
     }
 
     @Transaction
-    fun addBookshelfMetadata(
+    suspend fun addBookshelfMetadata(
         id: String,
         lastUpdate: LocalDateTime,
         bookshelfIds: List<Int>
@@ -96,25 +96,25 @@ interface BookshelfDao {
     }
 
     @Query("delete from book_shelf_book_metadata where id=:id")
-    fun deleteBookshelfBookMetadata(id: String)
+    suspend fun deleteBookshelfBookMetadata(id: String)
 
     @Query("select * from book_shelf_book_metadata")
     fun getAllBookshelfBookEntitiesFlow(): Flow<List<BookshelfBookMetadataEntity>>
 
     @Query("select * from book_shelf_book_metadata")
-    fun getAllBookshelfBookEntities(): List<BookshelfBookMetadataEntity>
+    suspend fun getAllBookshelfBookEntities(): List<BookshelfBookMetadataEntity>
 
     @Query("select id from book_shelf_book_metadata")
     fun getAllBookshelfBookIdsFlow(): Flow<List<String>>
 
     @Query("delete from book_shelf")
-    fun clearBookshelf()
+    suspend fun clearBookshelf()
 
     @Query("delete from book_shelf_book_metadata")
-    fun clearBookshelfBookMetadata()
+    suspend fun clearBookshelfBookMetadata()
 
     @Transaction
-    fun clear() {
+    suspend fun clear() {
         clearBookshelf()
         clearBookshelfBookMetadata()
     }

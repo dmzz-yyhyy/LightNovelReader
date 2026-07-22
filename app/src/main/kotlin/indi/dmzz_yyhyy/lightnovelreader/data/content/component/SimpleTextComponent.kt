@@ -88,7 +88,7 @@ class SimpleTextComponent(
         return color
     }
 
-    override fun split(
+    override suspend fun split(
         height: Int,
         width: Int
     ): List<SimpleTextComponent> {
@@ -109,7 +109,7 @@ class SimpleTextComponent(
             .map { SimpleTextComponent(SimpleTextComponentData(it), userDataRepositoryApi, context) }
     }
 
-    fun readerFontFamily(fontFamilyUriUserData: UriUserData): FontFamily? {
+    suspend fun readerFontFamily(fontFamilyUriUserData: UriUserData): FontFamily? {
         val uri = fontFamilyUriUserData.getOrDefault(Uri.EMPTY)
         val fontFamily = loadReaderFontFamilySafe(uri)
         return fontFamily

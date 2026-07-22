@@ -4,7 +4,6 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
-import io.nightfish.lightnovelreader.api.web.explore.filter.LocalFilter
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +30,6 @@ class HomeBookExpandPageDataSource(
         maxPage = 1
         targetPage = 1
         currentPage = 1
-        val localFilter: List<LocalFilter> = filters.filterIsInstance<LocalFilter>()
         while(targetPage <= maxPage) {
             if (targetPage < currentPage) {
                 delay(1.milliseconds)
@@ -62,10 +60,11 @@ class HomeBookExpandPageDataSource(
             }
 
             val books = wenku8Api.getBookInformationListFromBookCards(soup.select(contentSelector))
-            for (information in books) {
-                if (localFilter.all { it.filter(information) }) {
-                    emit(SearchResult.MultipleBook(information))
-                }
+            for (pairs in books) {
+                emit(SearchResult.MultipleBook(pairs.first))
+                //FIXME 探索页重构
+                //if (localFilter.all { it.filter() }) {
+                //}
             }
             currentPage++
             delay(1.seconds)

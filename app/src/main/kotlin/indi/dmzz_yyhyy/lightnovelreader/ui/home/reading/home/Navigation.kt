@@ -5,11 +5,15 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ChapterSelectionBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDestination
@@ -25,16 +29,10 @@ fun NavGraphBuilder.readingHomeDestination(sharedTransitionScope: SharedTransiti
         val context = LocalContext.current
         val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
         val viewModel = hiltViewModel<ReadingHomeViewModel>(parentEntry)
-
-        val chapterSheetUi = viewModel.chapterSheetUi
-        val volumesMap = viewModel.bookVolumesMap
         val chapterSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
         ReadingScreen(
-            updateReadingBooks = viewModel::updateReadingBooks,
-            recentReadingBookIds = viewModel.recentReadingBookIds,
-            recentReadingUserReadingDataMap = viewModel.recentReadingUserReadingDataMap,
-            recentReadingBookInformationMap = viewModel.recentReadingBookInformationMap,
+            recentReadingBooks = viewModel.recentReadingBooks,
             onClickDownloadManager = navController::navigateToDownloadManager,
             onClickBook = navController::navigateToBookDetailDestination,
             onClickContinueReading = { bookId, chapterId ->
@@ -43,18 +41,18 @@ fun NavGraphBuilder.readingHomeDestination(sharedTransitionScope: SharedTransiti
             },
             sharedTransitionScope = sharedTransitionScope,
             onClickStats = navController::navigateToReadingStatsDestination,
-            loadBookInfo = viewModel::loadBookInfo,
             onRemoveBook = viewModel::removeFromReadingList,
             onClickOpenChapters = viewModel::openChapters,
             onAddBook = viewModel::addToReadingList
         )
 
-        if (chapterSheetUi != null) {
-            volumesMap[chapterSheetUi.bookId]?.let { volumes ->
+        viewModel.chapterSheetUiState?.let { chapterSheetUi ->
+            val result by chapterSheetUi.bookVolumeFlow.collectAsStateWithLifecycle(null)
+            result?.onOk {
                 ChapterSelectionBottomSheet(
                     sheetState = chapterSheetState,
                     selectedVolumeId = chapterSheetUi.selectedVolumeId,
-                    bookVolumes = volumes,
+                    bookVolumes = it,
                     readingChapterId = chapterSheetUi.readingChapterId,
                     onDismissRequest = viewModel::closeContents,
                     onClickChapter = { chapterId ->
@@ -68,6 +66,10 @@ fun NavGraphBuilder.readingHomeDestination(sharedTransitionScope: SharedTransiti
                     },
                     onChangeSelectedVolumeId = viewModel::setVolume
                 )
+            }?.onErr {
+                //TODO 错误显示
+            } ?: {
+                //TODO 加载显示
             }
         }
     }

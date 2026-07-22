@@ -37,9 +37,7 @@ fun NavGraphBuilder.bookManager() {
         BookManagerScreen(
             onClickBack = navController::popBackStackIfResumed,
             downloadItemIdList = viewModel.downloadItemIdList,
-            bookInformationMap = viewModel.bookInformationMap,
             uiState = uiState,
-            loadBookInfo = viewModel::loadBookInfo,
             onClickCancel = viewModel::onClickCancel,
             onClickClearCompleted = viewModel::onClickClearCompleted
         )

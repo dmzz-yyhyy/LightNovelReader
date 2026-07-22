@@ -4,22 +4,21 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntSize
+import com.github.michaelbull.result.Result
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentUiState
-import io.nightfish.lightnovelreader.api.book.ChapterContent
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 
 interface ScrollContentUiState: ContentUiState {
     val lazyListState: LazyListState
-    val readingContentId: String
-    val contentList: List<ChapterContent?>
+    val contentList: List<Pair<String, Result<ChapterContentUiState, WebRequestError>>?>
     val setLazyColumnSize: (IntSize) -> Unit
     val writeProgressRightNow: () -> Unit
-    override val readingChapterContent: ChapterContent
-        get() = contentList.firstOrNull { it?.id == readingContentId } ?: ChapterContent.empty()
+    override val readingChapterContent: Result<ChapterContentUiState, WebRequestError>?
+        get() = contentList.firstOrNull { it?.first == readingChapterId }?.second
 }
 
 class MutableScrollContentUiSate(
@@ -32,7 +31,6 @@ class MutableScrollContentUiSate(
     override var bookId by mutableStateOf("")
     override var readingProgress by mutableFloatStateOf(0f)
     override var lazyListState: LazyListState by mutableStateOf(LazyListState())
-    override var readingContentId by mutableStateOf("")
-    override val contentList = mutableStateListOf<ChapterContent?>(null, null, null)
-    override val contentComponentsMap = mutableStateMapOf<String, List<AbstractContentComponent<*>>>()
+    override var readingChapterId: String? by mutableStateOf(null)
+    override val contentList = mutableStateListOf<Pair<String, Result<ChapterContentUiState, WebRequestError>>?>(null, null, null)
 }

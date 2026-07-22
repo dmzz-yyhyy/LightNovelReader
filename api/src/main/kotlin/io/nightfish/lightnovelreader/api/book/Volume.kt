@@ -13,14 +13,4 @@ data class Volume(
     val volumeId: String,
     val volumeTitle: String,
     val chapters: List<ChapterInformation>,
-): CanBeEmpty {
-    /**
-     * 判断卷信息是否为空
-     * 卷id为空字符串时判断为空
-     *
-     * @return 卷信息是否为空
-     *
-     * @since Api 2
-     */
-    override fun isEmpty(): Boolean = volumeId.isEmpty()
-}
+)

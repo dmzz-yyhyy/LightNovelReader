@@ -9,5 +9,5 @@ import javax.inject.Inject
 class ImageViewerViewModel @Inject constructor(
     val webBookDataSourceProvider: WebBookDataSourceProvider
 ): ViewModel() {
-    val imageHeader get() = webBookDataSourceProvider.default.imageHeader
+    val imageHeader get() = webBookDataSourceProvider.value.imageHeader
 }

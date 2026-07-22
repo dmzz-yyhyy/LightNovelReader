@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.hilt.work.HiltWorker
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -26,13 +26,13 @@ class SaveBookshelfWork @AssistedInject constructor(
     private val webBookDataSourceProvider: WebBookDataSourceProvider,
     private val localDataManager: LocalDataManager,
     private val bookshelfDao: BookshelfDao
-) : Worker(appContext, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
     companion object {
         const val TAG = "ExportDataWork"
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         val id = inputData.getInt("bookshelfId", -1)
         val uri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
         val bookshelfEntityList =
@@ -47,7 +47,10 @@ class SaveBookshelfWork @AssistedInject constructor(
                 for (entity in bookshelfEntityList) {
                     this.addAll(entity.allBookIds)
                 }
-            }.distinct().mapNotNull(bookshelfDao::getBookshelfBookMetadataEntity).map { entity ->
+            }.distinct()
+            .mapNotNull{
+                bookshelfDao.getBookshelfBookMetadataEntity(it)
+            }.map { entity ->
                 entity.copy(
                     bookShelfIds = entity.bookShelfIds.filter { bookshelfIds.contains(it) }
                 )
@@ -56,7 +59,7 @@ class SaveBookshelfWork @AssistedInject constructor(
             version = localDataManager.currentAppDataVersion,
             localDataList = listOf(
                 LocalData.empty().copy(
-                    webBookDataSourceId = webBookDataSourceProvider.default.id,
+                    webBookDataSourceId = webBookDataSourceProvider.value.id,
                     bookshelfEntities = bookshelfEntityList,
                     bookshelfBookMetadataEntities = bookshelfBookMetadataEntities
                 )

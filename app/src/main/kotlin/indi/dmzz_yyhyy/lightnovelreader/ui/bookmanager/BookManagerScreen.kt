@@ -20,13 +20,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
@@ -39,7 +39,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +55,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
@@ -63,16 +65,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
-import io.nightfish.lightnovelreader.api.book.BookInformation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookManagerScreen(
     onClickBack: () -> Unit,
     downloadItemIdList: List<DownloadItem>,
-    bookInformationMap: Map<String, BookInformation>,
     uiState: LocalBookManagerUiState,
-    loadBookInfo: (String) -> Unit,
     onClickCancel: (DownloadItem) -> Unit,
     onClickClearCompleted: () -> Unit
 ) {
@@ -168,8 +167,6 @@ fun BookManagerScreen(
                 if (tabIndex == 0) {
                     DownloadManagerContent(
                         downloadItemIdList = downloadItemIdList,
-                        bookInformationMap = bookInformationMap,
-                        loadBookInfo = loadBookInfo,
                         onClickCancel = onClickCancel,
                         onClickClearCompleted = onClickClearCompleted
                     )
@@ -340,8 +337,6 @@ private fun SelectingAppBar(
 @Composable
 private fun DownloadManagerContent(
     downloadItemIdList: List<DownloadItem>,
-    bookInformationMap: Map<String, BookInformation>,
-    loadBookInfo: (String) -> Unit,
     onClickCancel: (DownloadItem) -> Unit,
     onClickClearCompleted: () -> Unit
 ) {
@@ -372,13 +367,8 @@ private fun DownloadManagerContent(
             items = itemList.filter { it.progress < 1f }.reversed(),
             key = { "${it.type.name}_${it.bookId}" }
         ) { downloadItem ->
-            val bookInformation = bookInformationMap[downloadItem.bookId] ?: BookInformation.empty(downloadItem.bookId)
-            LaunchedEffect(downloadItem.bookId) {
-                loadBookInfo(downloadItem.bookId)
-            }
             Card(
                 modifier = Modifier.animateItem(),
-                bookInformation = bookInformation,
                 downloadItem = downloadItem,
                 onClickCancel = { onClickCancel(downloadItem) }
             )
@@ -409,13 +399,8 @@ private fun DownloadManagerContent(
             items = itemList.filter { it.progress >= 1f }.reversed(),
             key = { "${it.type.name}_${it.bookId}" }
         ) { downloadItem ->
-            val bookInformation = bookInformationMap[downloadItem.bookId] ?: BookInformation.empty(downloadItem.bookId)
-            LaunchedEffect(downloadItem.bookId) {
-                loadBookInfo(downloadItem.bookId)
-            }
             Card(
                 modifier = Modifier.animateItem(),
-                bookInformation = bookInformation,
                 downloadItem = downloadItem,
                 onClickCancel = { onClickCancel(downloadItem) }
             )
@@ -427,7 +412,6 @@ private fun DownloadManagerContent(
 @Composable
 private fun Card(
     modifier: Modifier = Modifier,
-    bookInformation: BookInformation,
     downloadItem: DownloadItem,
     onClickCancel: () -> Unit
 ) {
@@ -436,78 +420,85 @@ private fun Card(
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
         label = "",
     )
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Cover(
-            width = 64.dp,
-            height = 93.dp,
-            uri = bookInformation.coverUri
-        )
-        Box(Modifier.width(16.dp))
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+    val result by downloadItem.bookInformationFlow.collectAsStateWithLifecycle(null)
+    result?.onOk { bookInformation ->
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = bookInformation.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.W600
+            Cover(
+                width = 64.dp,
+                height = 93.dp,
+                uri = bookInformation.coverUri
             )
-            Text(
-                text = bookInformation.author,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.W500,
-                letterSpacing = 0.15.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    tint = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(16.dp),
-                    painter =
-                        if (downloadItem.progress >= 1) painterResource(R.drawable.done_outline_24px)
-                        else if (downloadItem.progress >= 0) painterResource(downloadItem.type.icon)
-                        else painterResource(R.drawable.error_24px),
-                    contentDescription = null
-                )
-                Box(Modifier.width(10.dp))
+            Box(Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
                 Text(
-                    text =
-                        if (downloadItem.progress < 1)
-                            stringResource(R.string.download_item_progress,
-                                formTime(downloadItem.startTime),
-                                (downloadItem.progress*100).toInt()
-                            )
-                        else if (downloadItem.progress > 0)
-                            stringResource(R.string.download_item_finished, downloadItem.type.typeName)
-                        else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                    text = bookInformation.title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.W600
+                )
+                Text(
+                    text = bookInformation.author,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.W500,
                     letterSpacing = 0.15.sp,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.primary
                 )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp),
+                        painter =
+                            if (downloadItem.progress >= 1) painterResource(R.drawable.done_outline_24px)
+                            else if (downloadItem.progress >= 0) painterResource(downloadItem.type.icon)
+                            else painterResource(R.drawable.error_24px),
+                        contentDescription = null
+                    )
+                    Box(Modifier.width(10.dp))
+                    Text(
+                        text =
+                            if (downloadItem.progress < 1)
+                                stringResource(R.string.download_item_progress,
+                                    formTime(downloadItem.startTime),
+                                    (downloadItem.progress*100).toInt()
+                                )
+                            else if (downloadItem.progress > 0)
+                                stringResource(R.string.download_item_finished, downloadItem.type.typeName)
+                            else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.W500,
+                        letterSpacing = 0.15.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                if (downloadItem.progress < 1)
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = { progressAnim },
+                    )
             }
             if (downloadItem.progress < 1)
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    progress = { progressAnim },
-                )
+                IconButton(onClickCancel) {
+                    Icon(
+                        painter = painterResource(R.drawable.cancel_24px),
+                        contentDescription = "cancel"
+                    )
+                }
+            Box(Modifier.width(7.dp))
         }
-        if (downloadItem.progress < 1)
-            IconButton(onClickCancel) {
-                Icon(
-                    painter = painterResource(R.drawable.cancel_24px),
-                    contentDescription = "cancel"
-                )
-            }
-        Box(Modifier.width(7.dp))
+    }?.onErr {
+        //TODO 错误显示
+    } ?: {
+        //TODO 加载显示
     }
 }

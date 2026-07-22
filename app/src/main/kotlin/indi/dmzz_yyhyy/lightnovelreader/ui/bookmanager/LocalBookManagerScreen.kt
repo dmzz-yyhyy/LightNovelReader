@@ -69,6 +69,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
@@ -476,42 +479,49 @@ private fun LocalBookRow(
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Cover(
-                width = 64.dp,
-                height = 93.dp,
-                uri = item.bookInformation.coverUri
-            )
-
-            Spacer(Modifier.width(12.dp))
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    text = item.bookInformation.title,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.W600
+            val result by item.bookInformationFlow.collectAsStateWithLifecycle(null)
+            result?.onOk {
+                Cover(
+                    width = 64.dp,
+                    height = 93.dp,
+                    uri = it.coverUri
                 )
-                Text(
-                    text = formatSize(item.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+
+                Spacer(Modifier.width(12.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    TagChip(painterResource(R.drawable.update_24px))
                     Text(
-                        text = if (item.lastReadTime != null) formTime(item.lastReadTime)
-                        else stringResource(R.string.book_manager_no_local_reading_record),
+                        text = it.title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.W600
+                    )
+                    Text(
+                        text = formatSize(item.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        TagChip(painterResource(R.drawable.update_24px))
+                        Text(
+                            text = if (item.lastReadTime != null) formTime(item.lastReadTime)
+                            else stringResource(R.string.book_manager_no_local_reading_record),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
+            }?.onErr {
+                //TODO 错误显示
+            } ?: {
+                //TODO 加载显示
             }
         }
 
@@ -609,39 +619,46 @@ private fun LocalBookInfoCard(
                 Spacer(Modifier.weight(1f))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Cover(
-                    width = 64.dp,
-                    height = 93.dp,
-                    uri = item.bookInformation.coverUri
-                )
+                val result by item.bookInformationFlow.collectAsStateWithLifecycle(null)
+                result?.onOk {
+                    Cover(
+                        width = 64.dp,
+                        height = 93.dp,
+                        uri = it.coverUri
+                    )
 
-                Spacer(Modifier.width(12.dp))
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text(
-                        text = item.bookInformation.title,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.W600
-                    )
-                    Text(
-                        text = item.bookInformation.author,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.detail_info_stats_count_content,
-                            item.volumeCount,
-                            item.chapterCount
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = it.title,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.W600
+                        )
+                        Text(
+                            text = it.author,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.detail_info_stats_count_content,
+                                item.volumeCount,
+                                item.chapterCount
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                }?.onErr {
+                    //TODO 错误显示
+                } ?: {
+                    //TODO 加载显示
                 }
             }
             AnimatedContent(

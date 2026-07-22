@@ -16,11 +16,11 @@ class IntListUserData (
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<List<Int>>(path) {
-    override fun set(value: List<Int>) {
+    override suspend fun set(value: List<Int>) {
         userDataDao.insert(path, group, "IntList", value.joinToString(","))
     }
 
-    override fun get(): List<Int>? {
+    override suspend fun get(): List<Int>? {
         return userDataDao.get(path)
             ?.split(",")
             ?.filter { it.isNotBlank() }
@@ -40,9 +40,9 @@ class IntListUserData (
      *
      * @param data 接收旧列表并返回新列表的函数
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun update(data: (List<Int>) -> List<Int>) {
+    suspend fun update(data: (List<Int>) -> List<Int>) {
         update(data, emptyList())
     }
 }

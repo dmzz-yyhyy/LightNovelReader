@@ -3,11 +3,13 @@ package io.nightfish.lightnovelreader.api.web
 import android.content.Context
 import android.net.Uri
 import androidx.navigation.NavController
-import io.nightfish.lightnovelreader.api.identifier.Identifier
+import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
@@ -18,7 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
  * 可以通过实现此接口使软件支持新的数据源
  * 软件加载WebBookDataSource时会对构造器进行依赖注入
  *
- * @since Api 2
+ * @since Api 4
  */
 interface WebBookDataSource {
     /**
@@ -104,11 +106,11 @@ interface WebBookDataSource {
      *
      * @param id 书本id
      *
-     * @return 经过格式化后的书本详情
+     * @return 经过格式化后的书本详情的Result封装
      *
-     * @since Api 2
+     * @since Api 4
      */
-    suspend fun getBookInformation(id: String): BookInformation
+    suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError>
 
     /**
      * 获取书本卷目录
@@ -117,11 +119,11 @@ interface WebBookDataSource {
      *
      * @param id 书本id
      *
-     * @return 经过格式化后的书本卷目录数据, 如未找到该书则返回BookVolumes.empty
+     * @return 经过格式化后的书本卷目录数据的Result封装
      *
-     * @since Api 2
+     * @since Api 4
      */
-    suspend fun getBookVolumes(id: String): BookVolumes
+    suspend fun getBookVolumes(id: String): Result<BookVolumes, WebRequestError>
 
     /**
      * 获取章节内容
@@ -131,11 +133,11 @@ interface WebBookDataSource {
      * @param chapterId 章节id
      * @param bookId 章节所属书本id
      *
-     * @return 经过格式化后的章节内容, 如未找到则返回ChapterContent.empty()
+     * @return 经过格式化后的章节内容的Result封装
      *
-     * @since Api 2
+     * @since Api 4
      */
-    suspend fun getChapterContent(chapterId: String, bookId: String): ChapterContent
+    suspend fun getChapterContent(chapterId: String, bookId: String): Result<ChapterContent, WebRequestError>
 
     /**
      * 用于处理书本tag的点击跳转事件
@@ -143,7 +145,7 @@ interface WebBookDataSource {
      * @param tag 被点击的tag内容
      * @param navController 导航控制器
      *
-     * @since Api 2
+     * @since Api 4
      */
     fun progressBookTagClick(tag: String, navController: NavController) {  }
 
