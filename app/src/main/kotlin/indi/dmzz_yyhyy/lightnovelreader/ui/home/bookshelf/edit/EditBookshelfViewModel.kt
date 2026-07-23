@@ -53,9 +53,7 @@ class EditBookshelfViewModel @Inject constructor(
 
     fun save() {
         viewModelScope.launch(Dispatchers.IO) {
-            bookshelfRepository.updateBookshelf(bookshelf.id) { _ ->
-                bookshelf
-            }
+            bookshelfRepository.addBookshelf(bookshelf)
         }
     }
 }

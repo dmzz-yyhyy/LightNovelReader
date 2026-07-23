@@ -11,7 +11,7 @@ class ChapterContentUiState(
     val lastChapter: String?,
     val nextChapter: String?
 ) {
-    fun hasPrevChapter(): Boolean = lastChapter == null
+    fun hasPrevChapter(): Boolean = lastChapter != null
 
-    fun hasNextChapter(): Boolean = nextChapter == null
+    fun hasNextChapter(): Boolean = nextChapter != null
 }

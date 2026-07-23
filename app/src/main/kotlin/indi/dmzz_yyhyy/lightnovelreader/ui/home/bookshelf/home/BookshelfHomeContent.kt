@@ -77,6 +77,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import java.text.Collator
 import java.util.Locale
@@ -135,24 +136,6 @@ internal fun BookshelfHomeContent(
 
         val selectedBookshelfUiState = uiState.selectedBookshelf
         if (selectedBookshelfUiState != null) {
-//            val updatedIds = sortBooks(
-//                sourceIds = uiState.selectedBookshelf.updatedBookIds,
-//                allBookIds = allBookIds,
-//                sortType = uiState.selectedBookshelf.sortType,
-//                sortReversed = uiState.selectedBookshelf.sortReversed,
-//            )
-//            val pinnedIds = sortBooks(
-//                sourceIds = uiState.selectedBookshelf.pinnedBookIds,
-//                allBookIds = allBookIds,
-//                sortType = uiState.selectedBookshelf.sortType,
-//                sortReversed = uiState.selectedBookshelf.sortReversed,
-//            )
-//            val visibleAllIds = sortBooks(
-//                sourceIds = allBookIds,
-//                allBookIds = allBookIds,
-//                sortType = uiState.selectedBookshelf.sortType,
-//                sortReversed = uiState.selectedBookshelf.sortReversed,
-//            )
             val allBookIds = remember(selectedBookshelfUiState.allBookFlows) {
                 selectedBookshelfUiState.allBookFlows.map { it.first }
             }
@@ -164,13 +147,17 @@ internal fun BookshelfHomeContent(
                         }
                     }
                     .let { flows ->
-                        combine(flows) {
-                            it.toList()
+                        if (flows.isEmpty()) {
+                            flowOf(emptyList())
+                        } else {
+                            combine(flows) {
+                                it.toList()
+                            }
                         }
                     }
             }
             val allBooks by allBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedAllBooks = remember(allBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedAllBooks = remember(selectedBookshelfUiState.allBookFlows, allBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
                 sortBooks(
                     source = allBooks,
                     allBookIds = allBookIds,
@@ -187,13 +174,17 @@ internal fun BookshelfHomeContent(
                         }
                     }
                     .let { flows ->
-                        combine(flows) {
-                            it.toList()
+                        if (flows.isEmpty()) {
+                            flowOf(emptyList())
+                        } else {
+                            combine(flows) {
+                                it.toList()
+                            }
                         }
                     }
             }
             val updatedBooks by updatedBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedUpdatedBooks = remember(updatedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedUpdatedBooks = remember(selectedBookshelfUiState.updatedBookFlows, updatedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
                 sortBooks(
                     source = updatedBooks,
                     allBookIds = allBookIds,
@@ -210,13 +201,17 @@ internal fun BookshelfHomeContent(
                         }
                     }
                     .let { flows ->
-                        combine(flows) {
-                            it.toList()
+                        if (flows.isEmpty()) {
+                            flowOf(emptyList())
+                        } else {
+                            combine(flows) {
+                                it.toList()
+                            }
                         }
                     }
             }
             val pinnedBooks by pinnedBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedPinnedBooks = remember(pinnedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedPinnedBooks = remember(selectedBookshelfUiState.pinnedBookFlows, pinnedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
                 sortBooks(
                     source = pinnedBooks,
                     allBookIds = allBookIds,

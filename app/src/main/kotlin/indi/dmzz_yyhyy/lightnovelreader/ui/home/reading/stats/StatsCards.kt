@@ -45,6 +45,7 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 
 val predefinedColors = listOf(
@@ -255,8 +256,12 @@ fun ReadingTimeBar(
             recordList,
             colorMap
         ).let { flows ->
-            combine(flows) {
-                it.toList()
+            if (flows.isEmpty()) {
+                flowOf(emptyList())
+            } else {
+                combine(flows) {
+                    it.toList()
+                }
             }
         }
     }

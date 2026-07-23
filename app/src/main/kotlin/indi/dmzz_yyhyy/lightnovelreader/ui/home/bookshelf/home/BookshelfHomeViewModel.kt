@@ -23,7 +23,9 @@ import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -61,20 +63,26 @@ class BookshelfHomeViewModel @Inject constructor(
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
-            val bookshelfIds = bookshelfRepository.getAllBookshelfIds()
-            val savedOrder = bookshelfOrderUserData.getOrDefault(emptyList())
-            val orderedIds = savedOrder.filter(bookshelfIds::contains) + bookshelfIds.filterNot(savedOrder::contains)
-            _uiState.bookshelfList = orderedIds.mapNotNull {
-                getBookshelf(it)
-            }
-            if (_uiState.selectedBookshelf == null)
-                _uiState.bookshelfList.getOrNull(0)?.let {
-                    changePage(it.id)
+            val bookshelfIdsFlow = bookshelfRepository.getAllBookshelvesFlow()
+            val savedOrderFlow = bookshelfOrderUserData.getFlowWithDefault(emptyList())
+            combine(bookshelfIdsFlow, savedOrderFlow) { bookshelves, savedOrder ->
+                val stableIndexMap = savedOrder.withIndex().associate { it.value to it.index }
+                bookshelves.sortedBy {
+                    stableIndexMap[it.id] ?: Int.MAX_VALUE
                 }
+            }.map { list ->
+                list.map {
+                    it.toBookshelfUiState(bookRepository, bookshelfRepository)
+                }
+            }.collect { bookshelfUiStates ->
+                if (_uiState.selectedBookshelf == null)
+                    bookshelfUiStates.getOrNull(0)?.let {
+                        changePage(it.id)
+                    }
+                _uiState.bookshelfList = bookshelfUiStates
+            }
         }
     }
-
-    private suspend fun getBookshelf(id: Int) = bookshelfRepository.getBookshelf(id)?.toBookshelfUiState(bookRepository, bookshelfRepository)
 
     fun changePage(bookshelfId: Int) {
         _uiState.selectedBookshelfId = bookshelfId
@@ -144,9 +152,6 @@ class BookshelfHomeViewModel @Inject constructor(
     fun disableBookshelfReorderMode(reorderedIds: List<Int>) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.reorderBookshelfMode) {
-                _uiState.bookshelfList = reorderedIds.mapNotNull {
-                    getBookshelf(it)
-                }
                 _uiState.reorderBookshelfIds.clear()
                 _uiState.reorderBookshelfIds.addAll(reorderedIds)
                 bookshelfOrderUserData.set(reorderedIds)
@@ -199,7 +204,6 @@ class BookshelfHomeViewModel @Inject constructor(
             } ?: return@launch
             val newPinnedBooksIds = _uiState.selectedBookIds
                 .filter { pinnedBookIds.contains(it) }
-                .toMutableList()
                 .let { removeList ->
                     (pinnedBookIds + (_uiState.selectedBookIds))
                         .toMutableList()
