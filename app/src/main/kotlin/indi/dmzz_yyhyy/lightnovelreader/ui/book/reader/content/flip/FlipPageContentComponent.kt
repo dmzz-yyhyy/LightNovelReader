@@ -238,6 +238,9 @@ private fun SimpleFlipPageTextComponent(
                         } else if (event.key == Key.VolumeUp || event.key == Key.VolumeDown) {
                             when (event.type) {
                                 KeyEventType.KeyDown -> {
+                                    // 长按选中文本会把焦点转移到 SelectionContainer，导致后续音量键事件
+                                    // 不再被此处拦截而弹出系统音量条。每次按键时主动抢回焦点以保证持续翻页。
+                                    focusRequester.requestFocus()
                                     if (event.nativeKeyEvent.repeatCount == 0) {
                                         if (event.key == Key.VolumeUp) lastPage(uiState.pagerState)
                                         else nextPage(uiState.pagerState)
