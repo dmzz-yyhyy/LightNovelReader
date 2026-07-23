@@ -68,8 +68,8 @@
 
 # The rules for plugins
 -keep class indi.dmzz_yyhyy.lightnovelreader.R$* { *; }
--keepclassmembers, allowshrinking public class ** implements io.nightfish.lightnovelreader.api.** { public protected *; }
--keepclassmembers, allowshrinking public class ** extends io.nightfish.lightnovelreader.api.** { public protected *; }
+-keep public class ** implements io.nightfish.lightnovelreader.api.** { public protected *; }
+-keep public class ** extends io.nightfish.lightnovelreader.api.** { public protected *; }
 -keep,includedescriptorclasses class io.nightfish.lightnovelreader.api.** { *; }
 # Kotlin
 -keep, includedescriptorclasses class kotlin.** { *; }
