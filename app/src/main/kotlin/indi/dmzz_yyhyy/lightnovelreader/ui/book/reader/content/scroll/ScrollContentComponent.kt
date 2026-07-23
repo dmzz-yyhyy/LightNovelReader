@@ -268,8 +268,14 @@ fun ScrollContentTextComponent(
             itemsIndexed(
                 items = uiState.contentList,
                 key = { index, pair -> pair?.first ?: "placeholder-$index" }
-            ) { _, pair ->
+            ) { index, pair ->
                 pair?.second.let { result ->
+                    uiState.contentList.getOrNull(index + 1)?.second?.get()?.let {
+                        if (!it.hasPrevChapter()) return@itemsIndexed
+                    }
+                    uiState.contentList.getOrNull(index - 1)?.second?.get()?.let {
+                        if (!it.hasNextChapter()) return@itemsIndexed
+                    }
                     result?.onOk {
                         TextContent(
                             modifier = modifier,
