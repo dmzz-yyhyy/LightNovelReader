@@ -23,7 +23,7 @@ interface ScrollContentUiState: ContentUiState {
 
 class MutableScrollContentUiSate(
     override val loadNextChapter: () -> Unit,
-    override val loadLastChapter: () -> Unit,
+    override val loadPrevChapter: () -> Unit,
     override val changeChapter: (String) -> Unit,
     override val setLazyColumnSize: (IntSize) -> Unit,
     override val writeProgressRightNow: () -> Unit

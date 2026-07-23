@@ -19,7 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -118,7 +118,11 @@ fun ScrollContentTextComponent(
         listState.scrollToItem(1)
         val item = uiState.lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == uiState.readingChapterId } ?: return@LaunchedEffect
         snapshotFlow { lazyColumnSize }.first { lazyColumnSize.height > 0 }
-        val offset = (item.size * uiState.readingProgress).toInt() - lazyColumnSize.height
+        val offset = if (uiState.readingProgress <= 0f) {
+            0
+        } else {
+            (item.size * uiState.readingProgress).toInt() - lazyColumnSize.height
+        }
         listState.scrollToItem(1, offset)
     }
     LaunchedEffect(listState) {
@@ -242,7 +246,6 @@ fun ScrollContentTextComponent(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        var index = remember { 0 }
         LazyColumn(
             modifier = modifier
                 .padding(paddingValues)
@@ -262,10 +265,10 @@ fun ScrollContentTextComponent(
                 },
             state = listState,
         ) {
-            items(
+            itemsIndexed(
                 items = uiState.contentList,
-                key = { it?.first ?: index++ }
-            ) { pair ->
+                key = { index, pair -> pair?.first ?: "placeholder-$index" }
+            ) { _, pair ->
                 pair?.second.let { result ->
                     result?.onOk {
                         TextContent(

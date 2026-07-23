@@ -91,7 +91,7 @@ class ReaderViewModel @Inject constructor(
         }
     }
 
-    fun prevChapter() = contentViewModel?.loadLastChapter()
+    fun prevChapter() = contentViewModel?.loadPrevChapter()
 
     fun nextChapter() = contentViewModel?.loadNextChapter()
 

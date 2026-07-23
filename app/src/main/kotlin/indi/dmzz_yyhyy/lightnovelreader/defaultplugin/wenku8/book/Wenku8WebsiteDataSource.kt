@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.coroutines.coroutineBinding
+import com.github.michaelbull.result.get
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
 import io.nightfish.lightnovelreader.api.book.BookInformation
@@ -175,21 +176,37 @@ class Wenku8WebsiteDataSource(
                 simpleText(text)
             }
         }.build()
-        val lastChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[3]").let {
-            it ?: return@let ""
-            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) ""
-            else it.attr("href").split(".").firstOrNull() ?: ""
+        val prevChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[3]").let {
+            it ?: return@let null
+            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) null
+            else it.attr("href").split(".").firstOrNull()
         }
         val nextChapter = soup.selectFirstXpath("//*[@id=\"foottext\"]/a[4]").let {
-            it ?: return@let ""
-            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) ""
-            else it.attr("href").split(".").firstOrNull() ?: ""
+            it ?: return@let null
+            if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) null
+            else it.attr("href").split(".").firstOrNull()
         }
+        val neoTitle = wenku8Api.cache.getCache<BookVolumes>(bookId.hashCode())
+            .let {
+                if (it == null) {
+                    val bookVolumes = getBookVolumes(bookId).get() ?: return@let null
+                    wenku8Api.cache.cache(bookId.hashCode()) {
+                        bookVolumes
+                    }
+                    return@let bookVolumes
+                }
+                return@let null
+            }?.let { bookVolumes ->
+                bookVolumes.volumes.forEach { volume ->
+                    return@let volume.chapters.firstOrNull { it.id == chapterId }?.title
+                }
+                return@let null
+            }
         return@coroutineBinding ChapterContent(
             id = chapterId,
-            title = title,
+            title = neoTitle ?: title,
             content = jsonObject,
-            lastChapter = lastChapter,
+            prevChapter = prevChapter,
             nextChapter = nextChapter
         )
     }

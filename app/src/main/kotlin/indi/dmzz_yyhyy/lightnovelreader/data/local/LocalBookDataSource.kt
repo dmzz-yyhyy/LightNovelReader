@@ -32,7 +32,7 @@ class LocalBookDataSource @Inject constructor(
             it.id,
             it.title,
             it.content,
-            it.lastChapter.ifEmpty { null },
+            it.prevChapter.ifEmpty { null },
             it.nextChapter.ifEmpty { null }
         )
     }

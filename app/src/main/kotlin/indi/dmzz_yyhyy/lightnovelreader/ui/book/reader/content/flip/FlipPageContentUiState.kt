@@ -17,7 +17,7 @@ interface FlipPageContentUiState: ContentUiState {
 
 class MutableFlipPageContentUiState(
     override val loadNextChapter: () -> Unit,
-    override val loadLastChapter: () -> Unit,
+    override val loadPrevChapter: () -> Unit,
     override val changeChapter: (String) -> Unit,
     override val updatePageState: (PagerState) -> Unit,
 ): FlipPageContentUiState {

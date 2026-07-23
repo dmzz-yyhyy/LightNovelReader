@@ -11,6 +11,6 @@ interface ContentUiState {
     val readingChapterContent: Result<ChapterContentUiState, WebRequestError>?
     val readingProgress: Float
     val loadNextChapter: () -> Unit
-    val loadLastChapter: () -> Unit
+    val loadPrevChapter: () -> Unit
     val changeChapter: (String) -> Unit
 }

@@ -4,6 +4,6 @@ interface ContentViewModel {
     val uiState: ContentUiState
     fun changeBookId(id: String)
     fun loadNextChapter()
-    fun loadLastChapter()
+    fun loadPrevChapter()
     fun changeChapter(id: String)
 }

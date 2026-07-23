@@ -159,7 +159,7 @@ private fun SimpleFlipPageTextComponent(
                 }
             }
         } else if (settingState.fastChapterChange && slippedContentComponentList.isNotEmpty()) {
-            uiState.loadLastChapter.invoke()
+            uiState.loadPrevChapter.invoke()
         } else {
             showSnackbar(
                 coroutineScope = scope,

@@ -27,7 +27,7 @@ class FlipPageContentViewModel(
     private var notRecoveredProgress = 0f
     private var collectProgressJob: Job? = null
     override val uiState: MutableFlipPageContentUiState = MutableFlipPageContentUiState(
-        loadLastChapter = ::loadLastChapter,
+        loadPrevChapter = ::loadPrevChapter,
         loadNextChapter = ::loadNextChapter,
         changeChapter = ::changeChapter,
         updatePageState = ::updatePagerState
@@ -81,9 +81,9 @@ class FlipPageContentViewModel(
         }
     }
 
-    override fun loadLastChapter() {
+    override fun loadPrevChapter() {
         uiState.readingChapterContent?.onOk {
-            it.lastChapter?.let { id ->
+            it.prevChapter?.let { id ->
                 changeChapter(
                     id = id
                 )
@@ -109,7 +109,7 @@ class FlipPageContentViewModel(
                         id = it.id,
                         title = it.title,
                         content = contentComponentRepository.getContentDataFromJson(it.content).components,
-                        lastChapter = it.lastChapter,
+                        prevChapter = it.prevChapter,
                         nextChapter = it.nextChapter
                     )
                 }
