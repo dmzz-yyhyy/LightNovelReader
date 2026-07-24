@@ -170,14 +170,13 @@ class FormatRepository @Inject constructor(
         exploreDisplayBook
 
     override fun processBookInformation(bookInformation: BookInformation): BookInformation =
-        bookInformation.toMutable().apply {
-            val bookId = bookInformation.id
-            this.title = processText(bookId, title)
-            this.subtitle = processText(bookId, subtitle)
-            this.author = processText(bookId, author)
-            this.description = processText(bookId, description)
-            this.publishingHouse = processText(bookId, publishingHouse)
-        }
+        bookInformation.copy(
+            title = processText(bookInformation.id, bookInformation.title),
+            subtitle = processText(bookInformation.id, bookInformation.subtitle),
+            author = processText(bookInformation.id, bookInformation.author),
+            description = processText(bookInformation.id, bookInformation.description),
+            publishingHouse = processText(bookInformation.id, bookInformation.publishingHouse),
+    )
 
     override fun processBookVolumes(bookVolumes: BookVolumes): BookVolumes = bookVolumes.copy(
         volumes = bookVolumes.volumes.map { volume ->
@@ -190,11 +189,11 @@ class FormatRepository @Inject constructor(
                 })
         })
 
-    override fun processChapterContent(bookId: String, chapterContent: ChapterContent, componentProcessor: ComponentProcessor): ChapterContent = chapterContent.toMutable().apply {
-        this.content = componentProcessor.apply {
+    override fun processChapterContent(bookId: String, chapterContent: ChapterContent, componentProcessor: ComponentProcessor): ChapterContent = chapterContent.copy(
+        content = componentProcessor.apply {
             process<SimpleTextComponentData> {
                 SimpleTextComponentData(processText(bookId, it.text))
             }
         }.get()
-    }
+    )
 }

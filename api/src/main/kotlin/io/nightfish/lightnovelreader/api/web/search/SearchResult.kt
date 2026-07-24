@@ -1,7 +1,5 @@
 package io.nightfish.lightnovelreader.api.web.search
 
-import io.nightfish.lightnovelreader.api.book.BookInformation
-
 /**
  * 搜索类数据流传输的密封类
  * 根据不同变体软件会有不同响应
@@ -27,12 +25,12 @@ sealed class SearchResult {
      * 这是其中的一本书
      * 软件会接收该结果
      *
-     * @property bookInformation 一本书的书本信息
+     * @property bookId 唯一结果的书本id
      *
-     * @since Api 2
+     * @since Api 4
      */
     class MultipleBook(
-        val bookInformation: BookInformation
+        val bookId: String
     ): SearchResult()
 
 

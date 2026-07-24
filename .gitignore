@@ -20,3 +20,6 @@ local.properties
 ./local.properties
 .kotlin/
 /app/snapshot/
+/proxy/build/**
+/compiler/build/**
+/build/**

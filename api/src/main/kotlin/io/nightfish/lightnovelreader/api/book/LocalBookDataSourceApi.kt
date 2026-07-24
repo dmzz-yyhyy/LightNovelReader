@@ -1,7 +1,5 @@
 package io.nightfish.lightnovelreader.api.book
 
-import kotlinx.coroutines.flow.Flow
-
 /**
  * 本地书本数据源接口
  * 提供对本地存储的书本数据的增删改查操作
@@ -25,9 +23,9 @@ interface LocalBookDataSourceApi {
      *
      * @param info 需要写入的书本详情
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateBookInformation(info: BookInformation)
+    suspend fun updateBookInformation(info: BookInformation)
 
     /**
      * 通过书本id获取本地存储的书本卷目录
@@ -45,9 +43,9 @@ interface LocalBookDataSourceApi {
      *
      * @param bookVolumes 需要写入的书本卷目录
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateBookVolumes(bookVolumes: BookVolumes)
+    suspend fun updateBookVolumes(bookVolumes: BookVolumes)
 
     /**
      * 通过章节id获取本地存储的章节内容
@@ -56,18 +54,18 @@ interface LocalBookDataSourceApi {
      *
      * @return 可变的章节内容对象, 如果本地不存在则返回null
      *
-     * @since Api 2
+     * @since Api 4
      */
-    suspend fun getChapterContent(id: String): MutableChapterContent?
+    suspend fun getChapterContent(id: String): ChapterContent?
 
     /**
      * 更新或写入本地章节内容
      *
      * @param chapterContent 需要写入的章节内容
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateChapterContent(chapterContent: ChapterContent)
+    suspend fun updateChapterContent(chapterContent: ChapterContent)
 
     /**
      * 获取用户书本阅读数据
@@ -76,20 +74,9 @@ interface LocalBookDataSourceApi {
      *
      * @return 可变的用户阅读数据对象
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getUserReadingData(id: String): MutableUserReadingData
-
-    /**
-     * 获取用户书本阅读数据的流
-     *
-     * @param id 书本id
-     *
-     * @return [MutableUserReadingData]对象的流
-     *
-     * @since Api 2
-     */
-    fun getUserReadingDataFlow(id: String): Flow<MutableUserReadingData>
+    suspend fun getUserReadingData(id: String): UserReadingData
 
     /**
      * 更新用户书本阅读数据
@@ -97,18 +84,18 @@ interface LocalBookDataSourceApi {
      * @param id 书本id
      * @param update 接收当前阅读数据并返回更新后数据的函数
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun updateUserReadingData(id: String, update: (MutableUserReadingData) -> UserReadingData)
+    suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData)
 
     /**
      * 获取全部用户书本阅读数据
      *
      * @return 用户阅读数据的列表
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getAllUserReadingData(): List<UserReadingData>
+    suspend fun getAllUserReadingData(): List<UserReadingData>
 
     /**
      * 判断指定章节内容是否在本地已缓存
@@ -126,5 +113,5 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 2
      */
-    fun clear()
+    suspend fun clear()
 }

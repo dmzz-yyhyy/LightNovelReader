@@ -6,9 +6,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.github.michaelbull.result.Result
 import com.google.android.material.bottomsheet.BottomSheetBehavior.State
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.LocalString
+import kotlinx.coroutines.flow.Flow
 
 @State
 interface ExploreSearchUiState {
@@ -22,7 +25,7 @@ interface ExploreSearchUiState {
     val searchTypeNameMap: Map<String, LocalString>
     val searchType: String
     val searchTip: LocalString
-    val searchResult: List<BookInformation>
+    val searchResult: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>
     val allBookshelfBookIds: List<String>
     val dropdownMenuExpanded: Boolean
     val searchBarExpanded: Boolean
@@ -41,7 +44,7 @@ class MutableExploreSearchUiState : ExploreSearchUiState {
     override var searchTypeNameMap = mutableStateMapOf<String, LocalString>()
     override var searchType: String by mutableStateOf("")
     override var searchTip: LocalString by mutableStateOf(LocalString(""))
-    override var searchResult: SnapshotStateList<BookInformation> = mutableStateListOf()
+    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> = mutableStateListOf()
     override var allBookshelfBookIds: List<String> by mutableStateOf(emptyList())
     override var dropdownMenuExpanded by mutableStateOf(false)
     override var searchBarExpanded by mutableStateOf(true)

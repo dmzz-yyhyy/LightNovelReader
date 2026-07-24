@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
@@ -19,7 +20,8 @@ data class ChapterContentEntity(
     val title: String,
     @Serializable(JsonObjectSerializer::class)
     val content: JsonObject,
-    val lastChapter: String,
+    @ColumnInfo(name = "lastChapter")
+    val prevChapter: String,
     val nextChapter: String
 ): Mergeable<ChapterContentEntity> {
     override fun merge(new: ChapterContentEntity): ChapterContentEntity = new

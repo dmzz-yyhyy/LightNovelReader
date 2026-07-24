@@ -1,6 +1,7 @@
 package io.nightfish.lightnovelreader.api.content.component
 
 import android.content.Context
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.json.JsonElement
 import org.dom4j.Element
 
@@ -12,11 +13,11 @@ import org.dom4j.Element
  */
 abstract class AbstractContentComponentData {
     /**
-     * 数据组件的唯一标识字符串
+     * 数据组件的唯一标识
      *
-     * @since Api 2
+     * @since Api 4
      */
-    abstract val id: String
+    abstract val id: Identifier
 
     /**
      * 将数据序列化为JSON元素

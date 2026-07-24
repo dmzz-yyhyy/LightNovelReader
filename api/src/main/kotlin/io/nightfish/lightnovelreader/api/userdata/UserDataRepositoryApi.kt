@@ -100,7 +100,7 @@ interface UserDataRepositoryApi {
      *
      * @param path 要删除的数据路径
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun remove(path: String)
+    suspend fun remove(path: String)
 }

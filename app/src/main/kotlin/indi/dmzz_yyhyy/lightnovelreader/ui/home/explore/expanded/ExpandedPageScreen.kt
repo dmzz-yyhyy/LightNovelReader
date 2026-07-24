@@ -62,7 +62,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
 import kotlinx.coroutines.launch
 
-@Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandedPageScreen(
@@ -173,18 +172,18 @@ fun ExpandedPageScreen(
 
                     items(
                         items = expandedPageUiState.bookList,
-                        key = { it.id }
-                    ) { bookInformation ->
+                        key = { it.first }
+                    ) { pair ->
                         val addToBookshelf = addToBookshelfAction.toSwipeAction {
-                            requestAddBookToBookshelf(bookInformation.id)
+                            requestAddBookToBookshelf(pair.first)
                         }
                         BookCardItem(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            bookInformation = bookInformation,
-                            onClick = { onClickBook(bookInformation.id) },
+                            bookInformationFlow = pair.second,
+                            onClick = { onClickBook(pair.first) },
                             onLongPress = withHaptic {},
                             collected = expandedPageUiState.allBookshelfBookIds.contains(
-                                bookInformation.id
+                                pair.first
                             ),
                             swipeToRightActions = listOf(addToBookshelf),
                             titleHeight = titleHeight

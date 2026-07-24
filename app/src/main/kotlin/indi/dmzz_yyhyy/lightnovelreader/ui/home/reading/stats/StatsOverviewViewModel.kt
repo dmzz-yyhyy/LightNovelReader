@@ -1,35 +1,24 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats
 
 import android.util.Log
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.michaelbull.result.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.nightfish.lightnovelreader.api.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import indi.dmzz_yyhyy.lightnovelreader.utils.DurationFormat
 import indi.dmzz_yyhyy.lightnovelreader.utils.quickSelect
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlin.collections.set
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
-data class DailyDateDetails(
-    val formattedTotalTime: String,
-    val timeDetails: List<Pair<BookInformation, Int>>
-)
-
-data class TimeBarItem(
-    val title: String,
-    val timeSeconds: Int,
-    val color: Color
-)
 
 @HiltViewModel
 class StatsOverviewViewModel @Inject constructor(
@@ -59,11 +48,6 @@ class StatsOverviewViewModel @Inject constructor(
 
             val bookRecordsMap = statsRepository.getBookRecords(startDate, endDate)
             _uiState.bookRecordsByDate = bookRecordsMap
-            val allBookIds = bookRecordsMap.flatMap { it.value.map { record -> record.bookId } }
-
-            allBookIds.fastForEach { id ->
-                _uiState.bookInformationMap[id] = bookRepository.getStateBookInformation(id, viewModelScope)
-            }
             selectDate(_uiState.selectedDate)
 
             _uiState.isLoading = false
@@ -84,14 +68,13 @@ class StatsOverviewViewModel @Inject constructor(
             return
         }
         var totalSeconds = 0L
-        val detailsList = mutableListOf<Pair<BookInformation, Int>>()
+        val detailsList = mutableListOf<Pair<Flow<Result<BookInformation, WebRequestError>>, Int>>()
 
         for (rec in records) {
             val seconds = rec.seconds
             totalSeconds += seconds
 
-            val bookInfo = _uiState.bookInformationMap[rec.bookId] ?: BookInformation.empty()
-            detailsList += bookInfo to seconds
+            detailsList += bookRepository.getBookInformationFlow(rec.bookId) to seconds
         }
 
         val sortedDetails = detailsList
@@ -107,6 +90,7 @@ class StatsOverviewViewModel @Inject constructor(
         )
     }
 
+    @Suppress("unused")
     private fun generateLevelMap(
         dailyCounts: Map<LocalDate, Count>,
         startDate: LocalDate,

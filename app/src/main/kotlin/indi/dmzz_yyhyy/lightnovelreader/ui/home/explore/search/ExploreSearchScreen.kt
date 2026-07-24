@@ -360,14 +360,14 @@ fun ExploreSearchScreen(
                     }
                     items(exploreSearchUiState.searchResult) {
                         val addToBookshelf = addToBookshelfAction.toSwipeAction {
-                            requestAddBookToBookshelf(it.id)
+                            requestAddBookToBookshelf(it.first)
                         }
                         BookCardItem(
                             modifier = Modifier.padding(horizontal = 16.dp).padding(vertical = 3.dp),
-                            bookInformation = it,
-                            onClick = { onClickBook(it.id) },
+                            bookInformationFlow = it.second,
+                            onClick = { onClickBook(it.first) },
                             onLongPress = withHaptic {},
-                            collected = exploreSearchUiState.allBookshelfBookIds.contains(it.id),
+                            collected = exploreSearchUiState.allBookshelfBookIds.contains(it.first),
                             swipeToRightActions = listOf(addToBookshelf),
                             titleHeight = titleHeight
                         )

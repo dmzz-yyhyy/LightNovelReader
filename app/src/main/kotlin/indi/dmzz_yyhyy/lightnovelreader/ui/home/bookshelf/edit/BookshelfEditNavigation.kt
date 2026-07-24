@@ -7,9 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.DeleteBookshelfDialog
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.bookshelfEditDestination() {
@@ -20,7 +20,7 @@ fun NavGraphBuilder.bookshelfEditDestination() {
         EditBookshelfScreen(
             title = edit.title,
             bookshelfId = edit.id,
-            bookshelf = editBookshelfViewModel.uiState,
+            bookshelf = editBookshelfViewModel.bookshelf,
             init = editBookshelfViewModel::init,
             onClickBack = navController::popBackStackIfResumed,
             onClickSave = {

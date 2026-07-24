@@ -16,9 +16,9 @@ class ExploreViewModel @Inject constructor(
     val uiState: ExploreUiState = _uiState
 
     init {
-        _uiState.isOffLine = webBookDataSourceProvider.default.offLine
+        _uiState.isOffLine = webBookDataSourceProvider.value.offLine
         viewModelScope.launch(Dispatchers.IO) {
-            webBookDataSourceProvider.default.isOffLineFlow.collect {
+            webBookDataSourceProvider.value.isOffLineFlow.collect {
                 _uiState.isOffLine = it
             }
         }
@@ -27,7 +27,7 @@ class ExploreViewModel @Inject constructor(
     fun refresh() {
         _uiState.isRefreshing = true
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.isOffLine = webBookDataSourceProvider.default.isOffLine()
+            _uiState.isOffLine = webBookDataSourceProvider.value.isOffLine()
             _uiState.isRefreshing = false
         }
     }

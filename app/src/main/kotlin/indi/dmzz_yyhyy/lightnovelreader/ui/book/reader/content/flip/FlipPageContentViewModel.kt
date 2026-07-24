@@ -3,13 +3,17 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.flip
 import android.util.Log
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.snapshotFlow
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentViewModel
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.math.roundToInt
@@ -23,7 +27,7 @@ class FlipPageContentViewModel(
     private var notRecoveredProgress = 0f
     private var collectProgressJob: Job? = null
     override val uiState: MutableFlipPageContentUiState = MutableFlipPageContentUiState(
-        loadLastChapter = ::loadLastChapter,
+        loadPrevChapter = ::loadPrevChapter,
         loadNextChapter = ::loadNextChapter,
         changeChapter = ::changeChapter,
         updatePageState = ::updatePagerState
@@ -34,11 +38,13 @@ class FlipPageContentViewModel(
             snapshotFlow { uiState.pagerState }.collect { pagerState ->
                 collectProgressJob?.cancel()
                 collectProgressJob = coroutineScope.launch(Dispatchers.IO) {
-                    snapshotFlow { pagerState.settledPage }.collect {
+                    snapshotFlow { pagerState.settledPage }.collect { page ->
                         val progress = if (pagerState.pageCount == 0) 0f
-                        else ((it + 1) / pagerState.pageCount.toFloat()).coerceIn(0f, 1f)
+                        else ((page + 1) / pagerState.pageCount.toFloat()).coerceIn(0f, 1f)
                         uiState.readingProgress = progress
-                        updateReadingProgress(uiState.readingChapterContent.id, progress)
+                        uiState.readingChapterContent?.onOk {
+                            updateReadingProgress(it.id, progress)
+                        }
                     }
                 }
             }
@@ -66,17 +72,23 @@ class FlipPageContentViewModel(
     }
 
     override fun loadNextChapter() {
-        if (!uiState.readingChapterContent.hasNextChapter()) return
-        changeChapter(
-            id = uiState.readingChapterContent.nextChapter
-        )
+        uiState.readingChapterContent?.onOk {
+            it.nextChapter?.let { id ->
+                changeChapter(
+                    id = id
+                )
+            }
+        }
     }
 
-    override fun loadLastChapter() {
-        if (!uiState.readingChapterContent.hasPrevChapter()) return
-        changeChapter(
-            id = uiState.readingChapterContent.lastChapter
-        )
+    override fun loadPrevChapter() {
+        uiState.readingChapterContent?.onOk {
+            it.prevChapter?.let { id ->
+                changeChapter(
+                    id = id
+                )
+            }
+        }
     }
 
     override fun changeChapter(id: String) {
@@ -91,22 +103,33 @@ class FlipPageContentViewModel(
                 id,
                 uiState.bookId,
                 WebDataSourcePriority.High
-            ).collect { content ->
-                if (content.isEmpty()) return@collect
-                uiState.readingChapterContent = content
-                uiState.contentComponentsMap[content.id] = contentComponentRepository.getContentDataFromJson(content.content).components
-                bookRepository.updateUserReadingData(uiState.bookId) {
-                    it.apply {
-                        lastReadTime = LocalDateTime.now()
-                        lastReadChapterId = id
-                        lastReadChapterTitle = content.title
-                    }
-                }
-                if (content.hasNextChapter()) {
-                    bookRepository.getChapterContent(
-                        chapterId = content.nextChapter,
-                        bookId = uiState.bookId,
+            ).map { result ->
+                result.map {
+                    ChapterContentUiState(
+                        id = it.id,
+                        title = it.title,
+                        content = contentComponentRepository.getContentDataFromJson(it.content).components,
+                        prevChapter = it.prevChapter,
+                        nextChapter = it.nextChapter
                     )
+                }
+            }.collect { result ->
+                uiState.readingChapterId = id
+                uiState.readingChapterContent = result
+                result.onOk { content ->
+                    bookRepository.updateUserReadingData(uiState.bookId) {
+                        it.copy(
+                            lastReadTime = LocalDateTime.now(),
+                            lastReadChapterId = id,
+                            lastReadChapterTitle = content.title
+                        )
+                    }
+                    content.nextChapter?.let {
+                        bookRepository.preloadChapterContent(
+                            it,
+                            uiState.bookId
+                        )
+                    }
                 }
             }
         }

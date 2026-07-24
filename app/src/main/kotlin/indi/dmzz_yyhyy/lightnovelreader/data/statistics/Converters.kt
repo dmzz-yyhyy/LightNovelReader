@@ -1,10 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 
-fun BookRecordEntity.toData(): BookRecord =
+fun BookRecordEntity.toData(bookRepository: BookRepository): BookRecord =
     BookRecord(
         bookId = bookId,
+        bookInformationFlow = bookRepository.getBookInformationFlow(bookId),
         date = date,
         reads = reads,
         seconds = seconds,

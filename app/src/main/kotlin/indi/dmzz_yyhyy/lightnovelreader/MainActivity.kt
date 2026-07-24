@@ -10,7 +10,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -34,6 +34,7 @@ import indi.dmzz_yyhyy.lightnovelreader.theme.LightNovelReaderTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.FormattingSettings
 import indi.dmzz_yyhyy.lightnovelreader.utils.LogUtils
+import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -43,6 +44,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
@@ -97,6 +99,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val webBookDataSourceFoundedFlow = flow {
+            emit(webBookDataSourceProvider.isWebDataSourceFounded())
+        }
+
         val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
         val fontLineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontLineHeight.path)
         val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
@@ -119,7 +125,7 @@ class MainActivity : ComponentActivity() {
                         textDarkColor = textDarkColor,
                     )
                 }
-            }.collectAsState(initial = ReaderStyle(
+            }.collectAsStateWithLifecycle(initialValue = ReaderStyle(
                 fontSize = 15f,
                 fontLineHeight = 7f,
                 fontWeight = 500f,
@@ -142,7 +148,8 @@ class MainActivity : ComponentActivity() {
                             onBuildNavHost()
                         }
                     },
-                    imageHeaderGetter = { webBookDataSourceProvider.default.imageHeader }
+                    imageHeaderGetter = { webBookDataSourceProvider.value.imageHeader },
+                    webBookDataSourceFoundedFlow = webBookDataSourceFoundedFlow
                 )
             }
         }
@@ -160,13 +167,15 @@ class MainActivity : ComponentActivity() {
     private fun initDefaultBookshelf() {
         coroutineScope.launch(Dispatchers.IO) {
             if (bookshelfRepository.getAllBookshelfIds().isEmpty())
-                bookshelfRepository.createBookShelf(
-                    id = 1145140721,
-                    name = "已收藏",
-                    sortType = BookshelfSortType.Default,
-                    sortReversed = false,
-                    autoCache = false,
-                    systemUpdateReminder = false
+                bookshelfRepository.addBookshelf(
+                    Bookshelf(
+                        id = 1145140721,
+                        name = "已收藏",
+                        sortType = BookshelfSortType.Default,
+                        sortReversed = false,
+                        autoCache = false,
+                        systemUpdateReminder = false
+                    )
                 )
         }
     }

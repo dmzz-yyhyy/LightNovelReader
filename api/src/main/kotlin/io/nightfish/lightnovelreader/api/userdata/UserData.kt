@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
  * @param T 该用户数据存储的值类型
  * @param path 用户数据的完整路径字符串(如"reader.fontSize")
  *
- * @since Api 2
+ * @since Api 4
  */
 abstract class UserData<T> (
     open val path: String
@@ -27,9 +27,9 @@ abstract class UserData<T> (
      *
      * @param value 需要写入的值
      *
-     * @since Api 2
+     * @since Api 4
      */
-    abstract fun set(value: T)
+    abstract suspend fun set(value: T)
 
     /**
      * 异步写入用户数据
@@ -51,9 +51,9 @@ abstract class UserData<T> (
      *
      * @return 包含当前数据的可空对象, 如果未设置过则返回null
      *
-     * @since Api 2
+     * @since Api 4
      */
-    abstract fun get(): T?
+    abstract suspend fun get(): T?
 
     /**
      * 获取用户数据的可观测流
@@ -83,9 +83,9 @@ abstract class UserData<T> (
      *
      * @return 当前值或默认值
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun getOrDefault(default: T): T {
+    suspend fun getOrDefault(default: T): T {
         return get() ?: default
     }
 
@@ -96,9 +96,9 @@ abstract class UserData<T> (
      * @param updater 接收当前值并返回新值的函数
      * @param default 当前值为null时使用的默认值
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun update(updater: (T) -> T, default: T) {
+    suspend fun update(updater: (T) -> T, default: T) {
         set(updater(getOrDefault(default)))
     }
 }

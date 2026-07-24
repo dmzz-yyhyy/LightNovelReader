@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.download
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshotFlow
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
 import io.nightfish.lightnovelreader.api.userdata.UserData
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -16,25 +17,28 @@ import javax.inject.Singleton
 
 @Singleton
 class DownloadProgressRepository @Inject constructor(
-    userDataDao: UserDataDao
+    userDataDao: UserDataDao,
+    val bookRepository: BookRepository
 ) {
-    class IntUserData (
+    class DownItemListUserData (
         override val path: String,
-        private val userDataDao: UserDataDao
+        private val userDataDao: UserDataDao,
+        private val bookRepository: BookRepository
     ) : UserData<List<DownloadItem>>(path) {
-        override fun set(value: List<DownloadItem>) {
+        override suspend fun set(value: List<DownloadItem>) {
             userDataDao.insert(path, group, "CompletedDownloadItemList", value.joinToString {
                 "${it.type.name}|${it.bookId}"
             })
         }
 
-        override fun get(): List<DownloadItem>? {
+        override suspend fun get(): List<DownloadItem>? {
             return userDataDao.get(path)?.split(",")?.mapNotNull {
                 val values = it.split("|")
                 try {
                     return@mapNotNull MutableDownloadItem(
                         DownloadType.valueOf(values[0].trim()),
-                        values[1]
+                        values[1],
+                        bookRepository.getBookInformationFlow(values[1])
                     ).apply { progress = 1f }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -48,14 +52,18 @@ class DownloadProgressRepository @Inject constructor(
             return userDataDao.getFlow(path).map { value ->
                 value?.split(",")?.map {
                     val values = it.split("|")
-                    MutableDownloadItem(DownloadType.valueOf(values[0].trim()), values[1]).apply { progress = 1f }
+                    MutableDownloadItem(
+                        DownloadType.valueOf(values[0].trim()),
+                        values[1],
+                        bookRepository.getBookInformationFlow(values[1])
+                    ).apply { progress = 1f }
                 }
             }
         }
     }
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private val completedBookListUserData = IntUserData(UserDataPath.CompletedDownloadBookList.path, userDataDao)
+    private val completedBookListUserData = DownItemListUserData(UserDataPath.CompletedDownloadBookList.path, userDataDao, bookRepository)
     private val _downloadItemList = mutableStateListOf<DownloadItem>()
     val downloadItemIdList: List<DownloadItem> get() = _downloadItemList.toList()
 

@@ -7,7 +7,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -19,6 +18,7 @@ import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.HiltViewModelFactory
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -31,11 +31,11 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerScre
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme.navigateToSettingsThemeDestination
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.saveBitmapAsPng
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.uriToBitmap
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -84,7 +84,7 @@ private fun NavGraphBuilder.colorPickerDialog() {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<ColorPickerDialogViewModel>()
         val route = entry.toRoute<Route.Book.ColorPickerDialog>()
-        val selectedColor by viewModel.init(route.colorUserDataPath).collectAsState(Color.Unspecified)
+        val selectedColor by viewModel.init(route.colorUserDataPath).collectAsStateWithLifecycle(Color.Unspecified)
         ColorPickerDialog(
             onDismissRequest = { navController.popBackStack() },
             onConfirmation = {

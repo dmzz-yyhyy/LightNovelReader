@@ -9,17 +9,17 @@ import kotlinx.coroutines.flow.map
  * @param path 用户数据的完整路径字符串
  * @param userDataDao 底层数据访问接口
  *
- * @since Api 2
+ * @since Api 4
  */
 class FloatUserData (
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<Float>(path) {
-    override fun set(value: Float) {
+    override suspend fun set(value: Float) {
         userDataDao.insert(path, group, "Float", value.toString())
     }
 
-    override fun get(): Float? {
+    override suspend fun get(): Float? {
         return userDataDao.get(path)?.toFloat()
     }
 

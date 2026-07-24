@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class ExploreSearchViewModel @Inject constructor(
     private val exploreRepository: ExploreRepository,
     private val bookshelfRepository: BookshelfRepository,
+    private val bookRepository: BookRepository,
     userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val _uiState = MutableExploreSearchUiState()
@@ -27,7 +29,6 @@ class ExploreSearchViewModel @Inject constructor(
     val uiState: ExploreSearchUiState = _uiState
 
     override fun onCleared() {
-        super.onCleared()
         searchJob?.cancel()
     }
 
@@ -98,7 +99,7 @@ class ExploreSearchViewModel @Inject constructor(
                         _uiState.searchBarExpanded = true
                         navigateToSingleBook(it.bookId)
                     }
-                    is SearchResult.MultipleBook -> _uiState.searchResult.add(it.bookInformation)
+                    is SearchResult.MultipleBook -> _uiState.searchResult.add(it.bookId to bookRepository.getBookInformationFlow(it.bookId))
                     is SearchResult.Error -> {
                         _uiState.isLoadingComplete = true
                         _uiState.errorMessage = it.error.message.toString()

@@ -13,104 +13,98 @@ import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfRepositoryApi
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
-import io.nightfish.lightnovelreader.api.bookshelf.MutableBookshelf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.time.Instant
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class BookshelfRepository @Inject constructor(
-    private val bookshelfDao: BookshelfDao,
-    private val workManager: WorkManager
-): BookshelfRepositoryApi {
-    override fun getAllBookshelfIds(): List<Int> = bookshelfDao.getAllBookshelfIds()
+    private val bookshelfDao: BookshelfDao, private val workManager: WorkManager
+) : BookshelfRepositoryApi {
+    override suspend fun getAllBookshelfIds(): List<Int> = bookshelfDao.getAllBookshelfIds()
 
-    override fun getAllBookshelves(): List<MutableBookshelf> = bookshelfDao.getAllBookshelves().map { bookshelfEntity ->
-        MutableBookshelf().apply {
-            this.id =   bookshelfEntity.id
-            this.name = bookshelfEntity.name
-            this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
-            this.sortReversed = bookshelfEntity.sortReversed
-            this.autoCache = bookshelfEntity.autoCache
-            this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
-            this.allBookIds = bookshelfEntity.allBookIds
-            this.pinnedBookIds = bookshelfEntity.pinnedBookIds
-            this.updatedBookIds = bookshelfEntity.updatedBookIds
+    override suspend fun getAllBookshelves(): List<Bookshelf> =
+        bookshelfDao.getAllBookshelves().map { bookshelfEntity ->
+            Bookshelf(
+                id = bookshelfEntity.id,
+                name = bookshelfEntity.name,
+                sortType = BookshelfSortType.map(bookshelfEntity.sortType),
+                sortReversed = bookshelfEntity.sortReversed,
+                autoCache = bookshelfEntity.autoCache,
+                systemUpdateReminder = bookshelfEntity.systemUpdateReminder,
+                allBookIds = bookshelfEntity.allBookIds,
+                pinnedBookIds = bookshelfEntity.pinnedBookIds,
+                updatedBookIds = bookshelfEntity.updatedBookIds
+            )
         }
-    }
 
-    override fun getAllBookshelvesFlow(): Flow<List<MutableBookshelf>> = bookshelfDao.getAllBookshelvesFlow().map { bookshelfEntities ->
-        bookshelfEntities.map { bookshelfEntity ->
-            MutableBookshelf().apply {
-                this.id =   bookshelfEntity.id
-                this.name = bookshelfEntity.name
-                this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
-                this.sortReversed = bookshelfEntity.sortReversed
-                this.autoCache = bookshelfEntity.autoCache
-                this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
-                this.allBookIds = bookshelfEntity.allBookIds
-                this.pinnedBookIds = bookshelfEntity.pinnedBookIds
-                this.updatedBookIds = bookshelfEntity.updatedBookIds
+    override fun getAllBookshelvesFlow(): Flow<List<Bookshelf>> =
+        bookshelfDao.getAllBookshelvesFlow().map { bookshelfEntities ->
+            bookshelfEntities.map { bookshelfEntity ->
+                Bookshelf(
+                    id = bookshelfEntity.id,
+                    name = bookshelfEntity.name,
+                    sortType = BookshelfSortType.map(bookshelfEntity.sortType),
+                    sortReversed = bookshelfEntity.sortReversed,
+                    autoCache = bookshelfEntity.autoCache,
+                    systemUpdateReminder = bookshelfEntity.systemUpdateReminder,
+                    allBookIds = bookshelfEntity.allBookIds,
+                    pinnedBookIds = bookshelfEntity.pinnedBookIds,
+                    updatedBookIds = bookshelfEntity.updatedBookIds
+                )
             }
         }
-    }
 
-    override fun getBookshelf(id: Int): MutableBookshelf? = MutableBookshelf().apply {
+    override suspend fun getBookshelf(id: Int): Bookshelf? {
         val bookshelfEntity = bookshelfDao.getBookshelf(id) ?: return null
-        this.id = id
-        this.name = bookshelfEntity.name
-        this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
-        this.sortReversed = bookshelfEntity.sortReversed
-        this.autoCache = bookshelfEntity.autoCache
-        this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
-        this.allBookIds = bookshelfEntity.allBookIds
-        this.pinnedBookIds = bookshelfEntity.pinnedBookIds
-        this.updatedBookIds = bookshelfEntity.updatedBookIds
-    }
-
-    override fun getBookshelfFlow(id: Int): Flow<MutableBookshelf?> = bookshelfDao
-        .getBookShelfFlow(id)
-        .map { bookshelfEntity ->
-            bookshelfEntity ?: return@map null
-            MutableBookshelf().apply {
-                this.id = id
-                this.name = bookshelfEntity.name
-                this.sortType = BookshelfSortType.map(bookshelfEntity.sortType)
-                this.sortReversed = bookshelfEntity.sortReversed
-                this.autoCache = bookshelfEntity.autoCache
-                this.systemUpdateReminder = bookshelfEntity.systemUpdateReminder
-                this.allBookIds = bookshelfEntity.allBookIds
-                this.pinnedBookIds = bookshelfEntity.pinnedBookIds
-                this.updatedBookIds = bookshelfEntity.updatedBookIds
-            }
-        }
-
-    override fun createBookShelf(
-        id: Int,
-        name: String,
-        sortType: BookshelfSortType,
-        sortReversed: Boolean,
-        autoCache: Boolean,
-        systemUpdateReminder: Boolean,
-    ): Int {
-        bookshelfDao.createBookshelf(BookshelfEntity(
+        return Bookshelf(
             id = id,
-            name = name,
-            sortType = sortType.key,
-            sortReversed = sortReversed,
-            autoCache = autoCache,
-            systemUpdateReminder = systemUpdateReminder,
-            allBookIds = emptyList(),
-            pinnedBookIds = emptyList(),
-            updatedBookIds = emptyList(),
-        ))
-        return Instant.now().epochSecond.hashCode()
+            name = bookshelfEntity.name,
+            sortType = BookshelfSortType.map(bookshelfEntity.sortType),
+            sortReversed = bookshelfEntity.sortReversed,
+            autoCache = bookshelfEntity.autoCache,
+            systemUpdateReminder = bookshelfEntity.systemUpdateReminder,
+            allBookIds = bookshelfEntity.allBookIds,
+            pinnedBookIds = bookshelfEntity.pinnedBookIds,
+            updatedBookIds = bookshelfEntity.updatedBookIds
+        )
     }
 
-    override fun deleteBookshelf(bookshelfId: Int) {
+    override fun getBookshelfFlow(id: Int): Flow<Bookshelf?> =
+        bookshelfDao.getBookShelfFlow(id).map { bookshelfEntity ->
+                bookshelfEntity ?: return@map null
+                Bookshelf(
+                    id = id,
+                    name = bookshelfEntity.name,
+                    sortType = BookshelfSortType.map(bookshelfEntity.sortType),
+                    sortReversed = bookshelfEntity.sortReversed,
+                    autoCache = bookshelfEntity.autoCache,
+                    systemUpdateReminder = bookshelfEntity.systemUpdateReminder,
+                    allBookIds = bookshelfEntity.allBookIds,
+                    pinnedBookIds = bookshelfEntity.pinnedBookIds,
+                    updatedBookIds = bookshelfEntity.updatedBookIds
+                )
+            }
+
+    override suspend fun addBookshelf(bookshelf: Bookshelf) {
+        bookshelfDao.insertBookshelf(
+            BookshelfEntity(
+                bookshelf.id,
+                bookshelf.name,
+                bookshelf.sortType.key,
+                bookshelf.sortReversed,
+                bookshelf.autoCache,
+                bookshelf.systemUpdateReminder,
+                bookshelf.allBookIds,
+                bookshelf.pinnedBookIds,
+                bookshelf.updatedBookIds,
+            )
+        )
+    }
+
+    override suspend fun deleteBookshelf(bookshelfId: Int) {
         bookshelfDao.getBookshelf(bookshelfId)?.let { bookshelf ->
             bookshelf.allBookIds.forEach { bookId ->
                 clearBookshelfIdFromBookshelfBookMetadata(bookshelfId, bookId)
@@ -119,7 +113,7 @@ class BookshelfRepository @Inject constructor(
         bookshelfDao.deleteBookshelf(bookshelfId)
     }
 
-    override fun addBookIntoBookShelf(bookshelfId: Int, bookInformation: BookInformation) {
+    override suspend fun addBookIntoBookShelf(bookshelfId: Int, bookInformation: BookInformation) {
         val bookshelf = bookshelfDao.getBookshelf(bookshelfId) ?: return
         bookshelfDao.addBookshelfMetadata(
             id = bookInformation.id,
@@ -127,17 +121,13 @@ class BookshelfRepository @Inject constructor(
             bookshelfIds = listOf(bookshelfId)
         )
         if (bookshelf.autoCache && bookshelf.allBookIds.contains(bookInformation.id)) {
-            val workRequest = OneTimeWorkRequestBuilder<CacheBookWork>()
-                .setInputData(
+            val workRequest = OneTimeWorkRequestBuilder<CacheBookWork>().setInputData(
                     workDataOf(
-                    "bookId" to bookInformation.id
-                )
-                )
-                .build()
+                        "bookId" to bookInformation.id
+                    )
+                ).build()
             workManager.enqueueUniqueWork(
-                CacheBookWork.ofId(bookInformation.id),
-                ExistingWorkPolicy.KEEP,
-                workRequest
+                CacheBookWork.ofId(bookInformation.id), ExistingWorkPolicy.KEEP, workRequest
             )
         }
         (bookshelf.allBookIds + listOf(bookInformation.id)).let {
@@ -149,7 +139,7 @@ class BookshelfRepository @Inject constructor(
         }
     }
 
-    override fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: String) {
+    override suspend fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: String) {
         val bookshelf = bookshelfDao.getBookshelf(bookShelfId) ?: return
         (bookshelf.updatedBookIds + listOf(bookId)).let {
             bookshelfDao.insertBookshelf(
@@ -160,7 +150,7 @@ class BookshelfRepository @Inject constructor(
         }
     }
 
-    override fun updateBookshelf(bookshelfId: Int, updater: (MutableBookshelf) -> Bookshelf) {
+    override suspend fun updateBookshelf(bookshelfId: Int, updater: (Bookshelf) -> Bookshelf) {
         this.getBookshelf(bookshelfId)?.let { oldBookshelf ->
             updater(oldBookshelf).let { newBookshelf ->
                 bookshelfDao.insertBookshelf(
@@ -180,72 +170,77 @@ class BookshelfRepository @Inject constructor(
         }
     }
 
-    override fun getAllBookshelfBooksMetadata(): List<BookshelfBookMetadata> = bookshelfDao
-        .getAllBookshelfBookEntities()
-        .map {
+    override suspend fun getAllBookshelfBooksMetadata(): List<BookshelfBookMetadata> =
+        bookshelfDao.getAllBookshelfBookEntities().map {
+                BookshelfBookMetadata(
+                    it.id, it.lastUpdate, it.bookShelfIds
+                )
+            }
+
+    override fun getAllBookshelfBookIdsFlow(): Flow<List<String>> =
+        bookshelfDao.getAllBookshelfBookIdsFlow()
+
+    override suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? =
+        bookshelfDao.getBookshelfBookMetadata(id)
+
+    override fun getBookshelfBookMetadataFlow(id: String): Flow<BookshelfBookMetadata?> =
+        bookshelfDao.getBookshelfBookMetadataEntityFlow(id).map {
+            it ?: return@map null
             BookshelfBookMetadata(
-                it.id,
-                it.lastUpdate,
-                it.bookShelfIds
+                it.id, it.lastUpdate, it.bookShelfIds
             )
         }
 
-    override fun getAllBookshelfBookIdsFlow(): Flow<List<String>> = bookshelfDao.getAllBookshelfBookIdsFlow()
-
-    override fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? = bookshelfDao.getBookshelfBookMetadata(id)
-
-    override fun getBookshelfBookMetadataFlow(id: String): Flow<BookshelfBookMetadata?> = bookshelfDao.getBookshelfBookMetadataEntityFlow(id).map {
-        it ?: return@map null
-        BookshelfBookMetadata(
-            it.id,
-            it.lastUpdate,
-            it.bookShelfIds
-        )
-    }
-
-    private fun clearBookshelfIdFromBookshelfBookMetadata(bookshelfId: Int, bookId: String) {
+    private suspend fun clearBookshelfIdFromBookshelfBookMetadata(
+        bookshelfId: Int,
+        bookId: String
+    ) {
         bookshelfDao.getBookshelfBookMetadata(bookId)?.let { bookshelfBookMetadata ->
-            bookshelfBookMetadata.bookShelfIds
-                .toMutableList()
-                .apply { removeAll { bookshelfId == it } }
-                .let { bookshelfIds ->
+            bookshelfBookMetadata.bookShelfIds.toMutableList()
+                .apply { removeAll { bookshelfId == it } }.let { bookshelfIds ->
                     if (bookshelfIds.isEmpty()) bookshelfDao.deleteBookshelfBookMetadata(bookId)
-                    else
-                        bookshelfDao.insertBookshelfBookMetadata(
-                            bookId,
-                            bookshelfBookMetadata.lastUpdate,
-                            ListConverter.intListToString(bookshelfIds)
-                        )
+                    else bookshelfDao.insertBookshelfBookMetadata(
+                        bookId,
+                        bookshelfBookMetadata.lastUpdate,
+                        ListConverter.intListToString(bookshelfIds)
+                    )
                 }
         }
     }
 
-    override fun deleteBookFromBookshelf(bookshelfId: Int, bookId: String) {
+    override suspend fun deleteBookFromBookshelf(bookshelfId: Int, bookId: String) {
         clearBookshelfIdFromBookshelfBookMetadata(bookshelfId, bookId)
         updateBookshelf(bookshelfId) { oldBookshelf ->
-            oldBookshelf.apply {
-                this.allBookIds = allBookIds.toMutableList().apply { removeAll { it == bookId } }
-                this.pinnedBookIds = pinnedBookIds.toMutableList().apply { removeAll { it == bookId } }
-                this.updatedBookIds = updatedBookIds.toMutableList().apply { removeAll { it == bookId } }
-            }
+            oldBookshelf.copy(
+                allBookIds = oldBookshelf.allBookIds.toMutableList()
+                .apply { removeAll { it == bookId } },
+                pinnedBookIds = oldBookshelf.pinnedBookIds.toMutableList()
+                    .apply { removeAll { it == bookId } },
+                updatedBookIds = oldBookshelf.updatedBookIds.toMutableList()
+                    .apply { removeAll { it == bookId } })
         }
     }
 
-    override fun deleteBookFromBookshelfUpdatedBookIds(bookshelfId: Int, bookId: String) {
+    override suspend fun deleteBookFromBookshelfUpdatedBookIds(bookshelfId: Int, bookId: String) {
         updateBookshelf(bookshelfId) { oldBookshelf ->
-            oldBookshelf.apply {
-                this.updatedBookIds = updatedBookIds.toMutableList().apply { removeAll { it == bookId } }
-            }
+            oldBookshelf.copy(
+                updatedBookIds = oldBookshelf.updatedBookIds.toMutableList()
+                    .apply { removeAll { it == bookId } })
         }
     }
 
-    override fun updateBookshelfBookMetadataLastUpdateTime(bookId: String, time: LocalDateTime) {
+    override suspend fun updateBookshelfBookMetadataLastUpdateTime(
+        bookId: String,
+        time: LocalDateTime
+    ) {
         bookshelfDao.insertBookshelfBookMetadata(
             bookId,
             time,
-            ListConverter.intListToString(bookshelfDao.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList())
+            ListConverter.intListToString(
+                bookshelfDao.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
+            )
         )
     }
 
-    override fun clear() = bookshelfDao.clear()
+    override suspend fun clear() = bookshelfDao.clear()
 }

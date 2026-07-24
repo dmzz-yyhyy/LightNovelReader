@@ -9,18 +9,10 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.update
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import org.matomo.sdk.Matomo
 import org.matomo.sdk.Tracker
 import org.matomo.sdk.TrackerBuilder
 import org.matomo.sdk.extra.TrackHelper
-import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 class MatomoAnalytics @Inject constructor(
@@ -38,7 +30,7 @@ class MatomoAnalytics @Inject constructor(
         private const val DIMENSION_DEV_INF = 2
     }
 
-    fun initialize() {
+    suspend fun initialize() {
         isStatisticsEnabled = if (BuildConfig.DEBUG) false
         else userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
             .getOrDefault(true)

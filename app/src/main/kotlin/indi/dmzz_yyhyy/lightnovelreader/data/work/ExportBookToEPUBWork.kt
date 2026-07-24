@@ -13,14 +13,18 @@ import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.github.michaelbull.result.andThen
+import com.github.michaelbull.result.coroutines.coroutineBinding
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
-import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.ExportType
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.ImageDownloader
@@ -29,11 +33,11 @@ import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.book.isNullOrEmpty
 import io.nightfish.potatoepub.builder.ChapterBuilder
 import io.nightfish.potatoepub.builder.EpubBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.withContext
 import org.dom4j.Element
 import java.io.File
@@ -45,7 +49,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val webBookDataSourceProvider: WebBookDataSourceProvider,
-    private val localBookDataSource: LocalBookDataSource,
+    private val bookRepository: BookRepository,
     private val downloadProgressRepository: DownloadProgressRepository,
     private val contentComponentRepository: ContentComponentRepository
 ) : CoroutineWorker(appContext, workerParams) {
@@ -155,7 +159,11 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             .also {
                 if (it.exists()) it.delete()
             }
-        val downloadItem = MutableDownloadItem(DownloadType.EPUB_EXPORT, bookId)
+        val downloadItem = MutableDownloadItem(
+            DownloadType.EPUB_EXPORT,
+            bookId,
+            bookRepository.getBookInformationFlow(bookId)
+        )
         downloadProgressRepository.addExportItem(downloadItem)
         if (bookId.isBlank()) {
             downloadItem.progress = -1f
@@ -163,104 +171,90 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             return@withContext Result.failure()
         }
         val tasks = mutableListOf<ImageDownloader.Task>()
-        var bookInformation = webBookDataSourceProvider.lowPriority.getBookInformation(bookId)
-        if (bookInformation.isEmpty()) {
-            val localData = localBookDataSource.getBookInformation(bookId)
-            if (localData.isNullOrEmpty()) {
-                downloadItem.progress = -1f
-                updateFailureNotification(bookId)
-                return@withContext Result.failure()
-            }
-            else bookInformation = localBookDataSource.getBookInformation(bookId)!!
-        }
-        var bookVolumes = webBookDataSourceProvider.lowPriority.getBookVolumes(bookId)
-        if (bookVolumes.isEmpty()) {
-            val localData = localBookDataSource.getBookVolumes(bookId)
-            if (localData.isNullOrEmpty()) {
-                downloadItem.progress = -1f
-                updateFailureNotification(bookId)
-                return@withContext Result.failure()
-            }
-            else bookVolumes = localData!!
-        }
-        val bookContentMap = mutableMapOf<String, ChapterContent>()
-        downloadItem.progress = 0f
 
-        val volumesToProcess = when (exportType) {
-            ExportType.BOOK -> bookVolumes.volumes
-            ExportType.VOLUMES -> {
-                if (selectedVolumes.isNullOrEmpty()) {
-                    updateFailureNotification(bookId)
-                    downloadItem.progress = -1f
-                    return@withContext Result.failure()
-                }
-                bookVolumes.volumes.filter { selectedVolumes.contains(it.volumeId) }
-            }
-        }
+        bookRepository.getBookInformationFlow(bookId).last()
+            .andThen { bookInformation ->
+                bookRepository.getBookVolumesFlow(bookId).last()
+                    .andThen { bookVolumes ->
+                        val bookContentMap = mutableMapOf<String, ChapterContent>()
+                        downloadItem.progress = 0f
+                        val volumesToProcess = when (exportType) {
+                            ExportType.BOOK -> bookVolumes.volumes
+                            ExportType.VOLUMES -> {
+                                if (selectedVolumes.isNullOrEmpty()) {
+                                    updateFailureNotification(bookId)
+                                    downloadItem.progress = -1f
+                                    return@withContext Result.failure()
+                                }
+                                bookVolumes.volumes.filter { selectedVolumes.contains(it.volumeId) }
+                            }
+                        }
 
-        totalChapters = volumesToProcess.sumOf { it.chapters.size }
-        processedChapters = 0
-        volumesToProcess.forEach { volume ->
-            currentVolumeTitle = volume.volumeTitle
+                        totalChapters = volumesToProcess.sumOf { it.chapters.size }
+                        processedChapters = 0
+                        coroutineBinding {
+                            volumesToProcess.forEach { volume ->
+                                currentVolumeTitle = volume.volumeTitle
 
-            volume.chapters.forEach {
-                currentChapterTitle = it.title
-                Log.d(TAG, " - load chapter=${it.title} id=${it.id}")
+                                volume.chapters.forEach {
+                                    currentChapterTitle = it.title
+                                    Log.d(TAG, " - load chapter=${it.title} id=${it.id}")
 
-                var chapterContent = webBookDataSourceProvider.lowPriority.getChapterContent(it.id, bookId)
-                if (chapterContent.isEmpty()) {
-                    val localData = localBookDataSource.getChapterContent(it.id)
-                    if (localData.isNullOrEmpty()) {
-                        downloadItem.progress = -1f
-                        updateFailureNotification(bookId)
-                        return@withContext Result.failure()
+                                    bookContentMap[it.id] = bookRepository.getChapterContentFlow(
+                                        chapterId = it.id,
+                                        bookId = bookId,
+                                    ).last().bind()
+
+                                    processedChapters++
+                                    val progress = (processedChapters.toFloat() / totalChapters * 50).toInt()
+                                    buildProgressNotification(
+                                        bookId,
+                                        progress,
+                                        applicationContext.getString(
+                                            R.string.epub_export_notification_stage_chapters,
+                                            processedChapters,
+                                            totalChapters
+                                        )
+                                    )
+                                    downloadItem.progress = progress / 100f
+                                }
+                            }
+                        }.onOk {
+                            return@withContext when (exportType) {
+                                ExportType.BOOK -> bookToEPUB(
+                                    bookInformation,
+                                    bookVolumes,
+                                    bookContentMap,
+                                    tempDir,
+                                    tasks,
+                                    bookVolumes.volumes.size,
+                                    bookId,
+                                    downloadItem,
+                                    cover,
+                                    fileUri
+                                )
+                                ExportType.VOLUMES -> volumesToEPUB(
+                                    selectedVolumes!!,
+                                    bookInformation,
+                                    bookVolumes,
+                                    bookContentMap,
+                                    tempDir,
+                                    tasks,
+                                    bookVolumes.volumes.size,
+                                    bookId,
+                                    downloadItem,
+                                    cover,
+                                    fileUri
+                                )
+                            }
+                        }
                     }
-                    else chapterContent = localData!!
-                }
-                bookContentMap[it.id] = chapterContent
-
-                processedChapters++
-                val progress = (processedChapters.toFloat() / totalChapters * 50).toInt()
-                buildProgressNotification(
-                    bookId,
-                    progress,
-                    applicationContext.getString(
-                        R.string.epub_export_notification_stage_chapters,
-                        processedChapters,
-                        totalChapters
-                    )
-                )
-                downloadItem.progress = progress / 100f
+            }.onErr {
+                updateFailureNotification(bookId)
+                return@withContext Result.failure()
             }
-        }
 
-        return@withContext when (exportType) {
-            ExportType.BOOK -> bookToEPUB(
-                bookInformation,
-                bookVolumes,
-                bookContentMap,
-                tempDir,
-                tasks,
-                bookVolumes.volumes.size,
-                bookId,
-                downloadItem,
-                cover,
-                fileUri
-            )
-            ExportType.VOLUMES -> volumesToEPUB(
-                selectedVolumes!!,
-                bookInformation,
-                bookVolumes,
-                bookContentMap,
-                tempDir,
-                tasks,
-                bookVolumes.volumes.size,
-                bookId,
-                downloadItem,
-                cover,
-                fileUri
-            )
-        }
+        return@withContext Result.success()
     }
 
     private suspend fun volumesToEPUB(
@@ -292,7 +286,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 if (currentVolumeIndex == 0) cover(cover)
                 else {
                     val url = runCatching {
-                        webBookDataSourceProvider.lowPriority.getCoverUriInVolume(
+                        webBookDataSourceProvider.value.getCoverUriInVolume(
                             bookId,
                             volume,
                             bookContentMap,

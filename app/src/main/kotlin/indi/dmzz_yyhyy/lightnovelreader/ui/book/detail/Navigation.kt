@@ -17,18 +17,21 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import androidx.work.WorkInfo
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToImageViewerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToMarkAllChaptersAsReadDialog
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
+import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,19 +46,25 @@ fun NavGraphBuilder.bookDetailDestination() {
         val coroutineScope = rememberCoroutineScope()
         val exportBookToEPUBLauncher = uriLauncher { uri ->
             CoroutineScope(Dispatchers.Main).launch {
-                Toast.makeText(context, context.getString(R.string.export_book_started, viewModel.uiState.bookInformation.title), Toast.LENGTH_SHORT).show()
-                viewModel.exportToEpub(uri, bookId, viewModel.uiState.bookInformation.title).collect {
-                    if (it != null)
-                        when (it.state) {
-                            WorkInfo.State.SUCCEEDED -> {
-                                Toast.makeText(context, context.getString(R.string.export_book_success, viewModel.uiState.bookInformation.title), Toast.LENGTH_SHORT).show()
-                            }
-                            WorkInfo.State.FAILED -> {
-                                Toast.makeText(context, context.getString(R.string.export_book_failed, viewModel.uiState.bookInformation.title), Toast.LENGTH_SHORT).show()
-                            }
-                            else -> {}
+                viewModel.uiState.bookInformation
+                    ?.map { it.title }
+                    ?.onOk { title ->
+                        Toast.makeText(context, context.getString(R.string.export_book_started, title), Toast.LENGTH_SHORT).show()
+                        viewModel.exportToEpub(uri, bookId, title).collect {
+                            if (it != null)
+                                when (it.state) {
+                                    WorkInfo.State.SUCCEEDED -> {
+                                        Toast.makeText(context, context.getString(R.string.export_book_success, it), Toast.LENGTH_SHORT).show()
+                                    }
+                                    WorkInfo.State.FAILED -> {
+                                        Toast.makeText(context, context.getString(R.string.export_book_failed, it), Toast.LENGTH_SHORT).show()
+                                    }
+                                    else -> {}
+                                }
                         }
-                }
+                    }?.onErr {
+                        Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                    }
             }
             navController.popBackStack()
         }
@@ -69,44 +78,75 @@ fun NavGraphBuilder.bookDetailDestination() {
             uiState = viewModel.uiState,
             onClickExportToEpub = { settings ->
                 viewModel.exportSettings = settings
-                when (settings.exportType) {
-                    ExportType.BOOK -> createDataFile(context, viewModel.uiState.bookInformation.title, exportBookToEPUBLauncher)
-                    ExportType.VOLUMES -> selectDirectory(context, exportBookToEPUBLauncher)
-                }
+
+                viewModel.uiState.bookInformation
+                    ?.map { it.title }
+                    ?.onOk { title ->
+                        when (settings.exportType) {
+                            ExportType.BOOK -> createDataFile(context, title, exportBookToEPUBLauncher)
+                            ExportType.VOLUMES -> selectDirectory(context, exportBookToEPUBLauncher)
+                        }
+                    }?.onErr {
+                        Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                    }
             },
             onClickBackButton = navController::popBackStackIfResumed,
             onClickChapter = {
                 navController.navigateToBookReaderDestination(bookId, it, context)
             },
             onClickReadFromStart = {
-                viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
-                    navController.navigateToBookReaderDestination(bookId, it, context)
-                }
+                viewModel.uiState.bookVolumes
+                    ?.map {
+                        it.volumes.firstOrNull()?.chapters?.firstOrNull()?.id
+                    }?.onOk { id ->
+                        id?.let {
+                            navController.navigateToBookReaderDestination(bookId, it, context)
+                        }
+                    }?.onErr {
+                        Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                    }
             },
             onClickContinueReading = {
-                if (viewModel.uiState.userReadingData.lastReadChapterId.isBlank())
-                    viewModel.uiState.bookVolumes.volumes.firstOrNull()?.chapters?.firstOrNull()?.id?.let {
-                        navController.navigateToBookReaderDestination(bookId, it, context)
-                    }
+                if (viewModel.uiState.userReadingData?.lastReadChapterId == null)
+                    viewModel.uiState.bookVolumes
+                        ?.map {
+                            it.volumes.firstOrNull()?.chapters?.firstOrNull()?.id
+                        }?.onOk { id ->
+                            id?.let {
+                                navController.navigateToBookReaderDestination(bookId, it, context)
+                            }
+                        }?.onErr {
+                            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+                        }
                 else {
-                    navController.navigateToBookReaderDestination(bookId, viewModel.uiState.userReadingData.lastReadChapterId, context)
+                    navController.navigateToBookReaderDestination(bookId, viewModel.uiState.userReadingData!!.lastReadChapterId!!, context)
                 }
             },
             cacheBook = { bookId ->
                 coroutineScope.launch {
-                    viewModel.cacheBook(bookId).collect {
-                        if (it == null) {
-                            showSnackbar(
-                                coroutineScope = coroutineScope,
-                                hostState = snackbarHostState,
-                                message = context.getString(
-                                    R.string.cache_book_started,
-                                    viewModel.uiState.bookInformation.title
-                                )
-                            ) { }
+                    viewModel.cacheBook(bookId).collect { workInfo ->
+                        if (workInfo == null) {
+                            viewModel.uiState.bookInformation
+                                ?.map { it.title }
+                                ?.onOk { title ->
+                                    showSnackbar(
+                                        coroutineScope = coroutineScope,
+                                        hostState = snackbarHostState,
+                                        message = context.getString(
+                                            R.string.cache_book_started,
+                                            title
+                                        )
+                                    ) { }
+                                }?.onErr {
+                                    showSnackbar(
+                                        coroutineScope = coroutineScope,
+                                        hostState = snackbarHostState,
+                                        message = it.message
+                                    ) { }
+                                }
                             return@collect
                         }
-                        when (it.state) {
+                        when (workInfo.state) {
                             WorkInfo.State.SUCCEEDED -> {
                                 showSnackbar(
                                     coroutineScope = coroutineScope,
@@ -136,7 +176,9 @@ fun NavGraphBuilder.bookDetailDestination() {
             requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
             onClickTag = viewModel::onClickTag,
             onClickCover = navController::navigateToImageViewerDialog,
-            onClickMarkAsRead = { navController.navigateToMarkAllChaptersAsReadDialog(viewModel.uiState.bookInformation.id) }
+            onClickMarkAsRead = {
+                navController.navigateToMarkAllChaptersAsReadDialog(bookId)
+            }
         )
     }
 }

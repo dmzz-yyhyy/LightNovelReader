@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
+import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
@@ -64,10 +65,11 @@ class AddToBookshelfDialogViewModel @Inject constructor(
             statsRepository.markBookFavorited(bookId)
             val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
             viewModelScope.launch(Dispatchers.IO) {
-                bookRepository.getBookInformationFlow(bookId).collect { bookInformation ->
-                    if (bookInformation.isEmpty()) return@collect
-                    _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
-                        bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+                bookRepository.getBookInformationFlow(bookId).collect { result ->
+                    result.onOk { bookInformation ->
+                        _addToBookshelfDialogUiState.selectedBookshelfIds.forEach {
+                            bookshelfRepository.addBookIntoBookShelf(it, bookInformation)
+                        }
                     }
                 }
             }

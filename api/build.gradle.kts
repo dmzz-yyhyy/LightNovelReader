@@ -1,5 +1,10 @@
 import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import java.net.URI
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
 
 plugins {
     alias(libs.plugins.android.library)
@@ -7,6 +12,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
     id("maven-publish")
+    id("kotlin-parcelize")
 }
 
 java {
@@ -60,7 +66,7 @@ afterEvaluate {
 
                 groupId = "io.nightfish.lightnovelreader"
                 artifactId = "api"
-                version = "0.3-SNAPSHOT"
+                version = "0.4-SNAPSHOT"
             }
         }
 
@@ -69,8 +75,8 @@ afterEvaluate {
                 name = "reposilite"
                 url = URI("https://maven.nariko.org/release")
                 credentials {
-                    username = System.getenv("REPO_USER")
-                    password = System.getenv("REPO_PASS")
+                    username = "nightfish"
+                    password = "NtF_@20090117"
                 }
             }
         }
@@ -78,9 +84,11 @@ afterEvaluate {
 }
 
 dependencies {
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    implementation(libs.kotlin.result)
+    implementation(libs.kotlin.result.coroutines)
     implementation(libs.androidx.foundation)
     implementation(libs.compose.ui.graphics)
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.runtime)
     implementation(libs.kotlinx.coroutines.core)
     implementation(platform(libs.compose.bom))

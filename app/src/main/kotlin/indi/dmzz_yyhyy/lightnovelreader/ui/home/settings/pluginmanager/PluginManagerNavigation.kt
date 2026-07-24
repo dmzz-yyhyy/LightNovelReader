@@ -8,7 +8,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -18,6 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -31,6 +31,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail.na
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail.settingsPluginManagerDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.utils.restart
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
@@ -55,9 +56,9 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                 ?.let(navController::getBackStackEntry)
         }
         val viewModel = hiltViewModel<PluginManagerViewModel>(parentEntry ?: navBackStackEntry)
-        val enabledPluginList by viewModel.enabledPluginFlow.collectAsState(emptyList())
+        val enabledPluginList by viewModel.enabledPluginFlow.collectAsStateWithLifecycle(emptyList())
         val errorMessageMap = viewModel.errorMessageMap
-        val pluginUpdates by viewModel.pluginUpdates.collectAsState()
+        val pluginUpdates by viewModel.pluginUpdates.collectAsStateWithLifecycle()
         val updateVersionNames = pluginUpdates.mapValues { it.value.versionName }
         var showPluginNoSignatureDialog by remember { mutableStateOf(false) }
         var showPluginErrorDialog by remember { mutableStateOf(false) }
@@ -94,6 +95,8 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
         val learnMoreString = stringResource(R.string.plugin_snackbar_learn_more)
         val selectPluginString = stringResource(R.string.plugin_picker_title)
         val incompatibleString = stringResource(R.string.plugin_api_incompatible)
+        val restartToApply = stringResource(R.string.restart_to_apply_changes)
+        val restartString = stringResource(R.string.restart)
 
         PluginManagerScreen(
             enabledPluginList = enabledPluginList,
@@ -103,7 +106,20 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
             onClickBack = navController::popBackStackIfResumed,
             onClickPluginApps = navController::navigateToSettingsPluginAppListDestination,
             onClickDetail = navController::navigateToSettingsPluginManagerDetailDestination,
-            onClickSwitch = viewModel::onClickEnabledSwitch,
+            onClickSwitch = { pluginMetadata ->
+                viewModel.onClickEnabledSwitch(pluginMetadata)
+                showSnackbar(
+                    coroutineScope = coroutineScope,
+                    hostState = snackbarHostState,
+                    message = restartToApply,
+                    actionLabel = restartString
+                ) {
+                    if (it == SnackbarResult.ActionPerformed) {
+                        viewModel.unloadAllDisenablePlugin()
+                        restart(context)
+                    }
+                }
+            },
             onClickDelete = { id, uninstall ->
                 if (uninstall) {
                     pendingUninstallId = id

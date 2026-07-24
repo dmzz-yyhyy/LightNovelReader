@@ -698,4 +698,7 @@
     <string name="key_local_book_sort_size">Sort by size</string>
     <string name="key_local_book_sort_last_read">Sort by last read</string>
     <string name="key_local_book_sort_chapter_count">Sort by chapter count</string>
+    <string name="restart">Restart</string>
+    <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
+    <string name="never_read">Never read</string>
 </resources>

@@ -24,7 +24,6 @@ fun NavGraphBuilder.bookshelfReorderDestination() {
             uiState = bookshelfHomeViewModel.uiState,
             prepare = bookshelfHomeViewModel::enableReorderMode,
             onExit = bookshelfHomeViewModel::disableReorderMode,
-            getBookInfoFlow = bookshelfHomeViewModel::getBookInfoStateFlow,
             moveBook = bookshelfHomeViewModel::moveBook,
             onClickBack = navController::popBackStack
         )

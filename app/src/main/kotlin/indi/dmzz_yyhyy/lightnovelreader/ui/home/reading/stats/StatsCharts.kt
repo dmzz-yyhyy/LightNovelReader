@@ -32,7 +32,7 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberAxisGuidelineComponent
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.compose.cartesian.data.CartesianValueFormatter
-import com.patrykandpatrick.vico.compose.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.compose.cartesian.data.columnModel
 import com.patrykandpatrick.vico.compose.cartesian.decoration.HorizontalLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
@@ -153,7 +153,7 @@ private fun DailyStatsChart(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
         }
     }
 
@@ -234,7 +234,7 @@ fun WeeklyStatsChart(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
             extras { it[BottomAxisLabelKey] = dayLabels }
         }
     }
@@ -393,7 +393,7 @@ fun MonthlyStatsChart(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
             extras { it[BottomAxisLabelKey] = weekLabels }
         }
     }
@@ -515,7 +515,7 @@ private fun WeekDailyBreakdown(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
             extras { it[BottomAxisLabelKey] = dateLabels }
         }
     }
@@ -599,7 +599,7 @@ fun YearlyStatsChart(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
             extras { it[BottomAxisLabelKey] = monthLabels }
         }
     }
@@ -732,7 +732,7 @@ private fun MonthWeeklyBreakdown(
     val modelProducer = remember { CartesianChartModelProducer() }
     LaunchedEffect(values) {
         modelProducer.runTransaction {
-            columnSeries { series(values) }
+            columnModel { series(values) }
             extras { it[BottomAxisLabelKey] = weekLabels }
         }
     }

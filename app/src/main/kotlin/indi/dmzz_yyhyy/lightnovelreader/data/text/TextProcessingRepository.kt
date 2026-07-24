@@ -2,6 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.text
 
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
+import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
@@ -18,18 +20,18 @@ class TextProcessingRepository @Inject constructor(
     formatRepository: FormatRepository,
     val contentComponentRepository: ContentComponentRepository
 ): TextProcessingRepositoryApi {
-    private val processors = mutableListOf<TextProcessor>()
+    private val processors = mutableMapOf<Identifier, TextProcessor>()
 
-    override fun registerProcessors(processor: TextProcessor) {
-        if (processors.contains(processor)) return
-        processors.add(processor)
+    override fun registerProcessors(identifier: Identifier, processor: TextProcessor) {
+        if (processors.contains(identifier)) return
+        processors[identifier] = processor
     }
 
     private fun <T> process(t: T, block: (TextProcessor) -> ((T) -> T)): T {
         val processors = this.processors
-            .filter { it.enabled }
+            .filterValues { it.enabled }
         var result = t
-        for (processor in processors) {
+        for (processor in processors.values) {
             result = block.invoke(processor).invoke(result)
         }
         return result
@@ -62,7 +64,7 @@ class TextProcessingRepository @Inject constructor(
     fun processExploreBooksRow(exploreDisplayBook: ExploreDisplayBook): ExploreDisplayBook = process(exploreDisplayBook) { it::processExploreBooksRow }
 
     init {
-        registerProcessors(simplifiedTraditionalProcessor)
-        registerProcessors(formatRepository)
+        registerProcessors("simplified_traditional_processor".ofId(), simplifiedTraditionalProcessor)
+        registerProcessors("format_repository".ofId(), formatRepository)
     }
 }

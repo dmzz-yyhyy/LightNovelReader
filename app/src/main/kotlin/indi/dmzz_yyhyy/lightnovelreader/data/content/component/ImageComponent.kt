@@ -15,7 +15,7 @@ class ImageComponent(
     data: ImageComponentData,
     private val webBookDataSourceManagerApi: WebBookDataSourceManagerApi
 ): AbstractContentComponent<ImageComponentData>(data) {
-    override val id = ImageComponentData.ID
+    override val id = ImageComponentData.id
 
     @Composable
     override fun Content(modifier: Modifier) {

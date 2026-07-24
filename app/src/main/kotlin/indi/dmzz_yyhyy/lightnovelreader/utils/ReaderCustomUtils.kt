@@ -4,7 +4,6 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +16,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
@@ -52,7 +52,7 @@ fun rememberReaderFontFamily(
     fontFamilyUriUserData: UriUserData,
 ): FontFamily {
     val snackbarScope = rememberCoroutineScope()
-    val uri by fontFamilyUriUserData.getFlowWithDefault(Uri.EMPTY).collectAsState(Uri.EMPTY)
+    val uri by fontFamilyUriUserData.getFlowWithDefault(Uri.EMPTY).collectAsStateWithLifecycle(Uri.EMPTY)
     val fontFamily = remember(uri) { loadReaderFontFamilySafe(uri) }
 
     val snackbarHostState = LocalSnackbarHost.current

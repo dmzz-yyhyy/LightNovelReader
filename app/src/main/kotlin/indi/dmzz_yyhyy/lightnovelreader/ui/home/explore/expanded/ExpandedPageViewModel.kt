@@ -7,9 +7,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -65,8 +65,8 @@ class ExpandedPageViewModel @Inject constructor(
             expandedPageDataSource?.let { dataSource ->
                 dataSource.getResultFlow().collect { rawResult ->
                     when(rawResult) {
-                        is SearchResult.SingleBook -> _uiState.bookList.add(bookRepository.getStateBookInformation(rawResult.bookId, viewModelScope))
-                        is SearchResult.MultipleBook -> _uiState.bookList.add(textProcessingRepository.processBookInformation { rawResult.bookInformation })
+                        is SearchResult.SingleBook -> _uiState.bookList.add(rawResult.bookId to bookRepository.getBookInformationFlow(rawResult.bookId))
+                        is SearchResult.MultipleBook -> _uiState.bookList.add(rawResult.bookId to bookRepository.getBookInformationFlow(rawResult.bookId))
                         else -> {}
                     }
                 }

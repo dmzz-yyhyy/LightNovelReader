@@ -1,19 +1,20 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpage
 
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
-import io.nightfish.lightnovelreader.api.web.explore.filter.LocalFilter
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class HomeBookExpandPageDataSource(
-    private val baseUrl: String = "${Wenku8Api.host}/modules/article/articlelist.php",
+    val host: String,
+    val wenku8Api: Wenku8Api,
+    private val baseUrl: String = "${host}/modules/article/articlelist.php",
     private val extendedParameters: String = "",
     private val contentSelector: String = "#content > table.grid > tbody > tr > td > div",
     override val title: String,
@@ -29,13 +30,12 @@ class HomeBookExpandPageDataSource(
         maxPage = 1
         targetPage = 1
         currentPage = 1
-        val localFilter: List<LocalFilter> = filters.mapNotNull { it as? LocalFilter }
         while(targetPage <= maxPage) {
             if (targetPage < currentPage) {
-                delay(1)
+                delay(1.milliseconds)
                 continue
             }
-            val soup = autoReconnectionGetWithWenku8Cookie("${baseUrl}?page=$currentPage$arg$extendedParameters")
+            val soup = wenku8Api.getWithWenku8Cookie("${baseUrl}?page=$currentPage$arg$extendedParameters").component1()
             if (soup == null) {
                 emit(SearchResult.Error("Failed to request the web page"))
                 return@flow
@@ -59,11 +59,12 @@ class HomeBookExpandPageDataSource(
                 maxPage = page
             }
 
-            val books = Wenku8Api.getBookInformationListFromBookCards(soup.select(contentSelector))
-            for (information in books) {
-                if (localFilter.all { it.filter(information) }) {
-                    emit(SearchResult.MultipleBook(information))
-                }
+            val books = wenku8Api.getBookInformationListFromBookCards(soup.select(contentSelector))
+            for (pairs in books) {
+                emit(SearchResult.MultipleBook(pairs.first))
+                //FIXME 探索页重构
+                //if (localFilter.all { it.filter() }) {
+                //}
             }
             currentPage++
             delay(1.seconds)

@@ -57,7 +57,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.toRoute
 import coil3.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.StorePlugin
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.StorePlugin
 import io.nightfish.lightnovelreader.api.ApiCompat
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController

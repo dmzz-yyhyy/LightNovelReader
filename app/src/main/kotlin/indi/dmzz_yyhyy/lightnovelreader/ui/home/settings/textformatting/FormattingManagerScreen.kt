@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,19 +34,24 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
-import io.nightfish.lightnovelreader.api.book.BookInformation
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFormattingScreen(
     onClickGroup: (String) -> Unit,
     onClickBack: () -> Unit,
-    groups: List<FormattingGroup>,
-    bookInformationMap: Map<String, BookInformation>
+    groups: List<FormattingGroup>
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
@@ -127,13 +133,11 @@ fun TextFormattingScreen(
             }
 
             items(rules) { group ->
-                bookInformationMap[group.id]?.let {
-                    Group(
-                        onClickGroup = { onClickGroup(group.id) },
-                        formattingGroup = group,
-                        bookInformation = it
-                    )
-                }
+                Group(
+                    onClickGroup = { onClickGroup(group.id) },
+                    formattingGroup = group,
+                    bookInformationFlow = group.bookInformationFlow
+                )
             }
             navigationBarSpacer()
         }
@@ -144,7 +148,7 @@ fun TextFormattingScreen(
 private fun Group(
     onClickGroup: (String) -> Unit,
     formattingGroup: FormattingGroup,
-    bookInformation: BookInformation
+    bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>
 ) {
     Row(
         modifier = Modifier
@@ -154,33 +158,40 @@ private fun Group(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Cover(
-            width = 60.dp,
-            height = 87.dp,
-            uri = bookInformation.coverUri,
-            rounded = 8.dp
-        )
-        Spacer(Modifier.width(10.dp))
-        Column(
-            modifier = Modifier.weight(1f, fill = true),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = bookInformation.title,
-                style = typography.bodyLarge,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+        val bookInformationResult by bookInformationFlow.collectAsStateWithLifecycle(null)
+        bookInformationResult?.onOk {
+            Cover(
+                width = 60.dp,
+                height = 87.dp,
+                uri = it.coverUri,
+                rounded = 8.dp
             )
-            Text(
-                text = bookInformation.author,
-                style = typography.labelMedium,
-                color = colorScheme.primary
-            )
-            Text(
-                text = "${formattingGroup.size} 个规则",
-                style = typography.labelMedium,
-                color = colorScheme.secondary
-            )
+            Spacer(Modifier.width(10.dp))
+            Column(
+                modifier = Modifier.weight(1f, fill = true),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = it.title,
+                    style = typography.bodyLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = it.author,
+                    style = typography.labelMedium,
+                    color = colorScheme.primary
+                )
+                Text(
+                    text = "${formattingGroup.size} 个规则",
+                    style = typography.labelMedium,
+                    color = colorScheme.secondary
+                )
+            }
+        }?.onErr {
+            //TODO 错误显示
+        } ?: {
+            //TODO 加载显示
         }
         IconButton(
             onClick = { onClickGroup(formattingGroup.id) }

@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -12,7 +11,6 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
-import io.nightfish.lightnovelreader.api.book.BookInformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,18 +25,12 @@ class FormattingViewModel @Inject constructor(
     var bookId = ""
     var rules by mutableStateOf(emptyList<FormattingRule>())
         private set
-    private val _bookInformationMap = mutableStateMapOf<String, BookInformation>()
-    val bookInformationMap: Map<String, BookInformation> = _bookInformationMap.toMap()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             snapshotFlow { formattingRepository.getFormattingMap() }.collect { map ->
                 formattingGroups = map.map {
-                    FormattingGroup(it.key, it.value.size)
-                }
-                for (group in formattingGroups) {
-                    if (group.id.isBlank()) continue
-                    _bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id, viewModelScope)
+                    FormattingGroup(it.key, bookRepository.getBookInformationFlow(it.key), it.value.size)
                 }
             }
         }

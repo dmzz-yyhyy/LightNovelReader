@@ -16,13 +16,13 @@ import io.nightfish.lightnovelreader.api.book.Volume
 interface BookVolumesDao {
     @Query("replace into volume (book_id, volume_id, volume_title, chapter_id_list, volume_index)" +
             " values (:bookId, :volumeId, :volumeTitle, :chapterIds, :index)")
-    fun insertVolume(bookId: String, volumeId: String, volumeTitle: String, chapterIds: String, index: Int)
+    suspend fun insertVolume(bookId: String, volumeId: String, volumeTitle: String, chapterIds: String, index: Int)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertVolume(entity: VolumeEntity)
+    suspend fun insertVolume(entity: VolumeEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertChapterInformation(chapterInformationEntity: ChapterInformationEntity)
+    suspend fun insertChapterInformation(chapterInformationEntity: ChapterInformationEntity)
 
     @Query("select * from chapter_information where id = :id")
     suspend fun getChapterInformation(id: String): ChapterInformation?
@@ -31,7 +31,7 @@ interface BookVolumesDao {
     suspend fun getChapterInformationEntity(id: String): ChapterInformationEntity?
 
     @Transaction
-    fun insertVolume(bookId: String, volumes: BookVolumes) {
+    suspend fun insertVolume(bookId: String, volumes: BookVolumes) {
         volumes.volumes.forEachIndexed { index, volume ->
             insertVolume(bookId, volume.volumeId, volume.volumeTitle, ListConverter.stringListToString(volume.chapters.map { it.id }), index)
             volume.chapters.forEach {
@@ -47,7 +47,7 @@ interface BookVolumesDao {
     suspend fun getVolumeEntitiesByBookId(bookId: String): List<VolumeEntity>
 
     @Query("select * from volume where book_id in (:bookIds)")
-    fun getVolumeEntitiesByBookIds(bookIds: List<String>): List<VolumeEntity>
+    suspend fun getVolumeEntitiesByBookIds(bookIds: List<String>): List<VolumeEntity>
 
     @Transaction
     suspend fun getBookVolumes(bookId: String): BookVolumes? {
@@ -66,40 +66,40 @@ interface BookVolumesDao {
     }
 
     @Query("delete from volume")
-    fun clearVolumes()
+    suspend fun clearVolumes()
 
     @Query("delete from volume where book_id in (:bookIds)")
-    fun deleteByBookIds(bookIds: List<String>)
+    suspend fun deleteByBookIds(bookIds: List<String>)
 
     @Query("delete from chapter_information")
-    fun clearChapterInformation()
+    suspend fun clearChapterInformation()
 
     @Query("delete from chapter_information where id in (:chapterIds)")
-    fun deleteChapterInformationByIds(chapterIds: List<String>)
+    suspend fun deleteChapterInformationByIds(chapterIds: List<String>)
 
     @Transaction
-    fun clear() {
+    suspend fun clear() {
         clearVolumes()
         clearChapterInformation()
     }
 
     @Transaction
-    fun insertVolumeEntities(vararg entities: VolumeEntity) {
+    suspend fun insertVolumeEntities(vararg entities: VolumeEntity) {
         for (entity in entities) {
             insertVolume(entity)
         }
     }
 
     @Transaction
-    fun insertChapterInformationEntities(vararg entities: ChapterInformationEntity) {
+    suspend fun insertChapterInformationEntities(vararg entities: ChapterInformationEntity) {
         for (entity in entities) {
             insertChapterInformation(entity)
         }
     }
 
     @Query("select * from chapter_information")
-    fun getAllChapterInformationEntities(): List<ChapterInformationEntity>
+    suspend fun getAllChapterInformationEntities(): List<ChapterInformationEntity>
 
     @Query("select * from volume")
-    fun getAllVolumeEntities(): List<VolumeEntity>
+    suspend fun getAllVolumeEntities(): List<VolumeEntity>
 }

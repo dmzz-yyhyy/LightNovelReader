@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google()
@@ -33,3 +35,4 @@ include(":epub")
 include(":proxy")
 include(":api")
 include(":plugin:js")
+include(":compiler")

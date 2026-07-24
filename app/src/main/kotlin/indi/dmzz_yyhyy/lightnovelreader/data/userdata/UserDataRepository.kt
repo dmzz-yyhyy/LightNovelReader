@@ -25,5 +25,5 @@ class UserDataRepository @Inject constructor(
     override fun colorUserData(path: String) = ColorUserData(path, userDataDao)
     override fun uriUserData(path: String) = UriUserData(path, userDataDao)
 
-    override fun remove(path: String) = userDataDao.remove(path)
+    override suspend fun remove(path: String) = userDataDao.remove(path)
 }

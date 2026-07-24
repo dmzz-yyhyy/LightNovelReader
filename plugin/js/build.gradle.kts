@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.ksp)
 }
 
 android {
@@ -46,6 +47,22 @@ android {
 //    }
 }
 
+androidComponents {
+    onVariants { variant ->
+        variant.sources.manifests.addStaticManifestFile(
+            layout.buildDirectory.file("generated/ksp/${variant.name}/resources/auto_register_manifest.xml").get().toString()
+        )
+    }
+}
+
+afterEvaluate {
+    listOf("debug", "release").forEach { variantName ->
+        val kspTaskName = "ksp${variantName.replaceFirstChar { it.uppercase() }}Kotlin"
+        val manifestTaskName = "process${variantName.replaceFirstChar { it.uppercase() }}MainManifest"
+        tasks.findByName(manifestTaskName)?.dependsOn(kspTaskName)
+    }
+}
+
 tasks.withType<KotlinJvmCompile>().configureEach {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
@@ -65,6 +82,7 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
 
     // LNR Api
+    ksp(project(":compiler"))
     implementation(project(":api"))
 
     // Other

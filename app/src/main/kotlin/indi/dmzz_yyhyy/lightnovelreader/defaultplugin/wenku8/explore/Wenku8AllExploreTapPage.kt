@@ -1,8 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore
 
 import androidx.core.net.toUri
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
@@ -10,7 +9,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 
-object Wenku8AllExploreTapPage: ExploreTapPageDataSource {
+class Wenku8AllExploreTapPage(
+    val host: String,
+    val wenku8Api: Wenku8Api
+): ExploreTapPageDataSource {
     override val title = "全部"
 
     override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
@@ -30,7 +32,7 @@ object Wenku8AllExploreTapPage: ExploreTapPageDataSource {
     }
 
     private suspend fun getCompletedBooksRow(): ExploreBooksRow {
-        val soup = autoReconnectionGetWithWenku8Cookie("${host}/modules/article/articlelist.php?fullflag=1")
+        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php?fullflag=1").component1()
         return getBooksRow(soup, "完结全本").copy(
             expandable = true,
             expandedPageDataSourceId = "allBook"
@@ -38,7 +40,7 @@ object Wenku8AllExploreTapPage: ExploreTapPageDataSource {
     }
 
     private suspend fun getTopListBookBooksRow(title: String, sort: String): ExploreBooksRow {
-        val soup = autoReconnectionGetWithWenku8Cookie("${host}/modules/article/toplist.php?sort=$sort")
+        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/toplist.php?sort=$sort").component1()
         return getBooksRow(soup, title).copy(
             expandable = true,
             expandedPageDataSourceId = "${sort}Book"
@@ -46,7 +48,7 @@ object Wenku8AllExploreTapPage: ExploreTapPageDataSource {
     }
 
     private suspend fun getAllBookBooksRow(): ExploreBooksRow {
-        val soup = autoReconnectionGetWithWenku8Cookie("${host}/modules/article/articlelist.php")
+        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php").component1()
         return getBooksRow(soup, "轻小说列表")
     }
 

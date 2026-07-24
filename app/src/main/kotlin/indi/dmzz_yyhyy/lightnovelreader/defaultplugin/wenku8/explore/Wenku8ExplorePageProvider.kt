@@ -1,6 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore
 
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpage.HomeBookExpandPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpage.filter.PublishingHouseSingleChoiceFilter
 import io.nightfish.lightnovelreader.api.util.local
@@ -10,7 +10,10 @@ import io.nightfish.lightnovelreader.api.web.explore.filter.SingleChoiceFilter
 import io.nightfish.lightnovelreader.api.web.explore.filter.WordCountFilter
 import java.net.URLEncoder
 
-class Wenku8ExplorePageProvider: AbstractDefaultExplorePageProvider() {
+class Wenku8ExplorePageProvider(
+    val host: String,
+    val wenku8Api: Wenku8Api
+): AbstractDefaultExplorePageProvider() {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -25,13 +28,15 @@ class Wenku8ExplorePageProvider: AbstractDefaultExplorePageProvider() {
     )
 
     init {
-        registerTapPage(Wenku8HomeExploreTapPage)
-        registerTapPage(Wenku8AllExploreTapPage)
-        registerTapPage(Wenku8TagsExploreTapPage)
+        registerTapPage(Wenku8HomeExploreTapPage(host, wenku8Api))
+        registerTapPage(Wenku8AllExploreTapPage(host, wenku8Api))
+        registerTapPage(Wenku8TagsExploreTapPage(host, wenku8Api))
 
         registerExpandedPageDataSource(
             id = "allBook",
             exploreExpandedPageDataSource = HomeBookExpandPageDataSource(
+                host = host,
+                wenku8Api = wenku8Api,
                 title = "轻小说列表",
                 filtersBuilder = {
                     listOf(
@@ -45,6 +50,8 @@ class Wenku8ExplorePageProvider: AbstractDefaultExplorePageProvider() {
         registerExpandedPageDataSource(
             id = "allCompletedBook",
             exploreExpandedPageDataSource = HomeBookExpandPageDataSource(
+                host = host,
+                wenku8Api = wenku8Api,
                 title = "完结全本",
                 filtersBuilder = {
                     listOf(
@@ -66,6 +73,8 @@ class Wenku8ExplorePageProvider: AbstractDefaultExplorePageProvider() {
             registerExpandedPageDataSource(
                 id = "${id}Book",
                 exploreExpandedPageDataSource = HomeBookExpandPageDataSource(
+                    host = host,
+                    wenku8Api = wenku8Api,
                     baseUrl = "$host/modules/article/toplist.php",
                     title = (nameMap[id] ?: ""),
                     filtersBuilder = {
@@ -84,6 +93,8 @@ class Wenku8ExplorePageProvider: AbstractDefaultExplorePageProvider() {
             registerExpandedPageDataSource(
                 id = tag,
                 exploreExpandedPageDataSource = HomeBookExpandPageDataSource(
+                    host = host,
+                    wenku8Api = wenku8Api,
                     baseUrl = "$host/modules/article/tags.php",
                     title = tag,
                     filtersBuilder = {

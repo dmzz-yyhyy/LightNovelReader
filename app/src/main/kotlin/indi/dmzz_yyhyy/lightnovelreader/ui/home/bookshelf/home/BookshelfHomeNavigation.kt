@@ -1,12 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home
 
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -48,7 +48,7 @@ fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransi
                 override val onBookClick: (String) -> Unit = navController::navigateToBookDetailDestination
                 override val onRemove: () -> Unit = {
                     bookshelfHomeViewModel.removeSelectedBooks()
-                    if (bookshelfHomeViewModel.uiState.selectedBookshelf.allBookIds.isEmpty()) {
+                    if (bookshelfHomeViewModel.uiState.selectedBookshelf?.allBookFlows?.isEmpty() == true) {
                         bookshelfHomeViewModel.disableSelectMode()
                     }
                 }
@@ -60,12 +60,7 @@ fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransi
         }
         BookshelfHomeScreen(
             init = bookshelfHomeViewModel::load,
-            uiState = uiState,
-            dataSources = BookshelfHomeDataSources(
-                getBookInfoFlow = bookshelfHomeViewModel::getBookInfoStateFlow,
-                getBookVolumesFlow = bookshelfHomeViewModel::getBookVolumesStateFlow,
-                getBookMetadataFlow = bookshelfHomeViewModel::getBookshelfBookMetadataStateFlow
-            )
+            uiState = uiState
         )
     }
 
@@ -83,7 +78,7 @@ private fun NavGraphBuilder.addBookToBookshelfDialog() {
         val viewModel = hiltViewModel<AddBookToBookshelfDialogViewModel>()
         val dialogSelectedBookshelves = remember { mutableStateListOf<Int>() }
         val route = entry.toRoute<Route.Main.Bookshelf.AddBookToBookshelfDialog>()
-        val allBookshelves by viewModel.allBookshelfFlow.collectAsState(emptyList<Bookshelf>())
+        val allBookshelves by viewModel.allBookshelfFlow.collectAsStateWithLifecycle(emptyList<Bookshelf>())
         AddBookToBookshelfDialog(
             onDismissRequest = { navController.popBackStack() },
             onConfirmation = {

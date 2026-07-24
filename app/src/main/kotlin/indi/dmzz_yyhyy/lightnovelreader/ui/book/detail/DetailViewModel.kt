@@ -14,6 +14,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
@@ -46,20 +47,19 @@ class DetailViewModel @Inject constructor(
         if (isInitialized) return
         isInitialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High).collect {
-                if (it.id.isBlank()) return@collect
-                _uiState.bookInformation = it
-                _uiState.isLoading = false
-                val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@collect
-                bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
-                    bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(bookshelfId, bookId)
+            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High).collect { result ->
+                result.onOk {
+                    val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
+                    bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
+                        bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(bookshelfId, bookId)
+                    }
+                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookId, it.lastUpdated)
                 }
-                bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookId, it.lastUpdated)
+                _uiState.bookInformation = result
             }
         }
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.getBookVolumesFlow(bookId, WebDataSourcePriority.High).collect {
-                if (it.volumes.isEmpty()) return@collect
                 _uiState.bookVolumes = it
             }
         }

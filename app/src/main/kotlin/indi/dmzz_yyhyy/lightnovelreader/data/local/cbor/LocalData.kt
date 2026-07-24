@@ -11,11 +11,14 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEnt
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDataIdentifierSerializer
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class LocalData(
-    val webBookDataSourceId: Int,
+    @Serializable(LocalDataIdentifierSerializer::class)
+    val webBookDataSourceId: Identifier?,
     val bookInformationEntities: List<BookInformationEntity>,
     val bookRecordEntities: List<BookRecordEntity>,
     val dailyCountEntities: List<DailyCountEntity>,
@@ -30,7 +33,7 @@ data class LocalData(
 ) {
     companion object {
         fun empty() = LocalData(
-            webBookDataSourceId = -1,
+            webBookDataSourceId = null,
             bookInformationEntities = emptyList(),
             bookRecordEntities = emptyList(),
             dailyCountEntities = emptyList(),

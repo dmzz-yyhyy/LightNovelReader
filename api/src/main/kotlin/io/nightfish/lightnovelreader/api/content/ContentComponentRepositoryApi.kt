@@ -1,5 +1,6 @@
 package io.nightfish.lightnovelreader.api.content
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
 import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
@@ -74,9 +75,9 @@ interface ContentComponentRepositoryApi {
          *
          * @return 注册构建器
          *
-         * @since Api 2
+         * @since Api 4
          */
-        fun id(id: String): RegisterBuilder
+        fun id(id: Identifier): RegisterBuilder
     }
 
     /**

@@ -13,6 +13,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.github.michaelbull.result.onOk
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import indi.dmzz_yyhyy.lightnovelreader.LightNovelReaderApplication
@@ -21,6 +22,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltWorker
 class CheckUpdateWork @AssistedInject constructor(
@@ -41,22 +43,23 @@ class CheckUpdateWork @AssistedInject constructor(
                 needRemindBookIdSet.addAll(it.allBookIds)
             }
         bookshelfRepository.getAllBookshelfBooksMetadata().forEach { bookshelfBookMetadata ->
-            delay(3000)
+            delay(3000.milliseconds)
             while (!appContext.isAppStopped) {
-                delay(5000)
+                delay(5000.milliseconds)
             }
             if (!needRemindBookIdSet.contains(bookshelfBookMetadata.id)) return@forEach
             Log.d("CheckUpdateWork", "Updating book id=${bookshelfBookMetadata.id}")
-            val bookInformation = webBookDataSourceProvider.lowPriority.getBookInformation(bookshelfBookMetadata.id)
-            val webBookLastUpdate = bookInformation.lastUpdated
-            if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
-                bookshelfBookMetadata.bookShelfIds.forEach {
-                    bookshelfRepository.addUpdatedBooksIntoBookShelf(it, bookshelfBookMetadata.id)
-                    val bookshelf = bookshelfRepository.getBookshelf(it)
-                    if (bookshelf != null && bookshelf.systemUpdateReminder)
-                        reminderBookMap[bookshelfBookMetadata.id] = bookInformation
+            webBookDataSourceProvider.value.getBookInformation(bookshelfBookMetadata.id).onOk { bookInformation ->
+                val webBookLastUpdate = bookInformation.lastUpdated
+                if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
+                    bookshelfBookMetadata.bookShelfIds.forEach {
+                        bookshelfRepository.addUpdatedBooksIntoBookShelf(it, bookshelfBookMetadata.id)
+                        val bookshelf = bookshelfRepository.getBookshelf(it)
+                        if (bookshelf != null && bookshelf.systemUpdateReminder)
+                            reminderBookMap[bookshelfBookMetadata.id] = bookInformation
+                    }
+                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookInformation.id, webBookLastUpdate)
                 }
-                bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookInformation.id, webBookLastUpdate)
             }
         }
         reminderBookMap.values.forEach {

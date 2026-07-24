@@ -10,25 +10,22 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
 import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
-import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.BookVolumes
-import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.toBookshelfUiState
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
-import io.nightfish.lightnovelreader.api.bookshelf.MutableBookshelf
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
-import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,98 +61,25 @@ class BookshelfHomeViewModel @Inject constructor(
     val uiState: BookshelfHomeUiState = _uiState
     private val bookshelfOrderUserData = userDataRepository.intListUserData(UserDataPath.BookshelfOrder.path)
 
-    private val bookInfoStateFlows = mutableMapOf<String, StateFlow<BookInformation>>()
-    private val bookVolumesStateFlows = mutableMapOf<String, StateFlow<BookVolumes>>()
-    private val bookMetadataStateFlows = mutableMapOf<String, StateFlow<BookshelfBookMetadata?>>()
-    private val bookshelfStateMap = mutableMapOf<Int, MutableBookshelf>()
-    private val bookLastChapterJobs = mutableMapOf<String, Job>()
-
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
-            val bookshelfIds = bookshelfRepository.getAllBookshelfIds()
-            val savedOrder = bookshelfOrderUserData.getOrDefault(emptyList())
-            val orderedIds = savedOrder.filter(bookshelfIds::contains) + bookshelfIds.filterNot(savedOrder::contains)
-            _uiState.bookshelfList = orderedIds.map(::getBookshelf)
-            if (_uiState.selectedBookshelf.isEmpty())
-                _uiState.bookshelfList.getOrNull(0)?.let {
-                    changePage(it.id)
+            val bookshelfIdsFlow = bookshelfRepository.getAllBookshelvesFlow()
+            val savedOrderFlow = bookshelfOrderUserData.getFlowWithDefault(emptyList())
+            combine(bookshelfIdsFlow, savedOrderFlow) { bookshelves, savedOrder ->
+                val stableIndexMap = savedOrder.withIndex().associate { it.value to it.index }
+                bookshelves.sortedBy {
+                    stableIndexMap[it.id] ?: Int.MAX_VALUE
                 }
-        }
-    }
-
-    fun getBookInfoStateFlow(id: String): StateFlow<BookInformation> {
-        return bookInfoStateFlows.getOrPut(id) {
-            bookRepository.getBookInformationFlow(id)
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-                    initialValue = BookInformation.empty(id)
-                )
-        }
-    }
-
-    fun getBookVolumesStateFlow(id: String): StateFlow<BookVolumes> {
-        return bookVolumesStateFlows.getOrPut(id) {
-            bookRepository.getBookVolumesFlow(id)
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-                    initialValue = BookVolumes.empty(id)
-                )
-        }
-    }
-
-    fun getBookshelfBookMetadataStateFlow(id: String): StateFlow<BookshelfBookMetadata?> {
-        return bookMetadataStateFlows.getOrPut(id) {
-            bookshelfRepository.getBookshelfBookMetadataFlow(id)
-                .stateIn(
-                    scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5_000),
-                    initialValue = null
-                )
-        }
-    }
-
-    private fun getBookshelf(id: Int): MutableBookshelf {
-        return bookshelfStateMap.getOrPut(id) {
-            val bookshelfFlow = bookshelfRepository.getBookshelfFlow(id)
-            MutableBookshelf().apply {
-                this.id = id
-                viewModelScope.launch(Dispatchers.IO) {
-                    bookshelfFlow.collect { oldMutableBookshelf ->
-                        oldMutableBookshelf ?: return@collect
-                        this@apply.id = oldMutableBookshelf.id
-                        this@apply.name = oldMutableBookshelf.name
-                        this@apply.sortType = oldMutableBookshelf.sortType
-                        this@apply.sortReversed = oldMutableBookshelf.sortReversed
-                        this@apply.autoCache = oldMutableBookshelf.autoCache
-                        this@apply.systemUpdateReminder = oldMutableBookshelf.systemUpdateReminder
-                        this@apply.allBookIds = oldMutableBookshelf.allBookIds
-                        this@apply.pinnedBookIds = oldMutableBookshelf.pinnedBookIds
-                        this@apply.updatedBookIds = oldMutableBookshelf.updatedBookIds
-
-                        val updatedBookIdSet = oldMutableBookshelf.updatedBookIds.toHashSet()
-                        bookLastChapterJobs.keys
-                            .filterNot(updatedBookIdSet::contains)
-                            .forEach { bookId ->
-                                bookLastChapterJobs.remove(bookId)?.cancel()
-                                _uiState.bookLastChapterTitleMap.remove(bookId)
-                            }
-                        oldMutableBookshelf.updatedBookIds.forEach { bookId ->
-                            if (bookLastChapterJobs.containsKey(bookId)) return@forEach
-                            bookLastChapterJobs[bookId] = viewModelScope.launch(Dispatchers.IO) {
-                                bookRepository.getBookVolumesFlow(bookId).collect {
-                                    if (it.volumes.isNotEmpty()) {
-                                        viewModelScope.launch(Dispatchers.Main) {
-                                            _uiState.bookLastChapterTitleMap[bookId] =
-                                                "${it.volumes.last().volumeTitle} ${it.volumes.last().chapters.last().title}"
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            }.map { list ->
+                list.map {
+                    it.toBookshelfUiState(bookRepository, bookshelfRepository)
+                }
+            }.collect { bookshelfUiStates ->
+                if (_uiState.selectedBookshelf == null)
+                    bookshelfUiStates.getOrNull(0)?.let {
+                        changePage(it.id)
                     }
-                }
+                _uiState.bookshelfList = bookshelfUiStates
             }
         }
     }
@@ -167,9 +91,9 @@ class BookshelfHomeViewModel @Inject constructor(
     fun changeSortType(sortType: BookshelfSortType) {
         viewModelScope.launch(Dispatchers.IO) {
             bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
-                it.apply {
-                    this.sortType = sortType
-                }
+                it.copy(
+                    sortType = sortType
+                )
             }
         }
     }
@@ -177,9 +101,9 @@ class BookshelfHomeViewModel @Inject constructor(
     fun changeSortReversed(sortReversed: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
-                it.apply {
-                    this.sortReversed = sortReversed
-                }
+                it.copy(
+                    sortReversed = sortReversed
+                )
             }
         }
     }
@@ -189,7 +113,7 @@ class BookshelfHomeViewModel @Inject constructor(
         _uiState.selectedBookshelfId = bookshelfId
         if (bookshelf.sortType != BookshelfSortType.Default) return
         _uiState.reorderBookIds.clear()
-        _uiState.reorderBookIds.addAll(bookshelf.allBookIds)
+        _uiState.reorderBookIds.addAll(bookshelf.allBookFlows)
         _uiState.reorderMode = true
     }
 
@@ -198,9 +122,9 @@ class BookshelfHomeViewModel @Inject constructor(
             val reorderedIds = _uiState.reorderBookIds.toList()
             viewModelScope.launch(Dispatchers.IO) {
                 bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) { oldBookshelf ->
-                    oldBookshelf.apply {
-                        this.allBookIds = reorderedIds
-                    }
+                    oldBookshelf.copy(
+                        allBookIds = reorderedIds.map { it.first }
+                    )
                 }
             }
         }
@@ -226,16 +150,15 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     fun disableBookshelfReorderMode(reorderedIds: List<Int>) {
-        if (_uiState.reorderBookshelfMode) {
-            _uiState.bookshelfList = reorderedIds.map(::getBookshelf)
-            _uiState.reorderBookshelfIds.clear()
-            _uiState.reorderBookshelfIds.addAll(reorderedIds)
-            viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (_uiState.reorderBookshelfMode) {
+                _uiState.reorderBookshelfIds.clear()
+                _uiState.reorderBookshelfIds.addAll(reorderedIds)
                 bookshelfOrderUserData.set(reorderedIds)
             }
+            _uiState.reorderBookshelfMode = false
+            _uiState.reorderBookshelfIds.clear()
         }
-        _uiState.reorderBookshelfMode = false
-        _uiState.reorderBookshelfIds.clear()
     }
 
     fun moveBookshelf(fromIndex: Int, toIndex: Int) {
@@ -263,20 +186,24 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     fun selectAllBooks() {
-        if (_uiState.selectedBookIds.size == _uiState.selectedBookshelf.allBookIds.size) {
+        val allBookIds = _uiState.selectedBookshelf?.allBookFlows?.map {
+            it.first
+        } ?: return
+        if (_uiState.selectedBookIds.size == allBookIds.size) {
             _uiState.selectedBookIds.clear()
             return
         }
         _uiState.selectedBookIds.clear()
-        _uiState.selectedBookIds.addAll(_uiState.selectedBookshelf.allBookIds)
+        _uiState.selectedBookIds.addAll(allBookIds)
     }
 
     fun pinSelectedBooks() {
         viewModelScope.launch(Dispatchers.IO) {
-            val pinnedBookIds = _uiState.selectedBookshelf.pinnedBookIds
+            val pinnedBookIds = _uiState.selectedBookshelf?.pinnedBookFlows?.map {
+                it.first
+            } ?: return@launch
             val newPinnedBooksIds = _uiState.selectedBookIds
                 .filter { pinnedBookIds.contains(it) }
-                .toMutableList()
                 .let { removeList ->
                     (pinnedBookIds + (_uiState.selectedBookIds))
                         .toMutableList()
@@ -287,9 +214,9 @@ class BookshelfHomeViewModel @Inject constructor(
                 .distinct()
 
             bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
-                it.apply {
-                    this.pinnedBookIds = newPinnedBooksIds
-                }
+                it.copy(
+                    pinnedBookIds = newPinnedBooksIds
+                )
             }
             disableSelectMode()
         }
@@ -310,19 +237,20 @@ class BookshelfHomeViewModel @Inject constructor(
 
     @Suppress("UNUSED")
     fun markSelectedBooks(bookshelfIds: List<Int>) {
-        _uiState.selectedBookIds.forEach { bookId ->
-            _uiState.bookInformationMap[bookId]?.let { bookInformation ->
-                bookshelfIds.forEach {
-                    bookshelfRepository.addBookIntoBookShelf(
-                        it,
-                        bookInformation
-                    )
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.selectedBookIds.forEach { bookId ->
+                bookshelfIds.forEach { bookshelfId ->
+                    bookRepository.getBookInformationFlow(bookId).last().onOk {
+                        bookshelfRepository.addBookIntoBookShelf(
+                            bookshelfId,
+                            it
+                        )
+                    }
                 }
-
             }
+            _uiState.selectedBookIds.clear()
+            _uiState.selectMode = false
         }
-        _uiState.selectedBookIds.clear()
-        _uiState.selectMode = false
     }
 
     fun saveAllBookshelf(uri: Uri) {

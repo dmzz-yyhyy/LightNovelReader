@@ -24,7 +24,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
@@ -50,8 +50,8 @@ fun NavGraphBuilder.updatesAvailableDialog() {
     dialog<Route.UpdatesAvailableDialog> {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<UpdatesAvailableDialogViewModel>()
-        val isDownloading by viewModel.isDownloading.collectAsState()
-        val downloadProgress by viewModel.downloadProgress.collectAsState()
+        val isDownloading by viewModel.isDownloading.collectAsStateWithLifecycle()
+        val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
         UpdatesAvailableDialog(
             onDismissRequest = { if (!isDownloading) navController.popBackStack() },
             onConfirmation = { viewModel.downloadUpdate() },

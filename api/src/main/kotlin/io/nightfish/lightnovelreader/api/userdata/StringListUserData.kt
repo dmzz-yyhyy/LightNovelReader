@@ -10,17 +10,17 @@ import kotlinx.coroutines.flow.map
  * @param path 用户数据的完整路径字符串
  * @param userDataDao 底层数据访问接口
  *
- * @since Api 2
+ * @since Api 4
  */
 class StringListUserData (
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<List<String>>(path) {
-    override fun set(value: List<String>) {
+    override suspend fun set(value: List<String>) {
         userDataDao.insert(path, group, "StringList", value.joinToString(","))
     }
 
-    override fun get(): List<String>? {
+    override suspend fun get(): List<String>? {
         return userDataDao.get(path)?.split(",")
     }
 
@@ -33,9 +33,9 @@ class StringListUserData (
      *
      * @param data 接收旧列表并返回新列表的函数
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun update(data: (List<String>) -> List<String>) {
+    suspend fun update(data: (List<String>) -> List<String>) {
         update(data, emptyList())
     }
 }

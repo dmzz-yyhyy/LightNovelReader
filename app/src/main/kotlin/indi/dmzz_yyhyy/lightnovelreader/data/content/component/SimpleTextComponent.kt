@@ -40,8 +40,6 @@ class SimpleTextComponent(
     val fontSizeUserData = userDataRepositoryApi.floatUserData(UserDataPath.Reader.FontSize.path)
     val fontLineHeightUserData = userDataRepositoryApi.floatUserData(UserDataPath.Reader.FontLineHeight.path)
     val fontWeightUserData = userDataRepositoryApi.floatUserData(UserDataPath.Reader.FontWeigh.path)
-    val textColorUserData = userDataRepositoryApi.colorUserData(UserDataPath.Reader.TextColor.path)
-    val textDarkColorUserData = userDataRepositoryApi.colorUserData(UserDataPath.Reader.TextDarkColor.path)
     val fontFamilyUriUserData = userDataRepositoryApi.uriUserData(UserDataPath.Reader.FontFamilyUri.path)
     val textMeasurer = TextMeasurer(
         createFontFamilyResolver(context),
@@ -56,7 +54,7 @@ class SimpleTextComponent(
         }
     )
 
-    override val id = SimpleTextComponentData.ID
+    override val id = SimpleTextComponentData.id
 
     @Composable
     override fun Content(modifier: Modifier) {
@@ -90,7 +88,7 @@ class SimpleTextComponent(
         return color
     }
 
-    override fun split(
+    override suspend fun split(
         height: Int,
         width: Int
     ): List<SimpleTextComponent> {
@@ -111,7 +109,7 @@ class SimpleTextComponent(
             .map { SimpleTextComponent(SimpleTextComponentData(it), userDataRepositoryApi, context) }
     }
 
-    fun readerFontFamily(fontFamilyUriUserData: UriUserData): FontFamily? {
+    suspend fun readerFontFamily(fontFamilyUriUserData: UriUserData): FontFamily? {
         val uri = fontFamilyUriUserData.getOrDefault(Uri.EMPTY)
         val fontFamily = loadReaderFontFamilySafe(uri)
         return fontFamily

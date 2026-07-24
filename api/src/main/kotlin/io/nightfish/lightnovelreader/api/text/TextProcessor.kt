@@ -63,13 +63,13 @@ interface TextProcessor {
      *
      * @since Api 2
      */
-    fun processBookInformation(bookInformation: BookInformation): BookInformation = bookInformation.toMutable().apply {
-        this.title = processText(title)
-        this.subtitle = processText(subtitle)
-        this.author = processText(author)
-        this.description = processText(description)
-        this.publishingHouse = processText(publishingHouse)
-    }
+    fun processBookInformation(bookInformation: BookInformation): BookInformation = bookInformation.copy(
+        title = processText(bookInformation.title),
+        subtitle = processText(bookInformation.subtitle),
+        author = processText(bookInformation.author),
+        description = processText(bookInformation.description),
+        publishingHouse = processText(bookInformation.publishingHouse)
+    )
 
     /**
      * 对书本卷目录中的文本字段进行处理
@@ -104,13 +104,13 @@ interface TextProcessor {
      *
      * @since Api 2
      */
-    fun processChapterContent(bookId: String, chapterContent: ChapterContent, componentProcessor: ComponentProcessor): ChapterContent = chapterContent.toMutable().apply {
-        this.content = componentProcessor.apply {
+    fun processChapterContent(bookId: String, chapterContent: ChapterContent, componentProcessor: ComponentProcessor): ChapterContent = chapterContent.copy(
+        content = componentProcessor.apply {
             process<SimpleTextComponentData> {
                 SimpleTextComponentData(processText(it.text))
             }
         }.get()
-    }
+    )
 
     /**
      * 对探索页书本简要信息中的文本字段进行处理

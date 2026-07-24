@@ -31,3 +31,9 @@ jobs:
         env:
           REPO_USER: ${{ secrets.REPOSILITE_USERNAME }}
           REPO_PASS: ${{ secrets.REPOSILITE_PASSWORD }}
+
+      - name: Publish to maven
+        run: ./gradlew compiler:publish
+        env:
+          REPO_USER: ${{ secrets.REPOSILITE_USERNAME }}
+          REPO_PASS: ${{ secrets.REPOSILITE_PASSWORD }}

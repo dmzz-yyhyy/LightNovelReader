@@ -4,6 +4,10 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.setValue
+import com.github.michaelbull.result.Result
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 interface DownloadItem {
@@ -11,12 +15,14 @@ interface DownloadItem {
     val bookId: String
     val startTime: LocalDateTime
     val progress: Float
+    val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>
 }
 
 @Stable
 class MutableDownloadItem(
     override val type: DownloadType,
     override val bookId: String,
+    override val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>,
     override val startTime: LocalDateTime = LocalDateTime.now()
 ): DownloadItem {
     override var progress by mutableFloatStateOf(0f)

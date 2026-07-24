@@ -9,17 +9,17 @@ import kotlinx.coroutines.flow.map
  * @param path 用户数据的完整路径字符串
  * @param userDataDao 底层数据访问接口
  *
- * @since Api 2
+ * @since Api 4
  */
 class IntUserData (
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<Int>(path) {
-    override fun set(value: Int) {
+    override suspend fun set(value: Int) {
         userDataDao.insert(path, group, "Int", value.toString())
     }
 
-    override fun get(): Int? {
+    override suspend fun get(): Int? {
         return userDataDao.get(path)?.toInt()
     }
 

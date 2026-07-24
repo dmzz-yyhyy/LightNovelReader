@@ -1,5 +1,7 @@
 package io.nightfish.lightnovelreader.api.web
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+
 /**
  * 网络书本数据源管理接口
  * 提供注册、注销及获取已激活数据源的能力
@@ -25,9 +27,9 @@ interface WebBookDataSourceManagerApi {
      *
      * @param webDataSourceId 要注销的数据源id
      *
-     * @since Api 2
+     * @since Api 4
      */
-    fun unregisterWebDataSource(webDataSourceId: Int)
+    fun unregisterWebDataSource(webDataSourceId: Identifier)
 
     /**
      * 获取当前激活的网络数据源

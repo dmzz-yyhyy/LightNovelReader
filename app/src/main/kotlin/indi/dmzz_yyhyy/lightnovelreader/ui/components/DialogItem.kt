@@ -22,21 +22,24 @@ fun ListItem(
 ) {
     ListItem(
         modifier = modifier,
-        colors = colors,
-        headlineContent = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
-            )
-        },
+        leadingContent = null,
+        trailingContent = trailingContent,
+        overlineContent = null,
         supportingContent = {
-            Text(
-                text = supportingText,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        },
-        trailingContent = trailingContent
+                Text(
+                    text = supportingText,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            },
+        colors = colors,
+        elevation = ListItemDefaults.elevation(),
+        content = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium
+                )
+            },
     )
 }
 

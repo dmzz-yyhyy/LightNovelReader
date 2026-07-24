@@ -8,7 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginAppInfo
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginUpdateCheckRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.PluginUpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.utils.ApkSignatureInfo
 import indi.dmzz_yyhyy.lightnovelreader.utils.getApkSignatures
@@ -28,6 +28,7 @@ class PluginManagerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val enabledPluginUserData = userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
+    private val disenabledPlugin = mutableSetOf<String>()
     val enabledPluginFlow = enabledPluginUserData.getFlowWithDefault(emptyList())
 
     val pluginList: List<PluginMetadata> = pluginManager.allPluginList
@@ -44,10 +45,10 @@ class PluginManagerViewModel @Inject constructor(
             val currentList = enabledPluginUserData.getOrDefault(emptyList())
             if (currentList.contains(pluginInfo.packageName)) {
                 enabledPluginUserData.set(currentList - pluginInfo.packageName)
-                pluginManager.loadedPluginMap[pluginInfo.packageName]?.onUnload()
+                disenabledPlugin.add(pluginInfo.packageName)
             } else {
                 enabledPluginUserData.set(currentList + pluginInfo.packageName)
-                pluginManager.loadPlugin(pluginInfo.packageName)
+                disenabledPlugin.remove(pluginInfo.packageName)
             }
         }
     }
@@ -71,6 +72,12 @@ class PluginManagerViewModel @Inject constructor(
 
     fun getPluginFile(packageName: String): File =
         pluginManager.getPluginFile(pluginManager.getPluginDir(packageName))
+
+    fun unloadAllDisenablePlugin() {
+        for (packageName in disenabledPlugin) {
+            pluginManager.loadedPluginMap[packageName]?.onUnload()
+        }
+    }
 
     @Composable
     fun PluginContent(id: String, paddingValues: PaddingValues) {

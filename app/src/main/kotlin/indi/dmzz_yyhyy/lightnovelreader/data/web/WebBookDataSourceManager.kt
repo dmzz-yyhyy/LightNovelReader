@@ -1,14 +1,17 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
-import dalvik.system.DexClassLoader
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginInjector
+import dalvik.system.PathClassLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjector
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.utils.AnnotationScanner
+import indi.dmzz_yyhyy.lightnovelreader.utils.convertOldId
+import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebBookDataSourceManagerApi
 import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,23 +34,22 @@ class WebBookDataSourceManager @Inject constructor (
         onWebDataSourceListChange()
     }
 
-    override fun unregisterWebDataSource(webDataSourceId: Int) {
+    override fun unregisterWebDataSource(webDataSourceId: Identifier) {
         _webDataSourceItems.removeAll { it.id == webDataSourceId }
         webBookDataSources.removeAll { it.id == webDataSourceId }
         onWebDataSourceListChange()
     }
 
-    override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value
+    override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value.origin
 
-    fun loadWebDataSourcesFromClassLoader(classLoader: DexClassLoader, injector: PluginInjector, packageName: String) {
+    fun loadWebDataSourcesFromClassLoader(classLoader: PathClassLoader, injector: PluginInjector, packageName: String, webDataSourceClassNames: List<String>) {
         val items = mutableListOf<WebDataSourceItem>()
-        AnnotationScanner.findAnnotatedClasses(classLoader, WebDataSource::class.java, packageName)
-            .component1()
-            ?.forEach {
-                if (!WebBookDataSource::class.java.isAssignableFrom(it)) return
-                val instance = injector.provide<WebBookDataSource>(it)
-                if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
-            }
+        webDataSourceClassNames.forEach { className ->
+            val clazz = runCatching { classLoader.loadClass(className) }.getOrNull() ?: return@forEach
+            if (!WebBookDataSource::class.java.isAssignableFrom(clazz)) return@forEach
+            val instance = injector.provide<WebBookDataSource>(clazz)
+            if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
+        }
         webDataSourceItemListMap[packageName] = items
     }
 
@@ -84,14 +86,17 @@ class WebBookDataSourceManager @Inject constructor (
         return mutableWebDataSourceProvider
     }
 
-    fun onWebDataSourceListChange() {
-        val webDataSourcesId = userDataRepository.intUserData(UserDataPath.Settings.Data.WebDataSourceId.path).getOrDefault("wenku8".hashCode())
+    fun onWebDataSourceListChange() = runBlocking {
+        val webDataSourcesId = userDataRepository
+            .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+            .get()
+            ?.convertOldId() ?: "Wenku8".ofId()
         mutableWebDataSourceProvider.update(
             webBookDataSources
                 .find { it.id == webDataSourcesId }
                 .also {
                     it?.onLoad()
-                } ?: EmptyWebDataSource
+                } ?: NotFoundWebDataSource(webDataSourcesId)
         )
     }
 }

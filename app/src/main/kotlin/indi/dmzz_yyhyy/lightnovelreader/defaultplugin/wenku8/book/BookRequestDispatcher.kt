@@ -1,45 +1,42 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book
 
-import indi.dmzz_yyhyy.lightnovelreader.utils.update
-import io.nightfish.lightnovelreader.api.book.BookInformation
-import io.nightfish.lightnovelreader.api.book.BookVolumes
-import io.nightfish.lightnovelreader.api.book.CanBeEmpty
-import io.nightfish.lightnovelreader.api.book.ChapterContent
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Result
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.flow.Flow
 
-class BookRequestDispatcher: Wenku8BookDataSource {
+class BookRequestDispatcher(
+    val host: String,
+    wenku8Api: Wenku8Api
+): Wenku8BookDataSource {
     val source = listOf(
-        Wenku8WebsiteDataSource(),
-        Wenku8AppDataSource(update("eNpb85aBtYRBNqOkpKDYSl-_PDUvu9RCtyg1J7FSLze1vEIvvygdAO0UDQw").toString(), "1.24-pico-mochi") {
-            "Dalvik/2.1.0 (Linux; U; Android 15; 23114RD76B Build/AQ3A.240912.001)"
-        },
-        Wenku8AppDataSource(update("eNpb85aBtYRBMaOkpMBKXz-xoECvPDUvu9RCLzk_Vz8xL6UoPzNFryCjAAAfiA5Q").toString(), "1.21") {
-            "wenku8"
-        },
+        Wenku8WebsiteDataSource(host, wenku8Api)
     )
 
-    private suspend fun <T: CanBeEmpty>rotation(default: T, block: suspend Wenku8BookDataSource.() -> T): T {
+    private suspend fun <T>rotation(block: suspend Wenku8BookDataSource.() -> Result<T, WebRequestError>): Result<T, WebRequestError> {
+        var result: Result<T, WebRequestError> = Err(WebRequestError("No available data source", "There is no wenku8 data source that can be use"))
         for (dataSource in source) {
-            val result = block.invoke(dataSource)
-            if (result.isEmpty()) continue
+            result = block.invoke(dataSource)
+            if (result.isErr) continue
             return result
         }
-        return default
+        return result
     }
 
-    override suspend fun getBookInformation(id: String): BookInformation = rotation(BookInformation.empty(id)) {
+    override suspend fun getBookInformation(id: String) = rotation {
         getBookInformation(id)
     }
 
-    override suspend fun getBookVolumes(id: String): BookVolumes= rotation(BookVolumes.empty(id)) {
+    override suspend fun getBookVolumes(id: String) = rotation {
         getBookVolumes(id)
     }
 
     override suspend fun getChapterContent(
         chapterId: String,
         bookId: String
-    ): ChapterContent= rotation(ChapterContent.empty(chapterId)) {
+    ) = rotation {
         getChapterContent(chapterId, bookId)
     }
 

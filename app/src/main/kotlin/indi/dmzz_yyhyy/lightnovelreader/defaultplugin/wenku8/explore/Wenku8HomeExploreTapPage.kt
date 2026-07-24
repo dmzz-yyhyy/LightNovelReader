@@ -1,8 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore
 
 import androidx.core.net.toUri
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api.host
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
@@ -10,13 +9,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.jsoup.nodes.Document
 
-object Wenku8HomeExploreTapPage: ExploreTapPageDataSource {
+class Wenku8HomeExploreTapPage(
+    val host: String,
+    val wenku8Api: Wenku8Api
+): ExploreTapPageDataSource {
     override val title = "首页"
 
     override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
         val rows = mutableListOf<ExploreBooksRow>()
-        val soup = autoReconnectionGetWithWenku8Cookie(host)
-        (0..2).map { index->
+        val soup = wenku8Api.getWithWenku8Cookie(host).component1()
+        (0..2).forEach { index->
             rows.add(getBooksRow(index, soup))
             emit(rows)
         }

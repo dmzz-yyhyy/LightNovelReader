@@ -21,15 +21,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.network.NetworkHeaders
 import coil3.network.httpHeaders
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import kotlinx.coroutines.Dispatchers
+import coil3.request.transformations
+import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
-import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
-import me.saket.telephoto.zoomable.rememberZoomableState
-import me.saket.telephoto.zoomable.zoomable
+import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
+import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
+import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun ImageViewerScreen(
@@ -40,9 +42,14 @@ fun ImageViewerScreen(
     header: Map<String, String> = emptyMap()
 ) {
     val context = LocalContext.current
+    val imageTransPostProcessingViewModel = hiltViewModel<ImageTransPostProcessingViewModel>()
     val request = remember(imageUri, header) {
+        val transformations = imageTransPostProcessingViewModel
+            .imageTransPostProcessingManager
+            .getCoil3Transformations(ImagePostProcessingPipeline.imageComponent, imageUri)
         ImageRequest.Builder(context)
             .data(imageUri)
+            .transformations(transformations)
             .crossfade(true)
             .interceptorCoroutineContext(Dispatchers.Default)
             .httpHeaders(
@@ -52,21 +59,18 @@ fun ImageViewerScreen(
             )
             .build()
     }
-    val zoomableState = rememberZoomableState()
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.8f))
     ) {
-        ZoomableAsyncImage(
+        CoilZoomAsyncImage(
+            model = request,
+            contentDescription = null,
             modifier = Modifier
                 .fillMaxSize()
-                .zoomable(state = zoomableState),
-            model = request,
-            contentDescription = null
         )
-
         IconButton(
             onClick = onDismissRequest,
             modifier = Modifier

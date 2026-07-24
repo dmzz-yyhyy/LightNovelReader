@@ -2,17 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
 import androidx.room.Dao
 import androidx.room.Query
-
-data class StorageBytes(
-    val id: String,
-    val bytes: Long
-)
-
-data class VolumeStorageRow(
-    val bookId: String,
-    val chapterIdList: String,
-    val bytes: Long
-)
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.StorageBytes
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeStorageRow
 
 @Dao
 interface StorageStatsDao {

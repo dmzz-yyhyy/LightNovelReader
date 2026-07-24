@@ -8,10 +8,9 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.LocalBookDataSourceApi
-import io.nightfish.lightnovelreader.api.book.MutableChapterContent
-import io.nightfish.lightnovelreader.api.book.MutableUserReadingData
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,55 +22,64 @@ class LocalBookDataSource @Inject constructor(
     private val userReadingDataDao: UserReadingDataDao
 ): LocalBookDataSourceApi {
     override suspend fun getBookInformation(id: String): BookInformation? = bookInformationDao.get(id)
-    override fun updateBookInformation(info: BookInformation) = bookInformationDao.insert(info)
+    override suspend fun updateBookInformation(info: BookInformation) = bookInformationDao.insert(info)
     override suspend fun getBookVolumes(id: String): BookVolumes? = bookVolumesDao.getBookVolumes(id)
-    override fun updateBookVolumes(bookVolumes: BookVolumes) =
+    override suspend fun updateBookVolumes(bookVolumes: BookVolumes) =
         bookVolumesDao.insertVolume(bookVolumes.bookId, bookVolumes)
 
     override suspend fun getChapterContent(id: String) = chapterContentDao.get(id)?.let {
-        MutableChapterContent(
+        ChapterContent(
             it.id,
             it.title,
             it.content,
-            it.lastChapter,
-            it.nextChapter
+            it.prevChapter.ifEmpty { null },
+            it.nextChapter.ifEmpty { null }
         )
     }
-    override fun updateChapterContent(chapterContent: ChapterContent) =
+    override suspend fun updateChapterContent(chapterContent: ChapterContent) =
         chapterContentDao.update(chapterContent)
 
-    override fun getUserReadingData(id: String) = userReadingDataDao.getEntity(id).let {
-        it ?: return@let MutableUserReadingData.empty().apply { this.id = id }
-        MutableUserReadingData(
+    override suspend fun getUserReadingData(id: String) = userReadingDataDao.getEntity(id).let {
+        it ?: return@let UserReadingData.new(id)
+        UserReadingData(
             it.id,
-            it.lastReadTime,
+            if (it.lastReadTime == LocalDateTime.MIN) null else it.lastReadTime,
             it.totalReadTime,
             it.readingProgress,
-            it.lastReadChapterId,
-            it.lastReadChapterTitle,
+            it.lastReadChapterId.ifEmpty { null },
+            it.lastReadChapterTitle.ifEmpty { null },
             it.currentChapterReadingProgressMap,
             it.maxChapterReadingProgressMap
 
         )
     }
 
-    override fun getUserReadingDataFlow(id: String) = userReadingDataDao.getEntityFlow(id).map {
-        it ?: return@map MutableUserReadingData.empty().apply { this.id = id }
-        MutableUserReadingData(
+    fun getUserReadingDataFlow(id: String) = userReadingDataDao.getEntityFlow(id).map {
+        it ?: return@map UserReadingData(
+            id,
+            null,
+            0,
+            0f,
+            null,
+            null,
+            emptyMap(),
+            emptyMap()
+        )
+        UserReadingData(
             it.id,
-            it.lastReadTime,
+            if (it.lastReadTime == LocalDateTime.MIN) null else it.lastReadTime,
             it.totalReadTime,
             it.readingProgress,
-            it.lastReadChapterId,
-            it.lastReadChapterTitle,
+            it.lastReadChapterId.ifEmpty { null },
+            it.lastReadChapterTitle.ifEmpty { null },
             it.currentChapterReadingProgressMap,
             it.maxChapterReadingProgressMap
         )
     }
 
-    override fun updateUserReadingData(id: String, update: (MutableUserReadingData) -> UserReadingData) {
-        val userReadingData = userReadingDataDao.getEntityWithoutFlow(id)?.let {
-            MutableUserReadingData(
+    override suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData) {
+        val userReadingData = userReadingDataDao.getEntity(id)?.let {
+            UserReadingData(
                 it.id,
                 it.lastReadTime,
                 it.totalReadTime,
@@ -81,23 +89,23 @@ class LocalBookDataSource @Inject constructor(
                 it.currentChapterReadingProgressMap,
                 it.maxChapterReadingProgressMap
             )
-        } ?: MutableUserReadingData.empty().apply { this.id = id }
-        val new = update(userReadingData.apply { this.id = id })
+        } ?: UserReadingData.new(id)
+        val new = update(userReadingData)
         userReadingDataDao.insert(
             id = new.id,
-            lastReadTime = new.lastReadTime,
+            lastReadTime = new.lastReadTime ?: LocalDateTime.MIN,
             totalReadTime = new.totalReadTime,
             readingProgress = new.readingProgress,
-            lastReadChapterId = new.lastReadChapterId,
-            lastReadChapterTitle = new.lastReadChapterTitle,
+            lastReadChapterId = new.lastReadChapterId ?: "",
+            lastReadChapterTitle = new.lastReadChapterTitle ?: "",
             currentChapterReadingProgressMap = new.currentChapterReadingProgressMap,
             maxChapterReadingProgressMap = new.maxChapterReadingProgressMap
         )
     }
 
-    override fun getAllUserReadingData(): List<UserReadingData> =
+    override suspend fun getAllUserReadingData(): List<UserReadingData> =
         userReadingDataDao.getAll().map {
-            MutableUserReadingData(
+            UserReadingData(
                 it.id,
                 it.lastReadTime,
                 it.totalReadTime,
@@ -112,7 +120,7 @@ class LocalBookDataSource @Inject constructor(
     override suspend fun isChapterContentExists(id: String): Boolean =
         chapterContentDao.getId(id) != null
 
-    override fun clear() {
+    override suspend fun clear() {
         userReadingDataDao.clear()
         bookInformationDao.clear()
         bookVolumesDao.clear()

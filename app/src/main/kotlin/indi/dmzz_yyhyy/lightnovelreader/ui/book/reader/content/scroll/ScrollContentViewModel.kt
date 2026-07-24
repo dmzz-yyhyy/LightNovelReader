@@ -3,9 +3,13 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.scroll
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.unit.IntSize
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.map
+import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentViewModel
 import indi.dmzz_yyhyy.lightnovelreader.utils.throttleLatest
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +29,12 @@ class ScrollContentViewModel(
     private var progressScrollLoadJob: Job? = null
     private var lazyColumnSize = IntSize(0, 0)
     private var lastWriteReadingProgress = 0L
-    private var collectLastChapterJob: Job? = null
+    private var collectPrevChapterJob: Job? = null
     private var collectCurrentChapterJob: Job? = null
     private var collectNextChapterJob: Job? = null
 
     override val uiState: MutableScrollContentUiSate = MutableScrollContentUiSate(
-        loadLastChapter = ::loadLastChapter,
+        loadPrevChapter = ::loadPrevChapter,
         loadNextChapter = ::loadNextChapter,
         changeChapter = ::changeChapter,
         setLazyColumnSize = {
@@ -44,13 +48,19 @@ class ScrollContentViewModel(
             settingState.isUsingContinuousScrollingUserData.getFlowWithDefault(true).collect {
                 if (it) {
                     progressScrollLoad()
-                    if (uiState.contentList.size == 1) {
-                        coroutineScope.launch(Dispatchers.Main) { changeChapter(uiState.readingContentId) }
+                    val hasAdjacentChapters = uiState.contentList.getOrNull(0) != null || uiState.contentList.getOrNull(2) != null
+                    if (!hasAdjacentChapters) {
+                        coroutineScope.launch(Dispatchers.Main) {
+                            uiState.readingChapterId?.let { id -> changeChapter(id) }
+                        }
                     }
                 } else {
                     progressScrollLoadJob?.cancel()
-                    if (uiState.contentList.size > 1) {
-                        coroutineScope.launch(Dispatchers.Main) { changeChapter(uiState.readingContentId) }
+                    val hasAdjacentChapters = uiState.contentList.getOrNull(0) != null || uiState.contentList.getOrNull(2) != null
+                    if (hasAdjacentChapters) {
+                        coroutineScope.launch(Dispatchers.Main) {
+                            uiState.readingChapterId?.let { id -> changeChapter(id) }
+                        }
                     }
                 }
             }
@@ -60,10 +70,10 @@ class ScrollContentViewModel(
                 .throttleLatest(120L)
                 .collect {
                     val layoutInfo = uiState.lazyListState.layoutInfo
-                    val chapterId = uiState.readingChapterContent.id
+                    val chapterId = uiState.readingChapterId ?: return@collect
                     val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == chapterId } ?: return@collect
 
-                    val newProgress = 1f.coerceAtMost((-item.offset + lazyColumnSize.height).toFloat() / item.size)
+                    val newProgress = calculateReadingProgress(item.offset, item.size)
                     if (newProgress == uiState.readingProgress) return@collect
                     uiState.readingProgress = newProgress
 
@@ -83,12 +93,10 @@ class ScrollContentViewModel(
                 .collect { scrolling ->
                     if (!scrolling) {
                         val layoutInfo = uiState.lazyListState.layoutInfo
-                        val chapterId = uiState.readingChapterContent.id
+                        val chapterId = uiState.readingChapterId ?: return@collect
                         val item = layoutInfo.visibleItemsInfo.firstOrNull { it.key == chapterId } ?: return@collect
 
-                        val finalProgress = 1f.coerceAtMost(
-                            (-item.offset + lazyColumnSize.height).toFloat() / item.size.coerceAtLeast(1)
-                        )
+                        val finalProgress = calculateReadingProgress(item.offset, item.size)
 
                         if (uiState.readingProgress != finalProgress) {
                             uiState.readingProgress = finalProgress
@@ -102,65 +110,78 @@ class ScrollContentViewModel(
 
 
     private fun writeProgressRightNow() {
-        updateReadingProgress(uiState.readingChapterContent.id, uiState.readingProgress)
+        updateReadingProgress(uiState.readingChapterId ?: return, uiState.readingProgress)
     }
 
     private fun progressScrollLoad() {
         progressScrollLoadJob?.cancel()
         progressScrollLoadJob = coroutineScope.launch {
             snapshotFlow { uiState.lazyListState.layoutInfo.visibleItemsInfo.getOrNull(0) }.collect { itemInfo ->
-                if (itemInfo?.key == uiState.readingChapterContent.lastChapter &&
-                    lazyColumnSize.height != 0 &&
-                    itemInfo.offset <= -lazyColumnSize.height &&
-                    !uiState.readingChapterContent.isEmpty() &&
-                    uiState.readingChapterContent.hasPrevChapter()
-                ) {
-                    collectNextChapterJob?.cancel()
-                    collectCurrentChapterJob?.cancel()
-                    collectLastChapterJob?.cancel()
-                    val chapter1 = uiState.contentList[1]
-                    val chapter0 = uiState.contentList[0]
-                    resetContentList()
-                    uiState.contentList[2] = chapter1
-                    uiState.contentList[1] = chapter0
-                    collectNextChapterJob = collectChapter(2, uiState.readingContentId)
-                    collectCurrentChapterJob = collectChapter(1, uiState.readingChapterContent.lastChapter)
-                    uiState.readingContentId = uiState.readingChapterContent.lastChapter
-                    bookRepository.updateUserReadingData(uiState.bookId) {
-                        it.apply {
-                            lastReadTime = LocalDateTime.now()
-                            lastReadChapterId = uiState.readingChapterContent.id
-                            lastReadChapterTitle = uiState.readingChapterContent.title
+                uiState.readingChapterContent?.onOk { readingChapterContent ->
+                    if (
+                        itemInfo != null &&
+                        itemInfo.key == readingChapterContent.prevChapter &&
+                        lazyColumnSize.height != 0 &&
+                        itemInfo.offset <= -lazyColumnSize.height &&
+                        readingChapterContent.hasPrevChapter()
+                    ) {
+                        collectNextChapterJob?.cancel()
+                        collectCurrentChapterJob?.cancel()
+                        collectPrevChapterJob?.cancel()
+                        val nextChapter = uiState.contentList[1]
+                        val currentChapter = uiState.contentList[0]
+                        val currentChapterId = readingChapterContent.prevChapter
+                        val currentChapterContent = currentChapter?.second?.get()
+                        resetContentList()
+                        uiState.contentList[2] = nextChapter
+                        uiState.contentList[1] = currentChapter
+                        collectNextChapterJob = collectChapter(2, readingChapterContent.id)
+                        collectCurrentChapterJob = collectChapter(1, currentChapterId) { chapterContent ->
+                            collectPrevChapterJob?.cancel()
+                            collectPrevChapterJob = collectAdjacentChapter(
+                                index = 0,
+                                chapterId = chapterContent.prevChapter,
+                                currentChapterId = chapterContent.id,
+                                occupiedChapterIds = setOf(readingChapterContent.id)
+                            )
+                            updateLastReadChapter(chapterContent.id, chapterContent.title)
+                        }
+                        uiState.readingChapterId = currentChapterId
+                        currentChapterContent?.let {
+                            updateLastReadChapter(it.id, it.title)
                         }
                     }
-                    if (uiState.readingChapterContent.hasPrevChapter())
-                        collectLastChapterJob = collectChapter(0, uiState.readingChapterContent.lastChapter)
-                }
-                if (
-                    itemInfo?.key == uiState.readingChapterContent.nextChapter &&
-                    !uiState.readingChapterContent.isEmpty() &&
-                    uiState.readingChapterContent.hasNextChapter()
-                ) {
-                    collectNextChapterJob?.cancel()
-                    collectCurrentChapterJob?.cancel()
-                    collectLastChapterJob?.cancel()
-                    val chapter1 = uiState.contentList[1]
-                    val chapter2 = uiState.contentList[2]
-                    resetContentList()
-                    uiState.contentList[0] = chapter1
-                    uiState.contentList[1] = chapter2
-                    collectLastChapterJob = collectChapter(0, uiState.readingContentId)
-                    collectCurrentChapterJob = collectChapter(1, uiState.readingChapterContent.nextChapter)
-                    uiState.readingContentId = uiState.readingChapterContent.nextChapter
-                    bookRepository.updateUserReadingData(uiState.bookId) {
-                        it.apply {
-                            lastReadTime = LocalDateTime.now()
-                            lastReadChapterId = uiState.readingChapterContent.id
-                            lastReadChapterTitle = uiState.readingChapterContent.title
+                    if (
+                        itemInfo != null &&
+                        itemInfo.key == readingChapterContent.nextChapter &&
+                        readingChapterContent.hasNextChapter()
+                    ) {
+                        collectNextChapterJob?.cancel()
+                        collectCurrentChapterJob?.cancel()
+                        collectPrevChapterJob?.cancel()
+                        val prevChapter = uiState.contentList[1]
+                        val currentChapter = uiState.contentList[2]
+                        val currentChapterId = readingChapterContent.nextChapter
+                        val currentChapterContent = currentChapter?.second?.get()
+                        resetContentList()
+                        uiState.contentList[0] = prevChapter
+                        uiState.contentList[1] = currentChapter
+                        collectPrevChapterJob = collectChapter(0, readingChapterContent.id)
+                        collectCurrentChapterJob = collectChapter(1, currentChapterId) { chapterContent ->
+                            collectNextChapterJob?.cancel()
+                            collectNextChapterJob = collectAdjacentChapter(
+                                index = 2,
+                                chapterId = chapterContent.nextChapter,
+                                currentChapterId = chapterContent.id,
+                                occupiedChapterIds = setOf(readingChapterContent.id)
+                            )
+                            updateLastReadChapter(chapterContent.id, chapterContent.title)
+                        }
+                        uiState.readingChapterId = currentChapterId
+                        currentChapterContent?.let {
+                            updateLastReadChapter(it.id, it.title)
                         }
                     }
-                    if (uiState.readingChapterContent.hasNextChapter())
-                        collectNextChapterJob = collectChapter(2, uiState.readingChapterContent.nextChapter)
                 }
             }
         }
@@ -171,20 +192,24 @@ class ScrollContentViewModel(
     }
 
     override fun loadNextChapter() {
-        if (!uiState.readingChapterContent.hasNextChapter()) return
-        coroutineScope.launch {
-            changeChapter(
-                id = uiState.readingChapterContent.nextChapter
-            )
+        uiState.readingChapterContent?.onOk { readingChapterContent ->
+            if (!readingChapterContent.hasNextChapter()) return
+            coroutineScope.launch {
+                changeChapter(
+                    id = readingChapterContent.nextChapter ?: return@launch
+                )
+            }
         }
     }
 
-    override fun loadLastChapter() {
-        if (!uiState.readingChapterContent.hasPrevChapter()) return
-        coroutineScope.launch {
-            changeChapter(
-                id = uiState.readingChapterContent.lastChapter
-            )
+    override fun loadPrevChapter() {
+        uiState.readingChapterContent?.onOk { readingChapterContent ->
+            if (!readingChapterContent.hasPrevChapter()) return
+            coroutineScope.launch {
+                changeChapter(
+                    id = readingChapterContent.prevChapter ?: return@launch
+                )
+            }
         }
     }
 
@@ -197,71 +222,146 @@ class ScrollContentViewModel(
 
     override fun changeChapter(id: String) {
         resetContentList()
-        uiState.readingContentId = id
+        uiState.readingChapterId = id
         uiState.readingProgress = 0f
         uiState.lazyListState = LazyListState()
         coroutineScope.launch (Dispatchers.IO) {
             val isUsingContinuousScrolling = settingState.isUsingContinuousScrollingUserData.getOrDefault(true)
-            if (isUsingContinuousScrolling) chapterChapterWithContinuousScrolling(id)
-            else chapterChapterWithoutContinuousScrolling(id)
+            if (isUsingContinuousScrolling) changeChapterWithContinuousScrolling(id)
+            else changeChapterWithoutContinuousScrolling(id)
         }
     }
 
-    private fun chapterChapterWithoutContinuousScrolling(id: String) {
+    private fun changeChapterWithoutContinuousScrolling(id: String) {
         collectCurrentChapterJob?.cancel()
         collectCurrentChapterJob = coroutineScope.launch(Dispatchers.IO) {
-            bookRepository.getChapterContentFlow(id, uiState.bookId).collect { content ->
-                if (content.isEmpty()) return@collect
-                uiState.contentList[1] = content
-                uiState.contentComponentsMap[content.id] = contentComponentRepository.getContentDataFromJson(content.content).components
-                bookRepository.updateUserReadingData(uiState.bookId) { userReadingData ->
-                    uiState.readingProgress = userReadingData.currentChapterReadingProgressMap[id] ?: 0f
-                    userReadingData.apply {
-                        lastReadTime = LocalDateTime.now()
-                        lastReadChapterId = id
-                        lastReadChapterTitle = content.title
-                    }
+            bookRepository.getChapterContentFlow(id, uiState.bookId).collect { result ->
+                uiState.contentList[1] = id to result.map {
+                    ChapterContentUiState(
+                        id = it.id,
+                        title = it.title,
+                        content = contentComponentRepository.getContentDataFromJson(it.content).components,
+                        prevChapter = it.prevChapter,
+                        nextChapter = it.nextChapter
+                    )
                 }
-                if (content.hasNextChapter()) {
-                    bookRepository.getChapterContent(content.nextChapter, uiState.bookId)
+                result.onOk { chapterContent ->
+                    bookRepository.updateUserReadingData(uiState.bookId) { userReadingData ->
+                        uiState.readingProgress = userReadingData.currentChapterReadingProgressMap[id] ?: 0f
+                        userReadingData.copy(
+                            lastReadTime = LocalDateTime.now(),
+                            lastReadChapterId = id,
+                            lastReadChapterTitle = chapterContent.title,
+                        )
+                    }
+                    chapterContent.nextChapter?.let {
+                        bookRepository.preloadChapterContent(
+                            it,
+                            uiState.bookId
+                        )
+                    }
                 }
             }
         }
     }
 
-    private fun chapterChapterWithContinuousScrolling(id: String) {
+    private fun changeChapterWithContinuousScrolling(id: String) {
         collectCurrentChapterJob?.cancel()
         collectCurrentChapterJob = coroutineScope.launch(Dispatchers.IO) {
-            bookRepository.getChapterContentFlow(id, uiState.bookId).collect { content ->
-                if (content.isEmpty()) return@collect
-                uiState.contentList[1] = content
-                uiState.contentComponentsMap[content.id] = contentComponentRepository.getContentDataFromJson(content.content).components
-                bookRepository.updateUserReadingData(uiState.bookId) { userReadingData ->
-                    uiState.readingProgress = userReadingData.currentChapterReadingProgressMap[id] ?: 0f
-                    userReadingData.apply {
-                        lastReadTime = LocalDateTime.now()
-                        lastReadChapterId = id
-                        lastReadChapterTitle = content.title
+            bookRepository.getChapterContentFlow(id, uiState.bookId).collect { result ->
+                uiState.contentList[1] = id to result.map {
+                    ChapterContentUiState(
+                        id = it.id,
+                        title = it.title,
+                        content = contentComponentRepository.getContentDataFromJson(it.content).components,
+                        prevChapter = it.prevChapter,
+                        nextChapter = it.nextChapter
+                    )
+                }
+                result.onOk { chapterContent ->
+                    bookRepository.updateUserReadingData(uiState.bookId) { userReadingData ->
+                        uiState.readingProgress = userReadingData.currentChapterReadingProgressMap[id] ?: 0f
+                        userReadingData.copy(
+                            lastReadTime = LocalDateTime.now(),
+                            lastReadChapterId = id,
+                            lastReadChapterTitle = chapterContent.title,
+                        )
                     }
-                }
-                if (content.hasPrevChapter()) {
-                    collectLastChapterJob?.cancel()
-                    collectLastChapterJob = collectChapter(0, content.lastChapter)
-                }
-                if (content.hasNextChapter()) {
+                    chapterContent.nextChapter?.let {
+                        bookRepository.preloadChapterContent(
+                            it,
+                            uiState.bookId
+                        )
+                    }
+
+                    collectPrevChapterJob?.cancel()
+                    collectPrevChapterJob = collectAdjacentChapter(
+                        index = 0,
+                        chapterId = chapterContent.prevChapter,
+                        currentChapterId = chapterContent.id,
+                        occupiedChapterIds = setOfNotNull(chapterContent.nextChapter)
+                    )
                     collectNextChapterJob?.cancel()
-                    collectNextChapterJob = collectChapter(2, content.nextChapter)
+                    collectNextChapterJob = collectAdjacentChapter(
+                        index = 2,
+                        chapterId = chapterContent.nextChapter,
+                        currentChapterId = chapterContent.id,
+                        occupiedChapterIds = setOfNotNull(chapterContent.prevChapter)
+                    )
                 }
             }
         }
     }
 
-    private fun collectChapter(index: Int, chapterId: String) = coroutineScope.launch {
+    private fun collectChapter(
+        index: Int,
+        chapterId: String,
+        onLoaded: suspend (ChapterContentUiState) -> Unit = {}
+    ) = coroutineScope.launch {
             bookRepository.getChapterContentFlow(chapterId, uiState.bookId)
                 .collect { content ->
-                    if (content.isEmpty()) return@collect
-                    uiState.contentList[index] = content
-                    uiState.contentComponentsMap[content.id] = contentComponentRepository.getContentDataFromJson(content.content).components
+                    var loadedContent: ChapterContentUiState? = null
+                    uiState.contentList[index] = chapterId to content.map {
+                        ChapterContentUiState(
+                            id = it.id,
+                            title = it.title,
+                            content = contentComponentRepository.getContentDataFromJson(it.content).components,
+                            prevChapter = it.prevChapter,
+                            nextChapter = it.nextChapter
+                        ).also { chapterContentUiState ->
+                            loadedContent = chapterContentUiState
+                        }
+                    }
+                    loadedContent?.let { onLoaded(it) }
                 }
         }
+
+    private fun collectAdjacentChapter(
+        index: Int,
+        chapterId: String?,
+        currentChapterId: String,
+        occupiedChapterIds: Set<String> = emptySet()
+    ): Job? {
+        val adjacentChapterId = chapterId
+            ?.takeIf { it != currentChapterId }
+            ?.takeIf { it !in occupiedChapterIds }
+            ?: run {
+                uiState.contentList[index] = null
+                return null
+            }
+        return collectChapter(index, adjacentChapterId)
+    }
+
+    private suspend fun updateLastReadChapter(chapterId: String, chapterTitle: String?) {
+        bookRepository.updateUserReadingData(uiState.bookId) {
+            it.copy(
+                lastReadTime = LocalDateTime.now(),
+                lastReadChapterId = chapterId,
+                lastReadChapterTitle = chapterTitle ?: it.lastReadChapterTitle
+            )
+        }
+    }
+
+    private fun calculateReadingProgress(itemOffset: Int, itemSize: Int): Float =
+        ((-itemOffset + lazyColumnSize.height).toFloat() / itemSize.coerceAtLeast(1)).coerceIn(0f, 1f)
 }
