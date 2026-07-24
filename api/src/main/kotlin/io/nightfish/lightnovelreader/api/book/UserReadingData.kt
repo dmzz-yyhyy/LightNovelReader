@@ -28,7 +28,16 @@ data class UserReadingData (
     val currentChapterReadingProgressMap: Map<String, Float>,
     val maxChapterReadingProgressMap: Map<String, Float>
 ) {
+    /** [UserReadingData]的工厂方法集合 */
     companion object {
+        /**
+         * 创建一个新的用户阅读数据
+         * @param id 书本id
+         *
+         * @return 默认的书本阅读数据
+         *
+         * @since Api 4
+         */
         fun new(id: String) = UserReadingData(
             id = id,
             lastReadTime = null,
@@ -41,6 +50,16 @@ data class UserReadingData (
         )
     }
 
+    /**
+     * 获取一份修改过某个章节的阅读进度的阅读数据的副本
+     *
+     * @param chapterId 要修改的章节id
+     * @param progress 指定的进度
+     *
+     * @return 用户书本阅读数据
+     *
+     * @since Api 4
+     */
     fun copyWithUpdatedChapterReadingProgress(chapterId: String, progress: Float): UserReadingData {
         val maxProgress = progress.coerceAtLeast(this.maxChapterReadingProgressMap[chapterId] ?: 0f)
         val currentChapterReadingProgressMap = this.currentChapterReadingProgressMap.toMutableMap()

@@ -26,6 +26,9 @@ data class Identifier(
      */
     override fun toString() = "$namespace:$id"
 
+    /**
+     * 判读相同
+     */
     override fun equals(other: Any?): Boolean {
         if (other is Identifier) {
             return other.namespace == this.namespace && other.id == this.id
@@ -33,6 +36,9 @@ data class Identifier(
         return super.equals(other)
     }
 
+    /**
+     * 生成HashCode
+     */
     override fun hashCode(): Int {
         var result = namespace.hashCode()
         result = 31 * result + id.hashCode()

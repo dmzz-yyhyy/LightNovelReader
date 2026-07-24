@@ -7,6 +7,7 @@ import java.io.File
  * 插件运行时的上下文对象
  * 宿主会将此对象注入到插件中，供插件访问它的资源和文件目录
  *
+ * @property packageName 插件包名
  * @property dataDir 插件的私有数据目录
  * @property pluginFile 插件自身的 APK 文件
  *

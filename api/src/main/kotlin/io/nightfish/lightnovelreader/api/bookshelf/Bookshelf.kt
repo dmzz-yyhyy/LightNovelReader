@@ -30,7 +30,16 @@ data class Bookshelf(
     val pinnedBookIds: List<String> = emptyList(),
     val updatedBookIds: List<String> = emptyList()
 ) {
+
+    /** [Bookshelf]的工厂方法集合 */
     companion object {
+        /**
+         * 创建一个新的书架
+         *
+         * @return 新的空书架
+         *
+         * @since Api 4
+         */
         fun create() =
             Bookshelf(
                 id = Clock.System.now().epochSeconds.hashCode(),
