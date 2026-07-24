@@ -27,6 +27,7 @@
     <string name="invert_selection">反选</string>
     <string name="export">导出</string>
     <string name="undo">撤销</string>
+    <string name="processing">处理中…</string>
     <string name="manual_download">手动下载</string>
     <string name="follow_system">跟随系统</string>
     <string name="exit">退出</string>
@@ -75,6 +76,8 @@
     <string name="book_word_count_limit">字数限制:</string>
     <string name="source_available_title">可用数据源</string>
     <string name="unavailable">不可用</string>
+    <string name="overview">概览</string>
+    <string name="settings">设置</string>
     <!-- Hints -->
     <string name="nothing_here">没有内容</string>
     <string name="nothing_here_desc_reading">阅读一些书本之后，它们将显示在此处\n通过下方导航栏前往『探索』页面以获取新书</string>
@@ -93,7 +96,8 @@
     <string name="reader_reached_end">已经结束了…</string>
     <string name="font_file_error">字体文件错误或已损坏, 请您检查后导入</string>
     <string name="settings_data_source_pending_title">切换到 %s</string>
-    <string name="settings_data_source_pending_desc">        应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
+    <string name="settings_data_source_pending_desc">
+        应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
     </string>
     <string name="plugin_invalid_title">无效插件</string>
     <string name="plugin_invalid_desc">无法获取插件信息，插件可能无效或损坏</string>
@@ -101,13 +105,20 @@
     <string name="plugin_disabled_desc">调整设置需要启用插件</string>
     <string name="confirm_exit">确认退出？</string>
     <string name="hint_unsaved_changes_will_be_lost">如果现在退出，您未保存的更改将会丢失。</string>
+    <string name="local_book_clear_options">删除选项</string>
+    <string name="local_book_clear_index">删除 卷和章节目录</string>
+    <string name="local_book_clear_content">删除 章节内容</string>
+    <string name="local_book_clear_reading">删除 阅读记录</string>
+    <string name="local_book_clear_confirm_title">确认删除</string>
+    <string name="local_book_clear_confirm_content">如果你继续，选中的内容将会被删除且会释放 %1$s 的存储空间。\n你可以之后重新导入或者下载内容。\n操作不可撤回。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">开始缓存：%1$s</string>
     <string name="cache_book_running">此书本正在缓存中</string>
     <string name="cache_book_finished">缓存成功</string>
     <string name="cache_book_error">缓存失败</string>
     <string name="restart_to_apply_changes">重启应用以生效</string>
-    <string name="network_error_message">        应用无法从数据源获取信息，这通常是网络问题所致。在提交问题前，请知晓：我们无法协助排查具体网络状况，请先检查您的网络连接。
+    <string name="network_error_message">
+        应用无法从数据源获取信息，这通常是网络问题所致。在提交问题前，请知晓：我们无法协助排查具体网络状况，请先检查您的网络连接。
     </string>
     <string name="export_book_started">开始导出书本 %s</string>
     <string name="export_book_success">成功导出书本 %s</string>
@@ -211,6 +222,8 @@
     <string name="settings_snap_data_desc">将应用内的用户数据导出为 .lnr 文件</string>
     <string name="settings_import_data">导入数据</string>
     <string name="settings_import_data_desc">从选定的 .lnr 文件导入用户数据</string>
+    <string name="settings_storage_manager">存储使用</string>
+    <string name="settings_storage_manager_desc">查看应用存储使用详情</string>
     <string name="settings_select_data_source">数据源</string>
     <string name="settings_select_data_source_desc">切换软件数据源</string>
     <string name="settings_plugins">扩展插件</string>
@@ -221,6 +234,34 @@
     <string name="settings_app_log_level_desc">设置日志过滤等级，重启应用后生效</string>
     <string name="settings_auto_proxy">自动代理</string>
     <string name="settings_auto_proxy_desc">自动从网络上获取代理 IP，<b>但这将导致您所浏览的书本数据可能会被截获</b></string>
+    <string name="book_manager_title">书籍管理</string>
+    <string name="book_manager_tab_downloads">下载</string>
+    <string name="book_manager_tab_local_books">本地</string>
+    <string name="book_manager_sort_reverse">反向排序</string>
+    <string name="book_manager_selected_count">已选中 %1$d 本书本</string>
+    <string name="book_manager_empty_title">这里什么都没有</string>
+    <string name="book_manager_empty_description">没有可管理的本地书本缓存。</string>
+    <string name="book_manager_delete_cache_title">删除书本缓存</string>
+    <string name="book_manager_delete_cache_content">你确认要删除选中书籍的本地缓存章节内容吗？</string>
+    <string name="book_manager_no_local_reading_record">无本地阅读记录</string>
+    <string name="book_manager_clear_orphaned">删除无用数据</string>
+    <string name="book_manager_clear_orphaned_title">删除孤立数据</string>
+    <string name="book_manager_clear_orphaned_content">删除未关联到任何本地书本的章节数据？</string>
+    <string name="book_manager_group_index_only">书本内容未缓存（ %1$d ）</string>
+    <string name="book_manager_cleared_items">已删除 %1$d 个项目</string>
+    <string name="storage_manager_title">存储管理</string>
+    <string name="storage_manager_empty_description">没有可分析的本地缓存。</string>
+    <string name="storage_manager_used">已使用</string>
+    <string name="storage_manager_section_app_title">应用</string>
+    <string name="storage_manager_section_app_description">应用程序使用的空间。</string>
+    <string name="storage_manager_section_database_title">应用数据</string>
+    <string name="storage_manager_section_database_description">当前数据文件使用的空间，包括用户数据和当前数据源。</string>
+    <string name="storage_manager_section_plugins_title">插件资源文件</string>
+    <string name="storage_manager_section_plugins_description">已安装的插件和它们的资源文件所占用的空间。</string>
+    <string name="storage_manager_section_cache_title">临时缓存文件</string>
+    <string name="storage_manager_section_cache_description">用来加快加载的缓存内容，比如图像和临时文件。</string>
+    <string name="storage_manager_section_other_title">其他本地文件</string>
+    <string name="storage_manager_section_other_description">在应用文件目录下存储的其他文件。</string>
     <string name="about_settings">关于</string>
     <string name="settings_debug_tools">调试选项</string>
     <string name="settings_debug_tools_desc">供开发使用的调试与诊断功能</string>
@@ -236,7 +277,8 @@
     <string name="settings_statistics">匿名统计</string>
     <string name="settings_statistics_desc">我们需要收集一些统计数据，以使 LightNovelReader 变得更好</string>
     <string name="settings_statistics_disable_dialog_title">等一等……</string>
-    <string name="settings_statistics_disable_dialog_text">        真的要关闭统计吗 ο(=•ω＜=)ρ⌒☆
+    <string name="settings_statistics_disable_dialog_text">
+        真的要关闭统计吗 ο(=•ω＜=)ρ⌒☆
         \nLightNovelReader 仅统计日活等数据
         \n不会涉及任何隐私信息并且是匿名统计
         \n关闭后夜鱼只能对着0日活哭泣了 ≧ ﹏ ≦
@@ -274,6 +316,16 @@
     <string name="detail_introduction">介绍</string>
     <string name="detail_contents">目录</string>
     <string name="detail_title">详情</string>
+    <string name="detail_info_word_count_content">%1$s 字</string>
+    <string name="detail_info_stats_count_content">共计 %1$d 卷，%2$d 章</string>
+    <string name="local_book_info_title">书籍缓存详情</string>
+    <string name="local_book_info_book_information">书籍信息</string>
+    <string name="local_book_info_volume_index">卷目录</string>
+    <string name="local_book_info_chapter_information">章节信息</string>
+    <string name="local_book_info_chapter_content">章节内容</string>
+    <string name="local_book_info_reading_record">阅读历史</string>
+    <string name="local_book_info_total">总计</string>
+    <string name="local_book_clear">清理本地书本</string>
     <string name="bookshelf_new_title">新建书架</string>
     <string name="bookshelf_edit_title">编辑书架</string>
     <string name="changelog">新版变化</string>
@@ -437,10 +489,12 @@
     <string name="plugin_update_extracting_percent">解压中 %1$d%%</string>
     <string name="plugin_update_download_install">下载并安装</string>
     <string name="plugin_signature_about_title">关于插件签名</string>
-    <string name="plugin_signature_about_body">        插件签名可用于确认插件文件的完整性与来源。\n允许安装未签名的插件，但请务必确认文件来自可信渠道。
+    <string name="plugin_signature_about_body">
+        插件签名可用于确认插件文件的完整性与来源。\n允许安装未签名的插件，但请务必确认文件来自可信渠道。
     </string>
     <string name="plugin_signature_dev_advice_title">对插件开发者的建议</string>
-    <string name="plugin_signature_dev_advice_body">        建议为插件生成并使用固定的签名证书，以便在版本更新时维持一致性，并确保插件在分发过程中不被篡改。
+    <string name="plugin_signature_dev_advice_body">
+        建议为插件生成并使用固定的签名证书，以便在版本更新时维持一致性，并确保插件在分发过程中不被篡改。
     </string>
     <string name="plugin_signature_info_title">签名信息</string>
     <string name="plugin_signature_info_empty">无签名信息</string>
@@ -453,7 +507,8 @@
     <string name="plugin_app_empty_desc">安装插件应用以显示</string>
     <string name="plugin_empty_title">没有插件</string>
     <string name="plugin_empty_desc">安装受支持的 .lnrp 格式插件</string>
-    <string name="plugin_third_party_tips">        来自第三方的插件可以提供额外的数据源或功能。安装插件前，请确保其来源可信。\nLightNovelReader 不对插件可用性负责。
+    <string name="plugin_third_party_tips">
+        来自第三方的插件可以提供额外的数据源或功能。安装插件前，请确保其来源可信。\nLightNovelReader 不对插件可用性负责。
     </string>
     <string name="plugin_by_author">作者: %1$s</string>
     <string name="plugin_details">详情</string>
@@ -570,11 +625,11 @@
     <string name="key_log_level_verbose">冗余</string>
     <!-- Light Theme Name -->
     <string name="key_light_theme_default">默认</string>
-    <string name="key_light_theme_designer">Designer</string>
+    <string name="key_light_theme_designer">设计者</string>
     <!-- Dark Theme Name -->
     <string name="key_dark_theme_default">默认</string>
     <string name="key_dark_theme_obsidian">黑曜石</string>
-    <string name="key_dark_theme_designer">Designer</string>
+    <string name="key_dark_theme_designer">设计者</string>
     <!-- Experimental Locale -->
     <string name="key_locale_none">无</string>
     <!-- Flip Animation -->
@@ -611,4 +666,8 @@
     <string name="key_date_order_ymd">年月日</string>
     <string name="key_date_order_dmy">日月年</string>
     <string name="key_date_order_mdy">月日年</string>
+    <!-- Local Book Sort -->
+    <string name="key_local_book_sort_size">按 文件大小 排序</string>
+    <string name="key_local_book_sort_last_read">按 最后阅读时间 排序</string>
+    <string name="key_local_book_sort_chapter_count">按 章节数量 排序</string>
 </resources>

@@ -27,6 +27,7 @@
     <string name="invert_selection">Invert Selection</string>
     <string name="export">Export</string>
     <string name="undo">Undo</string>
+    <string name="processing">Processing…</string>
     <string name="manual_download">Вручную</string>
     <string name="follow_system">Следовать системе</string>
     <string name="exit">Exit</string>
@@ -75,6 +76,8 @@
     <string name="book_word_count_limit">Word limit: </string>
     <string name="source_available_title">Available sources</string>
     <string name="unavailable">Unavailable</string>
+    <string name="overview">Overview</string>
+    <string name="settings">Settings</string>
     <!-- Hints -->
     <string name="nothing_here">Здесь ничего нет</string>
     <string name="nothing_here_desc_reading">Прочитав книги, они появятся здесь.</string>
@@ -101,6 +104,12 @@
     <string name="plugin_disabled_desc">Enabling the plugin is required to adjust settings.</string>
     <string name="confirm_exit">Confirm Exit?</string>
     <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
+    <string name="local_book_clear_options">Clear Options</string>
+    <string name="local_book_clear_index">Clear volume and chapter index</string>
+    <string name="local_book_clear_content">Clear chapter content</string>
+    <string name="local_book_clear_reading">Clear reading record</string>
+    <string name="local_book_clear_confirm_title">Confirm deletion</string>
+    <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">Началось кэширование: %1$s</string>
     <string name="cache_book_running">Эта книга сейчас кэшируется</string>
@@ -212,6 +221,8 @@
     <string name="settings_snap_data_desc">Создать снимок текущих данных пользователя в формате .lnr</string>
     <string name="settings_import_data">Импорт данных пользователя</string>
     <string name="settings_import_data_desc">Импорт данных пользователя из выбранного файла .lnr</string>
+    <string name="settings_storage_manager">Storage Usage</string>
+    <string name="settings_storage_manager_desc">View detailed app storage usage</string>
     <string name="settings_select_data_source">Источник данных</string>
     <string name="settings_select_data_source_desc">Очистить кэш и переключить источник данных приложения. Ваши текущие данные будут сохранены и восстановлены при возврате.</string>
     <string name="settings_plugins">Plugins</string>
@@ -222,6 +233,34 @@
     <string name="settings_app_log_level_desc">Выберите уровень фильтрации логов (требуется перезагрузка приложения)</string>
     <string name="settings_auto_proxy">Auto Proxy</string>
     <string name="settings_auto_proxy_desc">Automatically fetch proxy IPs from the internet, <b>but this may allow the books you browse to be intercepted</b></string>
+    <string name="book_manager_title">Book Manager</string>
+    <string name="book_manager_tab_downloads">Downloads</string>
+    <string name="book_manager_tab_local_books">Local books</string>
+    <string name="book_manager_sort_reverse">Reverse order</string>
+    <string name="book_manager_selected_count">%1$d selected</string>
+    <string name="book_manager_empty_title">Nothing here</string>
+    <string name="book_manager_empty_description">There is no local book cache available to manage.</string>
+    <string name="book_manager_delete_cache_title">Clear book cache</string>
+    <string name="book_manager_delete_cache_content">Are you sure you want to clear all cached chapter content for the selected books? You can fetch the online content again later if needed.\nThis action cannot be undone.</string>
+    <string name="book_manager_no_local_reading_record">No local reading record</string>
+    <string name="book_manager_clear_orphaned">Clear orphaned data</string>
+    <string name="book_manager_clear_orphaned_title">Clear orphaned data</string>
+    <string name="book_manager_clear_orphaned_content">Remove chapter data that is no longer linked to any local book?</string>
+    <string name="book_manager_group_index_only">Books without cached content (%1$d)</string>
+    <string name="book_manager_cleared_items">Cleared %1$d items</string>
+    <string name="storage_manager_title">Storage Manager</string>
+    <string name="storage_manager_empty_description">There is no local cache available to analyze.</string>
+    <string name="storage_manager_used">used</string>
+    <string name="storage_manager_section_app_title">App</string>
+    <string name="storage_manager_section_app_description">Space used by the installed application itself.</string>
+    <string name="storage_manager_section_database_title">Database</string>
+    <string name="storage_manager_section_database_description">Disk space used by the current database files, including user data and cached content in the current data source.</string>
+    <string name="storage_manager_section_plugins_title">Plugin resources</string>
+    <string name="storage_manager_section_plugins_description">Space used by installed plugins and their resource files.</string>
+    <string name="storage_manager_section_cache_title">Temporary cache</string>
+    <string name="storage_manager_section_cache_description">Cached content used to improve loading speed, such as images and temporary files.</string>
+    <string name="storage_manager_section_other_title">Other local files</string>
+    <string name="storage_manager_section_other_description">Other local files stored in the app data directory.</string>
     <string name="about_settings">О приложении</string>
     <string name="settings_debug_tools">Средства отладки</string>
     <string name="settings_debug_tools_desc">Утилиты для отладки</string>
@@ -275,6 +314,16 @@
     <string name="detail_introduction">Аннотация</string>
     <string name="detail_contents">Оглавление</string>
     <string name="detail_title">Детали</string>
+    <string name="detail_info_word_count_content">%1$s words</string>
+    <string name="detail_info_stats_count_content">Total %1$d volumes, %2$d chapters</string>
+    <string name="local_book_info_title">Book Cache Details</string>
+    <string name="local_book_info_book_information">Book information</string>
+    <string name="local_book_info_volume_index">Volume index</string>
+    <string name="local_book_info_chapter_information">Chapter information</string>
+    <string name="local_book_info_chapter_content">Chapter content</string>
+    <string name="local_book_info_reading_record">Reading record</string>
+    <string name="local_book_info_total">Total</string>
+    <string name="local_book_clear">Clear</string>
     <string name="bookshelf_new_title">New Bookshelf</string>
     <string name="bookshelf_edit_title">Edit Bookshelf</string>
     <string name="changelog">История изменений</string>
@@ -612,4 +661,8 @@
     <string name="key_date_order_ymd">Year-Month-Day</string>
     <string name="key_date_order_dmy">Day-Month-Year</string>
     <string name="key_date_order_mdy">Month-Day-Year</string>
+    <!-- Local Book Sort -->
+    <string name="key_local_book_sort_size">Sort by size</string>
+    <string name="key_local_book_sort_last_read">Sort by last read</string>
+    <string name="key_local_book_sort_chapter_count">Sort by chapter count</string>
 </resources>
