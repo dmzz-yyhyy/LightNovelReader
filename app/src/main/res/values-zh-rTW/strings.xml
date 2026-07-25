@@ -96,27 +96,29 @@
     <string name="reader_reached_end">已經結束了…</string>
     <string name="font_file_error">字體文件錯誤或已損壞, 請您檢查後導入</string>
     <string name="settings_data_source_pending_title">切換到 %s</string>
-    <string name="settings_data_source_pending_desc">        系統將清除快取並重新啟動。當下次切換回「%s」時，您目前的資料將可再次使用。
+    <string name="settings_data_source_pending_desc">
+        系統將清除快取並重新啟動。當下次切換回「%s」時，您目前的資料將可再次使用。
     </string>
     <string name="plugin_invalid_title">無效外掛</string>
     <string name="plugin_invalid_desc">無法取得外掛資訊，外掛可能無效或損壞</string>
     <string name="plugin_disabled">不可用</string>
     <string name="plugin_disabled_desc">調整設定需要啟用外掛</string>
-    <string name="confirm_exit">確認退出？</string>
-    <string name="hint_unsaved_changes_will_be_lost">若您現在退出，未儲存的變更將會遺失。</string>
     <string name="local_book_clear_options">刪除選項</string>
     <string name="local_book_clear_index">刪除卷和章節目錄</string>
     <string name="local_book_clear_content">清除章節內容</string>
     <string name="local_book_clear_reading">刪除閱讀紀錄</string>
     <string name="local_book_clear_confirm_title">確認刪除</string>
     <string name="local_book_clear_confirm_content">如果您繼續操作，選擇的內容將會刪除並且 %1$s 儲存空間將被釋放。\n你之後可以重新匯入或下載內容。\n此動作無法撤回。</string>
+    <string name="confirm_exit">確認退出？</string>
+    <string name="hint_unsaved_changes_will_be_lost">若您現在退出，未儲存的變更將會遺失。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">開始快取：%1$s</string>
     <string name="cache_book_running">此書正在快取中</string>
     <string name="cache_book_finished">快取成功</string>
     <string name="cache_book_error">快取失敗</string>
     <string name="restart_to_apply_changes">重新啟動應用程式以套用變更</string>
-    <string name="network_error_message">        無法從資料來源取得資訊，這通常是網路問題所致。在提交問題前，請知晓：我們無法協助排查具體網路狀況，請先檢查您的網路連線。
+    <string name="network_error_message">
+        無法從資料來源取得資訊，這通常是網路問題所致。在提交問題前，請知晓：我們無法協助排查具體網路狀況，請先檢查您的網路連線。
     </string>
     <string name="export_book_started">開始導出書本 %s</string>
     <string name="export_book_success">成功導出書本 %s</string>
@@ -221,7 +223,7 @@
     <string name="settings_import_data">匯入資料</string>
     <string name="settings_import_data_desc">從選定的 .lnr 檔案匯入使用者資料</string>
     <string name="settings_storage_manager">儲存空間統計</string>
-    <string name="settings_storage_manager_desc">查看應用程式儲存空間詳細訊息</string>
+    <string name="settings_storage_manager_desc">查看應用程式、快取、外掛以及其他檔案如何使用儲存空間。</string>
     <string name="settings_select_data_source">資料來源</string>
     <string name="settings_select_data_source_desc">切換軟體資料來源</string>
     <string name="settings_plugins">擴充外掛</string>
@@ -275,7 +277,8 @@
     <string name="settings_statistics">匿名統計</string>
     <string name="settings_statistics_desc">我們需要收集一些統計資料，以使 LightNovelReader 變得更好</string>
     <string name="settings_statistics_disable_dialog_title">等一等……</string>
-    <string name="settings_statistics_disable_dialog_text">        真的要關閉統計嗎 ο(=•ω＜=)ρ⌒☆
+    <string name="settings_statistics_disable_dialog_text">
+        真的要關閉統計嗎 ο(=•ω＜=)ρ⌒☆
         \nLightNovelReader 僅統計日活等數據
         \n不會涉及任何隱私資訊，而且是匿名統計
         \n關閉後夜魚只能對著 0 日活哭泣了 ≧ ﹏ ≦
@@ -661,4 +664,7 @@
     <string name="key_local_book_sort_size">以大小排序</string>
     <string name="key_local_book_sort_last_read">以最後閱讀時間排序</string>
     <string name="key_local_book_sort_chapter_count">以章節數量排序</string>
+    <string name="restart">重新啟動</string>
+    <string name="current_web_data_source_not_founded">找不到目前資料源，請確認您的外掛和資料源設定</string>
+    <string name="never_read">從未閱讀</string>
 </resources>
