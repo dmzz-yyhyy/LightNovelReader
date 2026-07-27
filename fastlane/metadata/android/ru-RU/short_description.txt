@@ -1,1 +1,1 @@
-Читалка ранобэ с поддержкой нескольких источников
+Light novel reader with multiple sources
