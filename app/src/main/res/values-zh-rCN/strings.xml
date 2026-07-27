@@ -88,6 +88,8 @@
     <string name="offline_desc">当前无法获取在线数据，请刷新重试\n检查源网站连通性，或者换个网络试试</string>
     <string name="saved_to_pictures_dir">已保存到 Pictures/LightNovelReader/%s</string>
     <string name="save_failed">保存失败</string>
+    <string name="reader_custom_font_load_failed">Failed to load custom font, reverted to default.</string>
+    <string name="reader_custom_background_load_failed">Failed to load custom background, reverted to default.</string>
     <string name="reader_first_page">已经是第一页了</string>
     <string name="reader_reached_top">已经到顶了</string>
     <string name="reader_last_page">已经是最后一页了</string>
