@@ -58,6 +58,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun FlipPageContentComponent(
@@ -126,12 +127,14 @@ private fun SimpleFlipPageTextComponent(
     val focusRequester = remember { FocusRequester() }
     val snackbarHostState = LocalSnackbarHost.current
 
-    val painter = rememberReaderBackgroundPainter(settingState)
-    val bgPainter = remember(settingState.enableBackgroundImage, settingState.backgroundImageDisplayMode) {
-        if (settingState.enableBackgroundImage &&
-            settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop
-        ) painter else null
-    }
+    // 仅在启用背景图时才创建 painter：rememberReaderBackgroundPainter 会发起图片加载副作用，
+    // 无条件调用会导致未开启背景时也去联网加载内置牛皮纸，失败时误报「加载失败」(见 issue #444)。
+    val bgPainter = if (
+        settingState.enableBackgroundImage &&
+        settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop
+    ) {
+        rememberReaderBackgroundPainter(settingState)
+    } else null
 
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width.toFloat()
@@ -243,7 +246,7 @@ private fun SimpleFlipPageTextComponent(
                                             volumeJob?.cancel()
                                             volumeJob = scope.launch {
                                                 while (isActive) {
-                                                    delay(intervalMs)
+                                                    delay(intervalMs.milliseconds)
                                                     if (event.key == Key.VolumeUp) lastPage(uiState.pagerState)
                                                     else nextPage(uiState.pagerState)
                                                 }

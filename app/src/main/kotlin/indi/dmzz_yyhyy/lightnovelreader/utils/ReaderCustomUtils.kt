@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import coil3.compose.AsyncImagePainter
@@ -22,6 +23,7 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.size.Scale
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import io.nightfish.lightnovelreader.api.userdata.UriUserData
@@ -56,11 +58,12 @@ fun rememberReaderFontFamily(
     val fontFamily = remember(uri) { loadReaderFontFamilySafe(uri) }
 
     val snackbarHostState = LocalSnackbarHost.current
+    val message = stringResource(R.string.reader_custom_font_load_failed)
     if (fontFamily == null && uri != Uri.EMPTY) {
         LaunchedEffect(uri) {
             withContext(Dispatchers.IO) { fontFamilyUriUserData.set(Uri.EMPTY) }
             snackbarScope.launch {
-                snackbarHostState.showSnackbar("自定义字体加载失败，已恢复为默认。")
+                snackbarHostState.showSnackbar(message)
             }
         }
     }
@@ -69,15 +72,12 @@ fun rememberReaderFontFamily(
 }
 
 @Composable
-private fun rememberPaperPainter(
-    snackbarScope: CoroutineScope,
-): Painter {
+private fun rememberPaperPainter(): Painter {
     val context = LocalContext.current
     val theme = LocalAppTheme.current
     val fallback = remember(theme.isDark, theme.colorScheme.background) {
         ColorPainter(theme.colorScheme.background)
     }
-    val snackbarHostState = LocalSnackbarHost.current
 
     val request = remember {
         ImageRequest.Builder(context)
@@ -92,13 +92,32 @@ private fun rememberPaperPainter(
             .build()
     }
 
-    val painter = rememberAsyncImagePainter(
+    // 内置牛皮纸是联网资源，加载失败时静默回退到背景色即可，不弹提示打扰用户。
+    return rememberAsyncImagePainter(
         model = request,
         placeholder = fallback,
         error = fallback
     )
+}
 
-    var errorNotified by remember { mutableStateOf(false) }
+@Composable
+private fun rememberCustomBackgroundPainter(
+    uri: Uri,
+    snackbarScope: CoroutineScope,
+): Painter {
+    val theme = LocalAppTheme.current
+    val fallback = remember(theme.isDark, theme.colorScheme.background) {
+        ColorPainter(theme.colorScheme.background)
+    }
+    val snackbarHostState = LocalSnackbarHost.current
+    val message = stringResource(R.string.reader_custom_background_load_failed)
+
+    val painter = rememberAsyncImagePainter(
+        model = uri,
+        error = fallback
+    )
+
+    var errorNotified by remember(uri) { mutableStateOf(false) }
 
     LaunchedEffect(painter) {
         painter.state.collect { state ->
@@ -107,7 +126,7 @@ private fun rememberPaperPainter(
                     if (!errorNotified) {
                         errorNotified = true
                         snackbarScope.launch {
-                            snackbarHostState.showSnackbar("自定义背景加载失败，已恢复为默认。")
+                            snackbarHostState.showSnackbar(message)
                         }
                     }
                 }
@@ -138,12 +157,10 @@ fun rememberReaderBackgroundPainter(
     }
 
     if (backgroundUri == Uri.EMPTY || backgroundUri.toString().isBlank()) {
-        return rememberPaperPainter(snackbarScope)
+        return rememberPaperPainter()
     }
 
-    return rememberAsyncImagePainter(
-        model = backgroundUri
-    )
+    return rememberCustomBackgroundPainter(backgroundUri, snackbarScope)
 }
 
 @Composable
