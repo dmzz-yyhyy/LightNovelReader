@@ -3,7 +3,7 @@
     <string name="language">简体中文 (中国大陆)</string>
     <string name="language_translators">NightFish, yukonisen</string>
     <!-- Navigation Items -->
-    <string name="nav_reading">阅读中</string>
+    <string name="nav_reading">正在阅读</string>
     <string name="nav_bookshelf">书架</string>
     <string name="nav_bookshelf_select_mode">选择 书架 (%d)</string>
     <string name="nav_explore">探索</string>
@@ -139,7 +139,6 @@
     <string name="settings_get_updates">检查更新</string>
     <string name="settings_get_updates_desc">检查并安装最新版本</string>
     <string name="settings_distribution_platform">更新分发平台</string>
-    <string name="settings_distribution_platform_settings_desc"><!--reserved--></string>
     <string name="reader_settings">阅读设置</string>
     <string name="settings_reader_font_size">字体大小</string>
     <string name="settings_reader_line_spacing">行间距</string>
@@ -184,7 +183,6 @@
     <string name="settings_theme_dynamic_colors">系统动态配色</string>
     <string name="settings_theme_dynamic_colors_desc_unavailable">从系统主题应用动态配色 (需要 Android 12+)</string>
     <string name="settings_theme_dynamic_colors_desc">从系统主题应用动态配色</string>
-    <string name="settings_theme_m3e">Material 3 Expressive</string>
     <string name="settings_theme_m3e_description">启用 Material 3 Expressive 设计。该功能为实验性内容，仍处于测试阶段</string>
     <string name="settings_formats">格式</string>
     <string name="settings_formats_desc">设置日期或文本格式</string>
@@ -225,7 +223,7 @@
     <string name="settings_import_data">导入数据</string>
     <string name="settings_import_data_desc">从选定的 .lnr 文件导入用户数据</string>
     <string name="settings_storage_manager">存储使用</string>
-    <string name="settings_storage_manager_desc">查看应用存储使用详情</string>
+    <string name="settings_storage_manager_desc">Review how storage is used by the app, cache, plugins, and local files.</string>
     <string name="settings_select_data_source">数据源</string>
     <string name="settings_select_data_source_desc">切换软件数据源</string>
     <string name="settings_plugins">扩展插件</string>
@@ -475,7 +473,8 @@
     <string name="dialog_slider_custom">输入值</string>
     <string name="dialog_slider_custom_illegal_value">请输入合法的数值</string>
     <string name="dialog_color_picker">调色盘</string>
-    <string name="dialog_color_picker_desc">选择一个颜色用于阅读器背景。</string>
+    <string name="dialog_color_picker_background_desc">选择一个颜色用于阅读器背景。</string>
+    <string name="dialog_color_picker_text_desc">选择一个颜色用于阅读器文本。</string>
     <!-- Plugin -->
     <string name="plugin_delete_title">删除 %1$s</string>
     <string name="plugin_install_preparing">正在准备…</string>
@@ -567,7 +566,6 @@
     <string name="plugin_signature_issuer">颁发者</string>
     <string name="plugin_signature_public_key_label">公钥</string>
     <string name="plugin_signature_public_key_value">%1$d 位 %2$s</string>
-    <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">可加载的插件</string>
     <string name="plugin_enable_label">启用插件</string>
     <string name="plugin_detail_summary_title">关于此插件</string>
