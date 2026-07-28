@@ -98,7 +98,8 @@
     <string name="reader_reached_end">You\'ve reached the end…</string>
     <string name="font_file_error">Font file is incorrect or corrupted, please check and import again</string>
     <string name="settings_data_source_pending_title">Switch to %s</string>
-    <string name="settings_data_source_pending_desc">        The operation will clear cached data and restart the app. Your current data can be restored when switching back to \"%s\".
+    <string name="settings_data_source_pending_desc">
+        The operation will clear cached data and restart the app. Your current data can be restored when switching back to \"%s\".
     </string>
     <string name="plugin_invalid_title">Invalid plugin</string>
     <string name="plugin_invalid_desc">Unable to get plugin info; the plugin may be invalid or corrupted.</string>
@@ -118,7 +119,8 @@
     <string name="cache_book_finished">Кэширование успешно завершено</string>
     <string name="cache_book_error">Не удалось кэшировать</string>
     <string name="restart_to_apply_changes">Перезапустите приложение для применения изменений</string>
-    <string name="network_error_message">        В данный момент приложение не может получить данные с источника. Обычно это связано с проблемой сети. Пожалуйста, проверьте ваше подключение.
+    <string name="network_error_message">
+        В данный момент приложение не может получить данные с источника. Обычно это связано с проблемой сети. Пожалуйста, проверьте ваше подключение.
     </string>
     <string name="export_book_started">Start exporting book %s</string>
     <string name="export_book_success">Successfully exported book %s</string>
@@ -137,7 +139,6 @@
     <string name="settings_get_updates">Проверить обновления</string>
     <string name="settings_get_updates_desc">Проверить и установить последнюю версию.</string>
     <string name="settings_distribution_platform">Платформа распространения</string>
-    <string name="settings_distribution_platform_settings_desc"><!--reserved--></string>
     <string name="reader_settings">Настройки чтения</string>
     <string name="settings_reader_font_size">Размер шрифта</string>
     <string name="settings_reader_line_spacing">Межстрочный интервал</string>
@@ -182,8 +183,8 @@
     <string name="settings_theme_dynamic_colors">Динамичные цвета</string>
     <string name="settings_theme_dynamic_colors_desc_unavailable">Применять системные динамические цвета</string>
     <string name="settings_theme_dynamic_colors_desc">Применять системные динамические цвета (требуется Android 12+)</string>
-    <string name="settings_theme_m3e">Material 3 Expressive</string>
-    <string name="settings_theme_m3e_description">        Enables the Material 3 Expressive design. This feature is experimental and still in beta
+    <string name="settings_theme_m3e_description">
+        Enables the Material 3 Expressive design. This feature is experimental and still in beta
     </string>
     <string name="settings_formats">Formats</string>
     <string name="settings_formats_desc">Set date or text format</string>
@@ -224,7 +225,7 @@
     <string name="settings_import_data">Импорт данных пользователя</string>
     <string name="settings_import_data_desc">Импорт данных пользователя из выбранного файла .lnr</string>
     <string name="settings_storage_manager">Storage Usage</string>
-    <string name="settings_storage_manager_desc">View detailed app storage usage</string>
+    <string name="settings_storage_manager_desc">Review how storage is used by the app, cache, plugins, and local files.</string>
     <string name="settings_select_data_source">Источник данных</string>
     <string name="settings_select_data_source_desc">Очистить кэш и переключить источник данных приложения. Ваши текущие данные будут сохранены и восстановлены при возврате.</string>
     <string name="settings_plugins">Plugins</string>
@@ -278,7 +279,8 @@
     <string name="settings_statistics">Статистика</string>
     <string name="settings_statistics_desc">Мы используем Microsoft AppCenter для сбора анонимной статистики и улучшения LightNovelReader</string>
     <string name="settings_statistics_disable_dialog_title">Hold on…</string>
-    <string name="settings_statistics_disable_dialog_text">        Do you really want to turn off statistics? ο(=•ω＜=)ρ⌒☆
+    <string name="settings_statistics_disable_dialog_text">
+        Do you really want to turn off statistics? ο(=•ω＜=)ρ⌒☆
         LightNovelReader only collects DAU and similar usage metrics.
         No personal privacy data is involved, and all statistics are anonymous.
         If you turn this off, NightFish can only cry at 0 DAU ≧ ﹏ ≦
@@ -301,9 +303,9 @@
     <string name="settings_book_update_reminder_desc">Проверять обновления книг и уведомлять в фоне</string>
     <string name="settings_delete_bookshelf">Удалить полку</string>
     <string name="settings_delete_bookshelf_desc">Безвозвратно удалить эту полку</string>
-    <string name="appearance_settings">Облик</string>
-    <string name="control_settings">Управление</string>
-    <string name="margin_settings">Поля</string>
+    <string name="appearance_settings">	Облик</string>
+    <string name="control_settings">	Управление</string>
+    <string name="margin_settings">	Поля</string>
     <string name="settings_theme_settings">Настройки темы…</string>
     <string name="settings_theme_settings_desc">Настройки чтения и бумаги</string>
     <string name="settings_hide_status_bar">Скрыть строку состояния</string>
@@ -473,7 +475,8 @@
     <string name="dialog_slider_custom">Введите значение</string>
     <string name="dialog_slider_custom_illegal_value">Пожалуйста, введите допустимое число</string>
     <string name="dialog_color_picker">Color Palette</string>
-    <string name="dialog_color_picker_desc">Select a color for the reader background.</string>
+    <string name="dialog_color_picker_background_desc">Select a color for the reader background.</string>
+    <string name="dialog_color_picker_text_desc">Select a color for the reader text.</string>
     <!-- Plugin -->
     <string name="plugin_delete_title">Delete %1$s</string>
     <string name="plugin_install_preparing">Preparing…</string>
@@ -489,10 +492,12 @@
     <string name="plugin_update_extracting_percent">Extracting %1$d%%</string>
     <string name="plugin_update_download_install">Download and install</string>
     <string name="plugin_signature_about_title">About plugin signatures</string>
-    <string name="plugin_signature_about_body">        Plugin signatures help verify a plugin’s integrity and origin.\nYou can install unsigned plugins, but only do so if the file comes from a trusted source.
+    <string name="plugin_signature_about_body">
+        Plugin signatures help verify a plugin’s integrity and origin.\nYou can install unsigned plugins, but only do so if the file comes from a trusted source.
     </string>
     <string name="plugin_signature_dev_advice_title">Advice for plugin developers</string>
-    <string name="plugin_signature_dev_advice_body">        Use a stable signing certificate for your plugin so updates remain consistent, and to prevent tampering during distribution.
+    <string name="plugin_signature_dev_advice_body">
+        Use a stable signing certificate for your plugin so updates remain consistent, and to prevent tampering during distribution.
     </string>
     <string name="plugin_signature_info_title">Signature details</string>
     <string name="plugin_signature_info_empty">No signature details</string>
@@ -505,7 +510,8 @@
     <string name="plugin_app_empty_desc">Install a plugin app to show it here</string>
     <string name="plugin_empty_title">No plugins</string>
     <string name="plugin_empty_desc">Install a supported .lnrp plugin</string>
-    <string name="plugin_third_party_tips">        Third-party plugins may provide additional sources or features. Before installing, make sure the plugin comes from a trusted source.\nLightNovelReader is not responsible for plugin availability.
+    <string name="plugin_third_party_tips">
+        Third-party plugins may provide additional sources or features. Before installing, make sure the plugin comes from a trusted source.\nLightNovelReader is not responsible for plugin availability.
     </string>
     <string name="plugin_by_author">by %1$s</string>
     <string name="plugin_details">Details</string>
@@ -562,7 +568,6 @@
     <string name="plugin_signature_issuer">Issuer</string>
     <string name="plugin_signature_public_key_label">Public key</string>
     <string name="plugin_signature_public_key_value">%1$d-bit %2$s </string>
-    <string name="plugin_signature_sha1_label">SHA-1</string>
     <string name="plugin_app_loadable_tag">Loadable plugin</string>
     <string name="plugin_enable_label">Enable plugin</string>
     <string name="plugin_detail_summary_title">About this plugin</string>
