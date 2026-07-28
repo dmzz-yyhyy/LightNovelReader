@@ -1,12 +1,12 @@
-LightNovelReader 是一款開源的輕小說閱讀軟體，使用 Kotlin 和 Jetpack Compose 開發，具有輕量化的體積和流暢的閱讀體驗。 Moreover, it has many useful features, e.g., EPUG export, offline read and multiple sources support.
+LightNovelReader 是一款開源的輕小說閱讀軟體，使用 Kotlin 和 Jetpack Compose 開發，具有輕量化的體積和流暢的閱讀體驗。 此外，還有多種實用功能，如 EPUB 匯出、離線閱讀和多資料來源支援。
 
-<h3>Features</h3>
+<h3>特色</h3>
 <ul>
-<li>Developed with Jetpack Compose, providing smooth reading experience, supporting Android 7.0 - 15</li>
-<li>Cache - support book content cache and offline first read.</li>
-<li>Explore - discover new book, recommendation ranking, label categories, key word search...</li>
-<li>Multiple source support - support switching between sources and even reading comic books. The data is independent between different sources.</li>
-<li>Bookshelf - complete bookshelf system, supporting creating and naming bookshelf, adding book to collections, book update notification</li>
-<li>Export book to EPUG file</li>
-<li>Passionate developers and more...</li>
+<li>使用 Jetpack Compose，提供流暢的閱讀體驗，支援 Android 7.0 ~ 15</li>
+<li>快取－支援快取書本內容，以及離線優先的閱讀</li>
+<li>探索－發現新書、推薦榜，標籤分類，關鍵字搜尋……</li>
+<li>多資料來源支援－可以切換資料來源，甚至可以看漫畫。 資料來源之間資料獨立</li>
+<li>書架－完整的書架系統，支援建立和命名書架，將書本加入收藏、取得書本更新提示</li>
+<li>將書本匯出為 EPUB 檔案</li>
+<li>熱情的開發者，還有更多…</li>
 </ul>
