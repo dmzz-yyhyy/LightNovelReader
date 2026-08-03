@@ -594,6 +594,7 @@
     <string name="plugin_detail_source_label">Source</string>
     <string name="plugin_detail_source_local">Local package</string>
     <string name="plugin_detail_source_app">Installed app</string>
+    <string name="plugin_get_from_store">Get new plugins from plugin store</string>
     <!-- Plugin Store -->
     <string name="plugin_store_install_title">Get Plugin</string>
     <string name="plugin_store_load_failed">Failed to load</string>

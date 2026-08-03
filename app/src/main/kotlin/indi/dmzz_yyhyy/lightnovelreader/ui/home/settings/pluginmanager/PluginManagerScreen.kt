@@ -127,7 +127,7 @@ fun PluginManagerScreen(
                         )
                         Text(
                             modifier = Modifier.weight(1f),
-                            text = "从插件市场获取新插件",
+                            text = stringResource(R.string.plugin_get_from_store),
                             style = typography.titleSmall,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
