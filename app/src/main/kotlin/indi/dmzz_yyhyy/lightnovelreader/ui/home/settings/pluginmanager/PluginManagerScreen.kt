@@ -111,6 +111,34 @@ fun PluginManagerScreen(
                 .fillMaxSize()
         ) {
             if (pluginInfoList.isEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clickable(onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, "https://plugins.nariko.org".toUri())
+                            context.startActivity(intent, null)
+                            })
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.archive_24px),
+                            contentDescription = "archive"
+                        )
+                        Text(
+                            modifier = Modifier.weight(1f),
+                            text = "从插件市场获取新插件",
+                            style = typography.titleSmall,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(id = R.drawable.open_in_new_24px),
+                            contentDescription = "open",
+                            tint = colorScheme.onSurfaceVariant
+                        )
+                }
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     EmptyPage(
                         modifier = Modifier.navigationBarsPadding(),
@@ -125,36 +153,6 @@ fun PluginManagerScreen(
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .clickable(onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, "https://plugins.nariko.org".toUri())
-                                    context.startActivity(intent, null)
-                                })
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.archive_24px),
-                                contentDescription = "archive"
-                            )
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = "从插件市场获取新插件",
-                                style = typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Icon(
-                                modifier = Modifier.size(18.dp),
-                                painter = painterResource(id = R.drawable.open_in_new_24px),
-                                contentDescription = "open",
-                                tint = colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
                     item {
                         ThirdPartyPluginTips()
                     }
