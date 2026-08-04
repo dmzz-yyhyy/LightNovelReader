@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.JsonObjectConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.serializer.JsonObjectSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
@@ -20,6 +21,7 @@ data class ChapterContentEntity(
     val title: String,
     @Serializable(JsonObjectSerializer::class)
     val content: JsonObject,
+    @SerialName("lastChapter")
     @ColumnInfo(name = "lastChapter")
     val prevChapter: String,
     val nextChapter: String
