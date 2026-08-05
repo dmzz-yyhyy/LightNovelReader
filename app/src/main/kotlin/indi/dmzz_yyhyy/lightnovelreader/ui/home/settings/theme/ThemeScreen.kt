@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme
 
 import android.content.Context
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -53,11 +54,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -383,7 +380,6 @@ fun ReaderThemeSettingsList(
 @Composable
 fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChangeTextColor: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
-    val textMeasurer = rememberTextMeasurer()
     val onSecondaryContainer = colorScheme.onSecondaryContainer
     val background = colorScheme.background
     val currentColor = readerTextColor(settingState)
@@ -433,21 +429,8 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                     return@launch
                 }
 
-                try {
-                    textMeasurer.measure(
-                        text = "",
-                        style = TextStyle(fontFamily = FontFamily(Font(fontFile)))
-                    )
-                    settingState.fontFamilyUriUserData.set(fontFile.toUri())
-                } catch (_: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.font_file_error),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+                settingState.fontFamilyUriUserData.set(fontFile.toUri())
+                cleanUpImportedFonts(context, keep = fontFile)
             }
         }
 
@@ -537,22 +520,85 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
     }
 }
 
+private const val FONT_LOG_TAG = "ReaderTextFont"
+private const val FONT_FILE_PREFIX = "readerTextFont_"
+/** 1.2.1 及更早版本使用的固定文件名，仅用于清理历史遗留文件 */
+private const val LEGACY_FONT_FILE_NAME = "readerTextFont"
+
+/**
+ * 把用户选中的字体复制到应用私有目录。
+ *
+ * 文件名带时间戳，保证每次导入得到**不同**的 Uri。旧实现固定写入 `readerTextFont`，
+ * Uri 永远不变，导致 [rememberReaderFontFamily] 里的 `remember(uri)` 与 Compose 的字体
+ * 解析缓存全部命中旧值，换字体时表现为「毫无反应」。
+ *
+ * 复制先落到 `.tmp`，通过校验后才改名就位，因此导入失败不会破坏当前正在使用的字体。
+ *
+ * @return 导入成功的字体文件；来源无法读取、内容为空或不是有效字体时返回 null
+ */
 private suspend fun saveFontToLocal(context: Context, uri: Uri): File? = withContext(Dispatchers.IO) {
-    val fontFile = context.filesDir.resolve("readerTextFont").apply {
-        if (exists()) delete()
-        createNewFile()
-    }
+    val target = File(context.filesDir, "$FONT_FILE_PREFIX${System.currentTimeMillis()}")
+    val temp = File(context.filesDir, "${target.name}.tmp")
     try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-            FileInputStream(fd.fileDescriptor).use { input ->
-                fontFile.outputStream().use { output -> input.copyTo(output) }
-            }
+        // 部分数据源（云盘、"最近使用"等）不支持 openFileDescriptor，openInputStream 兼容性更好。
+        // 旧实现用 `?.use {}` 吞掉了 null，把 0 字节空文件当成导入成功。
+        val inputStream = context.contentResolver.openInputStream(uri)
+        if (inputStream == null) {
+            Log.e(FONT_LOG_TAG, "Cannot open input stream for $uri")
+            return@withContext null
         }
-        fontFile
+        val copied = inputStream.use { input ->
+            temp.outputStream().use { output -> input.copyTo(output) }
+        }
+        if (copied <= 0L) {
+            Log.e(FONT_LOG_TAG, "Imported font is empty")
+            return@withContext null
+        }
+        if (!isValidFontFile(temp)) {
+            Log.e(FONT_LOG_TAG, "Selected file is not a valid font")
+            return@withContext null
+        }
+        if (!temp.renameTo(target)) {
+            Log.e(FONT_LOG_TAG, "Failed to move imported font into place")
+            return@withContext null
+        }
+        target
     } catch (e: Exception) {
-        Log.e("ReaderTextFont", "Failed to import font", e)
+        Log.e(FONT_LOG_TAG, "Failed to import font", e)
         null
+    } finally {
+        // 成功改名后 temp 已不存在，这里的 delete 只负责清理失败残留
+        temp.delete()
     }
+}
+
+/**
+ * 用 Android 原生字体解析验证文件是否真的是字体。
+ *
+ * 相比用 `TextMeasurer` 测量空字符串，这里能真正解析文件内容；且是纯 Android API，
+ * 可以安全地在 IO 线程调用。
+ */
+private fun isValidFontFile(file: File): Boolean = try {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Typeface.Builder(file).build() != null
+    } else {
+        // API 24/25 没有 Typeface.Builder，只能依赖 createFromFile 解析失败时抛异常
+        Typeface.createFromFile(file) != null
+    }
+} catch (e: Exception) {
+    Log.e(FONT_LOG_TAG, "Font validation failed", e)
+    false
+}
+
+/** 删除除 [keep] 之外的历史字体文件，避免每次导入都在私有目录里留下一份副本 */
+private fun cleanUpImportedFonts(context: Context, keep: File) {
+    context.filesDir
+        .listFiles { file ->
+            file.isFile &&
+                    (file.name == LEGACY_FONT_FILE_NAME || file.name.startsWith(FONT_FILE_PREFIX)) &&
+                    file.name != keep.name
+        }
+        ?.forEach { it.delete() }
 }
 
 @Composable

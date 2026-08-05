@@ -41,7 +41,9 @@ fun loadReaderFontFamilySafe(uri: Uri): FontFamily? {
     return try {
         if (uri == Uri.EMPTY) return null
         val fontFile = File(uri.path ?: return null)
-        if (!fontFile.exists()) throw FileNotFoundException()
+        // 0 字节文件同样能通过 exists()，必须额外判长度，
+        // 否则导入中断留下的空文件会被当作有效字体，表现为「设置了但没变化」。
+        if (!fontFile.exists() || fontFile.length() == 0L) throw FileNotFoundException()
         FontFamily(Font(fontFile))
     } catch (e: Exception) {
         Log.e("FontLoad", "Failed to load custom font", e)
