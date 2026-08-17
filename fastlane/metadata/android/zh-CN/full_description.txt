@@ -1,12 +1,12 @@
-LightNovelReader is an open source light novel reading app, developed with Kotlin and Jetpack Compose, providing light-wise size and smooth reading experience. Moreover, it has many useful features, e.g., EPUG export, offline read and multiple sources support.
+你说得对，但是LightNovelReader 是由稻荷屋开发组开发的一款开源的轻小说阅读软件，使用 Kotlin 和 Jetpack Compose 编写，具有轻量化的体积和流畅的阅读体验。 此外，还有多种有用的功能，如 EPUB 导出、离线阅读和多数据源支持。
 
-<h3>Features</h3>
+<h3>特性</h3>
 <ul>
-<li>Developed with Jetpack Compose, providing smooth reading experience, supporting Android 7.0 - 15</li>
-<li>Cache - support book content cache and offline first read.</li>
-<li>Explore - discover new book, recommendation ranking, label categories, key word search...</li>
-<li>Multiple source support - support switching between sources and even reading comic books. The data is independent between different sources.</li>
-<li>Bookshelf - complete bookshelf system, supporting creating and naming bookshelf, adding book to collections, book update notification</li>
-<li>Export book to EPUG file</li>
-<li>Passionate developers and more...</li>
+<li>使用 Jetpack Compose 开发，提供流畅的阅读体验，支持 Android 7.0 ~ 15</li>
+<li>缓存－支持缓存书本内容，以及离线优先的阅读</li>
+<li>探索－发现新书、推荐榜，标签分类，关键词搜索……</li>
+<li>多数据源支持－可以切换数据源，甚至可以看漫画。 数据源之间数据独立。</li>
+<li>书架－完整的书架系统，支持创建和命名书架，将书本加入收藏、获取书本更新提示</li>
+<li>将书本导出为 EPUB 文件</li>
+<li>热情的开发者，还有更多…</li>
 </ul>

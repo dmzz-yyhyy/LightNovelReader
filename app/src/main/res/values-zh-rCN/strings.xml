@@ -88,8 +88,8 @@
     <string name="offline_desc">当前无法获取在线数据，请刷新重试\n检查源网站连通性，或者换个网络试试</string>
     <string name="saved_to_pictures_dir">已保存到 Pictures/LightNovelReader/%s</string>
     <string name="save_failed">保存失败</string>
-    <string name="reader_custom_font_load_failed">加载自定义字体失败，恢复为默认值。</string>
-    <string name="reader_custom_background_load_failed">Failed to load custom background, reverted to default.</string>
+    <string name="reader_custom_font_load_failed">加载自定义字体失败, 以回退至默认字体</string>
+    <string name="reader_custom_background_load_failed">加载自定义背景失败, 以回退至默认背景</string>
     <string name="reader_first_page">已经是第一页了</string>
     <string name="reader_reached_top">已经到顶了</string>
     <string name="reader_last_page">已经是最后一页了</string>
@@ -223,7 +223,7 @@
     <string name="settings_import_data">导入数据</string>
     <string name="settings_import_data_desc">从选定的 .lnr 文件导入用户数据</string>
     <string name="settings_storage_manager">存储使用</string>
-    <string name="settings_storage_manager_desc">Review how storage is used by the app, cache, plugins, and local files.</string>
+    <string name="settings_storage_manager_desc">查看软件缓存, 插件存储使用情况</string>
     <string name="settings_select_data_source">数据源</string>
     <string name="settings_select_data_source_desc">切换软件数据源</string>
     <string name="settings_plugins">扩展插件</string>
@@ -581,6 +581,7 @@
     <string name="plugin_store_load_failed_desc">无法获取插件信息</string>
     <string name="plugin_store_install_with_size">安装 (%1$s)</string>
     <string name="plugin_store_download_progress">%1$d%% 已下载</string>
+    <string name="plugin_store_get_plugins">从插件商店获取新插件</string>
     <string name="plugin_third_party_title">第三方插件</string>
     <string name="plugin_third_party_desc">该插件由第三方提供</string>
     <string name="plugin_info_id_label">ID</string>
@@ -670,7 +671,7 @@
     <string name="key_local_book_sort_size">按 文件大小 排序</string>
     <string name="key_local_book_sort_last_read">按 最后阅读时间 排序</string>
     <string name="key_local_book_sort_chapter_count">按 章节数量 排序</string>
-    <string name="restart">Restart</string>
-    <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
-    <string name="never_read">Never read</string>
+    <string name="restart">重启</string>
+    <string name="current_web_data_source_not_founded">当前网络数据源不可用，请检查插件与数据源设置</string>
+    <string name="never_read">未读</string>
 </resources>

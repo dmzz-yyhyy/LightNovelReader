@@ -583,6 +583,7 @@
     <string name="plugin_store_load_failed_desc">Failed to get plugin info</string>
     <string name="plugin_store_install_with_size">Install (%1$s)</string>
     <string name="plugin_store_download_progress">%1$d%% downloaded</string>
+    <string name="plugin_store_get_plugins">Get New Plugins from Plugin Store</string>
     <string name="plugin_third_party_title">Third-party plugin</string>
     <string name="plugin_third_party_desc">This plugin is provided by a third party</string>
     <string name="plugin_info_id_label">ID</string>

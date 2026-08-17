@@ -575,6 +575,7 @@
     <string name="plugin_store_load_failed_desc">無法取得外掛資料</string>
     <string name="plugin_store_install_with_size">安裝（%1$s）</string>
     <string name="plugin_store_download_progress">已下載 %1$d%%</string>
+    <string name="plugin_store_get_plugins">從商店取得更多外掛</string>
     <string name="plugin_third_party_title">第三方外掛</string>
     <string name="plugin_third_party_desc">此外掛由第三方提供</string>
     <string name="plugin_info_id_label">包名</string>

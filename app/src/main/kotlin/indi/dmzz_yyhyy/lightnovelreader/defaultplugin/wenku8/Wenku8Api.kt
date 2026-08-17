@@ -30,7 +30,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.cookie
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.bodyAsBytes
 import io.ktor.http.Cookie
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
@@ -73,6 +73,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.milliseconds
 
+
+/** wenku8 页面使用的字符集。声明为 gbk，实际输出 GB18030，详见 [Wenku8Api.getWithWenku8Cookie] */
+private val WENKU8_CHARSET: Charset = Charset.forName("GB18030")
 
 @WebDataSource(
     "Wenku8",
@@ -336,8 +339,13 @@ class Wenku8Api : WebBookDataSource {
     suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
         requestLimiter.withPermit {
             runCatching {
-                 val res = ktorClient.get(url)
-                     .bodyAsText(Charset.forName("GBK"))
+                // wenku8 实际以 GB18030 输出：• ・ 〜 等字符不在 GBK 字符集内，
+                // 会以 GB18030 独有的 4 字节序列传输，按 GBK 解码后碎成乱码（issue #485）。
+                // GB18030 是 GBK 的严格超集，原本能正确解出的内容不受影响。
+                //
+                // 这里读原始字节自行解码，而不是把字符集交给 bodyAsText：
+                // 后者的参数只是 fallback，响应头声明了 charset 时并不生效。
+                val res = String(ktorClient.get(url).bodyAsBytes(), WENKU8_CHARSET)
                 Jsoup.parse(res).outputSettings(
                     Document.OutputSettings()
                         .prettyPrint(false)

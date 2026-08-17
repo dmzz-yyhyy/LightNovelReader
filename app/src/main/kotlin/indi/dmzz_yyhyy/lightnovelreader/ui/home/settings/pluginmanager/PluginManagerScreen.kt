@@ -71,7 +71,6 @@ fun PluginManagerScreen(
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val claim = LocalClaimSnackbarHost.current
-    val context = LocalContext.current
 
     DisposableEffect(Unit) {
         claim(true)
@@ -111,9 +110,12 @@ fun PluginManagerScreen(
                 .fillMaxSize()
         ) {
             if (pluginInfoList.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    GetPluginsFromStoreTips()
                     EmptyPage(
-                        modifier = Modifier.navigationBarsPadding(),
+                        modifier = Modifier.fillMaxSize().navigationBarsPadding(),
                         icon = painterResource(R.drawable.deployed_code_update_24px),
                         title = stringResource(R.string.plugin_empty_title),
                         description = stringResource(R.string.plugin_empty_desc),
@@ -126,34 +128,7 @@ fun PluginManagerScreen(
                         .weight(1f)
                 ) {
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .clickable(onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, "https://plugins.nariko.org".toUri())
-                                    context.startActivity(intent, null)
-                                })
-                                .padding(horizontal = 24.dp, vertical = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.archive_24px),
-                                contentDescription = "archive"
-                            )
-                            Text(
-                                modifier = Modifier.weight(1f),
-                                text = "从插件市场获取新插件",
-                                style = typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                            Icon(
-                                modifier = Modifier.size(18.dp),
-                                painter = painterResource(id = R.drawable.open_in_new_24px),
-                                contentDescription = "open",
-                                tint = colorScheme.onSurfaceVariant
-                            )
-                        }
+                        GetPluginsFromStoreTips()
                     }
                     item {
                         ThirdPartyPluginTips()
@@ -214,6 +189,39 @@ private fun ThirdPartyPluginTips() {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun GetPluginsFromStoreTips() {
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .clickable(onClick = {
+                val intent = Intent(Intent.ACTION_VIEW, "https://plugins.nariko.org".toUri())
+                context.startActivity(intent, null)
+            })
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.archive_24px),
+            contentDescription = "archive"
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = stringResource(R.string.plugin_store_get_plugins),
+            style = typography.titleSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Icon(
+            modifier = Modifier.size(18.dp),
+            painter = painterResource(id = R.drawable.open_in_new_24px),
+            contentDescription = "open",
+            tint = colorScheme.onSurfaceVariant
+        )
     }
 }
 
