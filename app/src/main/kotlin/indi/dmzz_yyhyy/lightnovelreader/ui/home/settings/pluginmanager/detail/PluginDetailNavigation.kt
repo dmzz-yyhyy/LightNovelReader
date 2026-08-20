@@ -61,7 +61,7 @@ fun NavGraphBuilder.settingsPluginManagerDetailDestination() {
                         restart(context)
                     }
                 }
-                            },
+            },
             pluginContent = { viewModel.PluginContent(pluginId, it) },
             onClickSignature = {
                 showSignatureDialog = true

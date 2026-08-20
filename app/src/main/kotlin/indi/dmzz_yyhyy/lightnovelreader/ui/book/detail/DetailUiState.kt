@@ -21,7 +21,7 @@ interface DetailUiState {
     val isInBookshelf: Boolean
 }
 
-class MutableDetailUiState: DetailUiState {
+class MutableDetailUiState : DetailUiState {
     override var bookInformation: Result<BookInformation, WebRequestError>? by mutableStateOf(null)
     override var bookVolumes: Result<BookVolumes, WebRequestError>? by mutableStateOf(null)
     override var userReadingData: UserReadingData? by mutableStateOf(null)

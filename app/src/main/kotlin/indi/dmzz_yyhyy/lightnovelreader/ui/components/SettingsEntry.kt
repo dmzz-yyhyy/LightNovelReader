@@ -368,7 +368,7 @@ fun SettingsMenuEntry(
             val option = selectedOption?.let { stringResource(it.nameId) } ?: "(null)"
             AnimatedTextLine(
                 text = if (disabled) stringResource(R.string.unavailable)
-                    else option,
+                else option,
                 style = typography.bodyMedium,
                 color = colorScheme.primary
             )

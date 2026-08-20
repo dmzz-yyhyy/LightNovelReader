@@ -59,7 +59,9 @@ fun NavGraphBuilder.settingsDestination() {
         val navController = LocalNavController.current
         val settingsViewModel = hiltViewModel<SettingsViewModel>()
         val updatesAvailableDialogViewModel = hiltViewModel<UpdatesAvailableDialogViewModel>()
-        val updatePhase by updatesAvailableDialogViewModel.updatePhaseFlow.collectAsStateWithLifecycle("Not Checked")
+        val updatePhase by updatesAvailableDialogViewModel.updatePhaseFlow.collectAsStateWithLifecycle(
+            "Not Checked"
+        )
         SettingsScreen(
             updatePhase = updatePhase,
             settingState = settingsViewModel.settingState,
@@ -137,17 +139,20 @@ private fun NavGraphBuilder.exportUserDataDialog() {
         var exportContext: ExportContext by remember { mutableStateOf(MutableExportContext()) }
         val saveDataToFileLauncher = uriLauncher { uri ->
             CoroutineScope(Dispatchers.Main).launch {
-                workManager.getWorkInfoByIdFlow(viewModel.exportToFile(uri, exportContext).id).collect {
-                    when (it?.state) {
-                        WorkInfo.State.FAILED -> {
-                            Toast.makeText(context, "导出失败", Toast.LENGTH_SHORT).show()
+                workManager.getWorkInfoByIdFlow(viewModel.exportToFile(uri, exportContext).id)
+                    .collect {
+                        when (it?.state) {
+                            WorkInfo.State.FAILED -> {
+                                Toast.makeText(context, "导出失败", Toast.LENGTH_SHORT).show()
+                            }
+
+                            WorkInfo.State.SUCCEEDED -> {
+                                Toast.makeText(context, "导出成功", Toast.LENGTH_SHORT).show()
+                            }
+
+                            else -> {}
                         }
-                        WorkInfo.State.SUCCEEDED -> {
-                            Toast.makeText(context, "导出成功", Toast.LENGTH_SHORT).show()
-                        }
-                        else -> {}
                     }
-                }
             }
             navController.popBackStack()
         }
@@ -171,8 +176,14 @@ private fun NavController.navigateToExportUserDataDialog() {
 }
 
 @Suppress("DuplicatedCode", "SameParameterValue")
-private fun createDataFile(fileName: String, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+private fun createDataFile(
+    fileName: String,
+    launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+) {
+    val initUri = DocumentsContract.buildDocumentUri(
+        "com.android.externalstorage.documents",
+        "primary:Documents"
+    )
     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"

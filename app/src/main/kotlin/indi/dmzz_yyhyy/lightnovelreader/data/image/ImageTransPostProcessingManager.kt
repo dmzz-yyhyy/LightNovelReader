@@ -10,14 +10,19 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ImageTransPostProcessingManager @Inject constructor(): ImageTransPostProcessingManagerApi {
-    private val transformationMap = mutableMapOf<Identifier, MutableMap<Identifier, ImageTransformation>>()
+class ImageTransPostProcessingManager @Inject constructor() : ImageTransPostProcessingManagerApi {
+    private val transformationMap =
+        mutableMapOf<Identifier, MutableMap<Identifier, ImageTransformation>>()
 
     override fun registerImagePostProcessPipeline(identifier: Identifier) {
         transformationMap[identifier] = mutableMapOf()
     }
 
-    override fun registerImageTransformation(pipeline: Identifier, transformationIdentifier: Identifier, transformation: ImageTransformation) {
+    override fun registerImageTransformation(
+        pipeline: Identifier,
+        transformationIdentifier: Identifier,
+        transformation: ImageTransformation
+    ) {
         transformationMap[pipeline]?.put(transformationIdentifier, transformation)
     }
 
@@ -26,7 +31,8 @@ class ImageTransPostProcessingManager @Inject constructor(): ImageTransPostProce
             Pair(it.key, it.value)
         }
 
-    override fun getImageTransformation(pipeline: Identifier, transformation: Identifier) = transformationMap[pipeline]?.get(transformation)
+    override fun getImageTransformation(pipeline: Identifier, transformation: Identifier) =
+        transformationMap[pipeline]?.get(transformation)
 
     override fun unregisterTransformations(pipeline: Identifier, transformation: Identifier) {
         transformationMap[pipeline]?.remove(transformation)

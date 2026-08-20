@@ -89,7 +89,8 @@ class MutableBookshelfHomeUiState(
     override var pinnedExpanded by mutableStateOf(true)
     override var allExpanded by mutableStateOf(true)
     override val selectedBookIds: MutableList<String> = mutableStateListOf()
-    override val reorderBookIds: MutableList<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>> = mutableStateListOf()
+    override val reorderBookIds: MutableList<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>> =
+        mutableStateListOf()
     override val reorderBookshelfIds: MutableList<Int> = mutableStateListOf()
     override var toast by mutableStateOf("")
 }

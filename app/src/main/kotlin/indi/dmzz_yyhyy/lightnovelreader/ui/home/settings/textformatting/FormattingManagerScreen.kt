@@ -101,7 +101,10 @@ fun TextFormattingScreen(
                             maxLines = 1
                         )
                         Text(
-                            text = stringResource(R.string.n_rules, groups.firstOrNull { it.id.isEmpty() }?.size ?: 0),
+                            text = stringResource(
+                                R.string.n_rules,
+                                groups.firstOrNull { it.id.isEmpty() }?.size ?: 0
+                            ),
                             style = typography.labelMedium,
                             color = colorScheme.secondary
                         )

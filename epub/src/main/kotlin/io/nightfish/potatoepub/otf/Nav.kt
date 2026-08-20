@@ -1,9 +1,9 @@
 package io.nightfish.potatoepub.otf
 
 import io.nightfish.potatoepub.xml.Attribute
+import io.nightfish.potatoepub.xml.WriteToZipAble
 import io.nightfish.potatoepub.xml.XmlBuilder
 import io.nightfish.potatoepub.xml.XmlBuilder.Companion.xml
-import io.nightfish.potatoepub.xml.WriteToZipAble
 import io.nightfish.potatoepub.xml.asFormatedXml
 import java.util.Locale
 import java.util.zip.ZipEntry
@@ -13,10 +13,11 @@ data class Nav(
     val title: String,
     val headline: Int = 2,
     val ol: Ol
-): WriteToZipAble {
+) : WriteToZipAble {
     override val zipEntry: ZipEntry = ZipEntry("EPUB/nav.xhtml")
     override fun toByteArray(): ByteArray =
-        xml("html",
+        xml(
+            "html",
             "http://www.w3.org/1999/xhtml",
             Attribute("xmlns:epub", "http://www.idpf.org/2007/ops"),
             Attribute("lang", language.toString()),

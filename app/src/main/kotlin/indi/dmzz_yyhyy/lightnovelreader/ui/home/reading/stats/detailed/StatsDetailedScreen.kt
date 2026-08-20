@@ -101,10 +101,11 @@ sealed class StatsViewOption(val viewIndex: Int) {
     }
 }
 
-private operator fun LocalDate.rangeTo(other: LocalDate): ClosedRange<LocalDate> = object : ClosedRange<LocalDate> {
-    override val start: LocalDate = this@rangeTo
-    override val endInclusive: LocalDate = other
-}
+private operator fun LocalDate.rangeTo(other: LocalDate): ClosedRange<LocalDate> =
+    object : ClosedRange<LocalDate> {
+        override val start: LocalDate = this@rangeTo
+        override val endInclusive: LocalDate = other
+    }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,7 +159,8 @@ private fun StatisticsContent(
     LazyColumn(modifier.fillMaxSize()) {
         stickyHeader {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(colorScheme.background)
                     .padding(bottom = 12.dp),
                 contentAlignment = Alignment.Center
@@ -171,9 +173,11 @@ private fun StatisticsContent(
                                 index = index,
                                 count = viewOptions.size
                             ),
-                            onClick = { onViewSelected(index).let {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            } },
+                            onClick = {
+                                onViewSelected(index).let {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            },
                             selected = uiState.selectedViewIndex == index
                         ) {
                             Text(label)

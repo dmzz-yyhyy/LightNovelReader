@@ -28,7 +28,7 @@ data class BookshelfEntity(
     val pinnedBookIds: List<String>,
     @ColumnInfo(name = "updated_book_ids")
     val updatedBookIds: List<String>,
-): Mergeable<BookshelfEntity> {
+) : Mergeable<BookshelfEntity> {
     override fun merge(new: BookshelfEntity): BookshelfEntity =
         BookshelfEntity(
             id = new.id,

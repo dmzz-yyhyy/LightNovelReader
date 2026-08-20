@@ -7,7 +7,7 @@ import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 
-interface ProxyWebBookDataSource: PriorityWebBookDataSource {
+interface ProxyWebBookDataSource : PriorityWebBookDataSource {
     override val origin: WebBookDataSource get() = proxiedWebBookDataSource.origin
     val proxiedWebBookDataSource: ProxyWebBookDataSource
     override val id get() = origin.id
@@ -18,6 +18,7 @@ interface ProxyWebBookDataSource: PriorityWebBookDataSource {
         tag: String,
         navController: NavController
     ) = origin.progressBookTagClick(tag, navController)
+
     override suspend fun isOffLine() = origin.isOffLine()
     override val offLine get() = origin.offLine
     override val isOffLineFlow get() = origin.isOffLineFlow

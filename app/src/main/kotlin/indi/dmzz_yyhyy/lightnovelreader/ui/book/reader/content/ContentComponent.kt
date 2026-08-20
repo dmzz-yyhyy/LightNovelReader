@@ -22,7 +22,7 @@ fun ContentComponent(
     onClickNextChapter: () -> Unit
 ) {
     uiState.let { contentUiState ->
-        when(contentUiState) {
+        when (contentUiState) {
             is FlipPageContentUiState -> FlipPageContentComponent(
                 modifier,
                 contentUiState,
@@ -32,6 +32,7 @@ fun ContentComponent(
                 onClickPrevChapter,
                 onClickNextChapter
             )
+
             is ScrollContentUiState -> ScrollContentComponent(
                 modifier,
                 contentUiState,

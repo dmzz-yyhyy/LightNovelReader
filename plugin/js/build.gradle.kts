@@ -50,7 +50,8 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.sources.manifests.addStaticManifestFile(
-            layout.buildDirectory.file("generated/ksp/${variant.name}/resources/auto_register_manifest.xml").get().toString()
+            layout.buildDirectory.file("generated/ksp/${variant.name}/resources/auto_register_manifest.xml")
+                .get().toString()
         )
     }
 }
@@ -58,7 +59,8 @@ androidComponents {
 afterEvaluate {
     listOf("debug", "release").forEach { variantName ->
         val kspTaskName = "ksp${variantName.replaceFirstChar { it.uppercase() }}Kotlin"
-        val manifestTaskName = "process${variantName.replaceFirstChar { it.uppercase() }}MainManifest"
+        val manifestTaskName =
+            "process${variantName.replaceFirstChar { it.uppercase() }}MainManifest"
         tasks.findByName(manifestTaskName)?.dependsOn(kspTaskName)
     }
 }

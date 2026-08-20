@@ -15,6 +15,7 @@ interface SearchProvider {
      * @since Api 2
      */
     val searchTypes: List<SearchType>
+
     /**
      * 执行搜索任务
      *

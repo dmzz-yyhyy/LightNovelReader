@@ -18,7 +18,7 @@ class ColorPickerDialogViewModel @Inject constructor(
 ) : ViewModel() {
     private var colorUserData: ColorUserData? = null
 
-    fun init(colorUserDataPath: String): Flow<Color?>{
+    fun init(colorUserDataPath: String): Flow<Color?> {
         colorUserData = userDataRepository.colorUserData(colorUserDataPath)
         return colorUserData!!.getFlow()
     }

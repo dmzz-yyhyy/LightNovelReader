@@ -157,7 +157,8 @@ fun ZoomableImage(
                                         val pressedChanges = event.changes.filter { it.pressed }
 
                                         pressedChanges.forEach { ch ->
-                                            if (!startPos.containsKey(ch.id)) startPos[ch.id] = ch.position
+                                            if (!startPos.containsKey(ch.id)) startPos[ch.id] =
+                                                ch.position
                                             val sp = startPos[ch.id]!!
                                             val dx = ch.position.x - sp.x
                                             val dy = ch.position.y - sp.y
@@ -174,8 +175,9 @@ fun ZoomableImage(
                                          * 并消费点击以防止触发阅读器沉浸切换
                                          * */
                                         if (!twoFingerClick) {
-                                            val now = event.changes.firstOrNull { it.id == down.id }?.uptimeMillis
-                                                ?: down.uptimeMillis
+                                            val now =
+                                                event.changes.firstOrNull { it.id == down.id }?.uptimeMillis
+                                                    ?: down.uptimeMillis
                                             val elapsed = now - t0
 
                                             if (elapsed >= longPressMillis && maxMove <= slop) {
@@ -192,7 +194,9 @@ fun ZoomableImage(
                                          * */
                                         if (pressedChanges.isEmpty()) {
                                             if (twoFingerClick) {
-                                                val elapsed = (event.changes.maxOfOrNull { it.uptimeMillis } ?: t0) - t0
+                                                val elapsed =
+                                                    (event.changes.maxOfOrNull { it.uptimeMillis }
+                                                        ?: t0) - t0
                                                 if (elapsed <= twoFingerTapMaxMillis && maxMove <= slop) {
                                                     event.changes.forEach { it.consume() }
                                                     onViewImage()

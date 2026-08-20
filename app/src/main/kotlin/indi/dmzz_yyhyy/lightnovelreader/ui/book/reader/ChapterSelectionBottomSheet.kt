@@ -159,7 +159,12 @@ fun ChapterSelectionBottomSheet(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column {
-                                            Text(text = volume.volumeTitle, fontWeight = FontWeight.W600, style = typography.titleMedium, color = colorScheme.onSurface)
+                                            Text(
+                                                text = volume.volumeTitle,
+                                                fontWeight = FontWeight.W600,
+                                                style = typography.titleMedium,
+                                                color = colorScheme.onSurface
+                                            )
                                             Text(
                                                 text = stringResource(
                                                     R.string.info_volume_chapters_count,

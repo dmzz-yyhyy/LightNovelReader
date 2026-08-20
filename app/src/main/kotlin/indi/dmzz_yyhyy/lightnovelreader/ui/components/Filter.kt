@@ -55,6 +55,7 @@ fun Filter<*>.Component(
                 }
             )
         }
+
         is SingleChoiceFilter -> {
             var enabled by remember { mutableStateOf(this.value != this.getDefaultChoice()) }
             var displayDialog by remember { mutableStateOf(false) }
@@ -98,6 +99,7 @@ fun Filter<*>.Component(
                 }
             )
         }
+
         is SliderFilter -> {
             var enabled by remember { mutableStateOf(this.enabled) }
             var displayDialog by remember { mutableStateOf(false) }
@@ -121,7 +123,7 @@ fun Filter<*>.Component(
                             valueRange = this@Component.valueRange,
                             steps = this@Component.steps,
                             onSlideChange = { value = it },
-                            onSliderChangeFinished = {  },
+                            onSliderChangeFinished = { },
                             title = this@Component.getTitle().resolve(),
                             description = this@Component.description
                         )

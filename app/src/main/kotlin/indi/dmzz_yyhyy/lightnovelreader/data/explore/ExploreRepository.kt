@@ -17,5 +17,6 @@ class ExploreRepository @Inject constructor(
     fun search(searchType: SearchType, keyword: String): Flow<SearchResult> =
         webBookDataSourceProvider.value.searchProvider.search(searchType, keyword)
 
-    fun getSuggestions(history: List<String>, keyword: String): List<String> = webBookDataSourceProvider.value.searchProvider.getSearchSuggestions(history, keyword)
+    fun getSuggestions(history: List<String>, keyword: String): List<String> =
+        webBookDataSourceProvider.value.searchProvider.getSearchSuggestions(history, keyword)
 }

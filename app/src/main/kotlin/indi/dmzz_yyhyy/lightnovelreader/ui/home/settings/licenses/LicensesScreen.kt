@@ -253,7 +253,8 @@ private fun TopBar(
                     text = stringResource(R.string.settings_open_source_licenses),
                     style = typography.displayLarge,
                     fontWeight = FontWeight.W600,
-                    color = colorScheme.onSurface)
+                    color = colorScheme.onSurface
+                )
             }
         },
         navigationIcon = {

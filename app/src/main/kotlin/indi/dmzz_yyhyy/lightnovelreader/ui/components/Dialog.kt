@@ -134,7 +134,9 @@ fun BaseDialog(
         ) {
             Box(Modifier.height(24.dp))
             Icon(
-                modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally),
+                modifier = Modifier
+                    .size(24.dp)
+                    .align(Alignment.CenterHorizontally),
                 painter = icon,
                 tint = colorScheme.secondary,
                 contentDescription = null
@@ -243,7 +245,7 @@ interface ExportContext {
     val bookmark: Boolean
 }
 
-class MutableExportContext: ExportContext {
+class MutableExportContext : ExportContext {
     override var localBookCache by mutableStateOf(true)
     override var bookshelf by mutableStateOf(true)
     override var readingData by mutableStateOf(true)
@@ -268,7 +270,9 @@ fun ExportUserDataDialog(
         description = stringResource(R.string.dialog_snap_user_data_text),
         onDismissRequest = onDismissRequest,
     ) {
-        Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp)) {
+        Column(Modifier
+            .width(IntrinsicSize.Max)
+            .sizeIn(maxHeight = 350.dp)) {
             CheckBoxListItem(
                 modifier = listItemModifier,
                 title = stringResource(R.string.dialog_snap_local_book_cache),
@@ -528,7 +532,7 @@ private fun ImportOptionTile(
 fun SettingsAboutInfoDialog(
     onDismissRequest: () -> Unit,
 ) {
-    AlertDialog (
+    AlertDialog(
         onDismissRequest = onDismissRequest,
         text = {
             Column {
@@ -585,7 +589,8 @@ fun SettingsAboutInfoDialog(
                         stringResource(R.string.dialog_about_version), color = titleColor
                     )
                     Text(
-                        "${BuildConfig.VERSION_NAME} [${BuildConfig.VERSION_CODE}]", color = contentColor
+                        "${BuildConfig.VERSION_NAME} [${BuildConfig.VERSION_CODE}]",
+                        color = contentColor
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -610,11 +615,13 @@ fun SettingsDisableStatsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { Text(
-            text = stringResource(R.string.settings_statistics_disable_dialog_title),
-            style = typography.titleLarge
-        ) },
-        text = { 
+        title = {
+            Text(
+                text = stringResource(R.string.settings_statistics_disable_dialog_title),
+                style = typography.titleLarge
+            )
+        },
+        text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(text = stringResource(R.string.settings_statistics_disable_dialog_text))
                 Spacer(modifier = Modifier.height(12.dp))
@@ -657,11 +664,11 @@ fun SettingsPrivacyPolicyDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
-        title = { 
+        title = {
             Text(
                 text = stringResource(R.string.privacy_policy_title),
                 style = typography.titleLarge
-            ) 
+            )
         },
         text = {
             Column(
@@ -681,7 +688,7 @@ fun SettingsPrivacyPolicyDialog(
                     color = colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
+
                 Text(
                     text = stringResource(R.string.privacy_policy_not_collect_title),
                     style = typography.titleMedium,
@@ -694,7 +701,7 @@ fun SettingsPrivacyPolicyDialog(
                     color = colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
-                
+
                 Text(
                     text = stringResource(R.string.privacy_policy_commitment_title),
                     style = typography.titleMedium,
@@ -729,7 +736,7 @@ fun ColorPickerDialog(
         mutableStateOf(selectedColor)
     }
 
-    BaseDialog (
+    BaseDialog(
         icon = painterResource(R.drawable.palette_24px),
         title = stringResource(R.string.dialog_color_picker),
         description = description,
@@ -846,7 +853,8 @@ fun SliderValueDialog(
 @Composable
 fun DeleteBookshelfDialog(
     onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit) {
+    onConfirmation: () -> Unit
+) {
     AlertDialog(
         title = {
             Text(

@@ -8,7 +8,7 @@ interface AddToBookshelfDialogUiState {
     val selectedBookshelfIds: List<Int>
 }
 
-class MutableAddToBookshelfDialogUiState: AddToBookshelfDialogUiState {
+class MutableAddToBookshelfDialogUiState : AddToBookshelfDialogUiState {
     override var allBookShelf = mutableStateListOf<Bookshelf>()
-    override var selectedBookshelfIds  = mutableStateListOf<Int>()
+    override var selectedBookshelfIds = mutableStateListOf<Int>()
 }

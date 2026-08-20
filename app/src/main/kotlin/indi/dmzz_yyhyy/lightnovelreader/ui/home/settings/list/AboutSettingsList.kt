@@ -94,7 +94,7 @@ fun AboutSettingsList(
     )
     SettingsSwitchEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
-        painter = painterResource(R.drawable. data_usage_24px),
+        painter = painterResource(R.drawable.data_usage_24px),
         title = stringResource(R.string.settings_statistics),
         description = stringResource(R.string.settings_statistics_desc),
         checked = if (BuildConfig.DEBUG) false else settingState.statistics,

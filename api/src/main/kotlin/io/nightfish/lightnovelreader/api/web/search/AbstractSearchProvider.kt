@@ -8,8 +8,8 @@ import io.nightfish.lightnovelreader.api.util.LocalString
  *
  * @since Api 2
  */
-abstract class AbstractSearchProvider: SearchProvider {
-    private  val _searchTypes = mutableListOf<SearchType>()
+abstract class AbstractSearchProvider : SearchProvider {
+    private val _searchTypes = mutableListOf<SearchType>()
     override val searchTypes: List<SearchType> = _searchTypes
 
     /**

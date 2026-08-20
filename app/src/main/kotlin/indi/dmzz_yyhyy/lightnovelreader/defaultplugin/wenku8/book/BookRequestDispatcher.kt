@@ -10,13 +10,18 @@ import kotlinx.coroutines.flow.Flow
 class BookRequestDispatcher(
     val host: String,
     wenku8Api: Wenku8Api
-): Wenku8BookDataSource {
+) : Wenku8BookDataSource {
     val source = listOf(
         Wenku8WebsiteDataSource(host, wenku8Api)
     )
 
-    private suspend fun <T>rotation(block: suspend Wenku8BookDataSource.() -> Result<T, WebRequestError>): Result<T, WebRequestError> {
-        var result: Result<T, WebRequestError> = Err(WebRequestError("No available data source", "There is no wenku8 data source that can be use"))
+    private suspend fun <T> rotation(block: suspend Wenku8BookDataSource.() -> Result<T, WebRequestError>): Result<T, WebRequestError> {
+        var result: Result<T, WebRequestError> = Err(
+            WebRequestError(
+                "No available data source",
+                "There is no wenku8 data source that can be use"
+            )
+        )
         for (dataSource in source) {
             result = block.invoke(dataSource)
             if (result.isErr) continue

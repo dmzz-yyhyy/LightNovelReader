@@ -34,8 +34,8 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
-private const val KRAFT_PAPER_URL = "https://portal.curiousers.org/static/lnr/paper.webp"
-private const val KRAFT_PAPER_CACHE_KEY = "default_kraft_paper"
+const val KRAFT_PAPER_URL = "https://portal.curiousers.org/static/lnr/paper.webp"
+const val KRAFT_PAPER_CACHE_KEY = "default_kraft_paper"
 
 fun loadReaderFontFamilySafe(uri: Uri): FontFamily? {
     return try {
@@ -54,7 +54,8 @@ fun rememberReaderFontFamily(
     fontFamilyUriUserData: UriUserData,
 ): FontFamily {
     val snackbarScope = rememberCoroutineScope()
-    val uri by fontFamilyUriUserData.getFlowWithDefault(Uri.EMPTY).collectAsStateWithLifecycle(Uri.EMPTY)
+    val uri by fontFamilyUriUserData.getFlowWithDefault(Uri.EMPTY)
+        .collectAsStateWithLifecycle(Uri.EMPTY)
     val fontFamily = remember(uri) { loadReaderFontFamilySafe(uri) }
 
     val snackbarHostState = LocalSnackbarHost.current
@@ -130,9 +131,11 @@ private fun rememberCustomBackgroundPainter(
                         }
                     }
                 }
+
                 is AsyncImagePainter.State.Success -> {
                     errorNotified = false
                 }
+
                 else -> Unit
             }
         }
@@ -169,7 +172,12 @@ fun readerBackgroundColor(settingState: SettingState): Color {
     val isDark = localTheme.isDark
     val background = localTheme.colorScheme.background
 
-    val color = remember(isDark, settingState.backgroundColor, settingState.backgroundDarkColor, background) {
+    val color = remember(
+        isDark,
+        settingState.backgroundColor,
+        settingState.backgroundDarkColor,
+        background
+    ) {
         when {
             isDark && settingState.backgroundDarkColor.isUnspecified -> background
             !isDark && settingState.backgroundColor.isUnspecified -> background

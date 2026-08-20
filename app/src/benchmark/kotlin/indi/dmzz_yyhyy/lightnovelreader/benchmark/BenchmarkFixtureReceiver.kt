@@ -19,7 +19,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.builder.ContentBuilder
-import io.nightfish.lightnovelreader.api.content.builder.simpleText
+import io.nightfish.lightnovelreader.api.content.builder.paragraph
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -43,6 +43,28 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                         }
                         "seed=SUCCEEDED"
                     }
+
+                    ACTION_REEMIT_CHAPTER -> {
+                        runBlocking {
+                            val database = LightNovelReaderDatabase.getInstance(context)
+                            database.chapterContentDao().get(CHAPTER_ONE_ID)?.let {
+                                database.chapterContentDao().update(it)
+                            }
+                        }
+                        "reemit=SUCCEEDED"
+                    }
+
+                    ACTION_REPORT_PROGRESS -> {
+                        val progress = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context)
+                                .userReadingDataDao()
+                                .getEntity(BOOK_ID)
+                                ?.currentChapterReadingProgressMap
+                                ?.get(CHAPTER_ONE_ID)
+                        }
+                        "progress=${progress ?: -1f}"
+                    }
+
                     else -> "unsupported-action=${intent.action}"
                 }
                 pending.resultCode = Activity.RESULT_OK
@@ -73,6 +95,21 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             isComplete = false,
         )
         database.bookInformationDao().insert(book)
+        database.bookInformationDao().insert(
+            BookInformationEntity(
+                id = SECOND_BOOK_ID,
+                title = "Second Benchmark Novel",
+                subtitle = "Independent progress restoration fixture",
+                coverUri = Uri.EMPTY,
+                author = "Second Benchmark Author",
+                description = "A second local book used to prove that chapters and progress do not leak between books.",
+                tags = listOf("Benchmark", "Progress"),
+                publishingHouse = "Benchmark Press",
+                wordCount = WordCount(9_876),
+                lastUpdated = now.minusDays(2),
+                isComplete = false,
+            )
+        )
 
         database.bookVolumesDao().insertVolume(
             VolumeEntity(
@@ -96,12 +133,28 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             ChapterInformationEntity(CHAPTER_ONE_ID, "Benchmark Chapter One"),
             ChapterInformationEntity(CHAPTER_TWO_ID, "Benchmark Chapter Two"),
         )
+        database.bookVolumesDao().insertVolume(
+            VolumeEntity(
+                bookId = SECOND_BOOK_ID,
+                volumeId = SECOND_BOOK_VOLUME_ID,
+                volumeTitle = "Second Benchmark Volume",
+                chapterIds = listOf(SECOND_BOOK_CHAPTER_ONE_ID, SECOND_BOOK_CHAPTER_TWO_ID),
+                index = 0,
+            )
+        )
+        database.bookVolumesDao().insertChapterInformationEntities(
+            ChapterInformationEntity(SECOND_BOOK_CHAPTER_ONE_ID, "Second Book Chapter One"),
+            ChapterInformationEntity(SECOND_BOOK_CHAPTER_TWO_ID, "Second Book Chapter Two"),
+        )
 
-        val firstContent = ContentBuilder()
-            .simpleText(LONG_TEXT)
+        val firstContent = ContentBuilder().apply {
+            appendProgressParagraphs("Benchmark progress paragraph")
+        }
+            .paragraph { text(CHAPTER_ONE_END_MARKER) }
             .build()
         val secondContent = ContentBuilder()
-            .simpleText("Benchmark chapter two.\n\n$LONG_TEXT")
+            .paragraph { text(CHAPTER_TWO_START_MARKER) }
+            .apply { appendProgressParagraphs("Benchmark chapter two progress paragraph") }
             .build()
         database.chapterContentDao().update(
             ChapterContentEntity(
@@ -121,6 +174,30 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 nextChapter = "",
             )
         )
+        val secondBookFirstContent = ContentBuilder().apply {
+            appendProgressParagraphs("Second book chapter one progress paragraph")
+        }.build()
+        val secondBookSecondContent = ContentBuilder().apply {
+            appendProgressParagraphs("Second book chapter two progress paragraph")
+        }.build()
+        database.chapterContentDao().update(
+            ChapterContentEntity(
+                id = SECOND_BOOK_CHAPTER_ONE_ID,
+                title = "Second Book Chapter One",
+                content = secondBookFirstContent,
+                prevChapter = "",
+                nextChapter = SECOND_BOOK_CHAPTER_TWO_ID,
+            )
+        )
+        database.chapterContentDao().update(
+            ChapterContentEntity(
+                id = SECOND_BOOK_CHAPTER_TWO_ID,
+                title = "Second Book Chapter Two",
+                content = secondBookSecondContent,
+                prevChapter = SECOND_BOOK_CHAPTER_ONE_ID,
+                nextChapter = "",
+            )
+        )
 
         database.userReadingDataDao().insert(
             UserReadingDataEntity(
@@ -134,12 +211,30 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 maxChapterReadingProgressMap = mapOf(CHAPTER_ONE_ID to 0.5f),
             )
         )
+        database.userReadingDataDao().insert(
+            UserReadingDataEntity(
+                id = SECOND_BOOK_ID,
+                lastReadTime = now.minusHours(1),
+                totalReadTime = 1_800,
+                readingProgress = 0.7f,
+                lastReadChapterId = SECOND_BOOK_CHAPTER_TWO_ID,
+                lastReadChapterTitle = "Second Book Chapter Two",
+                currentChapterReadingProgressMap = mapOf(
+                    SECOND_BOOK_CHAPTER_ONE_ID to 0.15f,
+                    SECOND_BOOK_CHAPTER_TWO_ID to 0.7f,
+                ),
+                maxChapterReadingProgressMap = mapOf(
+                    SECOND_BOOK_CHAPTER_ONE_ID to 0.4f,
+                    SECOND_BOOK_CHAPTER_TWO_ID to 0.8f,
+                ),
+            )
+        )
         database.userDataDao().insert(
             UserDataEntity(
                 path = "reading_books",
                 group = "",
                 type = "StringList",
-                value = BOOK_ID,
+                value = "$BOOK_ID,$SECOND_BOOK_ID",
             )
         )
         database.userDataDao().insert(
@@ -158,15 +253,22 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 sortReversed = false,
                 autoCache = false,
                 systemUpdateReminder = false,
-                allBookIds = listOf(BOOK_ID),
+                allBookIds = listOf(BOOK_ID, SECOND_BOOK_ID),
                 pinnedBookIds = emptyList(),
-                updatedBookIds = listOf(BOOK_ID),
+                updatedBookIds = listOf(BOOK_ID, SECOND_BOOK_ID),
             )
         )
         database.bookshelfDao().insertBookshelfBookMetadata(
             BookshelfBookMetadataEntity(
                 id = BOOK_ID,
                 lastUpdate = now,
+                bookShelfIds = listOf(BOOKSHELF_ID),
+            )
+        )
+        database.bookshelfDao().insertBookshelfBookMetadata(
+            BookshelfBookMetadataEntity(
+                id = SECOND_BOOK_ID,
+                lastUpdate = now.minusHours(1),
                 bookShelfIds = listOf(BOOKSHELF_ID),
             )
         )
@@ -190,24 +292,38 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         database.dailyCountDao().insert(DailyCountEntity(today, count))
     }
 
+    private fun ContentBuilder.appendProgressParagraphs(prefix: String) {
+        repeat(PROGRESS_PARAGRAPH_COUNT) { index ->
+            paragraph {
+                text(
+                    "$prefix ${index + 1}. This deterministic component exercises layout, " +
+                        "scrolling, pagination, progress restoration, and formatting."
+                )
+            }
+        }
+    }
+
     companion object {
         const val ACTION_SEED = "indi.dmzz_yyhyy.lightnovelreader.benchmark.SEED"
+        const val ACTION_REEMIT_CHAPTER =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REEMIT_CHAPTER"
+        const val ACTION_REPORT_PROGRESS =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_PROGRESS"
+
         // The built-in Wenku8 source parses book IDs as integers when it
         // performs its background refresh, so the fixture ID must be numeric.
         const val BOOK_ID = "9999999"
+        const val SECOND_BOOK_ID = "9999998"
         const val VOLUME_ID = "benchmark-volume"
         const val SECOND_VOLUME_ID = "benchmark-volume-2"
         const val CHAPTER_ONE_ID = "benchmark-chapter-1"
         const val CHAPTER_TWO_ID = "benchmark-chapter-2"
+        const val SECOND_BOOK_VOLUME_ID = "second-benchmark-volume"
+        const val SECOND_BOOK_CHAPTER_ONE_ID = "second-benchmark-chapter-1"
+        const val SECOND_BOOK_CHAPTER_TWO_ID = "second-benchmark-chapter-2"
+        const val CHAPTER_ONE_END_MARKER = "Benchmark chapter one end marker."
+        const val CHAPTER_TWO_START_MARKER = "Benchmark chapter two start marker."
         const val BOOKSHELF_ID = 1_000_001
-
-        private val LONG_TEXT = buildString {
-            repeat(30) { paragraph ->
-                append("Benchmark paragraph ")
-                append(paragraph + 1)
-                append(". This deterministic text exercises layout, scrolling, pagination, progress, and formatting. ")
-                append("It contains enough content to span multiple reader pages.\n\n")
-            }
-        }
+        const val PROGRESS_PARAGRAPH_COUNT = 30
     }
 }

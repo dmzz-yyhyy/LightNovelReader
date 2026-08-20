@@ -137,7 +137,10 @@ interface WebBookDataSource {
      *
      * @since Api 4
      */
-    suspend fun getChapterContent(chapterId: String, bookId: String): Result<ChapterContent, WebRequestError>
+    suspend fun getChapterContent(
+        chapterId: String,
+        bookId: String
+    ): Result<ChapterContent, WebRequestError>
 
     /**
      * 用于处理书本tag的点击跳转事件
@@ -147,7 +150,7 @@ interface WebBookDataSource {
      *
      * @since Api 4
      */
-    fun progressBookTagClick(tag: String, navController: NavController) {  }
+    fun progressBookTagClick(tag: String, navController: NavController) {}
 
     /**
      * 根据卷获取该卷封面的Uri, 用于EPUB分卷导出

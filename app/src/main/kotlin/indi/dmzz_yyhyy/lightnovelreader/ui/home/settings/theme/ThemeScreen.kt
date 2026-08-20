@@ -69,6 +69,10 @@ import coil3.imageLoader
 import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.get
+import com.github.michaelbull.result.onErr
+import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.theme.AppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
@@ -80,6 +84,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
+import indi.dmzz_yyhyy.lightnovelreader.utils.KRAFT_PAPER_CACHE_KEY
+import indi.dmzz_yyhyy.lightnovelreader.utils.KRAFT_PAPER_URL
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
@@ -92,7 +98,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
+import kotlin.math.roundToInt
 
 @Composable
 fun ThemeScreen(
@@ -160,7 +166,10 @@ fun DarkModeSettings(
                         selected = settingState.darkModeKey == "Disabled",
                         onClick = { settingState.darkModeKeyUserData.asynchronousSet("Disabled") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_disabled), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_disabled),
+                        style = typography.labelLarge
+                    )
                 }
             }
 
@@ -176,7 +185,10 @@ fun DarkModeSettings(
                         selected = settingState.darkModeKey == "Enabled",
                         onClick = { settingState.darkModeKeyUserData.asynchronousSet("Enabled") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_enabled), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_enabled),
+                        style = typography.labelLarge
+                    )
                 }
             }
 
@@ -231,7 +243,10 @@ fun DarkModeSettings(
                         selected = settingState.darkModeKey == "FollowSystem",
                         onClick = { settingState.darkModeKeyUserData.asynchronousSet("FollowSystem") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_follow_system), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_follow_system),
+                        style = typography.labelLarge
+                    )
                 }
             }
         }
@@ -306,7 +321,7 @@ fun ReaderThemeSettingsList(
             if (!lastEnabled && now) {
                 val loader = context.imageLoader
 
-                val key = "default_kraft_paper"
+                val key = KRAFT_PAPER_CACHE_KEY
 
                 val memHit = loader.memoryCache?.get(MemoryCache.Key(key)) != null
                 val diskHit = loader.diskCache?.openSnapshot(key)?.use { true } ?: false
@@ -316,11 +331,12 @@ fun ReaderThemeSettingsList(
 
                     loader.enqueue(
                         ImageRequest.Builder(context)
-                            .data(key)
+                            .data(KRAFT_PAPER_URL)
                             .memoryCachePolicy(CachePolicy.ENABLED)
                             .diskCachePolicy(CachePolicy.ENABLED)
                             .networkCachePolicy(CachePolicy.ENABLED)
                             .memoryCacheKey(key)
+                            .diskCacheKey(key)
                             .build()
                     )
                 }
@@ -381,7 +397,11 @@ fun ReaderThemeSettingsList(
 }
 
 @Composable
-fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChangeTextColor: () -> Unit) {
+fun ReaderTextSettings(
+    settingState: SettingState,
+    context: Context,
+    onClickChangeTextColor: () -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
     val textMeasurer = rememberTextMeasurer()
     val onSecondaryContainer = colorScheme.onSecondaryContainer
@@ -422,7 +442,7 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
         ) { uri ->
             uri ?: return@rememberLauncherForActivityResult
             coroutineScope.launch(Dispatchers.IO) {
-                val fontFile = saveFontToLocal(context, uri) ?: run {
+                val fontFile = saveFontToLocal(context, uri).get() ?: run {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             context,
@@ -438,7 +458,7 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                         text = "",
                         style = TextStyle(fontFamily = FontFamily(Font(fontFile)))
                     )
-                    settingState.fontFamilyUriUserData.set(fontFile.toUri())
+                    settingState.fontUriUserData.set(fontFile.toUri())
                 } catch (_: Exception) {
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
@@ -457,11 +477,14 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
             title = stringResource(R.string.settings_theme_text_font),
             description = stringResource(R.string.settings_theme_text_font_desc),
             options = MenuOptions.SelectText,
-            selectedOptionKey = if (settingState.fontFamilyUri.toString().isEmpty())
+            selectedOptionKey = if (settingState.fontUri.toString().isEmpty())
                 MenuOptions.SelectText.Default else MenuOptions.SelectText.Customize,
             onOptionChange = {
                 when (it) {
-                    MenuOptions.SelectText.Default -> settingState.fontFamilyUriUserData.asynchronousSet(Uri.EMPTY)
+                    MenuOptions.SelectText.Default -> settingState.fontUriUserData.asynchronousSet(
+                        Uri.EMPTY
+                    )
+
                     MenuOptions.SelectText.Customize -> fontPicker.launch("*/*")
                 }
             }
@@ -488,17 +511,21 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Box(modifier = Modifier.fillMaxSize().background(readerBackgroundColor(settingState)))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(readerBackgroundColor(settingState))
+                )
             }
 
             Text(
                 modifier = Modifier.padding(horizontal = 18.dp),
                 text = stringResource(R.string.settings_about_oss),
                 fontSize = settingState.fontSize.sp,
-                lineHeight = (settingState.fontLineHeight + settingState.fontSize).sp,
+                lineHeight = (settingState.lineHeight + settingState.fontSize).sp,
                 fontWeight = FontWeight(settingState.fontWeigh.toInt()),
                 textAlign = TextAlign.Center,
-                fontFamily = rememberReaderFontFamily(settingState.fontFamilyUriUserData),
+                fontFamily = rememberReaderFontFamily(settingState.fontUriUserData),
                 color = readerTextColor(settingState)
             )
         }
@@ -529,28 +556,75 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
             modifier = Modifier.background(colorScheme.surfaceContainer),
             painter = painterResource(R.drawable.format_line_spacing_24px),
             title = stringResource(R.string.settings_reader_line_spacing),
-            unit = "sp",
-            valueRange = 0f..32f,
-            value = settingState.fontLineHeight,
-            floatUserData = settingState.fontLineHeightUserData
+            unit = "em",
+            valueRange = 1f..3f,
+            value = settingState.lineHeight,
+            valueFormat = { (it * 10).roundToInt().toFloat() / 10 },
+            floatUserData = settingState.lineHeightUserData,
         )
     }
 }
 
-private suspend fun saveFontToLocal(context: Context, uri: Uri): File? = withContext(Dispatchers.IO) {
-    val fontFile = context.filesDir.resolve("readerTextFont").apply {
-        if (exists()) delete()
-        createNewFile()
-    }
-    try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-            FileInputStream(fd.fileDescriptor).use { input ->
-                fontFile.outputStream().use { output -> input.copyTo(output) }
-            }
+private suspend fun saveFontToLocal(context: Context, uri: Uri): Result<File, Throwable> =
+    withContext(Dispatchers.IO) {
+        val fontDir = context.filesDir.resolve("fonts").also {
+            it.mkdirs()
         }
-        fontFile
+        fontDir.listFiles()?.forEach {
+            it.delete()
+        }
+        val fontFile = fontDir.resolve(uri.hashCode().toString()).also {
+            it.createNewFile()
+        }
+        runCatching {
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                fontFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            fontFile
+        }.onErr {
+            Log.e("ReaderTextFont", "Failed to import font", it)
+        }
+    }
+
+private suspend fun saveBackgroundToLocal(
+    context: Context,
+    uri: Uri,
+    fileName: String,
+): File? = withContext(Dispatchers.IO) {
+    val target = context.filesDir.resolve(fileName)
+    val pending = context.filesDir.resolve("$fileName.pending")
+    val backup = context.filesDir.resolve("$fileName.backup")
+
+    try {
+        pending.delete()
+        val input = context.contentResolver.openInputStream(uri)
+            ?: error("Unable to open selected background image")
+        input.use { source ->
+            pending.outputStream().use { destination -> source.copyTo(destination) }
+        }
+        require(pending.length() > 0L) { "Selected background image is empty" }
+
+        backup.delete()
+        if (target.exists() && !target.renameTo(backup)) {
+            error("Unable to preserve the current background image")
+        }
+        try {
+            if (!pending.renameTo(target)) {
+                pending.copyTo(target, overwrite = true)
+                pending.delete()
+            }
+            backup.delete()
+            target
+        } catch (e: Exception) {
+            target.delete()
+            if (backup.exists()) backup.renameTo(target)
+            throw e
+        }
     } catch (e: Exception) {
-        Log.e("ReaderTextFont", "Failed to import font", e)
+        pending.delete()
+        Log.e("ReaderBackground", "Failed to import background image", e)
         null
     }
 }
@@ -567,22 +641,17 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri ?: return@rememberLauncherForActivityResult
-        scope.launch(Dispatchers.IO) {
-            val fileName = if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
-            val file = context.filesDir.resolve(fileName).apply {
-                if (exists()) delete()
-                createNewFile()
-            }
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-                FileInputStream(fd.fileDescriptor).use { input ->
-                    file.outputStream().use { output -> input.copyTo(output) }
-                }
-            }
+        scope.launch {
+            val fileName =
+                if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
+            val file = saveBackgroundToLocal(context, uri, fileName) ?: return@launch
             val fileUri = file.toUri()
-            if (isDarkSelection)
-                settingState.backgroundDarkImageUriUserData.set(fileUri)
-            else
-                settingState.backgroundImageUriUserData.set(fileUri)
+            withContext(Dispatchers.IO) {
+                if (isDarkSelection)
+                    settingState.backgroundDarkImageUriUserData.set(fileUri)
+                else
+                    settingState.backgroundImageUriUserData.set(fileUri)
+            }
         }
     }
 
@@ -613,7 +682,6 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
                         uri = settingState.backgroundImageUri,
                         previewSize = 52.dp,
                         onClick = {
-                            settingState.backgroundImageUriUserData.asynchronousSet(Uri.EMPTY)
                             isDarkSelection = false
                             launcher.launch("image/*")
                         }
@@ -624,7 +692,6 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
                         uri = settingState.backgroundDarkImageUri,
                         previewSize = 52.dp,
                         onClick = {
-                            settingState.backgroundDarkImageUriUserData.asynchronousSet(Uri.EMPTY)
                             isDarkSelection = true
                             launcher.launch("image/*")
                         }
@@ -708,7 +775,7 @@ private fun BackgroundCard(
 private fun LightThemeSettingsItem(
     modifier: Modifier = Modifier
 ) {
-    MaterialTheme (
+    MaterialTheme(
         LocalLightColorScheme.current
     ) {
         DarkModeSettingItem(modifier)
@@ -719,7 +786,7 @@ private fun LightThemeSettingsItem(
 private fun DarkThemeSettingsItem(
     modifier: Modifier = Modifier,
 ) {
-    MaterialTheme (
+    MaterialTheme(
         LocalDarkColorScheme.current
     ) {
         DarkModeSettingItem(modifier)

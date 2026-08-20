@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class DebugScreenViewModel @Inject constructor (
+class DebugScreenViewModel @Inject constructor(
     val database: LightNovelReaderDatabase
 ) : ViewModel() {
     var result by mutableStateOf("")
@@ -26,7 +26,7 @@ class DebugScreenViewModel @Inject constructor (
             if (cursor.moveToFirst()) {
                 do {
                     result += cursor.columnNames.map {
-                        it +  ": " + cursor.getString(cursor.getColumnIndex(it))
+                        it + ": " + cursor.getString(cursor.getColumnIndex(it))
                     } + "\n"
                 } while (cursor.moveToNext())
             }

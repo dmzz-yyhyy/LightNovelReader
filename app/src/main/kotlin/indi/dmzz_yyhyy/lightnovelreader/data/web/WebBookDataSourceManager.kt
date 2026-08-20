@@ -17,9 +17,9 @@ import javax.inject.Singleton
 
 
 @Singleton
-class WebBookDataSourceManager @Inject constructor (
+class WebBookDataSourceManager @Inject constructor(
     val userDataRepository: UserDataRepository
-): WebBookDataSourceManagerApi {
+) : WebBookDataSourceManagerApi {
     private val _webDataSourceItems = mutableListOf<WebDataSourceItem>()
     private val webDataSourceItemListMap = mutableMapOf<String, List<WebDataSourceItem>>()
     val webDataSourceItems: List<WebDataSourceItem> get() = _webDataSourceItems
@@ -27,7 +27,10 @@ class WebBookDataSourceManager @Inject constructor (
     private val mutableWebDataSourceProvider = MutableWebDataSourceProvider()
     private val webBookDataSources = mutableListOf<WebBookDataSource>()
 
-    override fun registerWebDataSource(webBookDataSource: WebBookDataSource, webDataSourceItem: WebDataSourceItem) {
+    override fun registerWebDataSource(
+        webBookDataSource: WebBookDataSource,
+        webDataSourceItem: WebDataSourceItem
+    ) {
         if (_webDataSourceItems.any { it.id == webDataSourceItem.id }) return
         _webDataSourceItems.add(webDataSourceItem)
         webBookDataSources.add(webBookDataSource)
@@ -42,10 +45,16 @@ class WebBookDataSourceManager @Inject constructor (
 
     override fun getWebDataSource(): WebBookDataSource = mutableWebDataSourceProvider.value.origin
 
-    fun loadWebDataSourcesFromClassLoader(classLoader: PathClassLoader, injector: PluginInjector, packageName: String, webDataSourceClassNames: List<String>) {
+    fun loadWebDataSourcesFromClassLoader(
+        classLoader: PathClassLoader,
+        injector: PluginInjector,
+        packageName: String,
+        webDataSourceClassNames: List<String>
+    ) {
         val items = mutableListOf<WebDataSourceItem>()
         webDataSourceClassNames.forEach { className ->
-            val clazz = runCatching { classLoader.loadClass(className) }.getOrNull() ?: return@forEach
+            val clazz =
+                runCatching { classLoader.loadClass(className) }.getOrNull() ?: return@forEach
             if (!WebBookDataSource::class.java.isAssignableFrom(clazz)) return@forEach
             val instance = injector.provide<WebBookDataSource>(clazz)
             if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
@@ -53,14 +62,18 @@ class WebBookDataSourceManager @Inject constructor (
         webDataSourceItemListMap[packageName] = items
     }
 
-    fun <T: WebBookDataSource>loadWebDataSourceFromClass(clazz: Class<T>, injector: PluginInjector) {
+    fun <T : WebBookDataSource> loadWebDataSourceFromClass(
+        clazz: Class<T>,
+        injector: PluginInjector
+    ) {
         if (!WebBookDataSource::class.java.isAssignableFrom(clazz)) return
         val instance = injector.provide<WebBookDataSource>(clazz)
         if (instance is WebBookDataSource) {
             val item = loadWebDataSourceClass(instance)
             val packageName = clazz.`package`?.name ?: return
             if (webDataSourceItemListMap.contains(packageName)) {
-                webDataSourceItemListMap[packageName] = webDataSourceItemListMap[packageName]!! + listOf(item)
+                webDataSourceItemListMap[packageName] =
+                    webDataSourceItemListMap[packageName]!! + listOf(item)
             } else {
                 webDataSourceItemListMap[packageName] = listOf(item)
             }

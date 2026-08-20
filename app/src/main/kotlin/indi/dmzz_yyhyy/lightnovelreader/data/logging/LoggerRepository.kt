@@ -114,7 +114,8 @@ class LoggerRepository @Inject constructor(
                 append("\n----- end of logcat")
             }
             val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-            val exportFile = File(logsDir.also { it.mkdirs() }, "lnr_export_${sdf.format(Date())}.log")
+            val exportFile =
+                File(logsDir.also { it.mkdirs() }, "lnr_export_${sdf.format(Date())}.log")
             exportFile.writeText(logText)
             exportFile
         }

@@ -1,4 +1,4 @@
-package io.nightfish.lightnovelreader.api.content.component
+package io.nightfish.lightnovelreader.api.content.component.data
 
 import android.content.Context
 import io.nightfish.lightnovelreader.api.identifier.Identifier
@@ -33,7 +33,7 @@ abstract class AbstractContentComponentData {
      *
      * @param context Android上下文
      *
-     * @return 转化后的HTML[Element][org.dom4j.Element]
+     * @return 转化后的HTML[Element][Element]
      *
      * @since Api 2
      */

@@ -1,6 +1,6 @@
 package io.nightfish.lightnovelreader.api.content.builder
 
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -53,3 +53,7 @@ class ContentBuilder {
             }
         }
 }
+
+fun buildContent(builder: ContentBuilder.() -> Unit) = ContentBuilder()
+    .apply(builder)
+    .build()

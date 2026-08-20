@@ -13,8 +13,10 @@ enum class WebDataSourcePriority(
 ) {
     /** 高优先级 */
     High(1),
+
     /** 默认优先级 */
     Default(0),
+
     /** 低优先级 */
     Low(-1)
 }

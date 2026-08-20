@@ -14,15 +14,20 @@
 
 ## Introduction
 
-LightNovelReader <sup>*Refactored Version*</sup> is an open-source app for reading light novels, built with Kotlin and Jetpack Compose. It’s designed for a smooth, modern reading experience and packed with useful features like EPUB exports, offline reading, and support for multiple data sources.
+LightNovelReader <sup>*Refactored Version*</sup> is an open-source app for reading light novels,
+built with Kotlin and Jetpack Compose. It’s designed for a smooth, modern reading experience and
+packed with useful features like EPUB exports, offline reading, and support for multiple data
+sources.
 
 ## Features
 
-- Fully refactored version (see [pre-refactoring branch](https://github.com/dmzz-yyhyy/LightNovelReader/tree/master))
+- Fully refactored version (
+  see [pre-refactoring branch](https://github.com/dmzz-yyhyy/LightNovelReader/tree/master))
 - Modern UI with Jetpack Compose, compatible with Android 7.0 through 15
 - Caching - support for caching book content and offline-first reading
 - Explore - discover new books, recommendation lists, tag categories, keyword search...
-- Multi-source support - easily switch between data sources, including manga. Data is independent between sources
+- Multi-source support - easily switch between data sources, including manga. Data is independent
+  between sources
 - Bookshelf - bookshelf management with custom shelves, favorites, and update notifications
 - EPUB export functionality for your favorite novels
 - Active development with passionate contributors
@@ -32,6 +37,7 @@ LightNovelReader <sup>*Refactored Version*</sup> is an open-source app for readi
 You can add custom data sources and plugins to LightNovelReader.
 
 The following are links to relevant resources:
+
 - [Example Plugin](https://github.com/dmzz-yyhyy/LightNovelReaderPlguin-Template)
 - [Development Guide](https://lnr.nariko.org/plugin-dev/)
 - [LNR API KDoc](https://api-doc.lnr.nariko.org/)
@@ -40,16 +46,21 @@ Developers are welcome to contribute!
 
 ## Download
 
-Download the latest release from [GitHub Releases](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest). To experience the latest features and bug fixes, download the latest build from [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions).
+Download the latest release
+from [GitHub Releases](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest). To
+experience the latest features and bug fixes, download the latest build
+from [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions).
 
 [<img src="https://f-droid.org/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
+alt="Get it on F-Droid"
+height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
 
 ## Support
 
-- Found a bug or have a feature idea? Submit it [**here**](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose)
-- Join the QQ discussion group: `867785526` | [**Invitation Link**](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
+- Found a bug or have a feature idea? Submit it [**here
+  **](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose)
+- Join the QQ discussion group: `867785526` | [**Invitation Link
+  **](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
 - Join our Discord server: [**Invitation Link**](https://discord.gg/pnf4ABmDJt)
 - Join our Telegram group: [**Invitation Link**](https://t.me/lightnoble)
 
@@ -63,13 +74,15 @@ Download the latest release from [GitHub Releases](https://github.com/dmzz-yyhyy
 
 ### About EpubLib
 
-We’ve developed a dedicated module to handle EPUB export more effectively. If you're interested, check it out [**here**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
+We’ve developed a dedicated module to handle EPUB export more effectively. If you're interested,
+check it out [**here**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
 
 ## Contributing
 
 We welcome contributions to LightNovelReader! Here's how you can get involved:
 
 ### Getting Started
+
 1. Fork the repository.
 2. Clone your fork: `git clone https://github.com/your-username/LightNovelReader.git`
 3. Create a new branch for your changes: `git checkout -b feature/your-feature-name`
@@ -79,6 +92,7 @@ We welcome contributions to LightNovelReader! Here's how you can get involved:
 7. Open a Pull Request to the `refactoring` branch.
 
 ### Commit Guidelines
+
 - Keep commits atomic and descriptive.
 - If your change affects the version, update it in `app/build.gradle.kts`.
 
@@ -87,15 +101,20 @@ We welcome contributions to LightNovelReader! Here's how you can get involved:
 [![Support Us on Aifadian](https://img.shields.io/badge/❤%20Support%20Us-ifdian-orange)](https://www.ifdian.net/a/lightnovelreader)
 
 LightNovelReader is a fully free and open-source project.  
-If you enjoy using it or find it helpful, consider supporting us through [Aifadian](https://www.ifdian.net/a/lightnovelreader) (a China-based platform similar to Patreon).  
-All contributions go toward continuous development, new features, possible future server maintenance, and community growth.
+If you enjoy using it or find it helpful, consider supporting us
+through [Aifadian](https://www.ifdian.net/a/lightnovelreader) (a China-based platform similar to
+Patreon).  
+All contributions go toward continuous development, new features, possible future server
+maintenance, and community growth.
 Your support helps keep the project alive and makes reading even better for everyone.
 
 ## Translation
 
 [![Crowdin](https://badges.crowdin.net/lightnovelreader/localized.svg)](https://crowdin.com/project/lightnovelreader)
 
-LightNovelReader uses [Crowdin](https://crowdin.com/project/lightnovelreader) to manage translations. Want to help localize the app into your language? Head over to the Crowdin project to contribute!
+LightNovelReader uses [Crowdin](https://crowdin.com/project/lightnovelreader) to manage
+translations. Want to help localize the app into your language? Head over to the Crowdin project to
+contribute!
 
 > Don't see your language? Request it on [Crowdin](https://crowdin.com/project/lightnovelreader)!
 

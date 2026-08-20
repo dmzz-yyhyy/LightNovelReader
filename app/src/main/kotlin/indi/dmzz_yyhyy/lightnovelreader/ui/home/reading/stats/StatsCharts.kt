@@ -139,7 +139,9 @@ private fun DailyStatsChart(
     val total = hourlyMap.values.sum()
     if (total < 1) {
         Box(
-            modifier = Modifier.height(80.dp).fillMaxWidth(),
+            modifier = Modifier
+                .height(80.dp)
+                .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             Text(stringResource(R.string.no_records))
@@ -248,10 +250,12 @@ fun WeeklyStatsChart(
                 val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
                 target?.columns?.firstOrNull()?.entry?.let { selectedIndex = it.x.toInt() }
             }
+
             override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
                 val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
                 target?.columns?.firstOrNull()?.entry?.let { selectedIndex = it.x.toInt() }
             }
+
             override fun onHidden(marker: CartesianMarker) {}
         }
     }
@@ -406,9 +410,11 @@ fun MonthlyStatsChart(
             override fun onShown(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
                 selectedWeek = resolveExpandableWeekIndex(targets, weekBuckets)
             }
+
             override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
                 selectedWeek = resolveExpandableWeekIndex(targets, weekBuckets)
             }
+
             override fun onHidden(marker: CartesianMarker) {}
         }
     }
@@ -613,10 +619,12 @@ fun YearlyStatsChart(
                 val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
                 target?.columns?.firstOrNull()?.entry?.let { selectedMonth = it.x.toInt() }
             }
+
             override fun onUpdated(marker: CartesianMarker, targets: List<CartesianMarker.Target>) {
                 val target = targets.firstOrNull() as? ColumnCartesianLayerMarkerTarget
                 target?.columns?.firstOrNull()?.entry?.let { selectedMonth = it.x.toInt() }
             }
+
             override fun onHidden(marker: CartesianMarker) {}
         }
     }

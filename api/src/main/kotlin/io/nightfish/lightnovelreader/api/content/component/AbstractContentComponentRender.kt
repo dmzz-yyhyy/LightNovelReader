@@ -2,20 +2,19 @@ package io.nightfish.lightnovelreader.api.content.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 /**
  * 内容组件抽象基类
  * 所有自定义内容组件需继承此类
+ * 此类是单例, 只负责处理组件渲染
  *
  * @param Data 此组件对应的数据类型
- * @param data 组件的数据对象
  *
  * @since Api 2
  */
-abstract class AbstractContentComponent<Data: AbstractContentComponentData>(
-    val data: Data
-) {
+abstract class AbstractContentComponentRender<Data : AbstractContentComponentData> {
     /**
      * 组件的唯一标识符
      * 应与[AbstractContentComponentData.id]保持一致
@@ -32,5 +31,5 @@ abstract class AbstractContentComponent<Data: AbstractContentComponentData>(
      * @since Api 2
      */
     @Composable
-    abstract fun Content(modifier: Modifier)
+    abstract fun Content(modifier: Modifier, data: Data)
 }

@@ -33,13 +33,17 @@ class ExploreHomeViewModel @Inject constructor(
         when (explorePageProvider) {
             is ExplorePageProvider.DefaultExplorePageProvider -> {
                 if (_uiState.pageTitles.isEmpty()) {
-                    _uiState.pageTitles = explorePageProvider.exploreTapPageDataSourceMap.map { it.value.title }
+                    _uiState.pageTitles =
+                        explorePageProvider.exploreTapPageDataSourceMap.map { it.value.title }
                 }
                 if (_uiState.explorePageBooksRawList.isEmpty()) {
                     loadPage(_uiState.selectedPage, forceRefresh = true)
                 }
             }
-            is ExplorePageProvider.CustomExplorePageProvider<*> -> explorePageProvider.init(viewModelScope)
+
+            is ExplorePageProvider.CustomExplorePageProvider<*> -> explorePageProvider.init(
+                viewModelScope
+            )
         }
     }
 

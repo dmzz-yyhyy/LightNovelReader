@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
  *
  * @since Api 4
  */
-class ColorUserData (
+class ColorUserData(
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<Color>(path) {
@@ -21,10 +21,10 @@ class ColorUserData (
     }
 
     override suspend fun get(): Color? {
-        return userDataDao.get(path)?.toULong().let { Color(it?: return null) }
+        return userDataDao.get(path)?.toULong().let { Color(it ?: return null) }
     }
 
     override fun getFlow(): Flow<Color?> {
-        return userDataDao.getFlow(path).map { it?.toULong() }.map { Color(it?: return@map null) }
+        return userDataDao.getFlow(path).map { it?.toULong() }.map { Color(it ?: return@map null) }
     }
 }

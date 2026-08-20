@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -83,6 +84,7 @@ import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentComponent
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.scroll.ScrollContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedTextLine
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrSnackbar
@@ -140,6 +142,7 @@ fun ReaderScreen(
                 isImmersive = false
                 onClickBackButton()
             }
+
             MenuOptions.ReaderBackBlockMode.DoublePress -> {
                 val now = System.currentTimeMillis()
                 if (!isImmersive || now - lastBackPressTime < 1500) {
@@ -213,7 +216,11 @@ fun ReaderScreen(
         containerColor = readerBackgroundColor(settingState),
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { _ ->
-        if (settingState.enableBackgroundImage) {
+        val isScrollingLoopBackground =
+            readingScreenUiState.contentUiState is ScrollContentUiState &&
+                settingState.backgroundImageDisplayMode ==
+                MenuOptions.ReaderBgImageDisplayModeOptions.Loop
+        if (settingState.enableBackgroundImage && !isScrollingLoopBackground) {
             val bgPainter = rememberReaderBackgroundPainter(settingState)
             val bgState by remember(bgPainter) {
                 (bgPainter as? AsyncImagePainter)?.state
@@ -280,7 +287,15 @@ fun ReaderScreen(
                                     }
                                 }?.volumeId ?: ""
                         },
-                        onClickChapter = onChangeChapter,
+                        onClickChapter = { chapterId ->
+                            onChangeChapter(chapterId)
+                            coroutineScope.launch { chaptersBottomSheetState.hide() }
+                                .invokeOnCompletion {
+                                    if (!chaptersBottomSheetState.isVisible) {
+                                        showChapterSelectionBottomSheet = false
+                                    }
+                                }
+                        },
                         onChangeSelectedVolumeId = {
                             selectedVolumeId = it
                         }
@@ -442,33 +457,37 @@ fun Content(
                     settingState.enableChapterTitleIndicator
 
         Box(Modifier.fillMaxSize()) {
-            AnimatedContent(
-                readingScreenUiState.contentUiState,
-                label = "ContentAnimate"
-            ) { contentUiState ->
-                ContentComponent(
-                    uiState = contentUiState,
-                    settingState = settingState,
-                    paddingValues =
-                        if (settingState.autoPadding)
-                            PaddingValues(
-                                top = stableSafeTopDp,
-                                bottom = with(density) { WindowInsets.safeContent.getBottom(density).toDp() } + if (isEnableIndicator) 40.dp else 0.dp,
-                                start = 16.dp,
-                                end = 16.dp
-                            )
-                        else PaddingValues(
-                            top = settingState.topPadding.dp,
-                            bottom = if (isEnableIndicator)
-                                (settingState.bottomPadding + 40).dp
-                            else settingState.bottomPadding.dp,
-                            start = settingState.leftPadding.dp,
-                            end = settingState.rightPadding.dp
-                        ),
-                    changeIsImmersive = onChangeIsImmersive,
-                    onClickPrevChapter = onClickPrevChapter,
-                    onClickNextChapter = onClickNextChapter
-                )
+            SelectionContainer {
+                AnimatedContent(
+                    readingScreenUiState.contentUiState,
+                    label = "ContentAnimate"
+                ) { contentUiState ->
+                    ContentComponent(
+                        uiState = contentUiState,
+                        settingState = settingState,
+                        paddingValues =
+                            if (settingState.autoPadding)
+                                PaddingValues(
+                                    top = stableSafeTopDp,
+                                    bottom = with(density) {
+                                        WindowInsets.safeContent.getBottom(density).toDp()
+                                    } + if (isEnableIndicator) 40.dp else 0.dp,
+                                    start = 16.dp,
+                                    end = 16.dp
+                                )
+                            else PaddingValues(
+                                top = settingState.topPadding.dp,
+                                bottom = if (isEnableIndicator)
+                                    (settingState.bottomPadding + 40).dp
+                                else settingState.bottomPadding.dp,
+                                start = settingState.leftPadding.dp,
+                                end = settingState.rightPadding.dp
+                            ),
+                        changeIsImmersive = onChangeIsImmersive,
+                        onClickPrevChapter = onClickPrevChapter,
+                        onClickNextChapter = onClickNextChapter
+                    )
+                }
             }
 
             AnimatedVisibility(
@@ -500,7 +519,8 @@ fun Content(
                         ?.getOrElse { "Unknowing" }
                         ?: "Unknowing",
                     enableReadingChapterProgressIndicator = settingState.enableReadingChapterProgressIndicator,
-                    readingChapterProgress = readingScreenUiState.contentUiState?.readingProgress ?: 0f,
+                    readingChapterProgress = readingScreenUiState.contentUiState?.readingProgress
+                        ?: 0f,
                 )
             }
         }
@@ -544,7 +564,8 @@ private fun TopBar(
     TopAppBar(
         navigationIcon = {
             IconButton(
-                onClick = onClickBackButton) {
+                onClick = onClickBackButton
+            ) {
                 Icon(painterResource(id = R.drawable.arrow_back_24px), "back")
             }
         },
@@ -685,8 +706,10 @@ fun Indicator(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (enableBatteryIndicator) {
-                val batteryManager = LocalContext.current.getSystemService(BATTERY_SERVICE) as BatteryManager
-                val batLevel: Int = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                val batteryManager =
+                    LocalContext.current.getSystemService(BATTERY_SERVICE) as BatteryManager
+                val batLevel: Int =
+                    batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
                 RollingNumber(
                     modifier = Modifier.align(Alignment.CenterVertically),
                     number = batLevel,
@@ -721,7 +744,12 @@ fun Indicator(
             if (enableTimeIndicator) {
                 AnimatedText(
                     modifier = Modifier.align(Alignment.CenterVertically),
-                    text = String.format(Locale.US, "%d:%02d", LocalTime.now().hour, LocalTime.now().minute),
+                    text = String.format(
+                        Locale.US,
+                        "%d:%02d",
+                        LocalTime.now().hour,
+                        LocalTime.now().minute
+                    ),
                     style = typography.bodyLarge.copy(
                         letterSpacing = 1.sp
                     ),

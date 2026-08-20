@@ -10,8 +10,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDesti
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search.navigateToSearchDestination
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 @OptIn(ExperimentalSharedTransitionApi::class)

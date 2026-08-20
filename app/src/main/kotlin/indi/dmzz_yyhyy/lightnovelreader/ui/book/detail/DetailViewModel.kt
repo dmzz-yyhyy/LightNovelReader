@@ -47,16 +47,24 @@ class DetailViewModel @Inject constructor(
         if (isInitialized) return
         isInitialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High).collect { result ->
-                result.onOk {
-                    val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
-                    bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
-                        bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(bookshelfId, bookId)
+            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High)
+                .collect { result ->
+                    result.onOk {
+                        val bookshelfBookMetadata =
+                            bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
+                        bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
+                            bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(
+                                bookshelfId,
+                                bookId
+                            )
+                        }
+                        bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
+                            bookId,
+                            it.lastUpdated
+                        )
                     }
-                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookId, it.lastUpdated)
+                    _uiState.bookInformation = result
                 }
-                _uiState.bookInformation = result
-            }
         }
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.getBookVolumesFlow(bookId, WebDataSourcePriority.High).collect {
@@ -78,7 +86,8 @@ class DetailViewModel @Inject constructor(
         }
         viewModelScope.launch {
             snapshotFlow { downloadProgressRepository.downloadItemIdList }.collect {
-                _uiState.downloadItem = downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
+                _uiState.downloadItem =
+                    downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
             }
         }
     }

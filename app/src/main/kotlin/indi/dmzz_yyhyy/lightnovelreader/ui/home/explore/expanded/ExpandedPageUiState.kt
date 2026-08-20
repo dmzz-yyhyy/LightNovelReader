@@ -23,6 +23,7 @@ interface ExpandedPageUiState {
 class MutableExpandedPageUiState : ExpandedPageUiState {
     override var pageTitle: String by mutableStateOf("")
     override var filters: SnapshotStateList<Filter<*>> = mutableStateListOf()
-    override var bookList = mutableStateListOf<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>()
+    override var bookList =
+        mutableStateListOf<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>()
     override var allBookshelfBookIds: List<String> by mutableStateOf(emptyList())
 }

@@ -14,34 +14,45 @@
 
 ## Введение
 
-LightNovelReader <sup>*Переработанная версия*</sup> — это приложение с открытым исходным кодом для чтения ранобэ, разработанное на Kotlin и Jetpack Compose. Оно создано для плавного и современного чтения с множеством полезных функций, таких как экспорт в EPUB, офлайн-чтение и поддержка нескольких источников данных.
+LightNovelReader <sup>*Переработанная версия*</sup> — это приложение с открытым исходным кодом для
+чтения ранобэ, разработанное на Kotlin и Jetpack Compose. Оно создано для плавного и современного
+чтения с множеством полезных функций, таких как экспорт в EPUB, офлайн-чтение и поддержка нескольких
+источников данных.
 
 ## Особенности
 
-- Полностью переработанная версия (см. [ветку до рефакторинга](https://github.com/dmzz-yyhyy/LightNovelReader/tree/master))
+- Полностью переработанная версия (
+  см. [ветку до рефакторинга](https://github.com/dmzz-yyhyy/LightNovelReader/tree/master))
 - Современный интерфейс на Jetpack Compose, поддержка Android 7.0—15
 - Кэширование — поддержка кэширования содержимого книг и чтения в офлайн-режиме
-- Обзор — открывайте новые книги, списки рекомендаций, категории тегов, поиск по ключевым словам и многое другое...
-- Поддержка множества источников — легко переключайтесь между источниками, включая мангу. Данные между источниками независимы
-- Полка — управление книжной полкой с пользовательскими полками, избранным и уведомлениями об обновлениях
+- Обзор — открывайте новые книги, списки рекомендаций, категории тегов, поиск по ключевым словам и
+  многое другое...
+- Поддержка множества источников — легко переключайтесь между источниками, включая мангу. Данные
+  между источниками независимы
+- Полка — управление книжной полкой с пользовательскими полками, избранным и уведомлениями об
+  обновлениях
 - Экспорт книг в формат EPUB
 - Активная разработка с увлечёнными участниками
 
 ## Загрузка
 
-Скачайте последнюю версию в [релизах GitHub](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest). Чтобы получить последние функции и исправления, скачайте свежую сборку из [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions).
+Скачайте последнюю версию
+в [релизах GitHub](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest). Чтобы получить
+последние функции и исправления, скачайте свежую сборку
+из [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions).
 
 [<img src="https://f-droid.org/badge/get-it-on-ru.png"
-    alt="Доступно в F-Droid"
-    height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
+alt="Доступно в F-Droid"
+height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
 
 ## Поддержка
 
-- Нашли ошибку или есть идеи? Сообщите [**здесь**](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose)
-- Присоединяйтесь к группе обсуждений QQ: `867785526` | [**Ссылка-приглашение**](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
+- Нашли ошибку или есть идеи? Сообщите [**здесь
+  **](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose)
+- Присоединяйтесь к группе обсуждений QQ: `867785526` | [**Ссылка-приглашение
+  **](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
 - Присоединяйтесь к нашему серверу Discord: [**Ссылка-приглашение**](https://discord.gg/pnf4ABmDJt)
 - Присоединяйтесь к нашей группе в Telegram: [**Ссылка-приглашение**](https://t.me/lightnoble)
-
 
 ## Скриншоты
 
@@ -53,13 +64,15 @@ LightNovelReader <sup>*Переработанная версия*</sup> — эт
 
 ### О EpubLib
 
-Мы разработали отдельный модуль для более эффективного экспорта EPUB. Заинтересованы? Смотрите [**здесь**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
+Мы разработали отдельный модуль для более эффективного экспорта EPUB. Заинтересованы? Смотрите [*
+*здесь**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
 
 ## Вклад
 
 Мы приветствуем вклад в LightNovelReader! Вот как вы можете принять участие:
 
 ### Начало работы
+
 1. Форкните репозиторий.
 2. Клонируйте ваш форк: `git clone https://github.com/your-username/LightNovelReader.git`
 3. Создайте новую ветку для ваших изменений: `git checkout -b feature/your-feature-name`
@@ -69,6 +82,7 @@ LightNovelReader <sup>*Переработанная версия*</sup> — эт
 7. Откройте Pull Request в ветку `refactoring`.
 
 ### Рекомендации по коммитам
+
 - Делайте коммиты атомарными и описательными.
 - Если ваше изменение влияет на версию, обновите её в `app/build.gradle.kts`.
 

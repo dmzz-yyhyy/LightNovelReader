@@ -27,9 +27,10 @@ class IdentifierSerializer : KSerializer<Identifier> {
      *
      * @since Api 4
      */
-    override fun deserialize(decoder: Decoder): Identifier = decoder.decodeString().toId().getOrElse {
-        it.ofAppId()
-    }
+    override fun deserialize(decoder: Decoder): Identifier =
+        decoder.decodeString().toId().getOrElse {
+            it.ofAppId()
+        }
 
     /**
      * 序列化

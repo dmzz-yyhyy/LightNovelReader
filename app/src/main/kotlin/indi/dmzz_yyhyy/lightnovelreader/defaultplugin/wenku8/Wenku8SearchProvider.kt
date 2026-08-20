@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 class Wenku8SearchProvider(
     val dispatcher: BookRequestDispatcher
-): AbstractSearchProvider() {
+) : AbstractSearchProvider() {
     override fun search(
         searchType: SearchType,
         keyword: String

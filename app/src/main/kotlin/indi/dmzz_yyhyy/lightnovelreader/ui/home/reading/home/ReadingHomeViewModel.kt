@@ -27,7 +27,9 @@ class ReadingHomeViewModel @Inject constructor(
     private val readingBooksUserData =
         userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
 
-    var recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>> by mutableStateOf(emptyList())
+    var recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>> by mutableStateOf(
+        emptyList()
+    )
         private set
 
     var chapterSheetUiState by mutableStateOf<ChapterSheetUiState?>(null)
@@ -61,7 +63,7 @@ class ReadingHomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val userData = bookRepository.getUserReadingData(bookId)
             chapterSheetUiState = ChapterSheetUiState(
-                bookId =  bookId,
+                bookId = bookId,
                 readingChapterId = userData.lastReadChapterId ?: return@launch,
                 bookVolumeFlow = bookRepository.getBookVolumesFlow(bookId)
             )

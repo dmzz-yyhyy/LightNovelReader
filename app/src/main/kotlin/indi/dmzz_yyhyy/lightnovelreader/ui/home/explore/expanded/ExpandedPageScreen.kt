@@ -80,7 +80,7 @@ fun ExpandedPageScreen(
     val rememberPullToRefreshState = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
-    var isRefreshing by remember{ mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke(expandedPageDataSourceId)
     }

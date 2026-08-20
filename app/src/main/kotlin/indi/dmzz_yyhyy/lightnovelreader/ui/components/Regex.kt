@@ -63,10 +63,9 @@ fun regexAnnotatedString(regex: String): AnnotatedString =
 
                 '^', '-', '$', '|' -> escapeCheckAndColor(buffer, char, RegexTheme.symbol)
                 '\\' -> if (buffer == '\\') {
-                            colorChar("\\\\", color = RegexTheme.escape)
-                            oChar = '\r'
-                        }
-                        else if (index == regex.length - 1) append(char)
+                    colorChar("\\\\", color = RegexTheme.escape)
+                    oChar = '\r'
+                } else if (index == regex.length - 1) append(char)
 
                 '*', '+' -> escapeCheckAndColor(buffer, char, RegexTheme.math)
                 '1', '2', '3', '4', '5', '6', '7', '8', '9', '0' ->

@@ -63,7 +63,11 @@ fun BookshelfHomeTopBar(
         title = {
             AnimatedText(
                 text = when {
-                    uiState.selectMode -> stringResource(R.string.nav_bookshelf_select_mode, uiState.selectedBookIds.size)
+                    uiState.selectMode -> stringResource(
+                        R.string.nav_bookshelf_select_mode,
+                        uiState.selectedBookIds.size
+                    )
+
                     else -> stringResource(R.string.nav_bookshelf)
                 },
                 style = MaterialTheme.typography.displayLarge,
@@ -129,7 +133,11 @@ fun BookshelfHomeTopBar(
                                         )
                                     },
                                     onClick = {
-                                        uiState.changeSortType(BookshelfSortTypeOptions.getOptionWithValue(item.key).value)
+                                        uiState.changeSortType(
+                                            BookshelfSortTypeOptions.getOptionWithValue(
+                                                item.key
+                                            ).value
+                                        )
                                     }
                                 )
                             }

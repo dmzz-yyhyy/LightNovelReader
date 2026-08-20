@@ -13,7 +13,7 @@ import java.net.URLEncoder
 class Wenku8TagsExploreTapPage(
     val host: String,
     val wenku8Api: Wenku8Api
-): ExploreTapPageDataSource {
+) : ExploreTapPageDataSource {
     override val title = "分类"
 
 
@@ -24,8 +24,10 @@ class Wenku8TagsExploreTapPage(
             ?.slice(0..48)
             ?.map { "${host}/modules/article/" + it.attr("href") }
             ?.forEach { url ->
-                val soup = wenku8Api.getWithWenku8Cookie(url.split("=").component1()[0] + "=" +
-                        URLEncoder.encode(url.split("=")[1], "gb2312")).component1()
+                val soup = wenku8Api.getWithWenku8Cookie(
+                    url.split("=").component1()[0] + "=" +
+                            URLEncoder.encode(url.split("=")[1], "gb2312")
+                ).component1()
                 rows.add(
                     getExploreBookRow(
                         soup = soup,
@@ -43,15 +45,19 @@ class Wenku8TagsExploreTapPage(
             false,
             ""
         )
-        val idlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a")
-            .map { it.attr("href").replace("/book/", "").replace(".htm", "") }
-        val titleList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > b > a")
-            .map { it.text().split("(").getOrNull(0) ?: "" }
-        val authorList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > p:nth-child(2)")
-            .slice(0..5)
-            .map { it.text().split("/").getOrNull(0)?.split(":")?.get(1) ?: ""}
-        val coverUrlList = soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a > img")
-            .map { it.attr("src") }
+        val idlList =
+            soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a")
+                .map { it.attr("href").replace("/book/", "").replace(".htm", "") }
+        val titleList =
+            soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > b > a")
+                .map { it.text().split("(").getOrNull(0) ?: "" }
+        val authorList =
+            soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(2) > p:nth-child(2)")
+                .slice(0..5)
+                .map { it.text().split("/").getOrNull(0)?.split(":")?.get(1) ?: "" }
+        val coverUrlList =
+            soup.select("#content > table > tbody > tr:nth-child(2) > td > div > div:nth-child(1) > a > img")
+                .map { it.attr("src") }
         return ExploreBooksRow(
             title = title,
             bookList = (0..5).map {

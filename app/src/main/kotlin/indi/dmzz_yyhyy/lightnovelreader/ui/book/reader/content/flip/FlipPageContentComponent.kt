@@ -1,65 +1,65 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.flip
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
-import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentError
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentLoading
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
-import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
-import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
-import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
-import io.nightfish.lightnovelreader.api.content.component.AbstractDivisibleContentComponent
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.content.component.data.Divisible
+import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
+import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
+import kotlinx.coroutines.withContext
+import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -100,212 +100,769 @@ private fun SimpleFlipPageTextComponent(
     onClickNextChapter: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val resources = LocalResources.current
-    val density = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    var contentKey by remember { mutableIntStateOf(0) }
-    var slippedContentComponentList by remember { mutableStateOf(emptyList<AbstractContentComponent<*>>()) }
-    LaunchedEffect(chapterContent.content, resources, density) {
-        scope.launch(Dispatchers.IO) {
-            val width = resources.displayMetrics
-                .widthPixels
-                .minus(
-                    with(density) {
-                        (paddingValues.calculateStartPadding(layoutDirection) + paddingValues.calculateEndPadding(layoutDirection)).toPx()
-                    }.toInt()
-                )
-            val height = resources.displayMetrics
-                .heightPixels
-                .minus(
-                    with(density) {
-                        (paddingValues.calculateTopPadding() + paddingValues.calculateBottomPadding()).toPx()
-                    }.toInt()
-                )
-            val key = chapterContent.hashCode() + width + height
-            if (key == contentKey) return@launch
-            val result = mutableListOf<AbstractContentComponent<*>>()
-            chapterContent.content.forEach {
-                if (it is AbstractDivisibleContentComponent<*, *>) {
-                    result.addAll(it.split(height, width))
-                } else {
-                    result.add(it)
-                }
-            }
-            slippedContentComponentList = result
-            uiState.updatePageState(PagerState { result.size })
-        }
-    }
     val focusRequester = remember { FocusRequester() }
-    val snackbarHostState = LocalSnackbarHost.current
-
-    // 仅在启用背景图时才创建 painter：rememberReaderBackgroundPainter 会发起图片加载副作用，
-    // 无条件调用会导致未开启背景时也去联网加载内置牛皮纸，失败时误报「加载失败」(见 issue #444)。
-    val bgPainter = if (
-        settingState.enableBackgroundImage &&
-        settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop
-    ) {
-        rememberReaderBackgroundPainter(settingState)
-    } else null
-
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width.toFloat()
-    val readerFirstPageText = stringResource(R.string.reader_first_page)
-    val previousChapterText = stringResource(R.string.previous_chapter)
-    fun lastPage(pagerState: PagerState) {
-        if (pagerState.currentPage != 0) {
-            scope.launch {
-                if (settingState.flipAnime != MenuOptions.FlipAnimationOptions.None) {
-                    pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                } else {
-                    pagerState.scrollToPage(pagerState.currentPage - 1)
-                }
-            }
-        } else if (settingState.fastChapterChange && slippedContentComponentList.isNotEmpty()) {
-            uiState.loadPrevChapter.invoke()
-        } else {
-            showSnackbar(
-                coroutineScope = scope,
-                hostState = snackbarHostState,
-                duration = SnackbarDuration.Short,
-                message = readerFirstPageText,
-                actionLabel = previousChapterText
-            ) {
-                if (it == SnackbarResult.ActionPerformed) {
-                    onClickPrevChapter()
-                }
-            }
-
-        }
-    }
-
-    val readerLastPageText = stringResource(R.string.reader_last_page)
-    val nextPageText = stringResource(R.string.next_chapter)
-
-    fun nextPage(pagerState: PagerState) {
-        if (pagerState.currentPage + 1 < pagerState.pageCount) {
-            scope.launch {
-                if (settingState.flipAnime != MenuOptions.FlipAnimationOptions.None) {
-                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
-                } else {
-                    pagerState.scrollToPage(pagerState.currentPage + 1)
-                }
-            }
-        } else if (settingState.fastChapterChange && slippedContentComponentList.isNotEmpty()) {
-            uiState.loadNextChapter.invoke()
-        } else {
-            showSnackbar(
-                coroutineScope = scope,
-                hostState = snackbarHostState,
-                duration = SnackbarDuration.Short,
-                message = readerLastPageText,
-                actionLabel = nextPageText
-            ) {
-                if (it == SnackbarResult.ActionPerformed) {
-                    onClickNextChapter()
-                }
-            }
-        }
-    }
     var volumeJob by remember { mutableStateOf<Job?>(null) }
     val intervalMs = (settingState.volumeKeyContinuousFlipInterval * 1000).toLong()
+    suspend fun settlePage(direction: Int, startOffset: Float = uiState.pagerState.pageOffset) {
+        val pagerState = uiState.pagerState
+        if (pagerState.isAnimating) return
+        pagerState.isAnimating = true
+        val animated = settingState.flipAnime != MenuOptions.FlipAnimationOptions.None
+        if (animated) {
+            val pageWidth = pagerState.viewportWidth
+                .takeIf { it > 0 }
+                ?.toFloat()
+                ?: screenWidthPx
+            animate(
+                initialValue = startOffset,
+                targetValue = -direction * pageWidth,
+                animationSpec = tween(220),
+            ) { value, _ -> pagerState.pageOffset = value }
+        }
+        var changed = false
+        Snapshot.withMutableSnapshot {
+            changed = if (direction > 0) nextPage(pagerState) else lastPage(pagerState)
+            if (changed) {
+                pagerState.pageOffset = 0f
+                pagerState.isAnimating = false
+            }
+        }
+        if (!changed) {
+            val adjacentChapterId = if (direction > 0) {
+                chapterContent.nextChapter
+            } else {
+                chapterContent.prevChapter
+            }?.takeIf { it.isNotBlank() }
+            if (adjacentChapterId != null) {
+                // The adjacent chapter is already the visible completed animation frame.
+                // Keep that frame in place until the new chapter state takes over atomically.
+                pagerState.pendingChapterDirection = direction
+                if (direction > 0) onClickNextChapter() else onClickPrevChapter()
+            } else {
+                Snapshot.withMutableSnapshot {
+                    pagerState.pageOffset = 0f
+                    pagerState.isAnimating = false
+                }
+            }
+        }
+    }
+    suspend fun cancelPageDrag() {
+        val pagerState = uiState.pagerState
+        pagerState.isAnimating = true
+        animate(
+            initialValue = pagerState.pageOffset,
+            targetValue = 0f,
+            animationSpec = tween(180),
+        ) { value, _ -> pagerState.pageOffset = value }
+        pagerState.isAnimating = false
+    }
+    fun requestNextPage() {
+        scope.launch { settlePage(1, 0f) }
+    }
+    fun requestPreviousPage() {
+        scope.launch { settlePage(-1, 0f) }
+    }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .then(
-                if (bgPainter != null)
-                    Modifier.paint(
-                        painter = bgPainter,
-                        contentScale = ContentScale.Crop
-                    )
-                else Modifier
-            )
-    ) {
-        HorizontalPager(
-            state = uiState.pagerState,
-            key = { it },
+    LaunchedEffect(focusRequester, chapterContent.id, settingState.isUsingVolumeKeyFlip) {
+        if (settingState.isUsingVolumeKeyFlip) focusRequester.requestFocus()
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        FlipPageFragment(
             modifier = modifier
-                .focusRequester(focusRequester)
-                .focusable()
-                .onKeyEvent { event ->
-                    if (!settingState.isUsingVolumeKeyFlip) {
-                        false
-                    } else if (event.key == Key.VolumeUp || event.key == Key.VolumeDown) {
-                        when (event.type) {
-                            KeyEventType.KeyDown -> {
-                                focusRequester.requestFocus()
-                                if (event.nativeKeyEvent.repeatCount == 0) {
-                                    if (event.key == Key.VolumeUp) lastPage(uiState.pagerState)
-                                    else nextPage(uiState.pagerState)
+            .fillMaxSize()
+            .focusRequester(focusRequester)
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (!settingState.isUsingVolumeKeyFlip) {
+                    false
+                } else if (event.key == Key.VolumeUp || event.key == Key.VolumeDown) {
+                    when (event.type) {
+                        KeyEventType.KeyDown -> {
+                            focusRequester.requestFocus()
+                            if (event.nativeKeyEvent.repeatCount == 0) {
+                                if (event.key == Key.VolumeUp) requestPreviousPage()
+                                else requestNextPage()
 
-                                    if (intervalMs > 0) {
-                                        volumeJob?.cancel()
-                                        volumeJob = scope.launch {
-                                            while (isActive) {
-                                                delay(intervalMs.milliseconds)
-                                                if (event.key == Key.VolumeUp) lastPage(uiState.pagerState)
-                                                else nextPage(uiState.pagerState)
-                                            }
+                                if (intervalMs > 0) {
+                                    volumeJob?.cancel()
+                                    volumeJob = scope.launch {
+                                        while (isActive) {
+                                            delay(intervalMs.milliseconds)
+                                            if (event.key == Key.VolumeUp) requestPreviousPage()
+                                            else requestNextPage()
                                         }
                                     }
                                 }
-                                true
                             }
-                            KeyEventType.KeyUp -> {
-                                volumeJob?.cancel()
-                                volumeJob = null
-                                true
-                            }
-                            else -> false
+                            true
                         }
-                    } else {
-                        false
-                    }
-                }
-                .draggable(
-                    enabled = settingState.isUsingFlipPage,
-                    interactionSource = remember { MutableInteractionSource() },
-                    orientation = Orientation.Vertical,
-                    state = rememberDraggableState {},
-                    onDragStopped = {
-                        if (it.absoluteValue > 60) changeIsImmersive.invoke()
-                    }
-                )
-                .pointerInput(
-                    settingState.isUsingClickFlipPage,
-                    settingState.isUsingFlipPage,
-                    settingState.flipAnime,
-                    settingState.fastChapterChange
-                ) {
-                    detectTapGestures(
-                        onTap = {
-                            if (settingState.isUsingFlipPage && settingState.isUsingClickFlipPage)
-                                when {
-                                    it.x < screenWidthPx / 3f -> lastPage(uiState.pagerState)
-                                    it.x > screenWidthPx * 2f / 3f -> nextPage(uiState.pagerState)
-                                    else -> changeIsImmersive.invoke()
-                                }
-                            else changeIsImmersive.invoke()
+
+                        KeyEventType.KeyUp -> {
+                            volumeJob?.cancel()
+                            volumeJob = null
+                            true
                         }
-                    )
-                },
-        ) {
-            Box(Modifier.fillMaxSize()) {
-                if (settingState.enableBackgroundImage && settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop) {
-                    Image(
-                        modifier = Modifier.fillMaxSize(),
-                        painter = rememberReaderBackgroundPainter(settingState),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop
-                    )
+
+                        else -> false
+                    }
+                } else {
+                    false
                 }
-                slippedContentComponentList.getOrNull(it)?.Content(
-                    modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                )
             }
+            .pointerInput(
+                settingState.isUsingFlipPage,
+                settingState.isUsingClickFlipPage,
+                settingState.flipAnime
+            ) {
+                // currentPage/pageCount are intentionally not pointer-input keys. Full-chapter
+                // pagination updates pageCount repeatedly in the background; restarting this
+                // coroutine for every measured page cancels an in-flight gesture, which made
+                // the pager appear unresponsive immediately after restoring progress.
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var lastPosition = down.position
+                    var movement = Offset.Zero
+                    var pressed = true
+                    while (pressed) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        movement += change.position - lastPosition
+                        lastPosition = change.position
+                        pressed = change.pressed
+                        if (
+                            settingState.flipAnime != MenuOptions.FlipAnimationOptions.None &&
+                            abs(movement.x) > abs(movement.y)
+                        ) {
+                            val pageWidth = uiState.pagerState.viewportWidth
+                                .takeIf { it > 0 }
+                                ?.toFloat()
+                                ?: size.width.toFloat()
+                            uiState.pagerState.pageOffset = movement.x.coerceIn(
+                                -pageWidth,
+                                pageWidth,
+                            )
+                        }
+                        if (movement.getDistance() > viewConfiguration.touchSlop) change.consume()
+                    }
+
+                    val horizontal = abs(movement.x) > abs(movement.y)
+                    if (!horizontal) uiState.pagerState.pageOffset = 0f
+                    when {
+                        settingState.isUsingFlipPage && horizontal &&
+                                movement.x < -size.width / 4f -> scope.launch { settlePage(1) }
+                        settingState.isUsingFlipPage && horizontal &&
+                                movement.x > size.width / 4f -> scope.launch { settlePage(-1) }
+                        settingState.isUsingFlipPage && horizontal -> scope.launch { cancelPageDrag() }
+                        !horizontal && abs(movement.y) > viewConfiguration.touchSlop ->
+                            changeIsImmersive()
+                        movement.getDistance() <= viewConfiguration.touchSlop -> {
+                            if (settingState.isUsingFlipPage && settingState.isUsingClickFlipPage) {
+                                when {
+                                    down.position.x < size.width / 3f -> requestPreviousPage()
+                                    down.position.x > size.width * 2f / 3f -> requestNextPage()
+                                    else -> changeIsImmersive()
+                                }
+                            } else changeIsImmersive()
+                        }
+                    }
+                }
+        },
+        components = chapterContent.content,
+        chapterId = chapterContent.id,
+        prevChapterId = chapterContent.prevChapter,
+        nextChapterId = chapterContent.nextChapter,
+        pagerState = uiState.pagerState,
+        contentPadding = paddingValues,
+        flipAnimation = settingState.flipAnime,
+        onComponentLocated = uiState.locateComponent,
+        onBeyondStart = onClickPrevChapter,
+        onBeyondEnd = onClickNextChapter,
+        measurementWindow = uiState.pagerState.measurementWindow,
+        )
+        uiState.prevChapterContent?.onOk { adjacent ->
+            PremeasureFlipChapter(adjacent, paddingValues, uiState.pagerState.measurementWindow)
+        }
+        uiState.nextChapterContent?.onOk { adjacent ->
+            PremeasureFlipChapter(adjacent, paddingValues, uiState.pagerState.measurementWindow)
         }
     }
 }
 
+@Composable
+private fun PremeasureFlipChapter(
+    chapter: ChapterContentUiState,
+    contentPadding: PaddingValues,
+    measurementWindow: ChapterMeasurementWindow,
+) {
+    val premeasureState = remember(chapter.id) { FlipPagerState() }
+    FlipPageFragment(
+        modifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer { alpha = 0f }
+            .clearAndSetSemantics { },
+        components = chapter.content,
+        chapterId = chapter.id,
+        prevChapterId = null,
+        nextChapterId = null,
+        pagerState = premeasureState,
+        contentPadding = contentPadding,
+        flipAnimation = MenuOptions.FlipAnimationOptions.None,
+        onComponentLocated = { _, _ -> },
+        onBeyondStart = {},
+        onBeyondEnd = {},
+        measurementWindow = measurementWindow,
+        exposeCurrentPageForTesting = false,
+    )
+}
+
+fun nextPage(pagerState: FlipPagerState): Boolean {
+    if (pagerState.currentPage + 1 >= pagerState.pageCount && pagerState.endReached) return false
+    pagerState.moveTo(pagerState.currentPage + 1)
+    return true
+}
+
+fun lastPage(pagerState: FlipPagerState): Boolean {
+    if (pagerState.currentPage == 0) return false
+    pagerState.moveTo(pagerState.currentPage - 1)
+    return true
+}
+
+@Composable
+private fun FlipPageFragment(
+    modifier: Modifier = Modifier,
+    components: List<AbstractContentComponentData>,
+    chapterId: String,
+    prevChapterId: String?,
+    nextChapterId: String?,
+    pagerState: FlipPagerState,
+    contentPadding: PaddingValues,
+    flipAnimation: String,
+    onComponentLocated: (Int, Int) -> Unit,
+    onBeyondStart: () -> Unit,
+    onBeyondEnd: () -> Unit,
+    measurementWindow: ChapterMeasurementWindow,
+    exposeCurrentPageForTesting: Boolean = true,
+) {
+    val context = LocalContext.current
+    val readerStyle = LocalReaderStyle.current
+    val baseStyle = MaterialTheme.typography.bodyMedium
+    val componentRender = LocalComponentRender.current
+    val contentSignature = remember(components) {
+        components.fold(1) { hash, component -> 31 * hash + component.hashCode() }
+    }
+    val styleSignature = 31 * readerStyle.hashCode() + baseStyle.hashCode()
+    val cachedPagination = remember(chapterId, contentSignature, styleSignature) {
+        measurementWindow.find(chapterId, contentSignature, styleSignature)
+    }
+    val measurements = remember(components, readerStyle, baseStyle) {
+        Channel<PageMeasurement>(Channel.CONFLATED)
+    }
+    val initialComponents = remember(components) {
+        components.map { AnchoredComponent(it.hashCode(), it.hashCode(), it) }
+    }
+    var pages by remember(components, readerStyle, baseStyle) {
+        mutableStateOf(
+            cachedPagination?.pages ?: if (initialComponents.isEmpty()) emptyList()
+            else listOf(FlipPage(seed = initialComponents))
+        )
+    }
+    var paginationSize by remember(components, readerStyle, baseStyle) {
+        mutableStateOf(cachedPagination?.let { it.width to it.height })
+    }
+    LaunchedEffect(measurements, components, readerStyle, baseStyle) {
+        measurements.receiveAsFlow().collect { measurement ->
+            val page = pages.getOrNull(measurement.pageIndex) ?: return@collect
+            val newSize = measurement.width to measurement.height
+            if (paginationSize != null && paginationSize != newSize) {
+                val currentLocation = pages.getOrNull(pagerState.currentPage)
+                    ?.displayed
+                    ?.let { displayed ->
+                        displayed.firstOrNull { component ->
+                            val divisible = component.data as? Divisible<*>
+                            divisible == null || !divisible.split
+                        } ?: displayed.firstOrNull()
+                    }
+                val restoreTargetHash = pagerState.restoreTargetHash
+                    ?: currentLocation?.componentHash
+                val restoreTargetFragmentHash = pagerState.restoreTargetFragmentHash
+                    ?: currentLocation?.fragmentHash
+                val restoreInProgress = pagerState.restoreInProgress
+                val restoreToEnd = pagerState.restoreToEnd
+                paginationSize = newSize
+                pages = if (initialComponents.isEmpty()) emptyList()
+                else listOf(FlipPage(seed = initialComponents))
+                pagerState.reset()
+                pagerState.restoreTargetHash = restoreTargetHash
+                pagerState.restoreTargetFragmentHash = restoreTargetFragmentHash
+                pagerState.restoreInProgress = restoreInProgress || restoreTargetHash != null
+                pagerState.restoreToEnd = restoreToEnd
+                return@collect
+            }
+            paginationSize = newSize
+            if (page.resolved || page.seedKey != measurement.seedKey) return@collect
+            val overflowIndex = measurement.overflowIndex
+            val prefix = page.seed.take(overflowIndex ?: page.seed.size)
+            val resolution = if (overflowIndex == null) {
+                PageResolution(prefix, emptyList())
+            } else {
+                val overflow = page.seed[overflowIndex]
+                val splitComponents = if (
+                    measurement.availableHeight > 0 && overflow.data is Divisible<*>
+                ) {
+                    withContext(Dispatchers.Default) {
+                        (overflow.data as Divisible<*>).split(
+                            height = measurement.availableHeight,
+                            width = measurement.width,
+                            context = context,
+                            readerStyle = readerStyle,
+                            baseStyle = baseStyle,
+                        )
+                    }
+                } else null
+
+                if (!splitComponents.isNullOrEmpty() && splitComponents.size > 1) {
+                    val fragments = splitComponents.map {
+                        AnchoredComponent(overflow.componentHash, it.hashCode(), it)
+                    }
+                    PageResolution(
+                        prefix + fragments.first(),
+                        fragments.drop(1) + page.seed.drop(overflowIndex + 1),
+                    )
+                } else if (
+                    splitComponents?.size == 1 &&
+                    measurement.componentHeight != null &&
+                    measurement.componentHeight <= measurement.availableHeight
+                ) {
+                    PageResolution(
+                        prefix + overflow,
+                        page.seed.drop(overflowIndex + 1),
+                    )
+                } else if (prefix.isNotEmpty()) {
+                    PageResolution(prefix, page.seed.drop(overflowIndex))
+                } else {
+                    PageResolution(listOf(overflow), page.seed.drop(overflowIndex + 1))
+                }
+            }
+
+            val newPages = buildList {
+                addAll(pages.take(measurement.pageIndex))
+                add(page.copy(displayed = resolution.displayed, resolved = true))
+                if (resolution.nextSeed.isNotEmpty()) add(FlipPage(resolution.nextSeed))
+            }
+            pages = newPages
+            pagerState.updatePageCount(newPages.size)
+            pagerState.endReached = resolution.nextSeed.isEmpty()
+            measurementWindow.put(
+                PaginationCacheKey(
+                    chapterId = chapterId,
+                    contentSignature = contentSignature,
+                    styleSignature = styleSignature,
+                    width = measurement.width,
+                    height = measurement.height,
+                ),
+                CachedPagination(newPages, pagerState.endReached)
+            )
+        }
+    }
+
+    LaunchedEffect(chapterId, cachedPagination) {
+        pagerState.updatePageCount(pages.size)
+        pagerState.endReached = cachedPagination?.endReached ?: initialComponents.isEmpty()
+    }
+
+    // Every non-final resolution appends an unresolved tail page. Therefore no unresolved
+    // page means that this local pagination snapshot is complete, independently of the shared
+    // pager flag (which a chapter-state reset may have cleared).
+    val paginationComplete = pages.none { !it.resolved }
+
+    LaunchedEffect(
+        chapterId,
+        pages.size,
+        paginationComplete,
+        pagerState.restoreInProgress,
+    ) {
+        pagerState.updatePageCount(pages.size)
+        // pageCount and endReached describe the same pagination snapshot. A ViewModel reset
+        // can happen after cached pages were composed; republish both when restoration settles
+        // so the last cached page can cross the chapter boundary instead of requesting a
+        // non-existent page forever.
+        pagerState.endReached = paginationComplete
+    }
+
+    val componentPageIndex = remember(pages) {
+        buildMap {
+            pages.forEachIndexed { pageIndex, page ->
+                if (!page.resolved) return@forEachIndexed
+                page.displayed.forEach { component ->
+                    putIfAbsent(component.componentHash, pageIndex)
+                }
+            }
+        }
+    }
+    val fragmentPageIndex = remember(pages) {
+        buildMap {
+            pages.forEachIndexed { pageIndex, page ->
+                if (!page.resolved) return@forEachIndexed
+                page.displayed.forEach { component ->
+                    put(component.fragmentHash, pageIndex)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(
+        pagerState.restoreTargetHash,
+        pagerState.restoreTargetFragmentHash,
+        componentPageIndex,
+        fragmentPageIndex,
+        paginationComplete,
+    ) {
+        val targetHash = pagerState.restoreTargetHash ?: return@LaunchedEffect
+        val targetPage = pagerState.restoreTargetFragmentHash
+            ?.let(fragmentPageIndex::get)
+            ?: componentPageIndex[targetHash]
+        // Page indices are append-only while a chapter is measured, so a target
+        // can be restored as soon as its page is resolved. Waiting for the whole
+        // chapter made low-memory devices show a blank reader for many seconds.
+        if (targetPage == null && !paginationComplete) return@LaunchedEffect
+        Snapshot.withMutableSnapshot {
+            // The ViewModel may reset the shared pager after this composable has already
+            // restored a cached pagination list. In that case pages.size does not change,
+            // so LaunchedEffect(pages.size) cannot republish pageCount and moveTo() would
+            // retain the request without committing currentPage.
+            pagerState.updatePageCount(pages.size)
+            pagerState.endReached = paginationComplete
+            targetPage?.let(pagerState::moveTo)
+            pagerState.restoreTargetHash = null
+            pagerState.restoreTargetFragmentHash = null
+            pagerState.restoreInProgress = false
+            pagerState.pageOffset = 0f
+            pagerState.pendingChapterDirection = 0
+            pagerState.isAnimating = false
+        }
+    }
+
+    LaunchedEffect(pagerState.restoreToEnd, pages, paginationComplete) {
+        if (!pagerState.restoreToEnd) return@LaunchedEffect
+        if (!paginationComplete) return@LaunchedEffect
+        Snapshot.withMutableSnapshot {
+            pagerState.updatePageCount(pages.size)
+            pagerState.endReached = paginationComplete
+            pagerState.moveTo(pages.lastIndex.coerceAtLeast(0))
+            pagerState.restoreToEnd = false
+            pagerState.pageOffset = 0f
+            pagerState.pendingChapterDirection = 0
+            pagerState.isAnimating = false
+        }
+    }
+
+    LaunchedEffect(
+        pagerState.currentPage,
+        pages,
+        pagerState.restoreTargetHash,
+        pagerState.restoreTargetFragmentHash,
+        pagerState.restoreToEnd,
+    ) {
+        if (
+            pagerState.restoreInProgress ||
+            pagerState.restoreTargetHash != null ||
+            pagerState.restoreTargetFragmentHash != null ||
+            pagerState.restoreToEnd
+        ) return@LaunchedEffect
+        pages.getOrNull(pagerState.currentPage)
+            ?.displayed
+            ?.let { displayed ->
+                displayed.firstOrNull { component ->
+                    val divisible = component.data as? Divisible<*>
+                    divisible == null || !divisible.split
+                } ?: displayed.firstOrNull()
+            }
+            ?.let { onComponentLocated(it.componentHash, it.fragmentHash) }
+    }
+
+    val restorePending = pagerState.restoreInProgress ||
+            pagerState.restoreTargetHash != null ||
+            pagerState.restoreTargetFragmentHash != null || pagerState.restoreToEnd
+    // Never draw a pending target page before currentPage has been committed. In that state the
+    // reader looked restored, but gestures still operated on the old page and were then
+    // overwritten by the restore effect. The snapshot above commits the page and clears the
+    // restore marker atomically, so the first visible frame is already interactive.
+    val currentPageIndex = pagerState.currentPage
+    val currentPageHash = pages.getOrNull(currentPageIndex)
+        ?.displayed
+        ?.firstOrNull()
+        ?.componentHash
+    val currentPageTestTag = if (restorePending) {
+        "flip-page-pending"
+    } else {
+        "flip-page-$currentPageIndex-${currentPageHash ?: "pending"}"
+    }
+    val unresolvedPageIndex = pages.indexOfFirst { !it.resolved }
+    val visiblePageAlpha = if (restorePending) 0f else 1f
+    val restoreSemantics = if (restorePending) {
+        Modifier.clearAndSetSemantics { }
+    } else {
+        Modifier
+    }
+    val pageTestTag = if (exposeCurrentPageForTesting) {
+        Modifier.testTag(currentPageTestTag)
+    } else {
+        Modifier
+    }
+    val testTagResourceIds = if (exposeCurrentPageForTesting) {
+        Modifier.semantics { testTagsAsResourceId = true }
+    } else {
+        Modifier
+    }
+    val chapterTestTag = if (exposeCurrentPageForTesting) {
+        Modifier
+            .testTag("flip-chapter-$chapterId")
+            .semantics {
+                contentDescription = "flip-state-page=${pagerState.currentPage};" +
+                    "count=${pagerState.pageCount};end=${pagerState.endReached};" +
+                    "animating=${pagerState.isAnimating};" +
+                    "direction=${pagerState.pendingChapterDirection}"
+            }
+    } else {
+        Modifier
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .then(testTagResourceIds)
+            .then(chapterTestTag)
+    ) {
+        if (flipAnimation == MenuOptions.FlipAnimationOptions.None) {
+            PageLayout(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(pageTestTag)
+                    .graphicsLayer { alpha = visiblePageAlpha }
+                    .then(restoreSemantics)
+                    .padding(contentPadding),
+                pageIndex = currentPageIndex,
+                page = pages.getOrNull(currentPageIndex),
+                componentRender = componentRender,
+                onMeasured = { measurements.trySend(it) },
+            )
+        } else {
+            var pageWidth by remember { mutableStateOf(0) }
+            val offset = pagerState.pageOffset
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .onSizeChanged {
+                        pageWidth = it.width
+                        pagerState.viewportWidth = it.width
+                    }
+            ) {
+                PageLayout(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(pageTestTag)
+                        .graphicsLayer {
+                            alpha = visiblePageAlpha
+                            translationX = offset
+                        }
+                        .then(restoreSemantics)
+                        .padding(contentPadding),
+                    pageIndex = currentPageIndex,
+                    page = pages.getOrNull(currentPageIndex),
+                    componentRender = componentRender,
+                    onMeasured = { measurements.trySend(it) },
+                )
+                val adjacentPageIndex = when {
+                    offset < 0f -> currentPageIndex + 1
+                    offset > 0f -> currentPageIndex - 1
+                    else -> -1
+                }
+                val adjacentPage = pages.getOrNull(adjacentPageIndex) ?: when {
+                    offset < 0f -> nextChapterId?.let {
+                        measurementWindow.find(it, styleSignature)?.pages?.firstOrNull()
+                    }
+                    offset > 0f -> prevChapterId?.let {
+                        measurementWindow.find(it, styleSignature)?.pages?.lastOrNull()
+                    }
+                    else -> null
+                }
+                if (adjacentPage != null) {
+                    val baseOffset = if (offset < 0f) pageWidth.toFloat() else -pageWidth.toFloat()
+                    PageLayout(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                alpha = visiblePageAlpha
+                                translationX = baseOffset + offset
+                            }
+                            .then(restoreSemantics)
+                            .padding(contentPadding),
+                        pageIndex = adjacentPageIndex.coerceAtLeast(0),
+                        page = adjacentPage,
+                        componentRender = componentRender,
+                        onMeasured = { measurements.trySend(it) },
+                    )
+                }
+            }
+        }
+
+        // Always paginate the unresolved tail, independent of the page the reader is viewing.
+        // Each result creates the next tail page, so composition keeps advancing until the
+        // complete chapter has a stable component-hash-to-page mapping.
+        if (unresolvedPageIndex >= 0 && unresolvedPageIndex != currentPageIndex) {
+            PageLayout(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = 0f }
+                    .clearAndSetSemantics { }
+                    .padding(contentPadding),
+                pageIndex = unresolvedPageIndex,
+                page = pages[unresolvedPageIndex],
+                componentRender = componentRender,
+                onMeasured = { measurements.trySend(it) },
+            )
+        }
+    }
+}
+
+internal data class PaginationCacheKey(
+    val chapterId: String,
+    val contentSignature: Int,
+    val styleSignature: Int,
+    val width: Int,
+    val height: Int,
+)
+
+internal data class CachedPagination(
+    val pages: List<FlipPage>,
+    val endReached: Boolean,
+) {
+    val width: Int get() = pages.firstOrNull()?.measuredWidth ?: 0
+    val height: Int get() = pages.firstOrNull()?.measuredHeight ?: 0
+}
+
+internal class ChapterMeasurementWindow {
+    private val entries = LinkedHashMap<PaginationCacheKey, CachedPagination>(8, 0.75f, true)
+
+    fun find(chapterId: String, contentSignature: Int, styleSignature: Int): CachedPagination? {
+        val key = entries.keys.lastOrNull {
+            it.chapterId == chapterId &&
+                    it.contentSignature == contentSignature &&
+                    it.styleSignature == styleSignature
+        } ?: return null
+        return entries[key]
+    }
+
+    fun find(chapterId: String, styleSignature: Int): CachedPagination? {
+        val key = entries.keys.lastOrNull {
+            it.chapterId == chapterId && it.styleSignature == styleSignature
+        } ?: return null
+        return entries[key]
+    }
+
+    fun put(key: PaginationCacheKey, value: CachedPagination) {
+        entries[key] = value.copy(
+            pages = value.pages.map { it.copy(measuredWidth = key.width, measuredHeight = key.height) }
+        )
+        while (entries.size > 3) entries.remove(entries.keys.first())
+    }
+}
+
+internal data class AnchoredComponent(
+    val componentHash: Int,
+    val fragmentHash: Int,
+    val data: AbstractContentComponentData,
+)
+
+internal data class FlipPage(
+    val seed: List<AnchoredComponent>,
+    val displayed: List<AnchoredComponent> = emptyList(),
+    val resolved: Boolean = false,
+    val measuredWidth: Int = 0,
+    val measuredHeight: Int = 0,
+) {
+    val seedKey: Int = seed.fold(1) { hash, component ->
+        31 * (31 * hash + component.componentHash) + component.fragmentHash
+    }
+}
+
+private data class PageMeasurement(
+    val pageIndex: Int,
+    val seedKey: Int,
+    val width: Int,
+    val height: Int,
+    val overflowIndex: Int?,
+    val availableHeight: Int,
+    val componentHeight: Int?,
+)
+
+private data class PageResolution(
+    val displayed: List<AnchoredComponent>,
+    val nextSeed: List<AnchoredComponent>,
+)
+
+@Composable
+private fun PageLayout(
+    modifier: Modifier,
+    pageIndex: Int,
+    page: FlipPage?,
+    componentRender: io.nightfish.lightnovelreader.api.content.component.ComponentRender,
+    onMeasured: (PageMeasurement) -> Unit,
+) {
+    SubcomposeLayout(modifier) { constraints ->
+        if (page == null) {
+            return@SubcomposeLayout layout(constraints.maxWidth, constraints.maxHeight) {}
+        }
+        val source = if (page.resolved) page.displayed else page.seed
+        val placeables = mutableListOf<androidx.compose.ui.layout.Placeable>()
+        var occupiedHeight = 0
+        var overflowIndex: Int? = null
+        var overflowHeight: Int? = null
+
+        for ((index, component) in source.withIndex()) {
+            val placeable = subcompose("$pageIndex-${page.seedKey}-$index") {
+                componentRender.Component(Modifier.fillMaxWidth(), component.data)
+            }.first().measure(constraints.copy(minWidth = 0, minHeight = 0))
+            val remainingHeight = constraints.maxHeight - occupiedHeight
+            if (
+                !page.resolved &&
+                (placeable.height > remainingHeight ||
+                        placeable.height == remainingHeight && component.data is Divisible<*>)
+            ) {
+                overflowIndex = index
+                overflowHeight = placeable.height
+                break
+            }
+            placeables += placeable
+            occupiedHeight += placeable.height.coerceAtMost(remainingHeight)
+            if (!page.resolved && occupiedHeight >= constraints.maxHeight && index < source.lastIndex) {
+                overflowIndex = index + 1
+                break
+            }
+        }
+
+        onMeasured(
+            PageMeasurement(
+                pageIndex = pageIndex,
+                seedKey = page.seedKey,
+                width = constraints.maxWidth,
+                height = constraints.maxHeight,
+                overflowIndex = overflowIndex,
+                availableHeight = constraints.maxHeight - placeables.sumOf { it.height },
+                componentHeight = overflowHeight,
+            )
+        )
+
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            var y = 0
+            placeables.forEach { placeable ->
+                placeable.placeRelative(0, y)
+                y += placeable.height
+            }
+        }
+    }
+}

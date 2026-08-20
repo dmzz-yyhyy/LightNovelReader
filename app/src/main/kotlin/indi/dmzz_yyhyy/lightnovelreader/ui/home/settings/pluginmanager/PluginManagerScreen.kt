@@ -127,9 +127,13 @@ fun PluginManagerScreen(
                 ) {
                     item {
                         Row(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .clickable(onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, "https://plugins.nariko.org".toUri())
+                                    val intent = Intent(
+                                        Intent.ACTION_VIEW,
+                                        "https://plugins.nariko.org".toUri()
+                                    )
                                     context.startActivity(intent, null)
                                 })
                                 .padding(horizontal = 24.dp, vertical = 16.dp),

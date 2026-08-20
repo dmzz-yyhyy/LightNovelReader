@@ -20,7 +20,7 @@ class DownloadProgressRepository @Inject constructor(
     userDataDao: UserDataDao,
     val bookRepository: BookRepository
 ) {
-    class DownItemListUserData (
+    class DownItemListUserData(
         override val path: String,
         private val userDataDao: UserDataDao,
         private val bookRepository: BookRepository
@@ -63,7 +63,11 @@ class DownloadProgressRepository @Inject constructor(
     }
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    private val completedBookListUserData = DownItemListUserData(UserDataPath.CompletedDownloadBookList.path, userDataDao, bookRepository)
+    private val completedBookListUserData = DownItemListUserData(
+        UserDataPath.CompletedDownloadBookList.path,
+        userDataDao,
+        bookRepository
+    )
     private val _downloadItemList = mutableStateListOf<DownloadItem>()
     val downloadItemIdList: List<DownloadItem> get() = _downloadItemList.toList()
 
@@ -79,7 +83,7 @@ class DownloadProgressRepository @Inject constructor(
             _downloadItemList.removeIf { it == downloadItem }
         _downloadItemList.add(downloadItem)
         coroutineScope.launch {
-            snapshotFlow{ downloadItem.progress }.collect { progress ->
+            snapshotFlow { downloadItem.progress }.collect { progress ->
                 if (progress >= 1f) {
                     completedBookListUserData.update(
                         updater = { downloadItems ->

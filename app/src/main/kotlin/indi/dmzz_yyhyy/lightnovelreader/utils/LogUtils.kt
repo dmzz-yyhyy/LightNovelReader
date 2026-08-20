@@ -17,10 +17,10 @@ import java.util.Properties
 import java.util.regex.Pattern
 import kotlin.system.exitProcess
 
-class LogUtils (
+class LogUtils(
     @param:ApplicationContext @field:ApplicationContext private val context: Context,
     private val loggerRepository: LoggerRepository
-): Thread.UncaughtExceptionHandler {
+) : Thread.UncaughtExceptionHandler {
     private val logsDir = File(context.cacheDir, "logs")
 
     override fun uncaughtException(thread: Thread, throwable: Throwable) {

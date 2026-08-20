@@ -22,12 +22,14 @@ object Route {
             /** 阅读主界面路由 */
             @Serializable
             object Home
+
             /** 阅读统计界面路由组 */
             @Serializable
             object Stats {
                 /** 阅读统计总览界面路由 */
                 @Serializable
                 object Overview
+
                 /**
                  * 阅读统计详情界面路由
                  *
@@ -37,12 +39,14 @@ object Route {
                 data class Detailed(val targetDate: Int)
             }
         }
+
         /** 书架界面路由组 */
         @Serializable
         object Bookshelf {
             /** 书架主界面路由 */
             @Serializable
             object Home
+
             /** 书本排序界面路由
              *
              * @param id 书架id
@@ -51,9 +55,11 @@ object Route {
             data class ReorderBooks(
                 val id: Int
             )
+
             /** 书架排序界面路由 */
             @Serializable
             object ReorderBookshelves
+
             /**
              * 书架编辑界面路由
              *
@@ -65,6 +71,7 @@ object Route {
                 val id: Int,
                 val title: String
             )
+
             /**
              * 删除书架确认对话框路由
              *
@@ -74,6 +81,7 @@ object Route {
             data class DeleteBookshelfDialog(
                 val bookshelfId: Int
             )
+
             /**
              * 将多本书添加至书架的对话框路由
              *
@@ -84,15 +92,18 @@ object Route {
                 val selectedBookIds: List<String>
             )
         }
+
         /** 探索界面路由组 */
         @Serializable
         object Explore {
             /** 探索主界面路由 */
             @Serializable
             object Home
+
             /** 搜索界面路由 */
             @Serializable
             object Search
+
             /**
              * 探索展开页界面路由
              *
@@ -103,21 +114,25 @@ object Route {
                 val expandedPageDataSourceId: String
             )
         }
+
         /** 设置界面路由组 */
         @Serializable
         object Settings {
             /** 设置主界面路由 */
             @Serializable
             object Home
+
             /** 日志查看界面路由 */
             @Serializable
             object Logcat
+
             /** 文本格式化设置界面路由组 */
             @Serializable
             object TextFormatting {
                 /** 文本格式化规则管理界面路由 */
                 @Serializable
                 object Manager
+
                 /**
                  * 文本格式化规则列表界面路由
                  *
@@ -126,12 +141,14 @@ object Route {
                 @Serializable
                 data class Rules(val bookId: String)
             }
+
             /** 插件管理界面路由组 */
             @Serializable
             object PluginManager {
                 /** 插件管理主界面路由 */
                 @Serializable
                 object Home
+
                 /**
                  * 插件详情界面路由
                  *
@@ -141,16 +158,19 @@ object Route {
                 data class Detail(
                     val id: String
                 )
+
                 /** 已安装插件列表界面路由 */
                 @Serializable
                 object AppList
             }
+
             /** 数据源切换界面路由组 */
             @Serializable
             object SourceChange {
                 /** 数据源切换列表界面路由 */
                 @Serializable
                 object List
+
                 /**
                  * 数据源详细设置界面路由
                  *
@@ -161,22 +181,28 @@ object Route {
                     val sourceId: String
                 )
             }
+
             /** 调试信息界面路由 */
             @Serializable
             object Debug
+
             /** 主题设置界面路由 */
             @Serializable
             object Theme
+
             /** 开源许可证界面路由 */
             @Serializable
             object Licenses
+
             /** 支持格式信息界面路由 */
             @Serializable
             object Formats
         }
+
         /** 导出用户数据对话框路由 */
         @Serializable
         object ExportUserDataDialog
+
         /**
          * 编辑文本格式化规则对话框路由
          *
@@ -189,6 +215,7 @@ object Route {
             val ruleId: Int
         )
     }
+
     /** 书本相关页面路由组 */
     @Serializable
     object Book {
@@ -201,6 +228,7 @@ object Route {
         data class Detail(
             val bookId: String
         )
+
         /** 书本阅读界面路由 */
         @Serializable
         data object Reader
@@ -268,6 +296,7 @@ object Route {
                 return result
             }
         }
+
         /**
          * 图片查看器对话框路由
          *
@@ -278,9 +307,11 @@ object Route {
             val imageUri: String
         )
     }
+
     /** 有可用更新提示对话框路由 */
     @Serializable
     object UpdatesAvailableDialog
+
     /**
      * 将书本添加至书架对话框路由
      *
@@ -290,6 +321,7 @@ object Route {
     data class AddBookToBookshelfDialog(
         val bookId: String
     )
+
     /**
      * 将所有章节标记为已读对话框路由
      *
@@ -299,6 +331,7 @@ object Route {
     data class MarkAllChaptersAsReadDialog(
         val bookId: String
     )
+
     /**
      * 滑块数值设置对话框路由
      *
@@ -310,6 +343,7 @@ object Route {
         val value: Float,
         val floatUserDataPath: String
     )
+
     /**
      * 插件安装器对话框路由
      *
@@ -319,6 +353,7 @@ object Route {
     data class PluginInstallerDialog(
         val source: String
     )
+
     /** 书本管理器路由 */
     @Serializable
     object BookManager

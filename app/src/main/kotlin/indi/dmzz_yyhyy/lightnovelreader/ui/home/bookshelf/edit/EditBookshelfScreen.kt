@@ -198,8 +198,10 @@ private fun TopBar(
         modifier = Modifier.fillMaxWidth(),
         navigationIcon = {
             IconButton(onClickBack) {
-                Icon(painterResource(
-                    id = R.drawable.arrow_back_24px),
+                Icon(
+                    painterResource(
+                        id = R.drawable.arrow_back_24px
+                    ),
                     contentDescription = "back"
                 )
             }
@@ -213,9 +215,9 @@ private fun TopBar(
             }
         },
         windowInsets =
-        WindowInsets.safeDrawing.only(
-            WindowInsetsSides.Horizontal + WindowInsetsSides.Top
-        ),
+            WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Top
+            ),
         scrollBehavior = scrollBehavior
     )
 }

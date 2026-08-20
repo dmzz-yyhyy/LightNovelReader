@@ -14,7 +14,8 @@
 
 ## 介紹
 
-LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體，使用 Kotlin 和 Jetpack Compose 開發，具有輕量化的體積和流暢的閱讀體驗。此外，還有多種實用功能，如 EPUB 匯出、離線閱讀和多資料來源支援。
+LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體，使用 Kotlin 和 Jetpack Compose
+開發，具有輕量化的體積和流暢的閱讀體驗。此外，還有多種實用功能，如 EPUB 匯出、離線閱讀和多資料來源支援。
 
 ## 特色
 
@@ -32,6 +33,7 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 您可以為LightNovelReader新增自訂的資料來源與插件
 
 以下為相關資源鏈接
+
 - [範例外掛程式](https://github.com/dmzz-yyhyy/LightNovelReaderPlguin-Template)
 - [開髮指南](https://lnr.nariko.org/plugin-dev/)
 - [LNR Api KDoc](https://api-doc.lnr.nariko.org/)
@@ -40,16 +42,19 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 
 ## 下載
 
-從 [GitHub Releases](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest) 下載最新發布版。要體驗最新的功能與錯誤修復，請從 [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions) 下載最新建置。
+從 [GitHub Releases](https://github.com/dmzz-yyhyy/LightNovelReader/releases/latest)
+下載最新發布版。要體驗最新的功能與錯誤修復，請從 [Actions](https://github.com/dmzz-yyhyy/LightNovelReader/actions)
+下載最新建置。
 
 [<img src="https://f-droid.org/badge/get-it-on-zh-tw.png"
-    alt="取得於 F-Droid 立即下載"
-    height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
+alt="取得於 F-Droid 立即下載"
+height="80">](https://f-droid.org/packages/indi.dmzz_yyhyy.lightnovelreader)
 
 ## 支援
 
 - 在 [**此處**](https://github.com/dmzz-yyhyy/LightNovelReader/issues/new/choose) 提交一個錯誤回報或新功能請求
-- 歡迎加入 QQ 討論群：`867785526` | [**邀請連結**](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
+- 歡迎加入 QQ 討論群：`867785526` | [**邀請連結
+  **](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=P__gXIArh5UDBsEq7ttd4WhIYnNh3y1t&authKey=GAsRKEZ%2FwHpzRv19hNJsDnknOc86lYzNIHMPy2Jxt3S3U8f90qestOd760IAj%2F3l&noverify=0&group_code=867785526)
 - 歡迎加入 Discord 伺服器：[**邀請連結**](https://discord.gg/pnf4ABmDJt)
 - 歡迎加入 Telegram 討論群組：[**邀請連結**](https://t.me/lightnoble)
 
@@ -63,13 +68,15 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 
 ### 關於 EpubLib
 
-為了處理 epub 的匯出問題，我們單獨建立了一個 epub 處理模組，如果您感興趣，可以看[**這裡**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
+為了處理 epub 的匯出問題，我們單獨建立了一個 epub 處理模組，如果您感興趣，可以看[**這裡
+**](https://github.com/dmzz-yyhyy/LightNovelReader/blob/refactoring/epub.md)
 
 ## 貢獻
 
 我們歡迎對 LightNovelReader 的貢獻！以下是如何參與：
 
 ### 開始
+
 1. Fork 本倉庫。
 2. 克隆你的 fork：`git clone https://github.com/your-username/LightNovelReader.git`
 3. 為你的更改建立新分支：`git checkout -b feature/your-feature-name`
@@ -79,6 +86,7 @@ LightNovelReader <sup>*重構版*</sup> 是一款開源的輕小說閱讀軟體�
 7. 向 `refactoring` 分支開啟 Pull Request。
 
 ### 提交指南
+
 - 保持提交原子化且描述清楚。
 - 若你的變更會影響版本，請在 `app/build.gradle.kts` 中更新。
 
@@ -95,7 +103,8 @@ LightNovelReader 是一個完全免費、開源的專案。
 
 [![Crowdin](https://badges.crowdin.net/lightnovelreader/localized.svg)](https://crowdin.com/project/lightnovelreader)
 
-LightNovelReader 使用 [Crowdin](https://crowdin.com/project/lightnovelreader) 管理在地化工作。如果你希望協助翻譯或改進現有的譯文，歡迎前往 Crowdin 專案頁面參與貢獻！
+LightNovelReader 使用 [Crowdin](https://crowdin.com/project/lightnovelreader)
+管理在地化工作。如果你希望協助翻譯或改進現有的譯文，歡迎前往 Crowdin 專案頁面參與貢獻！
 
 > 找不到你的語言？歡迎在 [Crowdin](https://crowdin.com/project/lightnovelreader) 申請新增語言！
 

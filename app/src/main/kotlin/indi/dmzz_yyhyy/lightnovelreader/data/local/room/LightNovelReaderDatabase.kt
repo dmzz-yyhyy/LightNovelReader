@@ -26,18 +26,18 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
 import io.nightfish.lightnovelreader.api.book.WordCount
-import io.nightfish.lightnovelreader.api.content.builder.ContentBuilder
+import io.nightfish.lightnovelreader.api.content.builder.buildContent
 import io.nightfish.lightnovelreader.api.content.builder.image
-import io.nightfish.lightnovelreader.api.content.builder.simpleText
+import io.nightfish.lightnovelreader.api.content.builder.paragraph
 
 @Database(
     entities = [
@@ -53,7 +53,7 @@ import io.nightfish.lightnovelreader.api.content.builder.simpleText
         DailyCountEntity::class,
         FormattingRuleEntity::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -92,7 +92,8 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             MIGRATION_13_14,
                             MIGRATION_14_15,
                             MIGRATION_15_16,
-                            MIGRATION_16_17
+                            MIGRATION_16_17,
+                            MIGRATION_17_18,
                         )
                         .allowMainThreadQueries()
                         .build()
@@ -263,7 +264,8 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             val contentValues = ContentValues()
                             contentValues.put(
                                 "id",
-                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" }).toString()
+                                cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
+                                    .toString()
                             )
                             contentValues.put(
                                 "title",
@@ -294,7 +296,12 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             )
                             contentValues.put(
                                 "word_count",
-                                WorldCountConverter.worldCountToString(WordCount(cursor.getInt(cursor.columnNames.indexOfFirst { it == "word_count" })))
+                                WorldCountConverter.worldCountToString(
+                                    WordCount(
+                                        cursor.getInt(
+                                            cursor.columnNames.indexOfFirst { it == "word_count" })
+                                    )
+                                )
                             )
                             contentValues.put(
                                 "publishing_house",
@@ -418,12 +425,31 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             val textContent =
                                 cursor.getString(cursor.columnNames.indexOfFirst { it == "content" })
 
-                            val content = ContentBuilder().apply {
-                                textContent.split("[image]").forEach {
-                                    if (it.trim().startsWith("http")) image(it.toUri())
-                                    else simpleText(it)
+                            val content = buildContent {
+                                textContent.split("[image]").forEach { component ->
+                                    if (component.trim()
+                                            .startsWith("http")
+                                    ) image(component.toUri())
+                                    else component.split("\n")
+                                        .let { text ->
+                                            text.mapIndexedNotNull { index, string ->
+                                                if (string.isNotBlank()) return@mapIndexedNotNull string
+                                                if (text.getOrNull(index - 1)
+                                                        ?.isBlank() == true
+                                                ) return@mapIndexedNotNull string
+                                                if (text.getOrNull(index + 1)
+                                                        ?.isBlank() == true
+                                                ) return@mapIndexedNotNull string
+                                                return@mapIndexedNotNull null
+                                            }
+                                        }
+                                        .forEach {
+                                            paragraph {
+                                                text(it)
+                                            }
+                                        }
                                 }
-                            }.build()
+                            }
                             contentValues.put(
                                 "id",
                                 cursor.getInt(cursor.columnNames.indexOfFirst { it == "id" })
@@ -836,6 +862,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             val favoriteBooks = ListConverter.stringToStringList(
                                 statsCursor.getString(favoriteIdx) ?: ""
                             )
+
                             fun ensureRecord(bookId: String) {
                                 val cv = ContentValues()
                                 cv.put("book_id", bookId)
@@ -884,6 +911,38 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                 db.execSQL(
                     "alter table book_shelf add sort_reversed INTEGER NOT NULL DEFAULT 0"
                 )
+            }
+        }
+
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                fun String.toSnakeCasePath(): String = split(".").joinToString(".") { segment ->
+                    segment
+                        .replace(Regex("([A-Z]+)([A-Z][a-z])"), "$1_$2")
+                        .replace(Regex("([a-z0-9])([A-Z])"), "$1_$2")
+                        .lowercase()
+                }
+
+                val pathMigrations = mutableListOf<Pair<String, String>>()
+                db.query("SELECT path FROM user_data").use { cursor ->
+                    val pathIndex = cursor.getColumnIndexOrThrow("path")
+                    while (cursor.moveToNext()) {
+                        val oldPath = cursor.getString(pathIndex)
+                        val newPath = oldPath.toSnakeCasePath()
+                        if (oldPath != newPath) {
+                            pathMigrations += oldPath to newPath
+                        }
+                    }
+                }
+
+                pathMigrations.forEach { (oldPath, newPath) ->
+                    db.execSQL(
+                        "UPDATE OR REPLACE user_data SET path = ?, `group` = ? WHERE path = ?",
+                        arrayOf(newPath, newPath.substringBeforeLast('.', ""), oldPath)
+                    )
+                }
+
+                db.execSQL("DELETE FROM chapter_content")
             }
         }
     }

@@ -97,7 +97,9 @@ fun SettingsSwitchEntry(
     ) {
         painter?.let {
             Icon(
-                modifier = Modifier.padding(end = 22.dp).size(24.dp),
+                modifier = Modifier
+                    .padding(end = 22.dp)
+                    .size(24.dp),
                 painter = it,
                 tint = colorScheme.onSurfaceVariant,
                 contentDescription = "Icon"
@@ -203,7 +205,9 @@ fun SettingsClickableEntry(
     ) {
         painter?.let {
             Icon(
-                modifier = Modifier.padding(end = 22.dp).size(24.dp),
+                modifier = Modifier
+                    .padding(end = 22.dp)
+                    .size(24.dp),
                 painter = it,
                 tint = colorScheme.onSurfaceVariant,
                 contentDescription = "Icon"
@@ -238,7 +242,8 @@ fun SettingsClickableEntry(
 
         trailingContent?.let { composable ->
             Box(
-                modifier = Modifier.fillMaxHeight()
+                modifier = Modifier
+                    .fillMaxHeight()
                     .width(55.dp),
                 contentAlignment = Alignment.Center
             ) {

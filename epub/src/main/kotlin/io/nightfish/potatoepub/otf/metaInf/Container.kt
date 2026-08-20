@@ -6,10 +6,11 @@ import io.nightfish.potatoepub.xml.XmlBuilder.Companion.xml
 import io.nightfish.potatoepub.xml.asFormatedXml
 import java.util.zip.ZipEntry
 
-data class Container(val rootFilePaths: List<String>): WriteToZipAble {
+data class Container(val rootFilePaths: List<String>) : WriteToZipAble {
     override val zipEntry: ZipEntry = ZipEntry("META-INF/container.xml")
     override fun toByteArray(): ByteArray =
-        xml("container",
+        xml(
+            "container",
             "urn:oasis:names:tc:opendocument:xmlns:container",
             Version("1.0")
         ) {

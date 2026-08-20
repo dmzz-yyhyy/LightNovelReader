@@ -59,17 +59,20 @@ fun DataSettingsList(
                         pendingImportUri = null
                         Toast.makeText(context, dataImportFailedText, Toast.LENGTH_SHORT).show()
                     }
+
                     WorkInfo.State.SUCCEEDED -> {
                         isImporting = false
                         showImportDialog = false
                         pendingImportUri = null
                         Toast.makeText(context, dataImportSuccessText, Toast.LENGTH_SHORT).show()
                     }
+
                     WorkInfo.State.CANCELLED -> {
                         isImporting = false
                         showImportDialog = false
                         pendingImportUri = null
                     }
+
                     else -> {}
                 }
             }
@@ -126,7 +129,10 @@ fun DataSettingsList(
 }
 
 fun selectDataFile(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+    val initUri = DocumentsContract.buildDocumentUri(
+        "com.android.externalstorage.documents",
+        "primary:Documents"
+    )
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"

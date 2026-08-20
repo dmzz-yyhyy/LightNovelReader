@@ -7,7 +7,14 @@ class Chapter(
     val chapterContent: Document?,
     val chapters: List<Chapter>?
 ) {
-    val id: String = "chapter_" + (if (chapters != null) (chapters.first().id + title.hashCode()).hashCode() else (chapterContent.hashCode() + title.hashCode())).hashCode()
-    constructor(title: String, chapterContent: Document): this(title, chapterContent, chapters = null)
-    constructor(title: String, chapters: List<Chapter>): this(title, null, chapters)
+    val id: String =
+        "chapter_" + (if (chapters != null) (chapters.first().id + title.hashCode()).hashCode() else (chapterContent.hashCode() + title.hashCode())).hashCode()
+
+    constructor(title: String, chapterContent: Document) : this(
+        title,
+        chapterContent,
+        chapters = null
+    )
+
+    constructor(title: String, chapters: List<Chapter>) : this(title, null, chapters)
 }

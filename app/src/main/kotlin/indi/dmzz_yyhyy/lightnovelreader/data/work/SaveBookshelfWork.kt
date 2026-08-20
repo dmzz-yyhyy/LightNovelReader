@@ -44,11 +44,11 @@ class SaveBookshelfWork @AssistedInject constructor(
         }
         val bookshelfIds = bookshelfEntityList.map { it.id }
         val bookshelfBookMetadataEntities = mutableListOf<String>().apply {
-                for (entity in bookshelfEntityList) {
-                    this.addAll(entity.allBookIds)
-                }
-            }.distinct()
-            .mapNotNull{
+            for (entity in bookshelfEntityList) {
+                this.addAll(entity.allBookIds)
+            }
+        }.distinct()
+            .mapNotNull {
                 bookshelfDao.getBookshelfBookMetadataEntity(it)
             }.map { entity ->
                 entity.copy(

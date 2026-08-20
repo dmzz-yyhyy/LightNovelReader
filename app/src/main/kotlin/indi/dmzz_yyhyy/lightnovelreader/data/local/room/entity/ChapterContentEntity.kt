@@ -25,6 +25,6 @@ data class ChapterContentEntity(
     @ColumnInfo(name = "lastChapter")
     val prevChapter: String,
     val nextChapter: String
-): Mergeable<ChapterContentEntity> {
+) : Mergeable<ChapterContentEntity> {
     override fun merge(new: ChapterContentEntity): ChapterContentEntity = new
 }

@@ -79,7 +79,6 @@ interface BookRepositoryApi {
     )
 
 
-
     /**
      * 获取阅读数据
      *
@@ -118,7 +117,7 @@ interface BookRepositoryApi {
      *
      * @param id 需要更新的书本id
      *
-     * @sample io.nightfish.lightnovelreader.api.sample.updateUserReadingData
+     * @sample io.nightfish.lightnovelreader.api.doc.sample.updateUserReadingData
      *
      * @since Api 2
      */

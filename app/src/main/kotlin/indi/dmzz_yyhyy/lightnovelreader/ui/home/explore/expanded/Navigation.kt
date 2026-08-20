@@ -10,13 +10,13 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreViewModel
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.exploreExpandDestination() {
     composable<Route.Main.Explore.Expanded> { entry ->
@@ -24,7 +24,7 @@ fun NavGraphBuilder.exploreExpandDestination() {
         val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
         val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
         val exploreExpandedPageHomeViewModel = hiltViewModel<ExpandedPageViewModel>()
-        var dialog : @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
+        var dialog: @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
         ExpandedPageScreen(
             exploreUiState = exploreViewModel.uiState,
             expandedPageUiState = exploreExpandedPageHomeViewModel.uiState,

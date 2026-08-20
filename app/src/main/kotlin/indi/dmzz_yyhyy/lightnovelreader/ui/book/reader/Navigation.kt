@@ -65,7 +65,11 @@ fun NavGraphBuilder.bookReaderDestination() {
     imageViewerDialog()
 }
 
-fun NavController.navigateToBookReaderDestination(bookId: String, chapterId: String, context: Context) {
+fun NavController.navigateToBookReaderDestination(
+    bookId: String,
+    chapterId: String,
+    context: Context
+) {
     val entry = this.getBackStackEntry<Route.Book>()
     val viewModel = ViewModelProvider.create(
         entry,
@@ -84,7 +88,8 @@ private fun NavGraphBuilder.colorPickerDialog() {
         val navController = LocalNavController.current
         val viewModel = hiltViewModel<ColorPickerDialogViewModel>()
         val route = entry.toRoute<Route.Book.ColorPickerDialog>()
-        val selectedColor by viewModel.init(route.colorUserDataPath).collectAsStateWithLifecycle(Color.Unspecified)
+        val selectedColor by viewModel.init(route.colorUserDataPath)
+            .collectAsStateWithLifecycle(Color.Unspecified)
         ColorPickerDialog(
             onDismissRequest = { navController.popBackStack() },
             onConfirmation = {
@@ -98,10 +103,15 @@ private fun NavGraphBuilder.colorPickerDialog() {
     }
 }
 
-fun NavController.navigateToColorPickerDialog(colorUserDataPath: String, colors: List<Long>, target: Route.Book.ColorPickerTargetType = Route.Book.ColorPickerTargetType.BACKGROUND) {
+fun NavController.navigateToColorPickerDialog(
+    colorUserDataPath: String,
+    colors: List<Long>,
+    target: Route.Book.ColorPickerTargetType = Route.Book.ColorPickerTargetType.BACKGROUND
+) {
     if (!this.isResumed()) return
     navigate(Route.Book.ColorPickerDialog(colorUserDataPath, colors.toLongArray(), target))
 }
+
 @SuppressLint("LocalContextGetResourceValueCall")
 private fun NavGraphBuilder.imageViewerDialog() {
     dialog<Route.Book.ImageViewerDialog>(
@@ -134,7 +144,11 @@ private fun NavGraphBuilder.imageViewerDialog() {
                     ).onOk { bitmap ->
                         val result = runCatching {
                             context.contentResolver.openOutputStream(targetUri)?.use { out ->
-                                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, out)
+                                bitmap.compress(
+                                    android.graphics.Bitmap.CompressFormat.PNG,
+                                    100,
+                                    out
+                                )
                             } ?: error("Cannot open output stream")
                         }
                         result.onSuccess {

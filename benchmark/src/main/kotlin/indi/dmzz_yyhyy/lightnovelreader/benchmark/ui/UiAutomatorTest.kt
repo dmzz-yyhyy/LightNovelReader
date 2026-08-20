@@ -27,7 +27,7 @@ abstract class UiAutomatorTest {
         shell("pm grant $TARGET_PACKAGE android.permission.POST_NOTIFICATIONS")
         shell(
             "am broadcast -W -n $TARGET_PACKAGE/.benchmark.BenchmarkFixtureReceiver " +
-                "-a $SEED_ACTION"
+                    "-a $SEED_ACTION"
         )
     }
 
@@ -140,9 +140,22 @@ abstract class UiAutomatorTest {
             } catch (_: androidx.test.uiautomator.StaleObjectException) {
                 // Compose may replace semantics nodes during a scroll animation.
             }
-            val scrolled = device.findObjects(By.scrollable(true))
-                .sortedByDescending { it.visibleBounds.height() }
-                .any { it.scroll(Direction.UP, 0.35f) }
+            val scrollTargets = device.findObjects(By.scrollable(true))
+                .mapNotNull { candidate ->
+                    try {
+                        candidate to candidate.visibleBounds.height()
+                    } catch (_: androidx.test.uiautomator.StaleObjectException) {
+                        null
+                    }
+                }
+                .sortedByDescending { it.second }
+            val scrolled = scrollTargets.any { (candidate, _) ->
+                try {
+                    candidate.scroll(Direction.UP, 0.35f)
+                } catch (_: androidx.test.uiautomator.StaleObjectException) {
+                    false
+                }
+            }
             if (!scrolled) {
                 device.swipe(
                     device.displayWidth / 2,
@@ -158,9 +171,17 @@ abstract class UiAutomatorTest {
     }
 
     protected fun clickScrolledText(text: String) {
-        scrollToText(text)
+        var target = scrollToText(text)
         SystemClock.sleep(1_000)
-        clickCenter(assertText(text))
+        // The same title can be exposed both by a book-cover placeholder and by
+        // the surrounding card. On compact layouts the first matching text node
+        // is often the non-clickable cover label, so activate its clickable
+        // ancestor instead of tapping the raw text bounds.
+        target = assertText(text)
+        while (!target.isClickable && target.parent != null) {
+            target = target.parent
+        }
+        if (target.isClickable) target.click() else clickCenter(target)
         device.waitForIdle()
     }
 
@@ -202,7 +223,11 @@ abstract class UiAutomatorTest {
             TIMEOUT,
         )
         assertTrue("Checkable control $index was not visible", checkables.size > index)
-        assertEquals("Unexpected checkable state at index $index", expected, checkables[index].isChecked)
+        assertEquals(
+            "Unexpected checkable state at index $index",
+            expected,
+            checkables[index].isChecked
+        )
     }
 
     protected fun clickFirstCheckable() {

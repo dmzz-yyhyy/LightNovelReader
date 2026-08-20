@@ -50,7 +50,7 @@ fun HomeNavigateBar(
     selectedRoute: Any?,
     controller: NavController,
 ) {
-    fun <T: Any> NavController.navigateSingleTopTo(route: T) {
+    fun <T : Any> NavController.navigateSingleTopTo(route: T) {
         navigate(route) {
             launchSingleTop = true
             restoreState = true
@@ -90,7 +90,12 @@ fun HomeNavigateBar(
         NavigationBarItem(
             selected = isExploration,
             onClick = { controller.navigateSingleTopTo(Route.Main.Explore) },
-            icon = { Icon(painter = rememberAnimatedVectorPainter(avdExplore, isExploration), null) },
+            icon = {
+                Icon(
+                    painter = rememberAnimatedVectorPainter(avdExplore, isExploration),
+                    null
+                )
+            },
             label = { Text(stringResource(R.string.nav_explore), maxLines = 1) }
         )
         NavigationBarItem(

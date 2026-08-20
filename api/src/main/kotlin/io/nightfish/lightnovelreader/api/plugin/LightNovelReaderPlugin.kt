@@ -17,14 +17,14 @@ interface LightNovelReaderPlugin {
      *
      * @since Api 2
      */
-    fun onLoad() { }
+    fun onLoad() {}
 
     /**
      * 插件被卸载时回调
      *
      * @since Api 2
      */
-    fun onUnload() { }
+    fun onUnload() {}
 
     /**
      * 当软件初始化导航时调用

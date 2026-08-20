@@ -171,7 +171,8 @@ fun ActivityStatsCard(
     val finishedBooks = getBooksInRange(uiState.bookFirstFinishedDateMap, dateRange)
     val favoriteBooks = getBooksInRange(uiState.bookFavoriteDateMap, dateRange)
 
-    val hasActivity = startedBooks.isNotEmpty() || finishedBooks.isNotEmpty() || favoriteBooks.isNotEmpty()
+    val hasActivity =
+        startedBooks.isNotEmpty() || finishedBooks.isNotEmpty() || favoriteBooks.isNotEmpty()
     if (!hasActivity) return
 
     StatsCard(
@@ -312,7 +313,8 @@ fun ReadingTimeBar(
                     Text(
                         text = DateUtils.formatElapsedTime(item.timeSeconds.toLong()),
                         style = typography.labelMedium,
-                        color = colorScheme.onSurfaceVariant                    )
+                        color = colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

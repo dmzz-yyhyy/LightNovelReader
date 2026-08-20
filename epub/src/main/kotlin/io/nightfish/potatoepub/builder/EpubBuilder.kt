@@ -27,8 +27,18 @@ class EpubBuilder {
     var manifestId: String? = null
     var manifestItems: MutableSet<EpubManifest.Item> = mutableSetOf(
         EpubManifest.Item(href = "toc.ncx", id = "ncx", mediaType = "application/x-dtbncx+xml"),
-        EpubManifest.Item(href = "nav.xhtml", id = "nav", mediaType = "application/xhtml+xml", properties = "nav"),
-        EpubManifest.Item(href = "cover.jpg", id = "cover", mediaType = "image/jpeg", properties = "cover-image"),
+        EpubManifest.Item(
+            href = "nav.xhtml",
+            id = "nav",
+            mediaType = "application/xhtml+xml",
+            properties = "nav"
+        ),
+        EpubManifest.Item(
+            href = "cover.jpg",
+            id = "cover",
+            mediaType = "image/jpeg",
+            properties = "cover-image"
+        ),
     )
     var spineId: String? = null
     var spineItems: MutableList<Spine.Itemref> = mutableListOf()
@@ -84,13 +94,15 @@ class EpubBuilder {
         fallback: String? = null
     ) {
         resFiles[path] = file
-        manifestItems.add(EpubManifest.Item(
-            href = path,
-            id = id,
-            mediaType = mediaType,
-            mediaOverride = mediaOverride,
-            fallback = fallback,
-            properties = properties)
+        manifestItems.add(
+            EpubManifest.Item(
+                href = path,
+                id = id,
+                mediaType = mediaType,
+                mediaOverride = mediaOverride,
+                fallback = fallback,
+                properties = properties
+            )
         )
     }
 
@@ -136,6 +148,7 @@ class EpubBuilder {
             else
                 this.first().chapters!!.fistChapterWithContent()
         }
+
         val firstChapter = this.chapters.fistChapterWithContent()
         return TocNcx.NavPoint(
             id = "sep_${this.id}",

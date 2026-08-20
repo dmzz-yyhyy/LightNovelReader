@@ -59,7 +59,8 @@ class BookshelfHomeViewModel @Inject constructor(
         clearToast = ::clearToast,
     )
     val uiState: BookshelfHomeUiState = _uiState
-    private val bookshelfOrderUserData = userDataRepository.intListUserData(UserDataPath.BookshelfOrder.path)
+    private val bookshelfOrderUserData =
+        userDataRepository.intListUserData(UserDataPath.BookshelfOrder.path)
 
     fun load() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -271,9 +272,19 @@ class BookshelfHomeViewModel @Inject constructor(
             CoroutineScope(Dispatchers.Main).launch {
                 workManager.getWorkInfoByIdFlow(workRequest.id).collect {
                     it ?: return@collect
-                    when(it.state) {
-                        WorkInfo.State.SUCCEEDED -> Toast.makeText(context, "导出成功", Toast.LENGTH_LONG).show()
-                        WorkInfo.State.FAILED -> Toast.makeText(context, "导出失败", Toast.LENGTH_LONG).show()
+                    when (it.state) {
+                        WorkInfo.State.SUCCEEDED -> Toast.makeText(
+                            context,
+                            "导出成功",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        WorkInfo.State.FAILED -> Toast.makeText(
+                            context,
+                            "导出失败",
+                            Toast.LENGTH_LONG
+                        ).show()
+
                         else -> return@collect
                     }
                 }
@@ -299,9 +310,19 @@ class BookshelfHomeViewModel @Inject constructor(
             CoroutineScope(Dispatchers.Main).launch {
                 workManager.getWorkInfoByIdFlow(workRequest.id).collect {
                     it ?: return@collect
-                    when(it.state) {
-                        WorkInfo.State.SUCCEEDED -> Toast.makeText(context, "导出成功", Toast.LENGTH_LONG).show()
-                        WorkInfo.State.FAILED -> Toast.makeText(context, "导出失败", Toast.LENGTH_LONG).show()
+                    when (it.state) {
+                        WorkInfo.State.SUCCEEDED -> Toast.makeText(
+                            context,
+                            "导出成功",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                        WorkInfo.State.FAILED -> Toast.makeText(
+                            context,
+                            "导出失败",
+                            Toast.LENGTH_LONG
+                        ).show()
+
                         else -> return@collect
                     }
                 }
@@ -325,7 +346,7 @@ class BookshelfHomeViewModel @Inject constructor(
             )
             workManager.getWorkInfoByIdFlow(workRequest.id).collect {
                 it ?: return@collect
-                when(it.state) {
+                when (it.state) {
                     WorkInfo.State.ENQUEUED -> return@collect
                     WorkInfo.State.RUNNING -> return@collect
                     WorkInfo.State.SUCCEEDED -> load()

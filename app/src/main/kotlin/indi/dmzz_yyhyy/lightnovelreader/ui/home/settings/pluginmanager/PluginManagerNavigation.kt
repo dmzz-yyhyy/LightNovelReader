@@ -132,7 +132,9 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
             pluginInfoList = viewModel.pluginList,
             onClickCheckUpdate = { packageName ->
                 val updateInfo = pluginUpdates[packageName] ?: return@PluginManagerScreen
-                val pluginName = viewModel.pluginList.firstOrNull { it.packageName == packageName }?.name ?: packageName
+                val pluginName =
+                    viewModel.pluginList.firstOrNull { it.packageName == packageName }?.name
+                        ?: packageName
                 showSnackbar(
                     coroutineScope = coroutineScope,
                     hostState = snackbarHostState,
@@ -152,8 +154,10 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                     actionLabel = learnMoreString
                 ) {
                     when (it) {
-                        SnackbarResult.Dismissed -> { }
-                        SnackbarResult.ActionPerformed -> { showPluginNoSignatureDialog = true }
+                        SnackbarResult.Dismissed -> {}
+                        SnackbarResult.ActionPerformed -> {
+                            showPluginNoSignatureDialog = true
+                        }
                     }
                 }
             },
@@ -165,8 +169,10 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                     actionLabel = learnMoreString
                 ) {
                     when (it) {
-                        SnackbarResult.Dismissed -> { }
-                        SnackbarResult.ActionPerformed -> { showPluginErrorDialog = true }
+                        SnackbarResult.Dismissed -> {}
+                        SnackbarResult.ActionPerformed -> {
+                            showPluginErrorDialog = true
+                        }
                     }
                 }
             },

@@ -55,7 +55,8 @@ fun StorageManagerScreen(
         }
     ) {
         StorageOverviewContent(
-            modifier = Modifier.padding(it)
+            modifier = Modifier
+                .padding(it)
                 .nestedScroll(scrollBehavior.nestedScrollConnection),
             uiState = uiState,
         )

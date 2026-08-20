@@ -44,13 +44,15 @@ class MutableExploreSearchUiState : ExploreSearchUiState {
     override var searchTypeNameMap = mutableStateMapOf<String, LocalString>()
     override var searchType: String by mutableStateOf("")
     override var searchTip: LocalString by mutableStateOf(LocalString(""))
-    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> = mutableStateListOf()
+    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> =
+        mutableStateListOf()
     override var allBookshelfBookIds: List<String> by mutableStateOf(emptyList())
     override var dropdownMenuExpanded by mutableStateOf(false)
     override var searchBarExpanded by mutableStateOf(true)
     override fun setDropdownMenuExpandedState(state: Boolean) {
         dropdownMenuExpanded = state
     }
+
     override fun setSearchBarExpandedState(state: Boolean) {
         searchBarExpanded = state
     }

@@ -18,7 +18,7 @@ import java.time.LocalDateTime
  * @since Api 4
  */
 @Stable
-data class UserReadingData (
+data class UserReadingData(
     val id: String,
     val lastReadTime: LocalDateTime? = null,
     val totalReadTime: Int = 0,

@@ -18,7 +18,19 @@ data class JsBookInformation(
     companion object {
         @JvmStatic
         fun empty(id: Int): JsBookInformation {
-            return JsBookInformation(id, "", "", "", "", "", emptyList(), "", -1, ZonedDateTime.now(), false)
+            return JsBookInformation(
+                id,
+                "",
+                "",
+                "",
+                "",
+                "",
+                emptyList(),
+                "",
+                -1,
+                ZonedDateTime.now(),
+                false
+            )
         }
     }
 }

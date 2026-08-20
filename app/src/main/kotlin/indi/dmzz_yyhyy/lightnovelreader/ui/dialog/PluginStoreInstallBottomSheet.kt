@@ -129,6 +129,7 @@ private fun PluginStoreInstallSheet(
                     onInstall = { onInstall(state.plugin) },
                     onDismiss = onDismiss
                 )
+
                 is StoreInstallState.Downloading -> PluginContent(
                     plugin = state.lastPlugin,
                     downloading = true,
@@ -158,7 +159,11 @@ private fun ErrorContent(message: String, onDismiss: () -> Unit) {
     Text(text = stringResource(R.string.plugin_store_load_failed), style = typography.titleLarge)
     Spacer(Modifier.height(8.dp))
 
-    Text(stringResource(R.string.plugin_store_load_failed_desc), style = typography.bodyMedium, color = colorScheme.error)
+    Text(
+        stringResource(R.string.plugin_store_load_failed_desc),
+        style = typography.bodyMedium,
+        color = colorScheme.error
+    )
     Spacer(Modifier.height(2.dp))
     Text(message, style = typography.bodyMedium, color = colorScheme.onSurfaceVariant)
     Spacer(Modifier.height(16.dp))
@@ -279,7 +284,9 @@ private fun PluginContent(
                     .align(Alignment.BottomEnd)
             ) {
                 Text(
-                    text = if (descriptionExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                    text = if (descriptionExpanded) stringResource(R.string.collapse) else stringResource(
+                        R.string.expand
+                    ),
                     style = typography.bodyMedium,
                     color = colorScheme.primary
                 )
@@ -290,7 +297,7 @@ private fun PluginContent(
     }
 
     val changelog = plugin.changelog
-    if (changelog.isNotEmpty()){
+    if (changelog.isNotEmpty()) {
         Text(
             text = stringResource(R.string.changelog),
             style = typography.bodyMedium,
@@ -344,11 +351,16 @@ private fun PluginContent(
 
         val sizeLabel = formatSize(
             plugin.download.sizeBytes
-                ?: plugin.download.parts.mapNotNull { it.sizeBytes }.takeIf { it.isNotEmpty() }?.sum()
+                ?: plugin.download.parts.mapNotNull { it.sizeBytes }.takeIf { it.isNotEmpty() }
+                    ?.sum()
         )
         val buttonText = when {
             !isCompatible -> stringResource(R.string.plugin_disabled)
-            downloading -> stringResource(R.string.plugin_store_download_progress, (downloadProgress * 100).toInt())
+            downloading -> stringResource(
+                R.string.plugin_store_download_progress,
+                (downloadProgress * 100).toInt()
+            )
+
             sizeLabel != null -> stringResource(R.string.plugin_store_install_with_size, sizeLabel)
             else -> stringResource(R.string.plugin_install_action_install)
         }

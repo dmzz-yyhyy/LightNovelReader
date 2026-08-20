@@ -49,7 +49,8 @@ fun SettingsList(settingState: SettingState) {
     val dateFormat = DateFormat.fromString(settingState.dateFormat)
     val dateOrder = DateOrder.fromString(settingState.dateOrder)
 
-    val dateDescription = exampleDate.format(dateFormatter(dateFormat, settingState.dateShowYear, dateOrder))
+    val dateDescription =
+        exampleDate.format(dateFormatter(dateFormat, settingState.dateShowYear, dateOrder))
     val relativeDescription = formTime(
         exampleRelativeTime,
         dateFormat,

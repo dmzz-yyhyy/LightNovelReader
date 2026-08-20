@@ -22,7 +22,7 @@ interface DailyCountDao {
     suspend fun getBetween(start: LocalDate, end: LocalDate): List<DailyCountEntity>
 
     @Query("SELECT * FROM daily_count")
-    suspend  fun getAll(): List<DailyCountEntity>
+    suspend fun getAll(): List<DailyCountEntity>
 
     @Query("SELECT * FROM daily_count WHERE date = :date")
     suspend fun getEntity(date: LocalDate): DailyCountEntity?

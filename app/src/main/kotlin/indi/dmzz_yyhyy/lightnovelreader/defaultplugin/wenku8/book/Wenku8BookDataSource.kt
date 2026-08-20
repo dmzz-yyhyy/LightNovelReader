@@ -11,6 +11,10 @@ import kotlinx.coroutines.flow.Flow
 interface Wenku8BookDataSource {
     suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError>
     suspend fun getBookVolumes(id: String): Result<BookVolumes, WebRequestError>
-    suspend fun getChapterContent(chapterId: String, bookId: String): Result<ChapterContent, WebRequestError>
+    suspend fun getChapterContent(
+        chapterId: String,
+        bookId: String
+    ): Result<ChapterContent, WebRequestError>
+
     fun search(searchType: String, keyword: String): Flow<SearchResult>
 }

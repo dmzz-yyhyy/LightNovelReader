@@ -303,7 +303,10 @@ fun BookshelfListReorderContent(
         ) { id ->
             val bookshelf = bookshelfMap[id] ?: return@items
             ReorderableItem(reorderableLazyListState, key = id) { isDragging ->
-                val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp, label = "bookshelfElevation")
+                val elevation by animateDpAsState(
+                    if (isDragging) 4.dp else 0.dp,
+                    label = "bookshelfElevation"
+                )
 
                 Surface(
                     modifier = Modifier
@@ -329,7 +332,10 @@ fun BookshelfListReorderContent(
                                 fontWeight = FontWeight.W600
                             )
                             Text(
-                                text = stringResource(R.string.n_books, bookshelf.allBookFlows.size),
+                                text = stringResource(
+                                    R.string.n_books,
+                                    bookshelf.allBookFlows.size
+                                ),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

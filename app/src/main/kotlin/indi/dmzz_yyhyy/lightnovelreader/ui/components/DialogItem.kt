@@ -26,20 +26,20 @@ fun ListItem(
         trailingContent = trailingContent,
         overlineContent = null,
         supportingContent = {
-                Text(
-                    text = supportingText,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            },
+            Text(
+                text = supportingText,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
         colors = colors,
         elevation = ListItemDefaults.elevation(),
         content = {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
-                )
-            },
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+        },
     )
 }
 

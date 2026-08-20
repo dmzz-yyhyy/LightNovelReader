@@ -17,14 +17,14 @@ class XmlBuilder {
             xmlns: String,
             attrs: Array<out Attribute> = emptyArray(),
             builder: (ElementBuilder.() -> Any)? = null
-        ): this(attrs, branch.addElement(name, xmlns), builder)
+        ) : this(attrs, branch.addElement(name, xmlns), builder)
 
         constructor(
             branch: Branch,
             name: String,
             attrs: Array<out Attribute> = emptyArray(),
             builder: (ElementBuilder.() -> Any)? = null
-        ): this(attrs, branch.addElement(name), builder)
+        ) : this(attrs, branch.addElement(name), builder)
 
         init {
             element.apply {
@@ -55,8 +55,10 @@ class XmlBuilder {
             ElementBuilder(element, this, attrs, builder)
         }
     }
+
     private val document: Document = DocumentHelper
         .createDocument()
+
     companion object {
         fun xml(
             root: String,

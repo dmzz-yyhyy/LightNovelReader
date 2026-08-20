@@ -73,7 +73,12 @@ fun InstallProgressDialog(
                     targetState = uiState.installStep,
                     transitionSpec = {
                         (fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.8f))
-                            .togetherWith(fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.8f))
+                            .togetherWith(
+                                fadeOut(tween(150)) + scaleOut(
+                                    tween(150),
+                                    targetScale = 0.8f
+                                )
+                            )
                     },
                 ) { step ->
                     when (step) {
@@ -105,6 +110,7 @@ fun InstallProgressDialog(
                                 }
                             }
                         }
+
                         InstallStepState.Completed -> {
                             if (uiState.installCompletedSuccess) {
                                 Box(
@@ -142,6 +148,7 @@ fun InstallProgressDialog(
                                 }
                             }
                         }
+
                         InstallStepState.Working -> {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(40.dp),
@@ -183,7 +190,10 @@ fun InstallProgressDialog(
                         Spacer(Modifier.height(2.dp))
                         if (info.versionName.isNotEmpty()) {
                             Text(
-                                text = stringResource(R.string.plugin_version_prefix, info.versionName),
+                                text = stringResource(
+                                    R.string.plugin_version_prefix,
+                                    info.versionName
+                                ),
                                 style = typography.bodySmall,
                                 color = colorScheme.onSurfaceVariant
                             )
@@ -278,7 +288,9 @@ fun InstallProgressDialog(
             if (canShowCancel) {
                 OutlinedButton(
                     onClick = {
-                        if (uiState.installStep == InstallStepState.AwaitingDecision) onConfirmDecision(false)
+                        if (uiState.installStep == InstallStepState.AwaitingDecision) onConfirmDecision(
+                            false
+                        )
                         else onClickClose()
                     }
                 ) { Text(text = stringResource(R.string.abort)) }
@@ -296,7 +308,8 @@ fun DeleteProgressDialog(
     AlertDialog(
         onDismissRequest = {
             if (uiState.uninstallStep == DeleteStepState.Confirming ||
-                uiState.uninstallStep == DeleteStepState.Completed) onClose()
+                uiState.uninstallStep == DeleteStepState.Completed
+            ) onClose()
         },
         title = {
             Row(
@@ -307,7 +320,12 @@ fun DeleteProgressDialog(
                     targetState = uiState.uninstallStep,
                     transitionSpec = {
                         (fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.8f))
-                            .togetherWith(fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.8f))
+                            .togetherWith(
+                                fadeOut(tween(150)) + scaleOut(
+                                    tween(150),
+                                    targetScale = 0.8f
+                                )
+                            )
                     },
                     label = "delete_icon"
                 ) { step ->
@@ -330,6 +348,7 @@ fun DeleteProgressDialog(
                                 )
                             }
                         }
+
                         DeleteStepState.Completed -> {
                             Box(
                                 modifier = Modifier
@@ -353,6 +372,7 @@ fun DeleteProgressDialog(
                                 )
                             }
                         }
+
                         DeleteStepState.Working -> {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(40.dp),
@@ -366,7 +386,10 @@ fun DeleteProgressDialog(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = stringResource(R.string.plugin_delete_title, uiState.uninstallPluginName),
+                        text = stringResource(
+                            R.string.plugin_delete_title,
+                            uiState.uninstallPluginName
+                        ),
                         style = typography.titleLarge,
                         color = colorScheme.onSurface,
                         maxLines = 1,
@@ -413,11 +436,13 @@ fun DeleteProgressDialog(
                         Text(text = stringResource(R.string.plugin_delete_confirm))
                     }
                 }
+
                 DeleteStepState.Completed -> {
                     FilledTonalButton(onClick = onClose) {
                         Text(text = stringResource(android.R.string.ok))
                     }
                 }
+
                 DeleteStepState.Working -> {
                     FilledTonalButton(onClick = {}, enabled = false) {
                         Text(text = stringResource(android.R.string.ok))
@@ -448,7 +473,12 @@ fun UpdateCheckDialog(
                 targetState = uiState.updateStep,
                 transitionSpec = {
                     (fadeIn(tween(300)) + scaleIn(tween(300), initialScale = 0.8f))
-                        .togetherWith(fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.8f))
+                        .togetherWith(
+                            fadeOut(tween(150)) + scaleOut(
+                                tween(150),
+                                targetScale = 0.8f
+                            )
+                        )
                 },
                 label = "update_icon"
             ) { step ->
@@ -457,7 +487,10 @@ fun UpdateCheckDialog(
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .background(color = colorScheme.primaryContainer, shape = CircleShape),
+                                .background(
+                                    color = colorScheme.primaryContainer,
+                                    shape = CircleShape
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -468,11 +501,15 @@ fun UpdateCheckDialog(
                             )
                         }
                     }
+
                     UpdateStepState.Available -> {
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .background(color = colorScheme.tertiaryContainer, shape = CircleShape),
+                                .background(
+                                    color = colorScheme.tertiaryContainer,
+                                    shape = CircleShape
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -483,11 +520,15 @@ fun UpdateCheckDialog(
                             )
                         }
                     }
+
                     UpdateStepState.Error -> {
                         Box(
                             modifier = Modifier
                                 .size(48.dp)
-                                .background(color = colorScheme.errorContainer, shape = CircleShape),
+                                .background(
+                                    color = colorScheme.errorContainer,
+                                    shape = CircleShape
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -498,6 +539,7 @@ fun UpdateCheckDialog(
                             )
                         }
                     }
+
                     else -> {
                         CircularProgressIndicator(
                             modifier = Modifier.size(48.dp),
@@ -563,7 +605,8 @@ fun UpdateCheckDialog(
                             val percent = if (downloadProgress < 0.75f) {
                                 (downloadProgress / 0.75f * 100).toInt().coerceAtMost(100)
                             } else {
-                                (((downloadProgress - 0.75f) / 0.25f) * 100).toInt().coerceAtMost(100)
+                                (((downloadProgress - 0.75f) / 0.25f) * 100).toInt()
+                                    .coerceAtMost(100)
                             }
                             val progressMsg = if (downloadProgress < 0.75f) {
                                 stringResource(R.string.plugin_update_downloading_percent, percent)
@@ -756,7 +799,8 @@ fun PluginSignatureDialog(
     onClose: () -> Unit
 ) {
     val list = signatureInfo.orEmpty()
-    val dateFormatter = remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) }
+    val dateFormatter =
+        remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) }
 
     AlertDialog(
         onDismissRequest = onClose,
@@ -896,7 +940,10 @@ fun PluginSignatureDialog(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
-                                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Column(
+                                            Modifier.weight(1f),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
                                             Text(
                                                 text = stringResource(R.string.plugin_signature_public_key_label),
                                                 style = typography.labelMedium,

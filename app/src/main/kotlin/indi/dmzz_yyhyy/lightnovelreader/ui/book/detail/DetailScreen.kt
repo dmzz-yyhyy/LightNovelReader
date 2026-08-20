@@ -144,7 +144,8 @@ fun DetailScreen(
     val snackbarHostState = LocalSnackbarHost.current
     val context = LocalContext.current
 
-    val exportBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val exportBottomSheetState =
+        rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
 
     var showExportBottomSheet by remember { mutableStateOf(false) }
@@ -289,10 +290,10 @@ fun DetailScreen(
                 }?.onErr {
                     //TODO 错误显示
                 } ?: DetailContentSkeleton(
-                        Modifier
-                            .fillMaxSize()
-                            .background(colorScheme.surface)
-                    )
+                    Modifier
+                        .fillMaxSize()
+                        .background(colorScheme.surface)
+                )
             }
         }
 
@@ -543,7 +544,8 @@ private fun DetailContent(
                         modifier = Modifier.fadeInOnce(volume.volumeId),
                         volume = volume,
                         hideReadChapters = hideReadChapters,
-                        readCompletedChapterIds = uiState.userReadingData?.maxChapterReadingProgressMap?.filterValues { it >= 1f }?.keys?.toList() ?: emptyList(),
+                        readCompletedChapterIds = uiState.userReadingData?.maxChapterReadingProgressMap?.filterValues { it >= 1f }?.keys?.toList()
+                            ?: emptyList(),
                         onClickChapter = onClickChapter,
                         volumesSize = bookVolumes.volumes.size,
                         lastReadingChapterId = uiState.userReadingData?.lastReadChapterId
@@ -641,7 +643,10 @@ private fun TopBar(
             },
             navigationIcon = {
                 IconButton(onClick = onClickBackButton) {
-                    Icon(painterResource(id = R.drawable.arrow_back_24px), contentDescription = "back")
+                    Icon(
+                        painterResource(id = R.drawable.arrow_back_24px),
+                        contentDescription = "back"
+                    )
                 }
             },
             actions = {
@@ -699,7 +704,12 @@ private fun TopBarActions(
         }
         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.mark_as_read), style = typography.bodyLarge) },
+                text = {
+                    Text(
+                        stringResource(R.string.mark_as_read),
+                        style = typography.bodyLarge
+                    )
+                },
                 onClick = {
                     menuExpanded = false
                     onClickMarkAsRead()
@@ -962,7 +972,9 @@ private fun QuickOperationsBlock(
                     stringResource(R.string.cached_false)
                 else
                     "${(downloadItem.progress * 100).toInt()}%",
-                onClick = if (downloadItem == null) onClickCache else { {} },
+                onClick = if (downloadItem == null) onClickCache else {
+                    {}
+                },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -1070,7 +1082,10 @@ private fun VolumeItem(
     var expanded by rememberSaveable {
         mutableStateOf(readCount < totalCount || volumesSize > 8)
     }
-    val rotation by animateFloatAsState(targetValue = if (expanded) 90f else 0f, animationSpec = tween(200))
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 90f else 0f,
+        animationSpec = tween(200)
+    )
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -1081,9 +1096,10 @@ private fun VolumeItem(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier
-                .weight(5f)
-                .padding(vertical = 12.dp)
+            Column(
+                modifier = Modifier
+                    .weight(5f)
+                    .padding(vertical = 12.dp)
             ) {
                 Text(
                     text = volume.volumeTitle,

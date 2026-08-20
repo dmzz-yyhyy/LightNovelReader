@@ -106,7 +106,8 @@ androidComponents {
             val outputImpl = output as com.android.build.api.variant.impl.VariantOutputImpl
             val originalFileName = outputImpl.outputFileName.get()
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val newFileName = originalFileName.replace(".apk", " (${dateFormat.format(Date())}).apk")
+            val newFileName =
+                originalFileName.replace(".apk", " (${dateFormat.format(Date())}).apk")
             outputImpl.outputFileName = newFileName
         }
     }
@@ -136,6 +137,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 dependencies {
+    implementation(libs.androidx.ui)
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Android lib

@@ -114,6 +114,11 @@ dokka {
         documentedVisibilities.set(
             setOf(VisibilityModifier.Public)
         )
+
+        perPackageOption {
+            matchingRegex.set("io\\.nightfish\\.lightnovelreader\\..*")
+            suppress.set(true)
+        }
     }
     dokkaSourceSets.create("main") {
         perPackageOption {

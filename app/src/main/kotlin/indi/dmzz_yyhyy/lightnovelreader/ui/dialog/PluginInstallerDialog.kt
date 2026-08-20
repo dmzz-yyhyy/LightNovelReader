@@ -10,8 +10,8 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.DeletePro
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.InstallProgressDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginDialogMode
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.UpdateCheckDialog
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.pluginInstallerDialog() {
@@ -59,6 +59,7 @@ fun NavGraphBuilder.pluginInstallerDialog() {
                     onConfirmUpdate = { _ -> viewModel.respondUserDecision(true) }
                 )
             }
+
             PluginDialogMode.Hidden -> Unit
         }
     }

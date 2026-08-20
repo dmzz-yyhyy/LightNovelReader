@@ -22,7 +22,8 @@ data class Metadata(
     val coverId: String?
 ) {
     companion object {
-        val dataTimeFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss'Z'")
+        val dataTimeFormat: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss'Z'")
     }
 
     fun element(builder: XmlBuilder.ElementBuilder) {

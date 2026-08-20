@@ -65,21 +65,27 @@ class MDLine(var listTypeName: MDLineType, level: Int, content: String) {
             MDLineType.Ordered -> {
                 newLine.append(1.toString()).append(". ")
             }
+
             MDLineType.Unordered -> {
                 newLine.append("* ")
             }
+
             MDLineType.Head1 -> {
                 newLine.append("# ")
             }
+
             MDLineType.Head2 -> {
                 newLine.append("## ")
             }
+
             MDLineType.Head3 -> {
                 newLine.append("### ")
             }
+
             MDLineType.HR -> {
                 newLine.append("----")
             }
+
             MDLineType.None -> {}
         }
 

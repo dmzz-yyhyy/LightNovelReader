@@ -3,7 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.storage
 import kotlinx.serialization.Serializable
 
 @Serializable
-    data class StorageUsageSnapshot(
+data class StorageUsageSnapshot(
     val totalBytes: Long = 0L,
     val appBytes: Long = 0L,
     val databaseDiskBytes: Long = 0L,

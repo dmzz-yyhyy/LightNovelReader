@@ -2,7 +2,7 @@ name: VersionCheck
 on:
   merge_group:
   pull_request:
-    branches: [master, refactoring]
+    branches: [ master, refactoring ]
     paths:
       - app/src/main/kotlin/**
       - build.gradle.kts

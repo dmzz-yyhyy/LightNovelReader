@@ -38,14 +38,14 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.predefinedColors
 import indi.dmzz_yyhyy.lightnovelreader.utils.FileSizeUnit
 import indi.dmzz_yyhyy.lightnovelreader.utils.formatSize
-import kotlin.text.format
 
 @Composable
 fun StorageOverviewContent(
     modifier: Modifier,
     uiState: StorageManagerUiState
 ) {
-    val expandedSection = uiState.sections.firstOrNull { it.title == uiState.expandedTitle } ?: uiState.sections.firstOrNull()
+    val expandedSection = uiState.sections.firstOrNull { it.title == uiState.expandedTitle }
+        ?: uiState.sections.firstOrNull()
     if (uiState.isLoading && uiState.sections.isEmpty()) {
         Box(
             modifier = Modifier
@@ -95,7 +95,8 @@ fun StorageOverviewContent(
                             val stroke = size.minDimension * 0.2f
                             var start = -90f
                             uiState.sections.forEachIndexed { index, item ->
-                                val sweep = if (uiState.totalSize == 0L) 0f else item.size.toFloat() / uiState.totalSize * 360f
+                                val sweep =
+                                    if (uiState.totalSize == 0L) 0f else item.size.toFloat() / uiState.totalSize * 360f
                                 drawArc(
                                     color = sectionColor(index),
                                     startAngle = start,
@@ -127,7 +128,8 @@ fun StorageOverviewContent(
                         }
                     }
                     uiState.sections.forEachIndexed { index, item ->
-                        val progress = if (uiState.totalSize == 0L) 0f else item.size.toFloat() / uiState.totalSize.toFloat()
+                        val progress =
+                            if (uiState.totalSize == 0L) 0f else item.size.toFloat() / uiState.totalSize.toFloat()
                         Column(
                             modifier = Modifier
                                 .clickable { uiState.selectSection(item.title) }
@@ -173,7 +175,9 @@ fun StorageOverviewContent(
                             )
                         }
                     }
-                    HorizontalDivider(Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+                    HorizontalDivider(Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp))
                     expandedSection?.let { section ->
                         Column(
                             modifier = Modifier.padding(all = 16.dp)

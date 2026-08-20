@@ -67,7 +67,12 @@ fun AddBookToBookshelfDialog(
         dismissText = stringResource(R.string.cancel),
         confirmationText = stringResource(R.string.add_to_bookshelf),
     ) {
-        Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp).verticalScroll(scrollState)) {
+        Column(
+            Modifier
+                .width(IntrinsicSize.Max)
+                .sizeIn(maxHeight = 350.dp)
+                .verticalScroll(scrollState)
+        ) {
             if (allBookshelf.isEmpty()) {
                 CheckBoxListItem(
                     modifier = Modifier
@@ -87,7 +92,10 @@ fun AddBookToBookshelfDialog(
                         .sizeIn(minWidth = 325.dp)
                         .padding(horizontal = 10.dp),
                     title = bookshelf.name,
-                    supportingText = stringResource(R.string.bookshelf_book_count, bookshelf.allBookIds.size),
+                    supportingText = stringResource(
+                        R.string.bookshelf_book_count,
+                        bookshelf.allBookIds.size
+                    ),
                     checked = selectedBookshelfIds.contains(bookshelf.id),
                     onCheckedChange = {
                         if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(

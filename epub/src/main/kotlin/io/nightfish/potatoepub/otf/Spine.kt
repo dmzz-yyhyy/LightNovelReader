@@ -15,6 +15,7 @@ data class Spine(
             }
         }
     }
+
     data class Itemref(
         val id: String? = null,
         val idref: String,
@@ -26,7 +27,7 @@ data class Spine(
                 "itemref"(
                     "id" to id,
                     "idref" to idref,
-                    "linear" to if(linear != null) (if (linear) "yes" else "no") else null,
+                    "linear" to if (linear != null) (if (linear) "yes" else "no") else null,
                     "properties" to properties
                 )
             }

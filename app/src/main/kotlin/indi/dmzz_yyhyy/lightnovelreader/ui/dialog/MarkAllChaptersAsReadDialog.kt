@@ -142,9 +142,11 @@ fun MarkAllChaptersAsReadDialog(
                 startChapterId = id
                 endChapterId = null
             }
+
             e == null -> {
                 if (id == s) clearSelection() else endChapterId = id
             }
+
             else -> {
                 startChapterId = id
                 endChapterId = null

@@ -88,9 +88,12 @@ fun LightNovelReaderNavHost(
         val selectedRoute = currentDest.currentMainRoute()
         val hasBottomBarByRoute = selectedRoute != null
         val coroutineScope = rememberCoroutineScope()
-        val currentWebDataSourceNotFounded = stringResource(R.string.current_web_data_source_not_founded)
+        val currentWebDataSourceNotFounded =
+            stringResource(R.string.current_web_data_source_not_founded)
 
-        val webBookDataSourceFounded by webBookDataSourceFoundedFlow.collectAsStateWithLifecycle(true)
+        val webBookDataSourceFounded by webBookDataSourceFoundedFlow.collectAsStateWithLifecycle(
+            true
+        )
         LaunchedEffect(webBookDataSourceFounded) {
             if (!webBookDataSourceFounded) {
                 showSnackbar(
@@ -113,7 +116,9 @@ fun LightNovelReaderNavHost(
         Scaffold(
             snackbarHost = {
                 if (claimCount == 0) {
-                    Box(Modifier.navigationBarsPadding().padding(bottom = bottomPadding)) {
+                    Box(Modifier
+                        .navigationBarsPadding()
+                        .padding(bottom = bottomPadding)) {
                         SnackbarHost(snackbarHostState) { data -> LnrSnackbar(data) }
                     }
                 }

@@ -68,12 +68,13 @@ class PluginManager @Inject constructor(
     val pluginsDir: File = appContext.dataDir.resolve("plugins")
     val pluginsTempDir: File = appContext.cacheDir.resolve("plugins_tmp")
     var appPluginInfos: List<PluginAppInfo> = emptyList()
-       private set
+        private set
 
     private val onInitializedCallbacks = mutableListOf<() -> Unit>()
     fun addOnInitializedCallback(callback: () -> Unit) {
         onInitializedCallbacks += callback
     }
+
     fun getPluginDir(name: String): File = pluginsDir.resolve(name)
     fun getPluginDataDir(pluginDir: File) = pluginDir.resolve("data")
     fun getPluginFile(pluginDir: File): File = pluginDir.resolve("plugin")
@@ -145,7 +146,11 @@ class PluginManager @Inject constructor(
                 installPlugin(apkFile).collect {
                     when (it) {
                         is InstallState.Error -> error = it
-                        is InstallState.Completed -> Log.i(TAG, "App plugin successfully installed (package=$packageName)")
+                        is InstallState.Completed -> Log.i(
+                            TAG,
+                            "App plugin successfully installed (package=$packageName)"
+                        )
+
                         else -> {}
                     }
                 }
@@ -157,7 +162,7 @@ class PluginManager @Inject constructor(
             }
             return@mapNotNull PluginAppInfo(
                 packageName = packageName,
-                name =appLabel,
+                name = appLabel,
                 versionName = versionName
             )
         }
@@ -173,38 +178,38 @@ class PluginManager @Inject constructor(
         val enabledPlugins = enabledPluginsUserData.getOrDefault(emptyList())
         val pluginDirs = pluginsDir.listFiles()
         if (pluginDirs != null) {
-        for (dir in pluginDirs) {
-            if (getPluginInstallLock(dir).exists()) continue
-            val metadataFile = getPluginMetadataFile(dir)
-            if (!metadataFile.exists()) {
-                Log.w(TAG, "metadata.json not found in ${dir.name}, skipping")
-                continue
-            }
-            mutableAllPluginMetadataList.removeAll {
-                it.packageName == dir.name
-            }
-            val metadata = try {
-                metadataFile.inputStream().use {
-                    Json.decodeFromString<PluginMetadata>(it.readBytes().decodeToString())
+            for (dir in pluginDirs) {
+                if (getPluginInstallLock(dir).exists()) continue
+                val metadataFile = getPluginMetadataFile(dir)
+                if (!metadataFile.exists()) {
+                    Log.w(TAG, "metadata.json not found in ${dir.name}, skipping")
+                    continue
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to parse metadata for ${dir.name}", e)
-                continue
-            }.let { metadata ->
-                if (metadata.packageName in appPluginInfos.map { it.packageName }) {
-                    metadata.copy(
-                        source = PluginSource.InstalledApp
-                    )
-                } else metadata
-            }
-            metadata.also(mutableAllPluginMetadataList::add)
-            if (enabledPlugins.contains(dir.name) && ApiCompat.isSupported(metadata.apiVersion)) {
-                loadPlugin(dir.name).onErr {
-                    Log.e(TAG, "failed to load plugin ${dir.name}")
-                    it.printStackTrace()
+                mutableAllPluginMetadataList.removeAll {
+                    it.packageName == dir.name
+                }
+                val metadata = try {
+                    metadataFile.inputStream().use {
+                        Json.decodeFromString<PluginMetadata>(it.readBytes().decodeToString())
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to parse metadata for ${dir.name}", e)
+                    continue
+                }.let { metadata ->
+                    if (metadata.packageName in appPluginInfos.map { it.packageName }) {
+                        metadata.copy(
+                            source = PluginSource.InstalledApp
+                        )
+                    } else metadata
+                }
+                metadata.also(mutableAllPluginMetadataList::add)
+                if (enabledPlugins.contains(dir.name) && ApiCompat.isSupported(metadata.apiVersion)) {
+                    loadPlugin(dir.name).onErr {
+                        Log.e(TAG, "failed to load plugin ${dir.name}")
+                        it.printStackTrace()
+                    }
                 }
             }
-        }
         }
         onInitializedCallbacks.forEach { it() }
     }
@@ -441,9 +446,9 @@ class PluginManager @Inject constructor(
                     webDataSourceClassNames
                 )
             }.onErr {
-                    markPluginError(pluginPackage, it.message.toString())
-                    unloadPlugin(pluginPackage)
-                    return@andThen Err(it)
+                markPluginError(pluginPackage, it.message.toString())
+                unloadPlugin(pluginPackage)
+                return@andThen Err(it)
             }
 
             mutableLoadedPluginMap[pluginPackage] = instance
@@ -464,7 +469,10 @@ class PluginManager @Inject constructor(
         mutableAllPluginMetadataList.removeAll { it.packageName == packageName }
     }
 
-    private fun getPluginMetadata(file: File, packageName: String): Result<PluginMetadata, Throwable> =
+    private fun getPluginMetadata(
+        file: File,
+        packageName: String
+    ): Result<PluginMetadata, Throwable> =
         runCatching {
             if (file.canWrite() && !file.setReadOnly()) error("Failed to set read-only plugin file")
             val pluginClassName = appContext.packageManager
@@ -477,7 +485,11 @@ class PluginManager @Inject constructor(
             runCatching {
                 val plugin = it.getAnnotation(Plugin::class.java)
                     ?: return@andThen Err(Error("Failed to get plugin annotation from the plugin class"))
-                PluginMetadata.parse(plugin, packageName, getApkSignatures(file)?.isNotEmpty() == true)
+                PluginMetadata.parse(
+                    plugin,
+                    packageName,
+                    getApkSignatures(file)?.isNotEmpty() == true
+                )
             }
         }
 

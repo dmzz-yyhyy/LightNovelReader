@@ -8,9 +8,9 @@ import androidx.navigation.compose.composable
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreViewModel
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.exploreSearchDestination() {
@@ -29,7 +29,12 @@ fun NavGraphBuilder.exploreSearchDestination() {
             onClickBack = { navController.popBackStackIfResumed() },
             init = exploreSearchViewModel::init,
             onChangeSearchType = { exploreSearchViewModel.changeSearchType(it) },
-            onSearch = { exploreSearchViewModel.search(it, navController::navigateToBookDetailDestination) },
+            onSearch = {
+                exploreSearchViewModel.search(
+                    it,
+                    navController::navigateToBookDetailDestination
+                )
+            },
             onClickDeleteHistory = { exploreSearchViewModel.deleteHistory(it) },
             onClickClearAllHistory = exploreSearchViewModel::clearAllHistory,
             onClickBook = {

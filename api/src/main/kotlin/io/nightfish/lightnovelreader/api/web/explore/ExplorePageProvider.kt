@@ -17,11 +17,13 @@ sealed interface ExplorePageProvider {
      *
      * @since Api 2
      */
-    interface DefaultExplorePageProvider: ExplorePageProvider {
+    interface DefaultExplorePageProvider : ExplorePageProvider {
         /** 已注册的探索页面 ID 有序列表 @since Api 2 */
         val explorePageIdList: List<String>
+
         /** 以页面 ID 为键的探索卡片页数据源映射 @since Api 2 */
         val exploreTapPageDataSourceMap: Map<String, ExploreTapPageDataSource>
+
         /** 以页面 ID 为键的探索展开页数据源映射 @since Api 2 */
         val exploreExpandedPageDataSourceMap: Map<String, ExploreExpandedPageDataSource>
     }
@@ -32,7 +34,7 @@ sealed interface ExplorePageProvider {
      *
      * @since Api 2
      */
-    interface CustomExplorePageProvider<T>: ExplorePageProvider {
+    interface CustomExplorePageProvider<T> : ExplorePageProvider {
         /** 探索页面的 UI 状态数据 @since Api 2 */
         val uiState: T
 

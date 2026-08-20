@@ -13,7 +13,7 @@ class Coil3Transformation(
     val id: Identifier,
     val uri: Uri,
     val transformation: ImageTransformation
-): Transformation() {
+) : Transformation() {
     override val cacheKey: String get() = transformation.getCacheKey(uri = uri)
 
     override suspend fun transform(

@@ -14,8 +14,10 @@ import java.time.LocalDateTime
 @Dao
 interface UserReadingDataDao {
     @TypeConverters(ChapterReadingProgressMapConverter::class, LocalDateTimeConverter::class)
-    @Query("replace into user_reading_data (id, last_read_time, total_read_time, reading_progress, last_read_chapter_id, last_read_chapter_title, current_chapter_reading_progress_map, max_chapter_reading_progress_map) " +
-            "values (:id, :lastReadTime, :totalReadTime, :readingProgress, :lastReadChapterId, :lastReadChapterTitle, :currentChapterReadingProgressMap, :maxChapterReadingProgressMap)")
+    @Query(
+        "replace into user_reading_data (id, last_read_time, total_read_time, reading_progress, last_read_chapter_id, last_read_chapter_title, current_chapter_reading_progress_map, max_chapter_reading_progress_map) " +
+                "values (:id, :lastReadTime, :totalReadTime, :readingProgress, :lastReadChapterId, :lastReadChapterTitle, :currentChapterReadingProgressMap, :maxChapterReadingProgressMap)"
+    )
     suspend fun insert(
         id: String,
         lastReadTime: LocalDateTime,

@@ -20,7 +20,7 @@ interface ReaderScreenUiState {
 
 class MutableReaderScreenUiState(
     contentUiState: ContentUiState?
-): ReaderScreenUiState {
+) : ReaderScreenUiState {
     override var bookId: String? by mutableStateOf(null)
     override var userReadingData: UserReadingData? by mutableStateOf(null)
     override var bookVolumes: Result<BookVolumes, WebRequestError>? by mutableStateOf(null)

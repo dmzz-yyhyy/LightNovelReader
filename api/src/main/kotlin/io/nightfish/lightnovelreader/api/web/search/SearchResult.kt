@@ -18,7 +18,7 @@ sealed class SearchResult {
      */
     class SingleBook(
         val bookId: String
-    ): SearchResult()
+    ) : SearchResult()
 
     /**
      * 表示搜索结果仅有多本书
@@ -31,7 +31,7 @@ sealed class SearchResult {
      */
     class MultipleBook(
         val bookId: String
-    ): SearchResult()
+    ) : SearchResult()
 
 
     /**
@@ -44,8 +44,8 @@ sealed class SearchResult {
      */
     class Error(
         val error: Throwable
-    ): SearchResult() {
-        constructor(message: String): this(kotlin.Error(message))
+    ) : SearchResult() {
+        constructor(message: String) : this(kotlin.Error(message))
     }
 
     /**
@@ -54,12 +54,12 @@ sealed class SearchResult {
      *
      * @since Api 2
      */
-    class End: SearchResult()
+    class End : SearchResult()
 
     /**
      * 表示无搜索结果
      *
      * @since Api 2
      */
-    class Empty: SearchResult()
+    class Empty : SearchResult()
 }

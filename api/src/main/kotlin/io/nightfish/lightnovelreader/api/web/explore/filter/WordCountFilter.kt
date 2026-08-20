@@ -20,7 +20,9 @@ class WordCountFilter : SliderFilter(
 ), LocalFilter {
     override var enabled: Boolean
         get() = value != 0f
-        set(value) { if (!value) this.value = 0f }
+        set(value) {
+            if (!value) this.value = 0f
+        }
     override val displayValue: String
         get() = if (value == 0f) "\u65e0\u9650\u5236" else "${(value / 1000).toInt()}K"
 

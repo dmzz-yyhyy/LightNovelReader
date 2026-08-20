@@ -31,11 +31,13 @@ class ExpandedPageViewModel @Inject constructor(
 
     fun init(expandedPageDataSourceId: String) {
         if (exploreRepository.explorePageProvider !is ExplorePageProvider.DefaultExplorePageProvider) return
-        val explorePageProvider = exploreRepository.explorePageProvider as ExplorePageProvider.DefaultExplorePageProvider
+        val explorePageProvider =
+            exploreRepository.explorePageProvider as ExplorePageProvider.DefaultExplorePageProvider
         if (expandedPageDataSourceId == lastExpandedPageDataSourceId) return
         lastExpandedPageDataSourceId = expandedPageDataSourceId
 
-        expandedPageDataSource = explorePageProvider.exploreExpandedPageDataSourceMap[expandedPageDataSourceId]
+        expandedPageDataSource =
+            explorePageProvider.exploreExpandedPageDataSourceMap[expandedPageDataSourceId]
 
         viewModelScope.launch(Dispatchers.IO) {
             expandedPageDataSource?.let { dataSource ->
@@ -64,9 +66,19 @@ class ExpandedPageViewModel @Inject constructor(
         exploreExpandedPageBookListCollectJob = viewModelScope.launch(Dispatchers.IO) {
             expandedPageDataSource?.let { dataSource ->
                 dataSource.getResultFlow().collect { rawResult ->
-                    when(rawResult) {
-                        is SearchResult.SingleBook -> _uiState.bookList.add(rawResult.bookId to bookRepository.getBookInformationFlow(rawResult.bookId))
-                        is SearchResult.MultipleBook -> _uiState.bookList.add(rawResult.bookId to bookRepository.getBookInformationFlow(rawResult.bookId))
+                    when (rawResult) {
+                        is SearchResult.SingleBook -> _uiState.bookList.add(
+                            rawResult.bookId to bookRepository.getBookInformationFlow(
+                                rawResult.bookId
+                            )
+                        )
+
+                        is SearchResult.MultipleBook -> _uiState.bookList.add(
+                            rawResult.bookId to bookRepository.getBookInformationFlow(
+                                rawResult.bookId
+                            )
+                        )
+
                         else -> {}
                     }
                 }

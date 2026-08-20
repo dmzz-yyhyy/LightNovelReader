@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 data class Identifier(
     val namespace: String,
     val id: String
-): Parcelable {
+) : Parcelable {
 
 
     /**

@@ -20,10 +20,16 @@ class LocalBookDataSource @Inject constructor(
     private val bookVolumesDao: BookVolumesDao,
     private val chapterContentDao: ChapterContentDao,
     private val userReadingDataDao: UserReadingDataDao
-): LocalBookDataSourceApi {
-    override suspend fun getBookInformation(id: String): BookInformation? = bookInformationDao.get(id)
-    override suspend fun updateBookInformation(info: BookInformation) = bookInformationDao.insert(info)
-    override suspend fun getBookVolumes(id: String): BookVolumes? = bookVolumesDao.getBookVolumes(id)
+) : LocalBookDataSourceApi {
+    override suspend fun getBookInformation(id: String): BookInformation? =
+        bookInformationDao.get(id)
+
+    override suspend fun updateBookInformation(info: BookInformation) =
+        bookInformationDao.insert(info)
+
+    override suspend fun getBookVolumes(id: String): BookVolumes? =
+        bookVolumesDao.getBookVolumes(id)
+
     override suspend fun updateBookVolumes(bookVolumes: BookVolumes) =
         bookVolumesDao.insertVolume(bookVolumes.bookId, bookVolumes)
 
@@ -36,6 +42,7 @@ class LocalBookDataSource @Inject constructor(
             it.nextChapter.ifEmpty { null }
         )
     }
+
     override suspend fun updateChapterContent(chapterContent: ChapterContent) =
         chapterContentDao.update(chapterContent)
 
@@ -77,7 +84,10 @@ class LocalBookDataSource @Inject constructor(
         )
     }
 
-    override suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData) {
+    override suspend fun updateUserReadingData(
+        id: String,
+        update: (UserReadingData) -> UserReadingData
+    ) {
         val userReadingData = userReadingDataDao.getEntity(id)?.let {
             UserReadingData(
                 it.id,

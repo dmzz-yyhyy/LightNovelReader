@@ -92,42 +92,55 @@ object HtmlToMdUtil {
             tagName == "div" -> {
                 div(element, lines)
             }
+
             tagName == "p" -> {
                 p(element, lines)
             }
+
             tagName == "br" -> {
                 br(lines)
             }
+
             tagName.matches("^h[0-9]+$".toRegex()) -> {
                 h(element, lines)
             }
+
             tagName == "strong" || tagName == "b" -> {
                 strong(element, lines)
             }
+
             tagName == "em" -> {
                 em(element, lines)
             }
+
             tagName == "hr" -> {
                 hr(lines)
             }
+
             tagName == "a" -> {
                 a(element, lines)
             }
+
             tagName == "img" -> {
                 img(element, lines)
             }
+
             tagName == "code" -> {
                 code(element, lines)
             }
+
             tagName == "ul" -> {
                 ul(element, lines)
             }
+
             tagName == "ol" -> {
                 ol(element, lines)
             }
+
             tagName == "li" -> {
                 li(element, lines)
             }
+
             else -> {
                 val line: MDLine = getLastLine(lines)
                 line.append(getTextContent(element))
@@ -163,21 +176,45 @@ object HtmlToMdUtil {
 
     private fun p(element: Element, lines: ArrayList<MDLine>) {
         val line: MDLine = getLastLine(lines)
-        if (line.getContent().trim { it <= ' ' } != "") lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
+        if (line.getContent().trim { it <= ' ' } != "") lines.add(
+            MDLine(
+                MDLine.MDLineType.None,
+                0,
+                ""
+            )
+        )
         lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
         lines.add(MDLine(MDLine.MDLineType.None, 0, getTextContent(element)))
         lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
-        if (line.getContent().trim { it <= ' ' } != "") lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
+        if (line.getContent().trim { it <= ' ' } != "") lines.add(
+            MDLine(
+                MDLine.MDLineType.None,
+                0,
+                ""
+            )
+        )
     }
 
     private fun br(lines: ArrayList<MDLine>) {
         val line: MDLine = getLastLine(lines)
-        if (line.getContent().trim { it <= ' ' } != "") lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
+        if (line.getContent().trim { it <= ' ' } != "") lines.add(
+            MDLine(
+                MDLine.MDLineType.None,
+                0,
+                ""
+            )
+        )
     }
 
     private fun h(element: Element, lines: ArrayList<MDLine>) {
         val line: MDLine = getLastLine(lines)
-        if (line.getContent().trim { it <= ' ' } != "") lines.add(MDLine(MDLine.MDLineType.None, 0, ""))
+        if (line.getContent().trim { it <= ' ' } != "") lines.add(
+            MDLine(
+                MDLine.MDLineType.None,
+                0,
+                ""
+            )
+        )
 
         val level: Int = element.tagName().substring(1).toInt()
         when (level) {

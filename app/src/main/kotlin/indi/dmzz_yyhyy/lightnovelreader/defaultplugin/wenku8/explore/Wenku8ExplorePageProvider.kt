@@ -13,7 +13,7 @@ import java.net.URLEncoder
 class Wenku8ExplorePageProvider(
     val host: String,
     val wenku8Api: Wenku8Api
-): AbstractDefaultExplorePageProvider() {
+) : AbstractDefaultExplorePageProvider() {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -119,7 +119,8 @@ class Wenku8ExplorePageProvider(
                                 defaultChoice = "默认"
                             ).apply {
                                 addOnChangeListener {
-                                    this@HomeBookExpandPageDataSource.arg = choicesMap[it.trim()] ?: ""
+                                    this@HomeBookExpandPageDataSource.arg =
+                                        choicesMap[it.trim()] ?: ""
                                 }
                             },
                             PublishingHouseSingleChoiceFilter(),

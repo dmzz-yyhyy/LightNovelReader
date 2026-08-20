@@ -13,7 +13,7 @@ import io.nightfish.lightnovelreader.api.util.LocalString
  * @since Api 2
  */
 abstract class Filter<T>(default: T) {
-    private data class Listener<T> (
+    private data class Listener<T>(
         val listener: (T) -> Unit,
         val weight: Int = 0
     )

@@ -37,16 +37,29 @@ fun formTime(
         hoursAgo >= 24 -> rdf.format((hoursAgo / 24).toDouble(), Direction.LAST, RelativeUnit.DAYS)
         hoursAgo >= 1 -> rdf.format(hoursAgo.toDouble(), Direction.LAST, RelativeUnit.HOURS)
         minutesAgo >= 1 -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
-        minutesAgo in 0..1  -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
+        minutesAgo in 0..1 -> rdf.format(
+            minutesAgo.toDouble(),
+            Direction.LAST,
+            RelativeUnit.MINUTES
+        )
+
         else -> time.format(absFormatter)
     }
 }
 
 fun formTime(time: LocalDateTime): String =
-    formTime(time, DateFormat.fromString(FormattingSettings.dateFormat), FormattingSettings.useRelativeTime)
+    formTime(
+        time,
+        DateFormat.fromString(FormattingSettings.dateFormat),
+        FormattingSettings.useRelativeTime
+    )
 
 fun formMinutes(totalMinutes: Int): String =
-    DurationFormat(appDisplayLocale).format(totalMinutes.minutes, DurationFormat.Unit.MINUTE, DurationFormat.Unit.HOUR)
+    DurationFormat(appDisplayLocale).format(
+        totalMinutes.minutes,
+        DurationFormat.Unit.MINUTE,
+        DurationFormat.Unit.HOUR
+    )
 
 fun formReadingDuration(totalMinutes: Int): String {
     val df = DurationFormat(appDisplayLocale)

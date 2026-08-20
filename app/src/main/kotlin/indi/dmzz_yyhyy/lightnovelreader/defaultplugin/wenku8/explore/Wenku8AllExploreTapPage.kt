@@ -12,7 +12,7 @@ import org.jsoup.nodes.Document
 class Wenku8AllExploreTapPage(
     val host: String,
     val wenku8Api: Wenku8Api
-): ExploreTapPageDataSource {
+) : ExploreTapPageDataSource {
     override val title = "全部"
 
     override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
@@ -27,12 +27,19 @@ class Wenku8AllExploreTapPage(
         emit(rows)
         rows.add(getTopListBookBooksRow("新书一览", "postdate"))
         emit(rows)
-        rows.add(getCompletedBooksRow().copy(expandable = true, expandedPageDataSourceId = "allCompletedBook"))
+        rows.add(
+            getCompletedBooksRow().copy(
+                expandable = true,
+                expandedPageDataSourceId = "allCompletedBook"
+            )
+        )
         emit(rows)
     }
 
     private suspend fun getCompletedBooksRow(): ExploreBooksRow {
-        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php?fullflag=1").component1()
+        val soup =
+            wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php?fullflag=1")
+                .component1()
         return getBooksRow(soup, "完结全本").copy(
             expandable = true,
             expandedPageDataSourceId = "allBook"
@@ -40,7 +47,8 @@ class Wenku8AllExploreTapPage(
     }
 
     private suspend fun getTopListBookBooksRow(title: String, sort: String): ExploreBooksRow {
-        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/toplist.php?sort=$sort").component1()
+        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/toplist.php?sort=$sort")
+            .component1()
         return getBooksRow(soup, title).copy(
             expandable = true,
             expandedPageDataSourceId = "${sort}Book"
@@ -48,23 +56,28 @@ class Wenku8AllExploreTapPage(
     }
 
     private suspend fun getAllBookBooksRow(): ExploreBooksRow {
-        val soup = wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php").component1()
+        val soup =
+            wenku8Api.getWithWenku8Cookie("${host}/modules/article/articlelist.php").component1()
         return getBooksRow(soup, "轻小说列表")
     }
 
     private fun getBooksRow(soup: Document?, title: String): ExploreBooksRow {
-        val idlList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
-            ?.slice(0..5)
-            ?.map { it.attr("href").replace("/book/", "").replace(".htm", "") }
-        val titleList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
-            ?.slice(0..5)
-            ?.map { it.text().split("(").getOrNull(0) ?: "" } ?: emptyList()
-        val authorList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > p:nth-child(2)")
-            ?.slice(0..5)
-            ?.map { it.text().split("/").getOrNull(0)?.split(":")?.get(1) ?: ""} ?: emptyList()
-        val coverUrlList = soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
-            ?.slice(0..5)
-            ?.map { it.attr("src") } ?: emptyList()
+        val idlList =
+            soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a")
+                ?.slice(0..5)
+                ?.map { it.attr("href").replace("/book/", "").replace(".htm", "") }
+        val titleList =
+            soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > b > a")
+                ?.slice(0..5)
+                ?.map { it.text().split("(").getOrNull(0) ?: "" } ?: emptyList()
+        val authorList =
+            soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(2) > p:nth-child(2)")
+                ?.slice(0..5)
+                ?.map { it.text().split("/").getOrNull(0)?.split(":")?.get(1) ?: "" } ?: emptyList()
+        val coverUrlList =
+            soup?.select("#content > table.grid > tbody > tr > td > div > div:nth-child(1) > a > img")
+                ?.slice(0..5)
+                ?.map { it.attr("src") } ?: emptyList()
         return ExploreBooksRow(
             title = title,
             bookList = idlList?.indices?.map {

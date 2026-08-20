@@ -39,7 +39,7 @@ class BookRepository @Inject constructor(
     private val bookshelfRepository: BookshelfRepository,
     private val textProcessingRepository: TextProcessingRepository,
     private val workManager: WorkManager
-): BookRepositoryApi {
+) : BookRepositoryApi {
     companion object {
         private const val TAG = "BookRepository"
     }
@@ -57,7 +57,8 @@ class BookRepository @Inject constructor(
         webBookDataSource.getBookInformation(id, priority)
             .onOk { remote ->
                 localBookDataSource.updateBookInformation(remote)
-                val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
+                val bookshelfBookMetadata =
+                    bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
                 if (bookshelfBookMetadata.lastUpdate.isBefore(remote.lastUpdated))
                     bookshelfBookMetadata.bookShelfIds.forEach {
                         bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
@@ -151,7 +152,10 @@ class BookRepository @Inject constructor(
     override suspend fun getAllUserReadingData(): List<UserReadingData> =
         localBookDataSource.getAllUserReadingData()
 
-    override suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData) {
+    override suspend fun updateUserReadingData(
+        id: String,
+        update: (UserReadingData) -> UserReadingData
+    ) {
         localBookDataSource.updateUserReadingData(id, update)
     }
 

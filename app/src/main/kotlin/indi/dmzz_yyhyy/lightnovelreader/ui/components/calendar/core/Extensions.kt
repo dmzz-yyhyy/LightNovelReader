@@ -4,7 +4,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.temporal.WeekFields
-import java.util.*
+import java.util.Locale
 
 // E.g DayOfWeek.SATURDAY.daysUntil(DayOfWeek.TUESDAY) = 3
 fun DayOfWeek.daysUntil(other: DayOfWeek): Int = (7 + (other.ordinal - ordinal)) % 7
@@ -16,7 +16,8 @@ fun daysOfWeek(firstDayOfWeek: DayOfWeek = firstDayOfWeekFromLocale()): List<Day
     return daysOfWeek.takeLast(pivot) + daysOfWeek.dropLast(pivot)
 }
 
-fun firstDayOfWeekFromLocale(locale: Locale = Locale.getDefault()): DayOfWeek = WeekFields.of(locale).firstDayOfWeek
+fun firstDayOfWeekFromLocale(locale: Locale = Locale.getDefault()): DayOfWeek =
+    WeekFields.of(locale).firstDayOfWeek
 
 fun YearMonth.atStartOfMonth(): LocalDate = this.atDay(1)
 

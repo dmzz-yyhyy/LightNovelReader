@@ -7,12 +7,12 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.FormattingViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.navigateToEditTextFormattingRuleDialog
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.settingsTextFormattingRulesDestination() {
     composable<Route.Main.Settings.TextFormatting.Rules> { navBackStackEntry ->

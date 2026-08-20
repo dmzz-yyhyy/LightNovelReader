@@ -203,7 +203,10 @@ private fun BottomBar(
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     colors = ExposedDropdownMenuDefaults.textFieldColors(),
                     modifier = Modifier
-                        .menuAnchor(type = ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .menuAnchor(
+                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                            enabled = true
+                        )
                         .fillMaxWidth(),
                     maxLines = 1
                 )
@@ -262,7 +265,10 @@ private fun BottomBar(
                     DropdownMenuItem(
                         text = {
                             Column {
-                                Text(stringResource(R.string.log_clear), style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    stringResource(R.string.log_clear),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     text = stringResource(R.string.log_clear_desc),
@@ -279,9 +285,15 @@ private fun BottomBar(
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(stringResource(R.string.auto_scroll), style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    stringResource(R.string.auto_scroll),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                                 Spacer(Modifier.weight(1f))
-                                Switch(checked = autoScrollEnabled, onCheckedChange = onToggleAutoScroll)
+                                Switch(
+                                    checked = autoScrollEnabled,
+                                    onCheckedChange = onToggleAutoScroll
+                                )
                             }
                         },
                         onClick = {}
@@ -289,7 +301,10 @@ private fun BottomBar(
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(stringResource(R.string.word_wrap), style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    stringResource(R.string.word_wrap),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                                 Spacer(Modifier.weight(1f))
                                 Switch(checked = unwrapLogsText, onCheckedChange = onToggleWrap)
                             }
@@ -309,8 +324,14 @@ private fun parseFileLabel(fileName: String): Pair<String, String> {
     val displayFormatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
 
     val (prefix, rawTimestamp) = when {
-        fileName.startsWith("lnr_export_") -> stringResource(R.string.log_shared) to fileName.removePrefix("lnr_export_").removeSuffix(".log")
-        fileName.startsWith("lnr_panic_") -> stringResource(R.string.log_crash) to fileName.removePrefix("lnr_panic_").removeSuffix(".log")
+        fileName.startsWith("lnr_export_") -> stringResource(R.string.log_shared) to fileName.removePrefix(
+            "lnr_export_"
+        ).removeSuffix(".log")
+
+        fileName.startsWith("lnr_panic_") -> stringResource(R.string.log_crash) to fileName.removePrefix(
+            "lnr_panic_"
+        ).removeSuffix(".log")
+
         else -> null to null
     }
 

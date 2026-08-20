@@ -101,8 +101,7 @@ fun StatsOverviewScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            }
-            else {
+            } else {
                 LazyColumn(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -247,14 +246,18 @@ private fun DailyStatsBlock(
                 title = stringResource(R.string.activity_reading_time),
                 value = details?.formattedTotalTime ?: "--"
             ) {
-                Crossfade(targetState = details?.timeDetails.isNullOrEmpty(), label = "") { isEmpty ->
+                Crossfade(
+                    targetState = details?.timeDetails.isNullOrEmpty(),
+                    label = ""
+                ) { isEmpty ->
                     if (isEmpty) {
                         NoRecords()
                     } else {
                         Column {
                             details?.timeDetails?.forEach { pair ->
                                 val duration = pair.second.toDuration(DurationUnit.SECONDS)
-                                val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
+                                val formattedTime =
+                                    DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
                                 val bookInformation by pair.first.collectAsStateWithLifecycle(null)
                                 bookInformation?.onOk {
                                     DataItem(it.title, formattedTime)

@@ -25,7 +25,10 @@ data class BookshelfUiState(
     val updatedBookFlows: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>
 )
 
-fun Bookshelf.toBookshelfUiState(bookRepository: BookRepository, bookshelfRepository: BookshelfRepository) = BookshelfUiState(
+fun Bookshelf.toBookshelfUiState(
+    bookRepository: BookRepository,
+    bookshelfRepository: BookshelfRepository
+) = BookshelfUiState(
     id = this.id,
     name = this.name,
     sortType = this.sortType,
@@ -62,7 +65,11 @@ fun Bookshelf.toBookshelfUiState(bookRepository: BookRepository, bookshelfReposi
         val bookInformationFlow = bookRepository.getBookInformationFlow(id)
         val bookVolumesFlow = bookRepository.getBookVolumesFlow(id)
         val bookshelfBookMetadataFlow = bookshelfRepository.getBookshelfBookMetadataFlow(id)
-        id to combine(bookshelfBookMetadataFlow, bookInformationFlow, bookVolumesFlow) { bookshelfBookMetadata, bookInformationResult, bookVolumesResult ->
+        id to combine(
+            bookshelfBookMetadataFlow,
+            bookInformationFlow,
+            bookVolumesFlow
+        ) { bookshelfBookMetadata, bookInformationResult, bookVolumesResult ->
             zip({ bookInformationResult }, { bookVolumesResult }) { bookInformation, bookVolumes ->
                 BookshelfBookItem(
                     id = id,

@@ -18,7 +18,9 @@ fun Loading() {
         contentAlignment = Alignment.Center
     ) {
         ContainedLoadingIndicator(
-            modifier = Modifier.size(46.dp).align(Alignment.Center)
+            modifier = Modifier
+                .size(46.dp)
+                .align(Alignment.Center)
         )
     }
 }

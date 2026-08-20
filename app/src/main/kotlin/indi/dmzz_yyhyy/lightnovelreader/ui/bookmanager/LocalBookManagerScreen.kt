@@ -253,7 +253,10 @@ fun LocalBookManagerContent(
                 stickyHeader(key = "index_only_header") {
                     CollapseHeader(
                         icon = painterResource(R.drawable.menu_book_24px),
-                        title = stringResource(R.string.book_manager_group_index_only, indexOnlyList.size),
+                        title = stringResource(
+                            R.string.book_manager_group_index_only,
+                            indexOnlyList.size
+                        ),
                         expanded = !indexOnlyCollapsed,
                         onToggleExpand = { indexOnlyCollapsed = !indexOnlyCollapsed }
                     )
@@ -289,16 +292,16 @@ fun LocalBookManagerContent(
             targetState = shownInfoItem,
             transitionSpec = {
                 (
-                    slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(250, easing = FastOutSlowInEasing)
-                    ) + fadeIn(tween(200, easing = FastOutSlowInEasing))
-                    ) togetherWith (
-                    slideOutVertically(
-                        targetOffsetY = { it / 3 },
-                        animationSpec = tween(180, easing = FastOutSlowInEasing)
-                    ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
-                    )
+                        slideInVertically(
+                            initialOffsetY = { it / 3 },
+                            animationSpec = tween(250, easing = FastOutSlowInEasing)
+                        ) + fadeIn(tween(200, easing = FastOutSlowInEasing))
+                        ) togetherWith (
+                        slideOutVertically(
+                            targetOffsetY = { it / 3 },
+                            animationSpec = tween(180, easing = FastOutSlowInEasing)
+                        ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
+                        )
             },
             label = "infoBar"
         ) { item ->
@@ -732,7 +735,7 @@ private fun LocalBookInfoCard(
                                     modifier = Modifier
                                         .padding(vertical = 4.dp)
                                         .weight(1f)
-                                    ) {
+                                ) {
                                     Text(
                                         text = stringResource(target.label),
                                         style = MaterialTheme.typography.bodyLarge,

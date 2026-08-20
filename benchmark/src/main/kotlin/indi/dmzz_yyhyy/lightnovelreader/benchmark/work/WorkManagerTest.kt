@@ -144,7 +144,7 @@ class WorkManagerTest : UiAutomatorTest() {
         assertTrue(
             "CheckUpdateWork did not start after opening the main UI:\n$relevantLog",
             "Starting work for indi.dmzz_yyhyy.lightnovelreader.data.work.CheckUpdateWork" in
-                workLog,
+                    workLog,
         )
         assertTrue(
             "CheckUpdateWork did not finish successfully after the UI was backgrounded:\n$relevantLog",

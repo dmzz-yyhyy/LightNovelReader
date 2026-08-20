@@ -188,7 +188,7 @@ private fun ReadingContent(
                     actionLabel = undoString,
                 ) {
                     when (it) {
-                        SnackbarResult.Dismissed -> { }
+                        SnackbarResult.Dismissed -> {}
                         SnackbarResult.ActionPerformed -> onAddBook(bookId)
                     }
                 }
@@ -391,8 +391,10 @@ private fun ReadingBookCard(
             formTime(it)
         } ?: return@remember neverRead
     }
-    val minutes = remember(userReadingData.totalReadTime) { formReadingDuration(userReadingData.totalReadTime) }
-    val progress = remember(userReadingData.readingProgress) { "${(userReadingData.readingProgress * 100).toInt()}%" }
+    val minutes =
+        remember(userReadingData.totalReadTime) { formReadingDuration(userReadingData.totalReadTime) }
+    val progress =
+        remember(userReadingData.readingProgress) { "${(userReadingData.readingProgress * 100).toInt()}%" }
     val infoText = "$lastRead • $minutes • $progress"
     val description = remember(bookInformation.description) { bookInformation.description.trim() }
 
@@ -540,7 +542,9 @@ fun ReadingHeaderCardPager(
                     .background(colorScheme.surfaceVariant.copy(alpha = 0.14f))
                     .padding(8.dp)
             ) {
-                val recentReadingBookResult by recentReadingBookFlow.collectAsStateWithLifecycle(null)
+                val recentReadingBookResult by recentReadingBookFlow.collectAsStateWithLifecycle(
+                    null
+                )
                 recentReadingBookResult?.onOk {
                     ReadingHeaderCardPage(
                         info = it.bookInformation,

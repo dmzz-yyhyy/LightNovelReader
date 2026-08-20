@@ -8,9 +8,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class LogcatViewModel @Inject constructor (
+class LogcatViewModel @Inject constructor(
     private val loggerRepository: LoggerRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _uiState = MutableLogcatUiState()
     val uiState: LogcatUiState = _uiState
@@ -45,7 +45,7 @@ class LogcatViewModel @Inject constructor (
     }
 
     fun onSelectLogFile(fileName: String) {
-        _uiState.isFileMode =  fileName.startsWith("lnr")
+        _uiState.isFileMode = fileName.startsWith("lnr")
         _uiState.selectedLogFile = fileName
         loggerRepository.loadLogFile(fileName)
     }

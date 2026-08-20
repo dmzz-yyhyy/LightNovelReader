@@ -2,9 +2,13 @@ package io.nightfish.lightnovelreader.api.ui
 
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import io.nightfish.lightnovelreader.api.content.component.ComponentRender
 
 /**
  * 当前页面的导航控制器
@@ -23,11 +27,18 @@ val LocalNavController = compositionLocalOf<NavController> {
  */
 val LocalReaderStyle = compositionLocalOf {
     ReaderStyle(
-        fontSize = 15f,
-        fontLineHeight = 7f,
-        fontWeight = 500f,
+        fontSize = 15.sp,
+        lineHeight = 7.sp,
+        fontWeight = FontWeight.W500,
         textColor = Color.Unspecified,
         textDarkColor = Color.Unspecified,
+        spacingBeforeParagraph = 0.sp,
+        spacingAfterParagraph = 0.sp,
+        textIndent = TextIndent(
+            firstLine = 30.sp,
+        ),
+        fontUri = null,
+        letterSpacing = 0.2.sp
     )
 }
 
@@ -39,6 +50,10 @@ val LocalReaderStyle = compositionLocalOf {
  */
 val LocalTextLocaleList = compositionLocalOf {
     LocaleList(Locale.current)
+}
+
+val LocalComponentRender = compositionLocalOf<ComponentRender> {
+    error("CompositionLocal LocalComponentRender not present")
 }
 
 /**

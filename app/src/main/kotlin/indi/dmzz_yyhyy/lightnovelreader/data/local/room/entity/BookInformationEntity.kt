@@ -43,7 +43,7 @@ data class BookInformationEntity(
     val lastUpdated: LocalDateTime,
     @ColumnInfo(name = "is_complete")
     val isComplete: Boolean
-): Mergeable<BookInformationEntity> {
+) : Mergeable<BookInformationEntity> {
     override fun merge(
         new: BookInformationEntity
     ): BookInformationEntity =

@@ -318,7 +318,10 @@ private fun SelectingAppBar(
         ),
         title = {
             Text(
-                text = stringResource(R.string.book_manager_selected_count, uiState.selectedIds.size),
+                text = stringResource(
+                    R.string.book_manager_selected_count,
+                    uiState.selectedIds.size
+                ),
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.W600
             )
@@ -357,7 +360,9 @@ private fun DownloadManagerContent(
         if (itemList.any { it.progress < 1f })
             item {
                 Text(
-                    modifier = Modifier.height(34.dp).animateItem(),
+                    modifier = Modifier
+                        .height(34.dp)
+                        .animateItem(),
                     text = stringResource(R.string.download_in_progress),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W600
@@ -467,13 +472,20 @@ private fun Card(
                     Text(
                         text =
                             if (downloadItem.progress < 1)
-                                stringResource(R.string.download_item_progress,
+                                stringResource(
+                                    R.string.download_item_progress,
                                     formTime(downloadItem.startTime),
-                                    (downloadItem.progress*100).toInt()
+                                    (downloadItem.progress * 100).toInt()
                                 )
                             else if (downloadItem.progress > 0)
-                                stringResource(R.string.download_item_finished, downloadItem.type.typeName)
-                            else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                                stringResource(
+                                    R.string.download_item_finished,
+                                    downloadItem.type.typeName
+                                )
+                            else stringResource(
+                                R.string.download_item_failed,
+                                downloadItem.type.typeName
+                            ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyMedium,
