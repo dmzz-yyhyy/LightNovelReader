@@ -12,7 +12,7 @@ data class ParagraphStyle(
     @Serializable(TextUnitSerializer::class)
     val lineHeight: TextUnit = TextUnit.Unspecified,
     @Serializable(TextIndentSerializer::class)
-    val textIndent: TextIndent = TextIndent.None,
+    val textIndent: TextIndent? = null,
     @Serializable(TextUnitSerializer::class)
     val spacingBefore: TextUnit = TextUnit.Unspecified,
     @Serializable(TextUnitSerializer::class)

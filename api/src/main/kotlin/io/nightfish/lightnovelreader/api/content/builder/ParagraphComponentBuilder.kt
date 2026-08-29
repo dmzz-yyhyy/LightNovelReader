@@ -62,7 +62,7 @@ class ParagraphBuilder {
 }
 
 class ParagraphStyleBuilder {
-    private var textIndent: TextIndent = TextIndent.None
+    private var textIndent: TextIndent? = null
     private var spacingBefore: TextUnit = TextUnit.Unspecified
     private var spacingAfter: TextUnit = TextUnit.Unspecified
     private var fontSize: TextUnit = TextUnit.Unspecified

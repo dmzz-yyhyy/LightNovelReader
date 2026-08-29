@@ -356,6 +356,43 @@ class BookAndReaderTest : UiAutomatorTest() {
     }
 
     @Test
+    fun scrollingModeLongSelectableChapterRemainsResponsive() {
+        val fixtureResult = shell(
+            "am broadcast -W -n $TARGET_PACKAGE/.benchmark.BenchmarkFixtureReceiver " +
+                "-a $TARGET_PACKAGE.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
+        )
+        assertTrue(
+            "Failed to create the long scrolling fixture: $fixtureResult",
+            fixtureResult.contains("rapid-chapters=SUCCEEDED"),
+        )
+
+        openBookDetails()
+        clickScrolledText("Benchmark Chapter 6")
+        assertTextContains("Benchmark rapid chapter 6 paragraph")
+
+        repeat(24) {
+            device.swipe(
+                device.displayWidth / 2,
+                (device.displayHeight * 0.78).toInt(),
+                device.displayWidth / 2,
+                (device.displayHeight * 0.22).toInt(),
+                4,
+            )
+        }
+        device.waitForIdle()
+        assertForegroundPackage(TARGET_PACKAGE)
+
+        repeat(3) {
+            if (device.hasObject(By.desc("setting"))) return@repeat
+            // The first tap after the final four-step swipe may only stop its remaining fling.
+            device.click(device.displayWidth / 2, device.displayHeight / 2)
+            device.wait(Until.hasObject(By.desc("setting")), 1_000L)
+        }
+        clickDescription("setting")
+        assertText(localizedText("Reader Settings", "阅读设置"))
+    }
+
+    @Test
     fun bookInformationSheetShowsEveryMetadataGroup() {
         openBookDetails()
         clickScrolledText("Info")

@@ -174,7 +174,7 @@ class MainActivity : ComponentActivity() {
                         spacingBeforeParagraph = spacingBeforeParagraph.sp,
                         spacingAfterParagraph = spacingAfterParagraph.sp,
                         textIndent = TextIndent(
-                            firstLine = firstLineTextIndent.sp
+                            firstLine = firstLineTextIndent.em
                         ),
                         fontUri = fontUri,
                     )

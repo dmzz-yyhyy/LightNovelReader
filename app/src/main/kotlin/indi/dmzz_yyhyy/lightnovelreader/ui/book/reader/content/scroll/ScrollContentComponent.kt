@@ -291,7 +291,8 @@ fun ScrollContentTextComponent(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            LazyColumn(
+            SelectionContainer {
+                LazyColumn(
                 modifier = modifier
                     .nestedScroll(backgroundScrollConnection)
                     .padding(paddingValues)
@@ -310,11 +311,11 @@ fun ScrollContentTextComponent(
                         }
                     },
                 state = listState,
-            ) {
-                itemsIndexed(
+                ) {
+                    itemsIndexed(
                     items = uiState.contentList,
                     key = { index, pair -> pair?.first ?: "placeholder-$index" }
-                ) { index, pair ->
+                    ) { index, pair ->
                     // The center chapter has its own full-screen loading state above. Empty adjacent
                     // slots must stay zero-height; rendering Loading() here creates a full viewport
                     // item that looks like a previous/next chapter which never finishes loading.
@@ -333,6 +334,7 @@ fun ScrollContentTextComponent(
                         )
                     }.onErr {
                         ChapterContentError(it)
+                    }
                     }
                 }
             }
@@ -355,75 +357,74 @@ private fun TextContent(
     val textColor = readerTextColor(settingState)
     val fontFamily = rememberReaderFontFamily(settingState.fontUriUserData)
     Column(
-        Modifier.defaultMinSize(
-            minHeight = with(density) {
-                screenHeight.toDp()
-            }
-        )
+            Modifier.defaultMinSize(
+                minHeight = with(density) {
+                    screenHeight.toDp()
+                }
+            )
     ) {
-        val titleRegex = Regex("^(第[一二三四五六七八九十]+卷)\\s+(.*)")
-        val matchResult = titleRegex.find(content.title)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 36.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            if (matchResult != null) {
-                val (volumeTitle, chapterTitle) = matchResult.destructured
-                Text(
-                    text = volumeTitle,
-                    textAlign = TextAlign.Center,
-                    fontSize = (settingState.fontSize + 2).sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = fontFamily,
-                    color = textColor,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    text = chapterTitle,
-                    textAlign = TextAlign.Center,
-                    fontSize = (settingState.fontSize + 6).sp,
-                    lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
-                    fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
-                    fontFamily = fontFamily,
-                    color = textColor
-                )
-            } else {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
-                    text = content.title,
-                    textAlign = TextAlign.Center,
-                    fontSize = (settingState.fontSize + 6).sp,
-                    lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
-                    fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
-                    fontFamily = fontFamily,
-                    color = textColor
-                )
-            }
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
+            val titleRegex = Regex("^(第[一二三四五六七八九十]+卷)\\s+(.*)")
+            val matchResult = titleRegex.find(content.title)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 36.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                HorizontalDivider(
-                    modifier = Modifier.width(48.dp),
-                    color = textColor
-                )
-            }
-            Spacer(Modifier.height(16.dp))
-        }
-        for (data in content.content) {
-            SelectionContainer {
-                componentRender.Component(
+                if (matchResult != null) {
+                    val (volumeTitle, chapterTitle) = matchResult.destructured
+                    Text(
+                        text = volumeTitle,
+                        textAlign = TextAlign.Center,
+                        fontSize = (settingState.fontSize + 2).sp,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = fontFamily,
+                        color = textColor,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        text = chapterTitle,
+                        textAlign = TextAlign.Center,
+                        fontSize = (settingState.fontSize + 6).sp,
+                        lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
+                        fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
+                        fontFamily = fontFamily,
+                        color = textColor
+                    )
+                } else {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp),
+                        text = content.title,
+                        textAlign = TextAlign.Center,
+                        fontSize = (settingState.fontSize + 6).sp,
+                        lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
+                        fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
+                        fontFamily = fontFamily,
+                        color = textColor
+                    )
+                }
+                Box(
                     modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier.width(48.dp),
+                        color = textColor
+                    )
+                }
+                Spacer(Modifier.height(16.dp))
+            }
+            for (data in content.content) {
+                componentRender.Component(
+                    modifier = Modifier
+                        .fillMaxWidth(),
                     componentData = data,
                 )
             }
-        }
     }
 }
