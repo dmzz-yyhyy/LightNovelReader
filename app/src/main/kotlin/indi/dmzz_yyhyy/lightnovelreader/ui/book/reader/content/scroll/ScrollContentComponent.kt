@@ -156,8 +156,6 @@ fun ScrollContentTextComponent(
         val offset = if (uiState.readingProgress <= 0f) {
             0
         } else {
-            // Keep this inverse of ScrollContentViewModel.calculateReadingProgress().
-            // A chapter remains active until its end reaches the viewport center.
             ((item.size - lazyColumnSize.height / 2).coerceAtLeast(0) * uiState.readingProgress).toInt()
         }
         listState.scrollToItem(1, offset)
@@ -316,9 +314,6 @@ fun ScrollContentTextComponent(
                     items = uiState.contentList,
                     key = { index, pair -> pair?.first ?: "placeholder-$index" }
                     ) { index, pair ->
-                    // The center chapter has its own full-screen loading state above. Empty adjacent
-                    // slots must stay zero-height; rendering Loading() here creates a full viewport
-                    // item that looks like a previous/next chapter which never finishes loading.
                     val result = pair?.second ?: return@itemsIndexed
                     uiState.contentList.getOrNull(index + 1)?.second?.get()?.let {
                         if (!it.hasPrevChapter()) return@itemsIndexed

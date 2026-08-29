@@ -111,9 +111,6 @@ private fun SimpleFlipPageTextComponent(
     val screenWidthPx = windowInfo.containerSize.width.toFloat()
     val activeChapterContent by rememberUpdatedState(chapterContent)
     var volumeJob by remember { mutableStateOf<Job?>(null) }
-    // A no-animation turn completes synchronously, so every physical tap must be retained.
-    // CONFLATED collapsed a burst of taps into one request and made seamless chapter turning
-    // appear to stop. BUFFERED remains bounded while preserving realistic rapid input.
     val pageRequests = remember(uiState.pagerState) { Channel<Int>(capacity = 256) }
     val intervalMs = (settingState.volumeKeyContinuousFlipInterval * 1000).toLong()
     fun enqueuePageRequest(direction: Int) {
@@ -121,11 +118,7 @@ private fun SimpleFlipPageTextComponent(
             settingState.flipAnime != MenuOptions.FlipAnimationOptions.None &&
             (uiState.pagerState.isAnimating || uiState.pagerState.pendingChapterDirection != 0)
         ) {
-            // Animated turns retain only the newest request so releasing a rapid gesture does
-            // not leave seconds of autonomous page turns. No-animation mode intentionally keeps
-            // every click because each one is an explicit page advance.
             while (pageRequests.tryReceive().isSuccess) {
-                // Drain stale animated requests; the newest direction is enqueued below.
             }
         }
         pageRequests.trySend(direction)
@@ -166,9 +159,6 @@ private fun SimpleFlipPageTextComponent(
                     activeChapterContent.prevChapter
                 }?.takeIf { it.isNotBlank() }
                 if (adjacentChapterId != null) {
-                    // Keep the completed adjacent frame while the already-prefetched chapter is
-                    // installed. A watchdog below releases the lock if loading does not complete;
-                    // an I/O failure must never make all future reader input a permanent no-op.
                     pagerState.pendingChapterDirection = direction
                     if (direction > 0) onClickNextChapter() else onClickPrevChapter()
                     waitingForChapter = true
@@ -224,9 +214,6 @@ private fun SimpleFlipPageTextComponent(
         enqueuePageRequest(-1)
     }
 
-    // Keep one consumer alive across seamless chapter replacement. Cancelling this effect on
-    // chapter id used to remove an already-received click while it was waiting for the new
-    // chapter to unlock, so rapid no-animation taps appeared to freeze at the boundary.
     LaunchedEffect(pageRequests) {
         pageRequests.receiveAsFlow().collect { direction ->
             snapshotFlow {
@@ -235,9 +222,6 @@ private fun SimpleFlipPageTextComponent(
             }.first { ready -> ready }
             val progressed = settlePage(direction, 0f)
             if (!progressed) {
-                // KeyUp can be delivered to a replacement focus target during a chapter
-                // recomposition. Stop an orphaned long-press producer at the real book edge so
-                // it cannot continuously overwrite later input in the conflated request queue.
                 volumeJob?.cancel()
                 volumeJob = null
             }
@@ -251,9 +235,6 @@ private fun SimpleFlipPageTextComponent(
         windowInfo.isWindowFocused,
     ) {
         if (settingState.isUsingVolumeKeyFlip && windowInfo.isWindowFocused) {
-            // The chapter Flow and AnimatedContent can replace focus targets in the same frame.
-            // Request after the replacement has been attached, otherwise a long press that
-            // crosses chapters leaves volume navigation permanently unfocused.
             withFrameNanos { }
             focusRequester.requestFocus()
         }
@@ -308,13 +289,7 @@ private fun SimpleFlipPageTextComponent(
                 settingState.flipAnime,
                 chapterContent.id,
             ) {
-                // currentPage/pageCount are intentionally not pointer-input keys. Full-chapter
-                // pagination updates pageCount repeatedly in the background; restarting this
-                // coroutine for every measured page cancels an in-flight gesture, which made
-                // the pager appear unresponsive immediately after restoring progress.
                 awaitEachGesture {
-                    // Observe the gesture before SelectionContainer. Horizontal page turns win
-                    // after touch slop; an unmoved long press still reaches text selection.
                     val down = awaitFirstDown(
                         requireUnconsumed = false,
                         pass = PointerEventPass.Initial,
@@ -322,6 +297,7 @@ private fun SimpleFlipPageTextComponent(
                     var lastPosition = down.position
                     var movement = Offset.Zero
                     var pressed = true
+                    var isTextSelectionGesture = false
                     while (pressed) {
                         val event = awaitPointerEvent(PointerEventPass.Initial)
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
@@ -329,6 +305,14 @@ private fun SimpleFlipPageTextComponent(
                         lastPosition = change.position
                         pressed = change.pressed
                         if (
+                            change.uptimeMillis - down.uptimeMillis >=
+                            viewConfiguration.longPressTimeoutMillis
+                        ) {
+                            isTextSelectionGesture = true
+                            uiState.pagerState.pageOffset = 0f
+                        }
+                        if (
+                            !isTextSelectionGesture &&
                             settingState.flipAnime != MenuOptions.FlipAnimationOptions.None &&
                             !uiState.pagerState.isAnimating &&
                             uiState.pagerState.pendingChapterDirection == 0 &&
@@ -343,12 +327,18 @@ private fun SimpleFlipPageTextComponent(
                                 pageWidth,
                             )
                         }
-                        if (movement.getDistance() > viewConfiguration.touchSlop) change.consume()
+                        if (
+                            !isTextSelectionGesture &&
+                            movement.getDistance() > viewConfiguration.touchSlop
+                        ) change.consume()
                     }
 
                     val horizontal = abs(movement.x) > abs(movement.y)
-                    if (!horizontal) uiState.pagerState.pageOffset = 0f
+                    if (!horizontal || isTextSelectionGesture) {
+                        uiState.pagerState.pageOffset = 0f
+                    }
                     if (
+                        !isTextSelectionGesture &&
                         horizontal &&
                         movement.getDistance() > viewConfiguration.touchSlop &&
                         settingState.isUsingVolumeKeyFlip
@@ -356,6 +346,7 @@ private fun SimpleFlipPageTextComponent(
                         focusRequester.requestFocus()
                     }
                     when {
+                        isTextSelectionGesture -> Unit
                         settingState.isUsingFlipPage && horizontal &&
                                 movement.x < -size.width / 4f -> enqueuePageRequest(1)
                         settingState.isUsingFlipPage && horizontal &&
@@ -465,9 +456,6 @@ private fun FlipPageFragment(
         measurementWindow.find(chapterId, contentSignature, styleSignature)
     }
     val measurements = remember(components, readerStyle, baseStyle) {
-        // The unresolved tail is measured only once per composition. A conflated channel let a
-        // redundant visible-page measurement overwrite that result during rapid turns, leaving
-        // pagination permanently incomplete and the chapter transition waiting forever.
         Channel<PageMeasurement>(Channel.BUFFERED)
     }
     val initialComponents = remember(components) {
@@ -590,9 +578,6 @@ private fun FlipPageFragment(
         pagerState.endReached = cachedPagination?.endReached ?: initialComponents.isEmpty()
     }
 
-    // Every non-final resolution appends an unresolved tail page. Therefore no unresolved
-    // page means that this local pagination snapshot is complete, independently of the shared
-    // pager flag (which a chapter-state reset may have cleared).
     val paginationComplete = pages.none { !it.resolved }
 
     LaunchedEffect(
@@ -602,10 +587,6 @@ private fun FlipPageFragment(
         pagerState.restoreInProgress,
     ) {
         pagerState.updatePageCount(pages.size)
-        // pageCount and endReached describe the same pagination snapshot. A ViewModel reset
-        // can happen after cached pages were composed; republish both when restoration settles
-        // so the last cached page can cross the chapter boundary instead of requesting a
-        // non-existent page forever.
         pagerState.endReached = paginationComplete
     }
 
@@ -641,15 +622,8 @@ private fun FlipPageFragment(
         val targetPage = pagerState.restoreTargetFragmentHash
             ?.let(fragmentPageIndex::get)
             ?: componentPageIndex[targetHash]
-        // Page indices are append-only while a chapter is measured, so a target
-        // can be restored as soon as its page is resolved. Waiting for the whole
-        // chapter made low-memory devices show a blank reader for many seconds.
         if (targetPage == null && !paginationComplete) return@LaunchedEffect
         Snapshot.withMutableSnapshot {
-            // The ViewModel may reset the shared pager after this composable has already
-            // restored a cached pagination list. In that case pages.size does not change,
-            // so LaunchedEffect(pages.size) cannot republish pageCount and moveTo() would
-            // retain the request without committing currentPage.
             pagerState.updatePageCount(pages.size)
             pagerState.endReached = paginationComplete
             targetPage?.let(pagerState::moveTo)
@@ -703,10 +677,6 @@ private fun FlipPageFragment(
     val restorePending = pagerState.restoreInProgress ||
             pagerState.restoreTargetHash != null ||
             pagerState.restoreTargetFragmentHash != null || pagerState.restoreToEnd
-    // Never draw a pending target page before currentPage has been committed. In that state the
-    // reader looked restored, but gestures still operated on the old page and were then
-    // overwritten by the restore effect. The snapshot above commits the page and clears the
-    // restore marker atomically, so the first visible frame is already interactive.
     val currentPageIndex = pagerState.currentPage
     val currentPageHash = pages.getOrNull(currentPageIndex)
         ?.displayed
@@ -830,9 +800,6 @@ private fun FlipPageFragment(
             }
         }
 
-        // Always paginate the unresolved tail, independent of the page the reader is viewing.
-        // Each result creates the next tail page, so composition keeps advancing until the
-        // complete chapter has a stable component-hash-to-page mapping.
         if (unresolvedPageIndex >= 0 && unresolvedPageIndex != currentPageIndex) {
             PageLayout(
                 modifier = Modifier

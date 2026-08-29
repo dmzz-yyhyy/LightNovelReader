@@ -25,12 +25,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.coroutines.runBlocking
 
-/**
- * Seeds deterministic, local-only UI data into the benchmark build.
- *
- * This receiver is compiled only into the `benchmark` variant and is never
- * present in debug, snapshot, or release artifacts.
- */
 class BenchmarkFixtureReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pending = goAsync()
@@ -359,8 +353,6 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         const val ACTION_EXTEND_RAPID_CHAPTER_CHAIN =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
 
-        // The built-in Wenku8 source parses book IDs as integers when it
-        // performs its background refresh, so the fixture ID must be numeric.
         const val BOOK_ID = "9999999"
         const val SECOND_BOOK_ID = "9999998"
         const val VOLUME_ID = "benchmark-volume"

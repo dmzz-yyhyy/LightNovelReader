@@ -63,8 +63,6 @@ class FlipPageContentViewModel(
                     update ?: return@collectLatest
                     val (chapterId, fragmentHash, progress) = update
                     uiState.readingProgress = progress
-                    // A fast swipe can generate pages more quickly than Room can persist them.
-                    // Keep only the most recent component so an older queued write cannot win.
                     delay(250)
                     withContext(Dispatchers.IO) {
                         updateReadingProgress(chapterId, fragmentHash, progress)?.join()
@@ -106,9 +104,6 @@ class FlipPageContentViewModel(
             Log.e("FlipPageContentViewModel", "a id less than 0 was transferred")
             return
         }
-        // A saved-progress request comes from navigation/the chapter selector and must never
-        // inherit an unfinished horizontal chapter transition. Only the pager's explicit
-        // previous/next requests are allowed to preserve the outgoing animation frame.
         val seamlessTransition = entry != ChapterEntry.SavedProgress &&
                 uiState.pagerState.pendingChapterDirection != 0
         if (!seamlessTransition) {

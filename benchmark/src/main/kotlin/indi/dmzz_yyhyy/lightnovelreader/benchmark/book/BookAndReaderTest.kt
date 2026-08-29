@@ -44,7 +44,6 @@ class BookAndReaderTest : UiAutomatorTest() {
             device.waitForIdle()
             SystemClock.sleep(250)
         }
-        // Progress persistence is debounced in both reader modes.
         SystemClock.sleep(1_000)
     }
 
@@ -246,8 +245,6 @@ class BookAndReaderTest : UiAutomatorTest() {
         val settingsTitle = localizedText("Reader Settings", "阅读设置")
         repeat(3) {
             if (device.wait(Until.gone(By.text(settingsTitle)), 1_000L)) return@repeat
-            // A settings-list scroll or an open option popup can consume a back event on some
-            // Android 12 vendor builds. Retry only while the settings sheet is still present.
             pressBack()
         }
         assertTrue(
@@ -274,8 +271,6 @@ class BookAndReaderTest : UiAutomatorTest() {
                 20,
             )
             if (device.wait(Until.hasObject(By.textContains(targetText)), 1_000L)) return
-            // Keep the input cadence below the page animation/chapter-load boundary so the
-            // test cannot repeatedly cancel the transition it is trying to observe.
             SystemClock.sleep(250)
         }
         assertTextContains(targetText)
@@ -384,7 +379,6 @@ class BookAndReaderTest : UiAutomatorTest() {
 
         repeat(3) {
             if (device.hasObject(By.desc("setting"))) return@repeat
-            // The first tap after the final four-step swipe may only stop its remaining fling.
             device.click(device.displayWidth / 2, device.displayHeight / 2)
             device.wait(Until.hasObject(By.desc("setting")), 1_000L)
         }
@@ -656,8 +650,6 @@ class BookAndReaderTest : UiAutomatorTest() {
         assertTextContains("Benchmark progress paragraph")
         enablePageTurnMode(enableTapToTurn = true, disableAnimation = true)
 
-        // Send a zero-delay burst larger than Channel.BUFFERED's default capacity. The pager
-        // must preserve the input while chapters 2-6 are measured and installed.
         repeat(180) {
             device.click(device.displayWidth * 5 / 6, device.displayHeight / 2)
         }
@@ -902,6 +894,34 @@ class BookAndReaderTest : UiAutomatorTest() {
                 Until.hasObject(By.text(Pattern.compile("Copy|复制"))),
                 TIMEOUT,
             ),
+        )
+    }
+
+    @Test
+    fun selectingTextNearPageTurnZoneDoesNotTurnThePage() {
+        openBookDetails()
+        clickScrolledText("Benchmark Chapter One")
+        assertTextContains("Benchmark progress paragraph")
+        enablePageTurnMode(enableTapToTurn = true, disableAnimation = true)
+
+        val initialPage = currentFlipPageTag()
+        val paragraph = assertTextContains("Benchmark progress paragraph")
+        val bounds = paragraph.visibleBounds
+        val selectionX = minOf(device.displayWidth * 5 / 6, bounds.right - 4)
+        val selectionY = bounds.centerY()
+        shell("input swipe $selectionX $selectionY $selectionX $selectionY 800")
+
+        assertTrue(
+            "Long-pressing text in the next-page tap zone must open Copy",
+            device.wait(
+                Until.hasObject(By.text(Pattern.compile("Copy|复制"))),
+                TIMEOUT,
+            ),
+        )
+        assertEquals(
+            "Releasing a text-selection long press must not turn the page",
+            initialPage,
+            waitForFlipPage(initialPage),
         )
     }
 
