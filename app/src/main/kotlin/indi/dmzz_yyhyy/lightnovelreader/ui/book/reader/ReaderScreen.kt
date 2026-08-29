@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -457,37 +456,35 @@ fun Content(
                     settingState.enableChapterTitleIndicator
 
         Box(Modifier.fillMaxSize()) {
-            SelectionContainer {
-                AnimatedContent(
-                    readingScreenUiState.contentUiState,
-                    label = "ContentAnimate"
-                ) { contentUiState ->
-                    ContentComponent(
-                        uiState = contentUiState,
-                        settingState = settingState,
-                        paddingValues =
-                            if (settingState.autoPadding)
-                                PaddingValues(
-                                    top = stableSafeTopDp,
-                                    bottom = with(density) {
-                                        WindowInsets.safeContent.getBottom(density).toDp()
-                                    } + if (isEnableIndicator) 40.dp else 0.dp,
-                                    start = 16.dp,
-                                    end = 16.dp
-                                )
-                            else PaddingValues(
-                                top = settingState.topPadding.dp,
-                                bottom = if (isEnableIndicator)
-                                    (settingState.bottomPadding + 40).dp
-                                else settingState.bottomPadding.dp,
-                                start = settingState.leftPadding.dp,
-                                end = settingState.rightPadding.dp
-                            ),
-                        changeIsImmersive = onChangeIsImmersive,
-                        onClickPrevChapter = onClickPrevChapter,
-                        onClickNextChapter = onClickNextChapter
-                    )
-                }
+            AnimatedContent(
+                readingScreenUiState.contentUiState,
+                label = "ContentAnimate"
+            ) { contentUiState ->
+                ContentComponent(
+                    uiState = contentUiState,
+                    settingState = settingState,
+                    paddingValues =
+                        if (settingState.autoPadding)
+                            PaddingValues(
+                                top = stableSafeTopDp,
+                                bottom = with(density) {
+                                    WindowInsets.safeContent.getBottom(density).toDp()
+                                } + if (isEnableIndicator) 40.dp else 0.dp,
+                                start = 16.dp,
+                                end = 16.dp
+                            )
+                        else PaddingValues(
+                            top = settingState.topPadding.dp,
+                            bottom = if (isEnableIndicator)
+                                (settingState.bottomPadding + 40).dp
+                            else settingState.bottomPadding.dp,
+                            start = settingState.leftPadding.dp,
+                            end = settingState.rightPadding.dp
+                        ),
+                    changeIsImmersive = onChangeIsImmersive,
+                    onClickPrevChapter = onClickPrevChapter,
+                    onClickNextChapter = onClickNextChapter
+                )
             }
 
             AnimatedVisibility(

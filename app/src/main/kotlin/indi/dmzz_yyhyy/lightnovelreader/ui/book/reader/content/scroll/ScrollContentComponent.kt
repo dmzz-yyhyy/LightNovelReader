@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -417,10 +418,12 @@ private fun TextContent(
             Spacer(Modifier.height(16.dp))
         }
         for (data in content.content) {
-            componentRender.Component(
-                modifier = Modifier.fillMaxWidth(),
-                componentData = data,
-            )
+            SelectionContainer {
+                componentRender.Component(
+                    modifier = Modifier.fillMaxWidth(),
+                    componentData = data,
+                )
+            }
         }
     }
 }

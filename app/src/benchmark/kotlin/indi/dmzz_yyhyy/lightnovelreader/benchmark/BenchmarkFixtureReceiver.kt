@@ -65,6 +65,13 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                         "progress=${progress ?: -1f}"
                     }
 
+                    ACTION_EXTEND_RAPID_CHAPTER_CHAIN -> {
+                        runBlocking {
+                            extendRapidChapterChain(LightNovelReaderDatabase.getInstance(context))
+                        }
+                        "rapid-chapters=SUCCEEDED"
+                    }
+
                     else -> "unsupported-action=${intent.action}"
                 }
                 pending.resultCode = Activity.RESULT_OK
@@ -303,12 +310,54 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         }
     }
 
+    private suspend fun extendRapidChapterChain(database: LightNovelReaderDatabase) {
+        val extraChapterIds = (3..6).map { "benchmark-chapter-$it" }
+        database.bookVolumesDao().insertVolume(
+            VolumeEntity(
+                bookId = BOOK_ID,
+                volumeId = SECOND_VOLUME_ID,
+                volumeTitle = "Benchmark Bonus Volume",
+                chapterIds = listOf(CHAPTER_TWO_ID) + extraChapterIds,
+                index = 1,
+            )
+        )
+        database.bookVolumesDao().insertChapterInformationEntities(
+            *extraChapterIds.mapIndexed { index, id ->
+                ChapterInformationEntity(id, "Benchmark Chapter ${index + 3}")
+            }.toTypedArray()
+        )
+
+        database.chapterContentDao().get(CHAPTER_TWO_ID)?.let { chapterTwo ->
+            database.chapterContentDao().update(
+                chapterTwo.copy(nextChapter = extraChapterIds.first())
+            )
+        }
+        extraChapterIds.forEachIndexed { index, id ->
+            val chapterNumber = index + 3
+            val content = ContentBuilder()
+                .paragraph { text("Benchmark rapid chapter $chapterNumber start marker.") }
+                .apply { appendProgressParagraphs("Benchmark rapid chapter $chapterNumber paragraph") }
+                .build()
+            database.chapterContentDao().update(
+                ChapterContentEntity(
+                    id = id,
+                    title = "Benchmark Chapter $chapterNumber",
+                    content = content,
+                    prevChapter = if (index == 0) CHAPTER_TWO_ID else extraChapterIds[index - 1],
+                    nextChapter = extraChapterIds.getOrNull(index + 1).orEmpty(),
+                )
+            )
+        }
+    }
+
     companion object {
         const val ACTION_SEED = "indi.dmzz_yyhyy.lightnovelreader.benchmark.SEED"
         const val ACTION_REEMIT_CHAPTER =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REEMIT_CHAPTER"
         const val ACTION_REPORT_PROGRESS =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_PROGRESS"
+        const val ACTION_EXTEND_RAPID_CHAPTER_CHAIN =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
 
         // The built-in Wenku8 source parses book IDs as integers when it
         // performs its background refresh, so the fixture ID must be numeric.

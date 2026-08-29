@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -17,8 +18,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
@@ -30,6 +34,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.onSizeChanged
@@ -55,6 +60,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -103,70 +109,154 @@ private fun SimpleFlipPageTextComponent(
     val focusRequester = remember { FocusRequester() }
     val windowInfo = LocalWindowInfo.current
     val screenWidthPx = windowInfo.containerSize.width.toFloat()
+    val activeChapterContent by rememberUpdatedState(chapterContent)
     var volumeJob by remember { mutableStateOf<Job?>(null) }
+    // A no-animation turn completes synchronously, so every physical tap must be retained.
+    // CONFLATED collapsed a burst of taps into one request and made seamless chapter turning
+    // appear to stop. BUFFERED remains bounded while preserving realistic rapid input.
+    val pageRequests = remember(uiState.pagerState) { Channel<Int>(capacity = 256) }
     val intervalMs = (settingState.volumeKeyContinuousFlipInterval * 1000).toLong()
-    suspend fun settlePage(direction: Int, startOffset: Float = uiState.pagerState.pageOffset) {
-        val pagerState = uiState.pagerState
-        if (pagerState.isAnimating) return
-        pagerState.isAnimating = true
-        val animated = settingState.flipAnime != MenuOptions.FlipAnimationOptions.None
-        if (animated) {
-            val pageWidth = pagerState.viewportWidth
-                .takeIf { it > 0 }
-                ?.toFloat()
-                ?: screenWidthPx
-            animate(
-                initialValue = startOffset,
-                targetValue = -direction * pageWidth,
-                animationSpec = tween(220),
-            ) { value, _ -> pagerState.pageOffset = value }
-        }
-        var changed = false
-        Snapshot.withMutableSnapshot {
-            changed = if (direction > 0) nextPage(pagerState) else lastPage(pagerState)
-            if (changed) {
-                pagerState.pageOffset = 0f
-                pagerState.isAnimating = false
+    fun enqueuePageRequest(direction: Int) {
+        if (
+            settingState.flipAnime != MenuOptions.FlipAnimationOptions.None &&
+            (uiState.pagerState.isAnimating || uiState.pagerState.pendingChapterDirection != 0)
+        ) {
+            // Animated turns retain only the newest request so releasing a rapid gesture does
+            // not leave seconds of autonomous page turns. No-animation mode intentionally keeps
+            // every click because each one is an explicit page advance.
+            while (pageRequests.tryReceive().isSuccess) {
+                // Drain stale animated requests; the newest direction is enqueued below.
             }
         }
-        if (!changed) {
-            val adjacentChapterId = if (direction > 0) {
-                chapterContent.nextChapter
-            } else {
-                chapterContent.prevChapter
-            }?.takeIf { it.isNotBlank() }
-            if (adjacentChapterId != null) {
-                // The adjacent chapter is already the visible completed animation frame.
-                // Keep that frame in place until the new chapter state takes over atomically.
-                pagerState.pendingChapterDirection = direction
-                if (direction > 0) onClickNextChapter() else onClickPrevChapter()
-            } else {
+        pageRequests.trySend(direction)
+    }
+    suspend fun settlePage(
+        direction: Int,
+        startOffset: Float = uiState.pagerState.pageOffset,
+    ): Boolean {
+        val pagerState = uiState.pagerState
+        if (direction == 0 || pagerState.isAnimating || pagerState.pendingChapterDirection != 0) {
+            return false
+        }
+        var waitingForChapter = false
+        var progressed = false
+        try {
+            pagerState.isAnimating = true
+            val animated = settingState.flipAnime != MenuOptions.FlipAnimationOptions.None
+            if (animated) {
+                val pageWidth = pagerState.viewportWidth
+                    .takeIf { it > 0 }
+                    ?.toFloat()
+                    ?: screenWidthPx
+                animate(
+                    initialValue = startOffset,
+                    targetValue = -direction * pageWidth,
+                    animationSpec = tween(220),
+                ) { value, _ -> pagerState.pageOffset = value }
+            }
+
+            val changed = Snapshot.withMutableSnapshot {
+                if (direction > 0) nextPage(pagerState) else lastPage(pagerState)
+            }
+            progressed = changed
+            if (!changed) {
+                val adjacentChapterId = if (direction > 0) {
+                    activeChapterContent.nextChapter
+                } else {
+                    activeChapterContent.prevChapter
+                }?.takeIf { it.isNotBlank() }
+                if (adjacentChapterId != null) {
+                    // Keep the completed adjacent frame while the already-prefetched chapter is
+                    // installed. A watchdog below releases the lock if loading does not complete;
+                    // an I/O failure must never make all future reader input a permanent no-op.
+                    pagerState.pendingChapterDirection = direction
+                    if (direction > 0) onClickNextChapter() else onClickPrevChapter()
+                    waitingForChapter = true
+                    progressed = true
+                    val sourceChapterId = activeChapterContent.id
+                    scope.launch {
+                        delay(CHAPTER_TRANSITION_INPUT_TIMEOUT_MS)
+                        if (
+                            uiState.readingChapterId == sourceChapterId &&
+                            pagerState.pendingChapterDirection == direction
+                        ) {
+                            Snapshot.withMutableSnapshot {
+                                pagerState.pageOffset = 0f
+                                pagerState.pendingChapterDirection = 0
+                                pagerState.isAnimating = false
+                            }
+                            volumeJob?.cancel()
+                            volumeJob = null
+                        }
+                    }
+                }
+            }
+        } finally {
+            if (!waitingForChapter) {
                 Snapshot.withMutableSnapshot {
                     pagerState.pageOffset = 0f
+                    pagerState.pendingChapterDirection = 0
                     pagerState.isAnimating = false
                 }
             }
         }
+        return progressed
     }
     suspend fun cancelPageDrag() {
         val pagerState = uiState.pagerState
-        pagerState.isAnimating = true
-        animate(
-            initialValue = pagerState.pageOffset,
-            targetValue = 0f,
-            animationSpec = tween(180),
-        ) { value, _ -> pagerState.pageOffset = value }
-        pagerState.isAnimating = false
+        if (pagerState.isAnimating || pagerState.pendingChapterDirection != 0) return
+        try {
+            pagerState.isAnimating = true
+            animate(
+                initialValue = pagerState.pageOffset,
+                targetValue = 0f,
+                animationSpec = tween(180),
+            ) { value, _ -> pagerState.pageOffset = value }
+        } finally {
+            pagerState.pageOffset = 0f
+            pagerState.isAnimating = false
+        }
     }
     fun requestNextPage() {
-        scope.launch { settlePage(1, 0f) }
+        enqueuePageRequest(1)
     }
     fun requestPreviousPage() {
-        scope.launch { settlePage(-1, 0f) }
+        enqueuePageRequest(-1)
     }
 
-    LaunchedEffect(focusRequester, chapterContent.id, settingState.isUsingVolumeKeyFlip) {
-        if (settingState.isUsingVolumeKeyFlip) focusRequester.requestFocus()
+    // Keep one consumer alive across seamless chapter replacement. Cancelling this effect on
+    // chapter id used to remove an already-received click while it was waiting for the new
+    // chapter to unlock, so rapid no-animation taps appeared to freeze at the boundary.
+    LaunchedEffect(pageRequests) {
+        pageRequests.receiveAsFlow().collect { direction ->
+            snapshotFlow {
+                !uiState.pagerState.isAnimating &&
+                    uiState.pagerState.pendingChapterDirection == 0
+            }.first { ready -> ready }
+            val progressed = settlePage(direction, 0f)
+            if (!progressed) {
+                // KeyUp can be delivered to a replacement focus target during a chapter
+                // recomposition. Stop an orphaned long-press producer at the real book edge so
+                // it cannot continuously overwrite later input in the conflated request queue.
+                volumeJob?.cancel()
+                volumeJob = null
+            }
+        }
+    }
+
+    LaunchedEffect(
+        focusRequester,
+        chapterContent.id,
+        settingState.isUsingVolumeKeyFlip,
+        windowInfo.isWindowFocused,
+    ) {
+        if (settingState.isUsingVolumeKeyFlip && windowInfo.isWindowFocused) {
+            // The chapter Flow and AnimatedContent can replace focus targets in the same frame.
+            // Request after the replacement has been attached, otherwise a long press that
+            // crosses chapters leaves volume navigation permanently unfocused.
+            withFrameNanos { }
+            focusRequester.requestFocus()
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -215,25 +305,33 @@ private fun SimpleFlipPageTextComponent(
             .pointerInput(
                 settingState.isUsingFlipPage,
                 settingState.isUsingClickFlipPage,
-                settingState.flipAnime
+                settingState.flipAnime,
+                chapterContent.id,
             ) {
                 // currentPage/pageCount are intentionally not pointer-input keys. Full-chapter
                 // pagination updates pageCount repeatedly in the background; restarting this
                 // coroutine for every measured page cancels an in-flight gesture, which made
                 // the pager appear unresponsive immediately after restoring progress.
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
+                    // Observe the gesture before SelectionContainer. Horizontal page turns win
+                    // after touch slop; an unmoved long press still reaches text selection.
+                    val down = awaitFirstDown(
+                        requireUnconsumed = false,
+                        pass = PointerEventPass.Initial,
+                    )
                     var lastPosition = down.position
                     var movement = Offset.Zero
                     var pressed = true
                     while (pressed) {
-                        val event = awaitPointerEvent()
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
                         val change = event.changes.firstOrNull { it.id == down.id } ?: break
                         movement += change.position - lastPosition
                         lastPosition = change.position
                         pressed = change.pressed
                         if (
                             settingState.flipAnime != MenuOptions.FlipAnimationOptions.None &&
+                            !uiState.pagerState.isAnimating &&
+                            uiState.pagerState.pendingChapterDirection == 0 &&
                             abs(movement.x) > abs(movement.y)
                         ) {
                             val pageWidth = uiState.pagerState.viewportWidth
@@ -250,11 +348,18 @@ private fun SimpleFlipPageTextComponent(
 
                     val horizontal = abs(movement.x) > abs(movement.y)
                     if (!horizontal) uiState.pagerState.pageOffset = 0f
+                    if (
+                        horizontal &&
+                        movement.getDistance() > viewConfiguration.touchSlop &&
+                        settingState.isUsingVolumeKeyFlip
+                    ) {
+                        focusRequester.requestFocus()
+                    }
                     when {
                         settingState.isUsingFlipPage && horizontal &&
-                                movement.x < -size.width / 4f -> scope.launch { settlePage(1) }
+                                movement.x < -size.width / 4f -> enqueuePageRequest(1)
                         settingState.isUsingFlipPage && horizontal &&
-                                movement.x > size.width / 4f -> scope.launch { settlePage(-1) }
+                                movement.x > size.width / 4f -> enqueuePageRequest(-1)
                         settingState.isUsingFlipPage && horizontal -> scope.launch { cancelPageDrag() }
                         !horizontal && abs(movement.y) > viewConfiguration.touchSlop ->
                             changeIsImmersive()
@@ -318,6 +423,8 @@ private fun PremeasureFlipChapter(
     )
 }
 
+private const val CHAPTER_TRANSITION_INPUT_TIMEOUT_MS = 1_500L
+
 fun nextPage(pagerState: FlipPagerState): Boolean {
     if (pagerState.currentPage + 1 >= pagerState.pageCount && pagerState.endReached) return false
     pagerState.moveTo(pagerState.currentPage + 1)
@@ -358,7 +465,10 @@ private fun FlipPageFragment(
         measurementWindow.find(chapterId, contentSignature, styleSignature)
     }
     val measurements = remember(components, readerStyle, baseStyle) {
-        Channel<PageMeasurement>(Channel.CONFLATED)
+        // The unresolved tail is measured only once per composition. A conflated channel let a
+        // redundant visible-page measurement overwrite that result during rapid turns, leaving
+        // pagination permanently incomplete and the chapter transition waiting forever.
+        Channel<PageMeasurement>(Channel.BUFFERED)
     }
     val initialComponents = remember(components) {
         components.map { AnchoredComponent(it.hashCode(), it.hashCode(), it) }
@@ -449,7 +559,14 @@ private fun FlipPageFragment(
 
             val newPages = buildList {
                 addAll(pages.take(measurement.pageIndex))
-                add(page.copy(displayed = resolution.displayed, resolved = true))
+                add(
+                    page.copy(
+                        displayed = resolution.displayed,
+                        resolved = true,
+                        measuredWidth = measurement.width,
+                        measuredHeight = measurement.height,
+                    )
+                )
                 if (resolution.nextSeed.isNotEmpty()) add(FlipPage(resolution.nextSeed))
             }
             pages = newPages
@@ -648,6 +765,7 @@ private fun FlipPageFragment(
                 pageIndex = currentPageIndex,
                 page = pages.getOrNull(currentPageIndex),
                 componentRender = componentRender,
+                selectable = exposeCurrentPageForTesting,
                 onMeasured = { measurements.trySend(it) },
             )
         } else {
@@ -674,6 +792,7 @@ private fun FlipPageFragment(
                     pageIndex = currentPageIndex,
                     page = pages.getOrNull(currentPageIndex),
                     componentRender = componentRender,
+                    selectable = exposeCurrentPageForTesting,
                     onMeasured = { measurements.trySend(it) },
                 )
                 val adjacentPageIndex = when {
@@ -704,6 +823,7 @@ private fun FlipPageFragment(
                         pageIndex = adjacentPageIndex.coerceAtLeast(0),
                         page = adjacentPage,
                         componentRender = componentRender,
+                        selectable = false,
                         onMeasured = { measurements.trySend(it) },
                     )
                 }
@@ -723,6 +843,7 @@ private fun FlipPageFragment(
                 pageIndex = unresolvedPageIndex,
                 page = pages[unresolvedPageIndex],
                 componentRender = componentRender,
+                selectable = false,
                 onMeasured = { measurements.trySend(it) },
             )
         }
@@ -811,6 +932,7 @@ private fun PageLayout(
     pageIndex: Int,
     page: FlipPage?,
     componentRender: io.nightfish.lightnovelreader.api.content.component.ComponentRender,
+    selectable: Boolean,
     onMeasured: (PageMeasurement) -> Unit,
 ) {
     SubcomposeLayout(modifier) { constraints ->
@@ -825,7 +947,9 @@ private fun PageLayout(
 
         for ((index, component) in source.withIndex()) {
             val placeable = subcompose("$pageIndex-${page.seedKey}-$index") {
-                componentRender.Component(Modifier.fillMaxWidth(), component.data)
+                if (selectable) SelectionContainer {
+                    componentRender.Component(Modifier.fillMaxWidth(), component.data)
+                } else componentRender.Component(Modifier.fillMaxWidth(), component.data)
             }.first().measure(constraints.copy(minWidth = 0, minHeight = 0))
             val remainingHeight = constraints.maxHeight - occupiedHeight
             if (
@@ -845,17 +969,23 @@ private fun PageLayout(
             }
         }
 
-        onMeasured(
-            PageMeasurement(
-                pageIndex = pageIndex,
-                seedKey = page.seedKey,
-                width = constraints.maxWidth,
-                height = constraints.maxHeight,
-                overflowIndex = overflowIndex,
-                availableHeight = constraints.maxHeight - placeables.sumOf { it.height },
-                componentHeight = overflowHeight,
+        if (
+            !page.resolved ||
+            page.measuredWidth != constraints.maxWidth ||
+            page.measuredHeight != constraints.maxHeight
+        ) {
+            onMeasured(
+                PageMeasurement(
+                    pageIndex = pageIndex,
+                    seedKey = page.seedKey,
+                    width = constraints.maxWidth,
+                    height = constraints.maxHeight,
+                    overflowIndex = overflowIndex,
+                    availableHeight = constraints.maxHeight - placeables.sumOf { it.height },
+                    componentHeight = overflowHeight,
+                )
             )
-        )
+        }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             var y = 0

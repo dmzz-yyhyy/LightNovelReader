@@ -175,6 +175,24 @@ class BookAndReaderTest : UiAutomatorTest() {
             .firstOrNull()
             ?: "missing"
 
+    private fun waitForFlipPagerIdle(timeoutMs: Long = 5_000L) {
+        val deadline = SystemClock.uptimeMillis() + timeoutMs
+        var lastState = currentFlipStateDescription()
+        while (SystemClock.uptimeMillis() < deadline) {
+            lastState = currentFlipStateDescription()
+            if (lastState.contains("animating=false") && lastState.contains("direction=0")) {
+                SystemClock.sleep(100)
+                val confirmed = currentFlipStateDescription()
+                if (confirmed.contains("animating=false") && confirmed.contains("direction=0")) {
+                    return
+                }
+                lastState = confirmed
+            }
+            SystemClock.sleep(50)
+        }
+        assertTrue("Flip pager input lock did not recover: $lastState", false)
+    }
+
     private fun swipePage(
         forward: Boolean,
         steps: Int = 20,
@@ -204,6 +222,7 @@ class BookAndReaderTest : UiAutomatorTest() {
 
     private fun enablePageTurnMode(
         enableVolumeKeys: Boolean = false,
+        enableTapToTurn: Boolean = false,
         disableAnimation: Boolean = false,
     ) {
         device.click(device.displayWidth / 2, device.displayHeight / 2)
@@ -214,6 +233,10 @@ class BookAndReaderTest : UiAutomatorTest() {
         if (enableVolumeKeys) {
             clickText(localizedText("Volume Key Navigation", "音量键翻页"))
         }
+        if (enableTapToTurn) {
+            scrollToText(localizedText("Tap to Turn Pages", "点击翻页"))
+            clickText(localizedText("Tap to Turn Pages", "点击翻页"))
+        }
         if (disableAnimation) {
             scrollToText(localizedText("Page Turn Animation", "翻页动画"))
             clickText(localizedText("Page Turn Animation", "翻页动画"))
@@ -221,9 +244,10 @@ class BookAndReaderTest : UiAutomatorTest() {
         }
         pressBack()
         val settingsTitle = localizedText("Reader Settings", "阅读设置")
-        if (!device.wait(Until.gone(By.text(settingsTitle)), 2_000L)) {
-            // A settings-list scroll can consume the first back event on some
-            // Android 12 vendor builds. Retry only while the sheet is present.
+        repeat(3) {
+            if (device.wait(Until.gone(By.text(settingsTitle)), 1_000L)) return@repeat
+            // A settings-list scroll or an open option popup can consume a back event on some
+            // Android 12 vendor builds. Retry only while the settings sheet is still present.
             pressBack()
         }
         assertTrue(
@@ -502,13 +526,21 @@ class BookAndReaderTest : UiAutomatorTest() {
         reachPageBoundary(forward = false)
 
         repeat(24) { swipePage(forward = true, steps = 2, settleMs = 25) }
+        waitForFlipPagerIdle()
         val finalBookPage = reachPageBoundary(forward = true)
-        assertTrue(currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-2"))
+        assertTrue(
+            "Rapid forward turns stopped before chapter two: ${currentFlipStateDescription()}",
+            currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-2"),
+        )
         assertForegroundPackage(TARGET_PACKAGE)
 
         repeat(24) { swipePage(forward = false, steps = 2, settleMs = 25) }
+        waitForFlipPagerIdle()
         val firstBookPage = reachPageBoundary(forward = false)
-        assertTrue(currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-1"))
+        assertTrue(
+            "Rapid backward turns stopped before chapter one: ${currentFlipStateDescription()}",
+            currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-1"),
+        )
         assertNotEquals(finalBookPage, firstBookPage)
         assertForegroundPackage(TARGET_PACKAGE)
 
@@ -541,6 +573,75 @@ class BookAndReaderTest : UiAutomatorTest() {
         swipePage(forward = false)
         waitForFlipChapter("benchmark-chapter-1")
         assertEquals(chapterOneLastPage, waitForFlipPage(chapterOneLastPage))
+    }
+
+    @Test
+    fun pageTurnModeWithoutAnimationSurvivesRapidTapTurnsAcrossChapter() {
+        openBookDetails()
+        clickScrolledText("Benchmark Chapter One")
+        assertTextContains("Benchmark progress paragraph")
+        enablePageTurnMode(enableTapToTurn = true, disableAnimation = true)
+
+        repeat(24) {
+            device.click(device.displayWidth * 5 / 6, device.displayHeight / 2)
+            SystemClock.sleep(20)
+        }
+        waitForFlipChapter("benchmark-chapter-2")
+        waitForFlipPagerIdle()
+        assertTrue(
+            "Rapid no-animation taps must cross the seamless chapter boundary: " +
+                currentFlipStateDescription(),
+            currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-2"),
+        )
+
+        val finalPage = reachPageBoundary(forward = true)
+        device.click(device.displayWidth / 6, device.displayHeight / 2)
+        assertNotEquals(
+            "The pager must still accept taps after the rapid seamless transition",
+            finalPage,
+            waitForDifferentFlipPage(finalPage),
+        )
+    }
+
+    @Test
+    fun pageTurnModeWithoutAnimationSurvivesRapidTapTurnsAcrossManyChapters() {
+        val fixtureResult = shell(
+            "am broadcast -W -n $TARGET_PACKAGE/.benchmark.BenchmarkFixtureReceiver " +
+                "-a $TARGET_PACKAGE.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
+        )
+        assertTrue(
+            "Failed to extend the rapid-turn chapter chain: $fixtureResult",
+            fixtureResult.contains("rapid-chapters=SUCCEEDED"),
+        )
+
+        openBookDetails()
+        clickScrolledText("Benchmark Chapter One")
+        assertTextContains("Benchmark progress paragraph")
+        enablePageTurnMode(enableTapToTurn = true, disableAnimation = true)
+
+        // Send a zero-delay burst larger than Channel.BUFFERED's default capacity. The pager
+        // must preserve the input while chapters 2-6 are measured and installed.
+        repeat(180) {
+            device.click(device.displayWidth * 5 / 6, device.displayHeight / 2)
+        }
+
+        val reachedChapter = waitForFlipChapter("benchmark-chapter-6")
+        SystemClock.sleep(1_000)
+        waitForFlipPagerIdle()
+        assertTrue(
+            "Rapid taps must cross five seamless chapter boundaries: " +
+                currentFlipStateDescription(),
+            reachedChapter.endsWith("flip-chapter-benchmark-chapter-6") &&
+                currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-6"),
+        )
+
+        val lastPage = reachPageBoundary(forward = true)
+        device.click(device.displayWidth / 6, device.displayHeight / 2)
+        assertNotEquals(
+            "The pager must still accept reverse taps after crossing several chapters",
+            lastPage,
+            waitForDifferentFlipPage(lastPage),
+        )
     }
 
     @Test
@@ -726,6 +827,29 @@ class BookAndReaderTest : UiAutomatorTest() {
 
         device.pressKeyCode(android.view.KeyEvent.KEYCODE_VOLUME_UP)
         assertEquals(initialPage, waitForFlipPage(initialPage))
+    }
+
+    @Test
+    fun pageTurnModeWithoutAnimationRemainsInteractiveAfterRapidVolumeInput() {
+        openBookDetails()
+        clickScrolledText("Benchmark Chapter One")
+        assertTextContains("Benchmark progress paragraph")
+        enablePageTurnMode(enableVolumeKeys = true, disableAnimation = true)
+
+        repeat(24) {
+            device.pressKeyCode(android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
+        }
+        waitForFlipPagerIdle()
+        turnPagesUntilChapter("benchmark-chapter-2", forward = true)
+        val lastPage = reachPageBoundary(forward = true)
+
+        device.pressKeyCode(android.view.KeyEvent.KEYCODE_VOLUME_UP)
+        assertNotEquals(
+            "The book-end long-press producer must not keep overwriting reverse input",
+            lastPage,
+            waitForDifferentFlipPage(lastPage),
+        )
+        assertForegroundPackage(TARGET_PACKAGE)
     }
 
     @Test
