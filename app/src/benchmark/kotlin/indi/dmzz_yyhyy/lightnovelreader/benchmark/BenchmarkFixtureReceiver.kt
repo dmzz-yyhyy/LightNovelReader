@@ -305,7 +305,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
     }
 
     private suspend fun extendRapidChapterChain(database: LightNovelReaderDatabase) {
-        val extraChapterIds = (3..6).map { "benchmark-chapter-$it" }
+        val extraChapterIds = (3..12).map { "benchmark-chapter-$it" }
         database.bookVolumesDao().insertVolume(
             VolumeEntity(
                 bookId = BOOK_ID,

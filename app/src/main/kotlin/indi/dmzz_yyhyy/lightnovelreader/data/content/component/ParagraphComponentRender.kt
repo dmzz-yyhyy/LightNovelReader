@@ -1,9 +1,11 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.content.component
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.data.ParagraphComponentData
@@ -17,6 +19,7 @@ class ParagraphComponentRender: AbstractContentComponentRender<ParagraphComponen
         modifier: Modifier,
         data: ParagraphComponentData
     ) {
+        val density = LocalDensity.current
         val readerStyle = LocalReaderStyle.current
 
         Text(
@@ -25,6 +28,14 @@ class ParagraphComponentRender: AbstractContentComponentRender<ParagraphComponen
                 MaterialTheme.typography.bodyMedium,
                 data.index != 1,
                 LocalAppTheme.current.isDark
+            ),
+            modifier = Modifier.padding(
+                bottom = with(density) {
+                    readerStyle.spacingAfterParagraph.toDp()
+                },
+                top = with(density) {
+                    readerStyle.spacingBeforeParagraph.toDp()
+                }
             )
         )
     }

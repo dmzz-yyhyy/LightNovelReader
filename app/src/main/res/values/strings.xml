@@ -703,4 +703,7 @@
     <string name="restart">Restart</string>
     <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
     <string name="never_read">Never read</string>
+    <string name="settings_paragraph_spacing">Paragraph Spacing</string>
+    <string name="settings_text_indent">Text Indent</string>
+    <string name="settings_line_height">Line Height</string>
 </resources>

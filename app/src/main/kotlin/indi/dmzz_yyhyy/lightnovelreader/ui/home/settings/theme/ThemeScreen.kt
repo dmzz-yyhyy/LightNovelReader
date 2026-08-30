@@ -51,17 +51,18 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.rememberAsyncImagePainter
@@ -91,13 +92,14 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerTextColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
-import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderFontFamily
+import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.UUID
 import kotlin.math.roundToInt
 
 @Composable
@@ -493,14 +495,13 @@ fun ReaderTextSettings(
     BasePageItem(
         Modifier
             .fillMaxWidth()
-            .height(260.dp)
             .padding(horizontal = 16.dp)
             .padding(top = 0.dp, bottom = 16.dp)
     ) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(9.dp))
-                .fillMaxSize(),
+                .fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
             if (settingState.enableBackgroundImage) {
@@ -517,17 +518,103 @@ fun ReaderTextSettings(
                         .background(readerBackgroundColor(settingState))
                 )
             }
-
-            Text(
-                modifier = Modifier.padding(horizontal = 18.dp),
-                text = stringResource(R.string.settings_about_oss),
-                fontSize = settingState.fontSize.sp,
-                lineHeight = (settingState.lineHeight + settingState.fontSize).sp,
-                fontWeight = FontWeight(settingState.fontWeigh.toInt()),
-                textAlign = TextAlign.Center,
-                fontFamily = rememberReaderFontFamily(settingState.fontUriUserData),
-                color = readerTextColor(settingState)
-            )
+            val readerStyle = LocalReaderStyle.current
+            val isDark = LocalAppTheme.current.isDark
+            val density = LocalDensity.current
+            Column {
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            readerStyle.toParagraphStyle()
+                        ) {
+                            withStyle(
+                                readerStyle.toSpanStyle(isDark)
+                            ) {
+                                append("LNR是一款作者为了能在每个深夜得到安慰所开发出的软件。")
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 18.dp)
+                        .padding(
+                            bottom = with(density) {
+                                readerStyle.spacingAfterParagraph.toDp()
+                            },
+                            top = with(density) {
+                                readerStyle.spacingBeforeParagraph.toDp()
+                            }
+                        )
+                )
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            readerStyle.toParagraphStyle()
+                        ) {
+                            withStyle(
+                                readerStyle.toSpanStyle(isDark)
+                            ) {
+                                append("我们总是在夜晚保持清醒，拼命的抓住每一寸属于自己的时间，寻找每一个能寄托心灵的空间。")
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 18.dp)
+                        .padding(
+                            bottom = with(density) {
+                                readerStyle.spacingAfterParagraph.toDp()
+                            },
+                            top = with(density) {
+                                readerStyle.spacingBeforeParagraph.toDp()
+                            }
+                        )
+                )
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            readerStyle.toParagraphStyle()
+                        ) {
+                            withStyle(
+                                readerStyle.toSpanStyle(isDark)
+                            ) {
+                                append("我们不清楚各自在白昼受到怎样的灼烧，但我们同样享受那首彻夜之歌。")
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 18.dp)
+                        .padding(
+                            bottom = with(density) {
+                                readerStyle.spacingAfterParagraph.toDp()
+                            },
+                            top = with(density) {
+                                readerStyle.spacingBeforeParagraph.toDp()
+                            }
+                        )
+                )
+                Text(
+                    buildAnnotatedString {
+                        withStyle(
+                            readerStyle.toParagraphStyle()
+                        ) {
+                            withStyle(
+                                readerStyle.toSpanStyle(isDark)
+                            ) {
+                                append("LightNovelReader是送给所有小说爱好者的礼物。")
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 18.dp)
+                        .padding(
+                            bottom = with(density) {
+                                readerStyle.spacingAfterParagraph.toDp()
+                            },
+                            top = with(density) {
+                                readerStyle.spacingBeforeParagraph.toDp()
+                            }
+                        )
+                )
+            }
         }
     }
 
@@ -555,12 +642,32 @@ fun ReaderTextSettings(
         SettingsSliderEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
             painter = painterResource(R.drawable.format_line_spacing_24px),
-            title = stringResource(R.string.settings_reader_line_spacing),
+            title = stringResource(R.string.settings_line_height),
             unit = "em",
             valueRange = 1f..3f,
             value = settingState.lineHeight,
             valueFormat = { (it * 10).roundToInt().toFloat() / 10 },
             floatUserData = settingState.lineHeightUserData,
+        )
+
+        SettingsSliderEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.format_line_spacing_24px),
+            title = stringResource(R.string.settings_paragraph_spacing),
+            unit = "sp",
+            valueRange = 0f..64f,
+            value = settingState.spacingAfterParagraph,
+            floatUserData = settingState.spacingAfterParagraphUserData,
+        )
+
+        SettingsSliderEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.format_line_spacing_24px),
+            title = stringResource(R.string.settings_text_indent),
+            unit = "em",
+            valueRange = 0f..8f,
+            value = settingState.firstLineTextIndent,
+            floatUserData = settingState.firstLineTextIndentUserData,
         )
     }
 }
@@ -593,12 +700,10 @@ private suspend fun saveBackgroundToLocal(
     uri: Uri,
     fileName: String,
 ): File? = withContext(Dispatchers.IO) {
-    val target = context.filesDir.resolve(fileName)
-    val pending = context.filesDir.resolve("$fileName.pending")
-    val backup = context.filesDir.resolve("$fileName.backup")
+    val target = context.filesDir.resolve("$fileName-${UUID.randomUUID()}")
+    val pending = context.filesDir.resolve("${target.name}.pending")
 
     try {
-        pending.delete()
         val input = context.contentResolver.openInputStream(uri)
             ?: error("Unable to open selected background image")
         input.use { source ->
@@ -606,26 +711,29 @@ private suspend fun saveBackgroundToLocal(
         }
         require(pending.length() > 0L) { "Selected background image is empty" }
 
-        backup.delete()
-        if (target.exists() && !target.renameTo(backup)) {
-            error("Unable to preserve the current background image")
+        if (!pending.renameTo(target)) {
+            pending.copyTo(target, overwrite = true)
+            pending.delete()
         }
-        try {
-            if (!pending.renameTo(target)) {
-                pending.copyTo(target, overwrite = true)
-                pending.delete()
-            }
-            backup.delete()
-            target
-        } catch (e: Exception) {
-            target.delete()
-            if (backup.exists()) backup.renameTo(target)
-            throw e
-        }
+        target
     } catch (e: Exception) {
         pending.delete()
+        target.delete()
         Log.e("ReaderBackground", "Failed to import background image", e)
         null
+    }
+}
+
+private fun deleteReplacedBackground(context: Context, uri: Uri, fileName: String) {
+    val oldFile = uri.path?.let(::File) ?: return
+    val filesDir = context.filesDir.canonicalFile
+    val canonicalOldFile = try {
+        oldFile.canonicalFile
+    } catch (_: Exception) {
+        return
+    }
+    if (canonicalOldFile.parentFile == filesDir && canonicalOldFile.name.startsWith(fileName)) {
+        canonicalOldFile.delete()
     }
 }
 
@@ -644,6 +752,9 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
         scope.launch {
             val fileName =
                 if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
+            val replacedUri =
+                if (isDarkSelection) settingState.backgroundDarkImageUri
+                else settingState.backgroundImageUri
             val file = saveBackgroundToLocal(context, uri, fileName) ?: return@launch
             val fileUri = file.toUri()
             withContext(Dispatchers.IO) {
@@ -651,6 +762,7 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
                     settingState.backgroundDarkImageUriUserData.set(fileUri)
                 else
                     settingState.backgroundImageUriUserData.set(fileUri)
+                deleteReplacedBackground(context, replacedUri, fileName)
             }
         }
     }

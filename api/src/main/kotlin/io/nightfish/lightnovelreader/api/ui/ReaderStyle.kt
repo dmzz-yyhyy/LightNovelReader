@@ -30,14 +30,14 @@ import java.io.File
  * @since Api 2
  */
 data class ReaderStyle(
-    val fontSize: TextUnit = 14.sp,
+    val fontSize: TextUnit = 16.sp,
     val fontWeight: FontWeight = FontWeight.Normal,
     val lineHeight: TextUnit = 1.4.em,
     val letterSpacing: TextUnit = 0.2.sp,
     val textColor: Color = Color.Black,
     val textDarkColor: Color = Color.White,
     val spacingBeforeParagraph: TextUnit = 0.sp,
-    val spacingAfterParagraph: TextUnit = 0.sp,
+    val spacingAfterParagraph: TextUnit = 16.sp,
     val textIndent: TextIndent = TextIndent(
         firstLine = 2.em,
     ),

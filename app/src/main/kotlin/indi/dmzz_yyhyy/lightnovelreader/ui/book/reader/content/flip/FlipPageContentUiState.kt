@@ -18,6 +18,7 @@ interface FlipPageContentUiState : ContentUiState {
     val pagerState: FlipPagerState
     val prevChapterContent: Result<ChapterContentUiState, WebRequestError>?
     val nextChapterContent: Result<ChapterContentUiState, WebRequestError>?
+    val changeChapterAtBoundary: (String, Int) -> Unit
 }
 
 @Stable
@@ -44,6 +45,8 @@ class FlipPagerState {
         internal set
     var pendingChapterDirection by mutableIntStateOf(0)
         internal set
+    var pendingChapterId by mutableStateOf<String?>(null)
+        internal set
     var isAnimating by mutableStateOf(false)
         internal set
 
@@ -61,7 +64,13 @@ class FlipPagerState {
         }
     }
 
-    internal fun reset() {
+    internal fun reset(preserveChapterTransition: Boolean = false) {
+        val transitionDirection = pendingChapterDirection
+        val transitionChapterId = pendingChapterId
+        val transitionOffset = pageOffset
+        val hasChapterTransition = preserveChapterTransition &&
+            transitionDirection != 0 &&
+            transitionChapterId != null
         requestedPage = 0
         currentPage = 0
         pageCount = 0
@@ -70,9 +79,10 @@ class FlipPagerState {
         restoreTargetFragmentHash = null
         restoreInProgress = false
         restoreToEnd = false
-        pageOffset = 0f
-        pendingChapterDirection = 0
-        isAnimating = false
+        pageOffset = if (hasChapterTransition) transitionOffset else 0f
+        pendingChapterDirection = if (hasChapterTransition) transitionDirection else 0
+        pendingChapterId = if (hasChapterTransition) transitionChapterId else null
+        isAnimating = hasChapterTransition
     }
 }
 
@@ -80,6 +90,7 @@ class MutableFlipPageContentUiState(
     override val loadNextChapter: () -> Unit,
     override val loadPrevChapter: () -> Unit,
     override val changeChapter: (String) -> Unit,
+    override val changeChapterAtBoundary: (String, Int) -> Unit,
 ) : FlipPageContentUiState {
     override var locatedComponentHash by mutableStateOf<Int?>(null)
         private set

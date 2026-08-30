@@ -646,22 +646,28 @@ class BookAndReaderTest : UiAutomatorTest() {
         )
 
         openBookDetails()
-        clickScrolledText("Benchmark Chapter One")
-        assertTextContains("Benchmark progress paragraph")
+        clickScrolledText("Benchmark Chapter Two")
+        assertTextContains("Benchmark chapter two progress paragraph")
         enablePageTurnMode(enableTapToTurn = true, disableAnimation = true)
 
-        repeat(180) {
+        repeat(320) {
             device.click(device.displayWidth * 5 / 6, device.displayHeight / 2)
+            SystemClock.sleep(20)
         }
 
-        val reachedChapter = waitForFlipChapter("benchmark-chapter-6")
+        val reachedChapter = currentFlipChapterTag()
+        val reachedChapterNumber = Regex("benchmark-chapter-(\\d+)$")
+            .find(reachedChapter)
+            ?.groupValues
+            ?.get(1)
+            ?.toIntOrNull()
+            ?: -1
         SystemClock.sleep(1_000)
         waitForFlipPagerIdle()
         assertTrue(
-            "Rapid taps must cross five seamless chapter boundaries: " +
+            "Rapid taps must cross eight seamless chapter boundaries: " +
                 currentFlipStateDescription(),
-            reachedChapter.endsWith("flip-chapter-benchmark-chapter-6") &&
-                currentFlipChapterTag().endsWith("flip-chapter-benchmark-chapter-6"),
+            reachedChapterNumber >= 10,
         )
 
         val lastPage = reachPageBoundary(forward = true)

@@ -29,8 +29,6 @@ fun ContentComponent(
                 settingState,
                 paddingValues,
                 changeIsImmersive,
-                onClickPrevChapter,
-                onClickNextChapter
             )
 
             is ScrollContentUiState -> ScrollContentComponent(

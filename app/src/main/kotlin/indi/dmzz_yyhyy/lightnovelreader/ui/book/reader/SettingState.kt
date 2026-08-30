@@ -18,6 +18,8 @@ class SettingState(
     val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
     val lineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.LineHeight.path)
     val fontWeighUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
+    val spacingAfterParagraphUserData = userDataRepository.floatUserData(UserDataPath.Reader.SpacingAfterParagraph.path)
+    val firstLineTextIndentUserData = userDataRepository.floatUserData(UserDataPath.Reader.FirstLineTextIndent.path)
     val keepScreenOnUserData =
         userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
     val enableHideStatusBarUserData =
@@ -82,6 +84,8 @@ class SettingState(
     val fontSize by fontSizeUserData.safeAsState(readerStyle.fontSize.value)
     val lineHeight by lineHeightUserData.safeAsState(readerStyle.lineHeight.value)
     val fontWeigh by fontWeighUserData.safeAsState(readerStyle.fontWeight.weight.toFloat())
+    val spacingAfterParagraph by spacingAfterParagraphUserData.safeAsState(readerStyle.spacingAfterParagraph.value)
+    val firstLineTextIndent by firstLineTextIndentUserData.safeAsState(readerStyle.textIndent.firstLine.value)
     val keepScreenOn by keepScreenOnUserData.safeAsState(false)
     val enableHideStatusBar by enableHideStatusBarUserData.safeAsState(true)
     val enableBackgroundImage by enableBackgroundImageUserData.safeAsState(false)

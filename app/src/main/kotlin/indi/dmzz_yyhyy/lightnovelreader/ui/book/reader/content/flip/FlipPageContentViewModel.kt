@@ -36,7 +36,13 @@ class FlipPageContentViewModel(
     override val uiState: MutableFlipPageContentUiState = MutableFlipPageContentUiState(
         loadPrevChapter = ::loadPrevChapter,
         loadNextChapter = ::loadNextChapter,
-        changeChapter = ::changeChapter
+        changeChapter = ::changeChapter,
+        changeChapterAtBoundary = { id, direction ->
+            changeChapter(
+                id,
+                if (direction > 0) ChapterEntry.Start else ChapterEntry.End,
+            )
+        },
     )
 
     init {
@@ -105,7 +111,8 @@ class FlipPageContentViewModel(
             return
         }
         val seamlessTransition = entry != ChapterEntry.SavedProgress &&
-                uiState.pagerState.pendingChapterDirection != 0
+                uiState.pagerState.pendingChapterDirection != 0 &&
+                uiState.pagerState.pendingChapterId == id
         if (!seamlessTransition) {
             uiState.readingProgress = 0f
             uiState.locateComponent(null, null)
@@ -163,7 +170,13 @@ class FlipPageContentViewModel(
                     }
                 val shouldApplyEntryRestoration = loadedContent != null && !entryRestorationApplied
                 Snapshot.withMutableSnapshot {
-                    if (firstResult) uiState.pagerState.reset()
+                    if (firstResult) {
+                        uiState.pagerState.reset(
+                            preserveChapterTransition = seamlessTransition &&
+                                uiState.pagerState.pendingChapterDirection != 0 &&
+                                uiState.pagerState.pendingChapterId == id,
+                        )
+                    }
                     uiState.readingChapterId = id
                     uiState.readingChapterContent = result
                     if (shouldApplyEntryRestoration) {
