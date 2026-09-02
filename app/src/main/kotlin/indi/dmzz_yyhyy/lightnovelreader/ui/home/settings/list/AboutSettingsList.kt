@@ -15,7 +15,7 @@ import androidx.compose.ui.res.stringResource
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsAboutInfoDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsDisableStatsDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsPrivacyPolicyDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
@@ -105,7 +105,7 @@ fun AboutSettingsList(
                 settingState.statisticsUserData.asynchronousSet(checked)
             }
         },
-        disabled = BuildConfig.DEBUG
+        enabled = !BuildConfig.DEBUG
     )
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),

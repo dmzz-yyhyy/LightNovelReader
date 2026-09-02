@@ -190,6 +190,10 @@ object Route {
             @Serializable
             object Theme
 
+            /** 阅读样式设置界面路由 */
+            @Serializable
+            object ReaderStyle
+
             /** 开源许可证界面路由 */
             @Serializable
             object Licenses

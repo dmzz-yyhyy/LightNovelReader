@@ -86,7 +86,6 @@ class MainActivity : ComponentActivity() {
     )
     private var darkMode by mutableStateOf("FollowSystem")
     private var dynamicColor by mutableStateOf(false)
-    private var enableM3E by mutableStateOf(false)
     private var lightThemeName by mutableStateOf("light_default")
     private var darkThemeName by mutableStateOf("dark_default")
 
@@ -187,7 +186,6 @@ class MainActivity : ComponentActivity() {
                     darkMode = darkMode,
                     appLocale = appLocale,
                     isDynamicColor = dynamicColor,
-                    enableM3E = enableM3E,
                     lightThemeName = lightThemeName,
                     darkThemeName = darkThemeName
                 ) {
@@ -259,12 +257,6 @@ class MainActivity : ComponentActivity() {
             userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkThemeName.path)
                 .getFlow().collect {
                 it?.let { darkThemeName = it }
-            }
-        }
-        coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.Display.EnableM3E.path)
-                .getFlow().collect {
-                it?.let { enableM3E = it }
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

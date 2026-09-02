@@ -43,8 +43,8 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
@@ -55,7 +55,7 @@ fun SettingsBottomSheet(
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
     settingState: SettingState,
-    onClickThemeSettings: () -> Unit
+    onClickReaderStyleSettings: () -> Unit
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -81,7 +81,7 @@ fun SettingsBottomSheet(
                 settingState = settingState,
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { index -> selectedTabIndex = index },
-                onClickThemeSettings = onClickThemeSettings
+                onClickReaderStyleSettings = onClickReaderStyleSettings
             )
         }
     }
@@ -94,7 +94,7 @@ fun ContentSettings(
     settingState: SettingState,
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
-    onClickThemeSettings: () -> Unit
+    onClickReaderStyleSettings: () -> Unit
 ) {
     val tabs = listOf(
         TabItem(stringResource(R.string.appearance_settings), R.drawable.filled_menu_book_24px),
@@ -131,7 +131,7 @@ fun ContentSettings(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 when (pageIndex) {
-                    0 -> AppearancePage(settingState, onClickThemeSettings)
+                    0 -> AppearancePage(settingState, onClickReaderStyleSettings)
                     1 -> ActionPage(settingState)
                     2 -> PaddingPage(settingState)
                 }
@@ -188,17 +188,17 @@ fun TabsRow(
 
 fun LazyListScope.AppearancePage(
     settingState: SettingState,
-    onClickThemeSettings: () -> Unit
+    onClickReaderStyleSettings: () -> Unit
 ) {
     item {
         SettingsClickableEntry(
             modifier = Modifier
                 .background(colorScheme.surfaceContainerHigh)
                 .animateItem(),
-            painter = painterResource(R.drawable.format_paint_24px),
-            title = stringResource(R.string.settings_theme_settings),
-            description = stringResource(R.string.settings_theme_settings_desc),
-            onClick = onClickThemeSettings
+            painter = painterResource(R.drawable.imagesearch_roller_24px),
+            title = stringResource(R.string.settings_reader_style),
+            description = stringResource(R.string.settings_reader_style_desc),
+            onClick = onClickReaderStyleSettings
         )
     }
     item {

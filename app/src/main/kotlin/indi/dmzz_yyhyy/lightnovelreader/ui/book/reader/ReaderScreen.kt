@@ -112,7 +112,7 @@ fun ReaderScreen(
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
     onChangeChapter: (chapterId: String) -> Unit,
-    onClickThemeSettings: () -> Unit
+    onClickReaderStyleSettings: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     var isImmersive by remember { mutableStateOf(true) }
@@ -258,7 +258,7 @@ fun ReaderScreen(
                 showSettingsBottomSheet = false
             },
             settingState = settingState,
-            onClickThemeSettings = onClickThemeSettings
+            onClickReaderStyleSettings = onClickReaderStyleSettings
         )
     }
 

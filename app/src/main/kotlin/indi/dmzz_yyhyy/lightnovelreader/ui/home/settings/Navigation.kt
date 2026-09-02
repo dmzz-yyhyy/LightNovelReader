@@ -30,6 +30,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.SliderValueDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.UpdatesAvailableDialogViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug.navigateToSettingsDebugDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug.settingsDebugDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme.settingsAppThemeDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.formats.settingsFormatsDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.licenses.navigateToSettingsLicensesDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.licenses.settingsLicensesDestination
@@ -42,10 +43,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.sourcechange.settingsSo
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.editTextFormattingRuleDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.navigateToSettingsTextFormattingManagerDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.settingsTextFormattingNavigation
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme.navigateToSettingsThemeDestination
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme.settingsThemeDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle.navigateToSettingsReaderStyleDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle.settingsReaderStyleDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.storagemanager.navigateToStorageManager
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
@@ -74,7 +74,7 @@ fun NavGraphBuilder.settingsDestination() {
             onClickLogcat = navController::navigateToSettingsLogcatDestination,
             onClickTextFormatting = navController::navigateToSettingsTextFormattingManagerDestination,
             onClickPluginManager = navController::navigateToSettingsPluginManagerHomeDestination,
-            onClickThemeSettings = navController::navigateToSettingsThemeDestination,
+            onClickReaderStyleSettings = navController::navigateToSettingsReaderStyleDestination,
             onClickStorageManager = navController::navigateToStorageManager,
             onOptOut = settingsViewModel::trackOptOut
         )
@@ -93,7 +93,8 @@ fun NavGraphBuilder.settingsNavigation() {
         settingsDestination()
         settingsDebugDestination()
         settingsLogcatDestination()
-        settingsThemeDestination()
+        settingsAppThemeDestination()
+        settingsReaderStyleDestination()
         settingsTextFormattingNavigation()
         settingsPluginManagerNavigation()
         settingsLicensesDestination()
@@ -122,11 +123,6 @@ private fun NavGraphBuilder.sliderValueDialog() {
         )
 
     }
-}
-
-fun NavController.navigateToSliderValueDialog(path: String, value: Float) {
-    if (!this.isResumed()) return
-    navigate(Route.SliderValueDialog(value, path))
 }
 
 

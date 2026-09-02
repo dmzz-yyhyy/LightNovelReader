@@ -179,8 +179,10 @@
     <string name="settings_reader_right_margin">Right Margin</string>
 
     <string name="display_settings">Display</string>
-    <string name="settings_theme">Theme &amp; Paper</string>
-    <string name="settings_theme_desc">Custom app theme and paper texture</string>
+    <string name="settings_theme">App Theme</string>
+    <string name="settings_theme_desc">Adjust the appearance of the app</string>
+    <string name="settings_reader_style">Reader Style</string>
+    <string name="settings_reader_style_desc">Adjust the appearance of the reading page</string>
     <string name="settings_text_formatting">Text Formatting</string>
     <string name="settings_text_formatting_desc">Formatting text content based on rules</string>
     <string name="settings_theme_light_theme">Light Theme</string>
@@ -190,10 +192,6 @@
     <string name="settings_theme_dynamic_colors">Dynamic Colors</string>
     <string name="settings_theme_dynamic_colors_desc_unavailable">Apply system-generated dynamic colors</string>
     <string name="settings_theme_dynamic_colors_desc">Apply system-generated dynamic colors (Android 12+ required)</string>
-    <string name="settings_theme_m3e" translatable="false">Material 3 Expressive</string>
-    <string name="settings_theme_m3e_description">
-        Enables the Material 3 Expressive design. This feature is experimental and still in beta
-    </string>
 
     <string name="settings_formats">Formats</string>
     <string name="settings_formats_desc">Set date or text format</string>
@@ -318,8 +316,6 @@
     <string name="appearance_settings">Appearance</string>
     <string name="control_settings">Controls</string>
     <string name="margin_settings">Margins</string>
-    <string name="settings_theme_settings">Theme Settings…</string>
-    <string name="settings_theme_settings_desc">Customize reader and paper options</string>
     <string name="settings_hide_status_bar">Hide Status Bar</string>
     <string name="settings_hide_status_bar_desc">Hide system status and navigation bars in immersive reading mode</string>
     <string name="settings_trad_conversion">Traditional Chinese Conversion</string>

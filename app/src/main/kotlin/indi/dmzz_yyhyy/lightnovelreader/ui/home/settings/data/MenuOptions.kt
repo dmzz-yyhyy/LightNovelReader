@@ -6,11 +6,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.update.GithubParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateParser
 import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.LocalBookSort
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.settings.SettingsMenuOption
+import io.nightfish.lightnovelreader.api.settings.SettingsMenuOptionGroup
 
 @Suppress("PropertyName", "unused")
-sealed class MenuOptions {
+sealed class MenuOptions : SettingsMenuOptionGroup {
     protected val _optionList: MutableList<Option>
-    val optionList: List<Option> get() = _optionList.toList()
+    override val optionList: List<SettingsMenuOption> get() = _optionList.toList()
 
     constructor(vararg options: Option) {
         _optionList = options.toMutableList()
@@ -24,15 +26,6 @@ sealed class MenuOptions {
         _optionList.add(Option(key, nameId))
         return key
     }
-
-    fun get(key: String): Option =
-        getOrNull(key) ?: throw NoSuchElementException("Option '$key' not found")
-
-    fun getOrNull(key: String): Option? =
-        optionList.firstOrNull { it.equals(key) }
-
-    fun getOrDefault(key: String, default: Option): Option =
-        getOrNull(key) ?: default
 
     open class MenuOptionsWithValues<T> : MenuOptions {
 
@@ -65,16 +58,16 @@ sealed class MenuOptions {
 
 
     open class Option(
-        open val key: String,
-        open val nameId: Int
-    ) {
-        override fun equals(other: Any?): Boolean = this.key == other
+        override val key: String,
+        override val nameId: Int
+    ) : SettingsMenuOption {
+        override fun equals(other: Any?): Boolean = this.key == (other as? Option)?.key
         override fun hashCode(): Int = key.hashCode()
     }
 
     class OptionWithValue<T>(
-        override val key: String,
-        override val nameId: Int,
+        key: String,
+        nameId: Int,
         val value: T
     ) : Option(key, nameId)
 

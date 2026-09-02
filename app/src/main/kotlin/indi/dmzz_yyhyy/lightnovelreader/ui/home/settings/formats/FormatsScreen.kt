@@ -19,8 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionDescription
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
@@ -75,14 +75,16 @@ fun SettingsList(settingState: SettingState) {
             checked = settingState.dateShowYear,
             booleanUserData = settingState.dateShowYearUserData
         )
+        val isDateOrderEnabled = dateFormat == DateFormat.NUMERIC
         SettingsMenuEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
             title = stringResource(R.string.settings_formats_date_order),
             description = stringResource(R.string.settings_formats_date_order_desc),
             options = MenuOptions.DateOrderOptions,
-            selectedOptionKey = settingState.dateOrder,
+            selectedOptionKey = if (isDateOrderEnabled) settingState.dateOrder
+            else MenuOptions.DateOrderOptions.Auto,
             stringUserData = settingState.dateOrderUserData,
-            disabled = dateFormat == DateFormat.WRITTEN
+            enabled = isDateOrderEnabled
         )
         SettingsSwitchEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),

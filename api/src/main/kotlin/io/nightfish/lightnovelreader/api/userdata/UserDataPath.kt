@@ -195,9 +195,6 @@ sealed class UserDataPath(
             /** 动态颜色设置 @since Api 2 */
             data object DynamicColors : UserDataPath("dynamic_color", Display)
 
-            /** 启用 Material 3 Expressive @since Api 2 */
-            data object EnableM3E : UserDataPath("enable_m3_expressive", Display)
-
             /** 应用语言设置 @since Api 2 */
             data object AppLocale : UserDataPath("app_locale", Display)
 

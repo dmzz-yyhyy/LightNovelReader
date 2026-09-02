@@ -67,16 +67,6 @@ class SettingState(
         userDataRepository.uriUserData(UserDataPath.Reader.BackgroundImageUri.path)
     val backgroundDarkImageUriUserData =
         userDataRepository.uriUserData(UserDataPath.Reader.BackgroundDarkImageUri.path)
-    val darkModeKeyUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
-    val dynamicColorsKeyUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
-    val enableM3EUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.Display.EnableM3E.path)
-    val lightThemeNameUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.LightThemeName.path)
-    val darkThemeNameUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkThemeName.path)
     val backBlockModeUserData =
         userDataRepository.stringUserData(UserDataPath.Reader.BackBlockMode.path)
     private val readerStyle = ReaderStyle()
@@ -113,10 +103,5 @@ class SettingState(
     val backgroundDarkColor by backgroundDarkColorUserData.safeAsState(Color.Unspecified)
     val backgroundImageUri by backgroundImageUriUserData.safeAsState(Uri.EMPTY)
     val backgroundDarkImageUri by backgroundDarkImageUriUserData.safeAsState(Uri.EMPTY)
-    val darkModeKey by darkModeKeyUserData.safeAsState("FollowSystem")
-    val dynamicColorsKey by dynamicColorsKeyUserData.safeAsState(false)
-    val enableM3E by enableM3EUserData.safeAsState(false)
-    val lightThemeName by lightThemeNameUserData.safeAsState("light_default")
-    val darkThemeName by darkThemeNameUserData.safeAsState("dark_default")
     val backBlockMode by backBlockModeUserData.safeAsState("none")
 }
