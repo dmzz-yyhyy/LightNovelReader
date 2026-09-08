@@ -50,7 +50,7 @@ sealed class MenuOptions : SettingsMenuOptionGroup {
                 ?: throw NoSuchElementException("OptionWithValue '$key' not found")
 
         fun getOptionWithValueOrNull(key: String): OptionWithValue<T>? =
-            optionWithValueList.firstOrNull { it.equals(key) }
+            optionWithValueList.firstOrNull { it.key == key }
 
         fun getOptionWithValueOrDefault(key: String?): OptionWithValue<T> =
             getOptionWithValueOrNull(key ?: "") ?: optionWithValueList.first()
