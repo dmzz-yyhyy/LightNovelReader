@@ -100,8 +100,8 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "Disabled",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("Disabled") }
+                        selected = settingState.darkMode == "Disabled",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("Disabled") }
                     )
                     Text(
                         stringResource(R.string.key_dark_mode_disabled),
@@ -119,8 +119,8 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "Enabled",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("Enabled") }
+                        selected = settingState.darkMode == "Enabled",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("Enabled") }
                     )
                     Text(
                         stringResource(R.string.key_dark_mode_enabled),
@@ -177,8 +177,8 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "FollowSystem",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("FollowSystem") }
+                        selected = settingState.darkMode == "FollowSystem",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("FollowSystem") }
                     )
                     Text(
                         stringResource(R.string.key_dark_mode_follow_system),
@@ -204,30 +204,30 @@ fun AppThemeSettingsList(
             description = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
                 stringResource(R.string.settings_theme_dynamic_colors_desc_unavailable)
             else stringResource(R.string.settings_theme_dynamic_colors_desc),
-            checked = settingState.dynamicColorsKey,
-            booleanUserData = settingState.dynamicColorsKeyUserData,
-            enabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+            checked = settingState.dynamicColors,
+            booleanUserData = settingState.dynamicColorsUserData,
+            enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         )
-        if (!settingState.dynamicColorsKey) {
-            SettingsMenuEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.light_mode_24px),
-                title = stringResource(R.string.settings_theme_light_theme),
-                description = stringResource(R.string.settings_theme_light_theme_desc),
-                options = MenuOptions.LightThemeNameOptions,
-                selectedOptionKey = settingState.lightThemeName,
-                onOptionChange = settingState.lightThemeNameUserData::asynchronousSet
-            )
-            SettingsMenuEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.dark_mode_24px),
-                title = stringResource(R.string.settings_theme_dark_theme),
-                description = stringResource(R.string.settings_theme_dark_theme_desc),
-                options = MenuOptions.DarkThemeNameOptions,
-                selectedOptionKey = settingState.darkThemeName,
-                onOptionChange = settingState.darkThemeNameUserData::asynchronousSet
-            )
-        }
+        SettingsMenuEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.light_mode_24px),
+            title = stringResource(R.string.settings_theme_light_theme),
+            description = stringResource(R.string.settings_theme_light_theme_desc),
+            options = MenuOptions.LightThemeNameOptions,
+            selectedOptionKey = settingState.lightThemeName,
+            onOptionChange = settingState.lightThemeNameUserData::asynchronousSet,
+            enabled = !settingState.dynamicColors
+        )
+        SettingsMenuEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.dark_mode_24px),
+            title = stringResource(R.string.settings_theme_dark_theme),
+            description = stringResource(R.string.settings_theme_dark_theme_desc),
+            options = MenuOptions.DarkThemeNameOptions,
+            selectedOptionKey = settingState.darkThemeName,
+            onOptionChange = settingState.darkThemeNameUserData::asynchronousSet,
+            enabled = !settingState.dynamicColors
+        )
     }
 }
 

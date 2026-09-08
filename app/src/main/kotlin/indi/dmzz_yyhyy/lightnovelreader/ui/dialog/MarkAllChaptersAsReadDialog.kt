@@ -49,38 +49,36 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.markAllChaptersAsReadDialog() {
-    dialog<Route.MarkAllChaptersAsReadDialog> { backStackEntry ->
-        val navController = LocalNavController.current
+fun NavEntryScope.markAllChaptersAsReadDialog() {
+    overlayEntry<Route.MarkAllChaptersAsReadDialog> { backStackEntry ->
+        val navigator = LocalNavigator.current
         val viewModel: MarkAllChaptersAsReadDialogViewModel = hiltViewModel()
-        val route = backStackEntry.toRoute<Route.MarkAllChaptersAsReadDialog>()
 
-        LaunchedEffect(route.bookId) {
-            viewModel.load(route.bookId)
+        LaunchedEffect(backStackEntry.bookId) {
+            viewModel.load(backStackEntry.bookId)
         }
 
         viewModel.bookVolumeResult?.onOk {
             MarkAllChaptersAsReadDialog(
-                onDismissRequest = navController::popBackStack,
+                onDismissRequest = { navigator.popBackStack() },
                 onConfirmAll = {
                     viewModel.markAllChaptersAsRead()
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 onConfirmRange = { ids ->
                     viewModel.markChaptersAsRead(ids)
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 volumes = it.volumes
             )
@@ -92,7 +90,7 @@ fun NavGraphBuilder.markAllChaptersAsReadDialog() {
     }
 }
 
-fun NavController.navigateToMarkAllChaptersAsReadDialog(bookId: String) {
+fun Navigator.navigateToMarkAllChaptersAsReadDialog(bookId: String) {
     navigate(Route.MarkAllChaptersAsReadDialog(bookId))
 }
 

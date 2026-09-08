@@ -6,23 +6,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreViewModel
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.exploreExpandDestination() {
-    composable<Route.Main.Explore.Expanded> { entry ->
-        val navController = LocalNavController.current
-        val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
-        val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
+fun NavEntryScope.exploreExpandDestination() {
+    entry<Route.Main.Explore.Expanded> { entry ->
+        val navigator = LocalNavigator.current
+        val exploreViewModel = activityHiltViewModel<ExploreViewModel>()
         val exploreExpandedPageHomeViewModel = hiltViewModel<ExpandedPageViewModel>()
         var dialog: @Composable () -> Unit by remember { mutableStateOf(@Composable {}) }
         ExpandedPageScreen(
@@ -30,26 +26,25 @@ fun NavGraphBuilder.exploreExpandDestination() {
             expandedPageUiState = exploreExpandedPageHomeViewModel.uiState,
             refresh = exploreViewModel::refresh,
             dialog = { newDialog -> dialog = newDialog },
-            expandedPageDataSourceId = entry.toRoute<Route.Main.Explore.Expanded>().expandedPageDataSourceId,
+            expandedPageDataSourceId = entry.expandedPageDataSourceId,
             init = exploreExpandedPageHomeViewModel::init,
             loadMore = exploreExpandedPageHomeViewModel::loadMore,
             refreshResult = exploreExpandedPageHomeViewModel::loadBookResult,
             requestAddBookToBookshelf = {
-                navController.navigateToAddBookToBookshelfDialog(it)
+                navigator.navigateToAddBookToBookshelfDialog(it)
             },
             onClickBack = {
                 exploreExpandedPageHomeViewModel.clear()
-                navController.popBackStackIfResumed()
+                navigator.popBackStack()
             },
             onClickBook = {
-                navController.navigateToBookDetailDestination(it)
+                navigator.navigateToBookDetailDestination(it)
             }
         )
         dialog.invoke()
     }
 }
 
-fun NavController.navigateToExploreExpandDestination(expandedPageDataSourceId: String) {
-    if (!this.isResumed()) return
+fun Navigator.navigateToExploreExpandDestination(expandedPageDataSourceId: String) {
     navigate(Route.Main.Explore.Expanded(expandedPageDataSourceId))
 }

@@ -2,26 +2,21 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.navigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import io.nightfish.lightnovelreader.api.Route
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit.bookshelfEditDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.bookshelfHomeDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.reorder.bookshelfReorderDestination
-import io.nightfish.lightnovelreader.api.Route
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.bookshelfNavigation(sharedTransitionScope: SharedTransitionScope) {
-    navigation<Route.Main.Bookshelf>(
-        startDestination = Route.Main.Bookshelf.Home
-    ) {
-        bookshelfHomeDestination(sharedTransitionScope)
-        bookshelfEditDestination()
-        bookshelfReorderDestination()
-    }
+fun NavEntryScope.bookshelfNavigation(sharedTransitionScope: SharedTransitionScope) {
+    bookshelfHomeDestination(sharedTransitionScope)
+    bookshelfEditDestination()
+    bookshelfReorderDestination()
 }
 
 @Suppress("unused")
-fun NavController.navigateToBookshelfNavigation() {
-    navigate(Route.Main.Bookshelf)
+fun Navigator.navigateToBookshelfNavigation() {
+    navigate(Route.Main.Bookshelf.Home)
 }

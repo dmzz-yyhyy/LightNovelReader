@@ -50,10 +50,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.navigation.NavController
-import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.settings.SettingsMenuOptionGroup
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import io.nightfish.lightnovelreader.api.userdata.BooleanUserData
 import io.nightfish.lightnovelreader.api.userdata.FloatUserData
 import io.nightfish.lightnovelreader.api.userdata.StringUserData
@@ -485,6 +482,7 @@ fun SettingsMenuEntry(
  * @param modifier Modifier 修饰符
  * @param painter 图标
  * @param title 设置项标题
+ * @param description 设置项描述文字
  * @param unit 数值单位文字
  * @param value 当前数值
  * @param enabled 是否启用交互 (含长按编辑)
@@ -500,6 +498,7 @@ fun SettingsSliderEntry(
     modifier: Modifier = Modifier,
     painter: Painter? = null,
     title: String,
+    description: String? = null,
     unit: String,
     value: Float,
     enabled: Boolean = true,
@@ -509,7 +508,6 @@ fun SettingsSliderEntry(
     floatUserData: FloatUserData,
     steps: List<Float>? = null
 ) {
-    val navController = LocalNavController.current
     var tempValue by remember { mutableFloatStateOf(value) }
     LaunchedEffect(value) {
         tempValue = value
@@ -519,6 +517,7 @@ fun SettingsSliderEntry(
         painter = painter,
         modifier = modifier,
         title = title,
+        description = description,
         unit = unit,
         value = tempValue,
         enabled = enabled,
@@ -527,10 +526,7 @@ fun SettingsSliderEntry(
         decimalFormat = decimalFormat,
         steps = steps,
         onSlideChange = { tempValue = it },
-        onSliderChangeFinished = { floatUserData.asynchronousSet(tempValue) },
-        onLongClick = {
-            navController.navigateToSliderValueDialog(floatUserData.path, tempValue)
-        }
+        onSliderChangeFinished = { floatUserData.asynchronousSet(tempValue) }
     )
 }
 
@@ -539,6 +535,7 @@ private fun SettingsSliderEntry(
     modifier: Modifier = Modifier,
     painter: Painter? = null,
     title: String,
+    description: String? = null,
     unit: String,
     value: Float,
     enabled: Boolean,
@@ -576,6 +573,7 @@ private fun SettingsSliderEntry(
         modifier = modifier,
         painter = painter,
         title = title,
+        description = description,
         extraBelowContent = {
             Slider(
                 modifier = Modifier.fillMaxWidth(),
@@ -629,8 +627,4 @@ private fun SettingsSliderEntry(
         },
         onLongClick = onLongClick
     )
-}
-
-private fun NavController.navigateToSliderValueDialog(path: String, value: Float) {
-    navigate(Route.SliderValueDialog(value, path))
 }

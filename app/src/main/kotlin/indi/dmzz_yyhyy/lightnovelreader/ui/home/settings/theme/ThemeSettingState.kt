@@ -13,17 +13,17 @@ class ThemeSettingState(
     userDataRepository: UserDataRepository,
     coroutineScope: CoroutineScope
 ) : AbstractSettingState(coroutineScope) {
-    val darkModeKeyUserData =
+    val darkModeUserData =
         userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path)
-    val dynamicColorsKeyUserData =
+    val dynamicColorsUserData =
         userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
     val lightThemeNameUserData =
         userDataRepository.stringUserData(UserDataPath.Settings.Display.LightThemeName.path)
     val darkThemeNameUserData =
         userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkThemeName.path)
 
-    val darkModeKey by darkModeKeyUserData.safeAsState("FollowSystem")
-    val dynamicColorsKey by dynamicColorsKeyUserData.safeAsState(false)
+    val darkMode by darkModeUserData.safeAsState("FollowSystem")
+    val dynamicColors by dynamicColorsUserData.safeAsState(false)
     val lightThemeName by lightThemeNameUserData.safeAsState("light_default")
     val darkThemeName by darkThemeNameUserData.safeAsState("dark_default")
 }

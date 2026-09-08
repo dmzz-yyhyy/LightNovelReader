@@ -43,6 +43,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -98,7 +100,6 @@ import me.saket.swipe.SwipeableActionsBox
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ReadingScreen(
     recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
@@ -111,9 +112,11 @@ fun ReadingScreen(
     @Suppress("unused") sharedTransitionScope: SharedTransitionScope,
     onClickOpenChapters: (String) -> Unit,
 ) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopBar(
+            scrollBehavior = scrollBehavior,
             onClickDownloadManager = onClickDownloadManager,
             onClickStats = onClickStats
         )
@@ -131,7 +134,8 @@ fun ReadingScreen(
         } else {
             ReadingContent(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .nestedScroll(scrollBehavior.nestedScrollConnection),
                 onClickBook = onClickBook,
                 onClickContinueReading = onClickContinueReading,
                 onClickOpenChapters = onClickOpenChapters,
@@ -143,7 +147,7 @@ fun ReadingScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ReadingContent(
     modifier: Modifier,
@@ -345,6 +349,7 @@ fun ReadingBookCardSkeleton(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
+    scrollBehavior: TopAppBarScrollBehavior,
     onClickDownloadManager: () -> Unit,
     onClickStats: () -> Unit
 ) {
@@ -371,7 +376,8 @@ private fun TopBar(
                     contentDescription = "statistics"
                 )
             }
-        }
+        },
+        scrollBehavior = scrollBehavior
     )
 }
 

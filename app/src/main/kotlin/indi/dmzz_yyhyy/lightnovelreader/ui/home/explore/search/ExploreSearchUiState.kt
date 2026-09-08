@@ -7,13 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.github.michaelbull.result.Result
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.LocalString
 import kotlinx.coroutines.flow.Flow
 
-@State
+@Stable
 interface ExploreSearchUiState {
     val isFocused: Boolean
     val isLoading: Boolean

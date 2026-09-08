@@ -36,24 +36,24 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import dev.jeziellago.compose.markdowntext.MarkdownText
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.update.Release
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.updatesAvailableDialog() {
-    dialog<Route.UpdatesAvailableDialog> {
-        val navController = LocalNavController.current
+fun NavEntryScope.updatesAvailableDialog() {
+    overlayEntry<Route.UpdatesAvailableDialog> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<UpdatesAvailableDialogViewModel>()
         val isDownloading by viewModel.isDownloading.collectAsStateWithLifecycle()
         val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
         UpdatesAvailableDialog(
-            onDismissRequest = { if (!isDownloading) navController.popBackStack() },
+            onDismissRequest = { if (!isDownloading) navigator.popBackStack() },
             onConfirmation = { viewModel.downloadUpdate() },
             release = viewModel.release,
             isDownloading = isDownloading,
@@ -230,6 +230,6 @@ fun UpdatesAvailableDialog(
     )
 }
 
-fun NavController.navigateUpdatesAvailableDialog() {
+fun Navigator.navigateUpdatesAvailableDialog() {
     navigate(Route.UpdatesAvailableDialog)
 }

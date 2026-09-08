@@ -1,24 +1,22 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsAppThemeDestination() {
-    composable<Route.Main.Settings.Theme> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsAppThemeDestination() {
+    entry<Route.Main.Settings.Theme> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<ThemeViewModel>()
         ThemeScreen(
             settingState = viewModel.settingState,
-            onClickBack = navController::popBackStackIfResumed
+            onClickBack = navigator::popBackStack
         )
     }
 }
 
-fun NavController.navigateToSettingsAppThemeDestination() {
+fun Navigator.navigateToSettingsAppThemeDestination() {
     navigate(Route.Main.Settings.Theme)
 }

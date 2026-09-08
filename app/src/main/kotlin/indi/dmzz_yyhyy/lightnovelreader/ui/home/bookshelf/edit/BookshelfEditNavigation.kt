@@ -1,33 +1,28 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.DeleteBookshelfDialog
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.bookshelfEditDestination() {
-    composable<Route.Main.Bookshelf.Edit> {
-        val navController = LocalNavController.current
+fun NavEntryScope.bookshelfEditDestination() {
+    entry<Route.Main.Bookshelf.Edit> {
+        val navigator = LocalNavigator.current
         val editBookshelfViewModel = hiltViewModel<EditBookshelfViewModel>()
-        val edit = it.toRoute<Route.Main.Bookshelf.Edit>()
         EditBookshelfScreen(
-            title = edit.title,
-            bookshelfId = edit.id,
+            title = it.title,
+            bookshelfId = it.id,
             bookshelf = editBookshelfViewModel.bookshelf,
             init = editBookshelfViewModel::init,
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             onClickSave = {
-                navController.popBackStackIfResumed()
+                navigator.popBackStack()
                 editBookshelfViewModel.save()
             },
-            onClickDelete = navController::navigateToDeleteBookshelfDialog,
+            onClickDelete = navigator::navigateToDeleteBookshelfDialog,
             onNameChange = editBookshelfViewModel::onNameChange,
             onSortTypeChange = editBookshelfViewModel::onSortTypeChange,
             onAutoCacheChange = editBookshelfViewModel::onAutoCacheChange,
@@ -37,26 +32,25 @@ fun NavGraphBuilder.bookshelfEditDestination() {
     deleteBookshelfDialog()
 }
 
-fun NavController.navigateToBookshelfEditDestination(id: Int, title: String) {
+fun Navigator.navigateToBookshelfEditDestination(id: Int, title: String) {
     navigate(Route.Main.Bookshelf.Edit(id, title))
 }
 
-private fun NavGraphBuilder.deleteBookshelfDialog() {
-    dialog<Route.Main.Bookshelf.DeleteBookshelfDialog> {
-        val navController = LocalNavController.current
+private fun NavEntryScope.deleteBookshelfDialog() {
+    overlayEntry<Route.Main.Bookshelf.DeleteBookshelfDialog> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<DeleteBookshelfDialogViewModel>()
         DeleteBookshelfDialog(
-            onDismissRequest = { navController.popBackStack() },
+            onDismissRequest = { navigator.popBackStack() },
             onConfirmation = {
-                viewModel.deleteBookshelf(it.toRoute<Route.Main.Bookshelf.DeleteBookshelfDialog>().bookshelfId)
-                navController.popBackStack()
-                navController.popBackStackIfResumed()
+                viewModel.deleteBookshelf(it.bookshelfId)
+                navigator.popBackStack()
+                navigator.popBackStack()
             }
         )
     }
 }
 
-private fun NavController.navigateToDeleteBookshelfDialog(bookId: Int) {
-    if (!this.isResumed()) return
+private fun Navigator.navigateToDeleteBookshelfDialog(bookId: Int) {
     navigate(Route.Main.Bookshelf.DeleteBookshelfDialog(bookId))
 }

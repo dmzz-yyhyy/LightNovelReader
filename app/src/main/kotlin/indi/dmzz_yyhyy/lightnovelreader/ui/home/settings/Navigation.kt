@@ -14,14 +14,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
-import androidx.navigation.compose.navigation
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportContext
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ExportUserDataDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.MutableExportContext
@@ -48,15 +46,14 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle.settingsRea
 import indi.dmzz_yyhyy.lightnovelreader.ui.storagemanager.navigateToStorageManager
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.settingsDestination() {
-    composable<Route.Main.Settings.Home> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsDestination() {
+    entry<Route.Main.Settings.Home> {
+        val navigator = LocalNavigator.current
         val settingsViewModel = hiltViewModel<SettingsViewModel>()
         val updatesAvailableDialogViewModel = hiltViewModel<UpdatesAvailableDialogViewModel>()
         val updatePhase by updatesAvailableDialogViewModel.updatePhaseFlow.collectAsStateWithLifecycle(
@@ -67,15 +64,15 @@ fun NavGraphBuilder.settingsDestination() {
             settingState = settingsViewModel.settingState,
             checkUpdate = updatesAvailableDialogViewModel::checkUpdate,
             importData = settingsViewModel::importFromFile,
-            onClickDebugMode = navController::navigateToSettingsDebugDestination,
-            onClickLicenses = navController::navigateToSettingsLicensesDestination,
-            onClickChangeSource = navController::navigateToSettingsSourceChangeDestination,
-            onClickExportUserData = navController::navigateToExportUserDataDialog,
-            onClickLogcat = navController::navigateToSettingsLogcatDestination,
-            onClickTextFormatting = navController::navigateToSettingsTextFormattingManagerDestination,
-            onClickPluginManager = navController::navigateToSettingsPluginManagerHomeDestination,
-            onClickReaderStyleSettings = navController::navigateToSettingsReaderStyleDestination,
-            onClickStorageManager = navController::navigateToStorageManager,
+            onClickDebugMode = navigator::navigateToSettingsDebugDestination,
+            onClickLicenses = navigator::navigateToSettingsLicensesDestination,
+            onClickChangeSource = navigator::navigateToSettingsSourceChangeDestination,
+            onClickExportUserData = navigator::navigateToExportUserDataDialog,
+            onClickLogcat = navigator::navigateToSettingsLogcatDestination,
+            onClickTextFormatting = navigator::navigateToSettingsTextFormattingManagerDestination,
+            onClickPluginManager = navigator::navigateToSettingsPluginManagerHomeDestination,
+            onClickReaderStyleSettings = navigator::navigateToSettingsReaderStyleDestination,
+            onClickStorageManager = navigator::navigateToStorageManager,
             onOptOut = settingsViewModel::trackOptOut
         )
     }
@@ -86,39 +83,34 @@ fun NavGraphBuilder.settingsDestination() {
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.settingsNavigation() {
-    navigation<Route.Main.Settings>(
-        startDestination = Route.Main.Settings.Home
-    ) {
-        settingsDestination()
-        settingsDebugDestination()
-        settingsLogcatDestination()
-        settingsAppThemeDestination()
-        settingsReaderStyleDestination()
-        settingsTextFormattingNavigation()
-        settingsPluginManagerNavigation()
-        settingsLicensesDestination()
-        settingsFormatsDestination()
-    }
+fun NavEntryScope.settingsNavigation() {
+    settingsDestination()
+    settingsDebugDestination()
+    settingsLogcatDestination()
+    settingsAppThemeDestination()
+    settingsReaderStyleDestination()
+    settingsTextFormattingNavigation()
+    settingsPluginManagerNavigation()
+    settingsLicensesDestination()
+    settingsFormatsDestination()
 }
 
 @Suppress("unused")
-fun NavController.navigateToSettingsDestination() {
-    navigate(Route.Main.Settings)
+fun Navigator.navigateToSettingsDestination() {
+    navigate(Route.Main.Settings.Home)
 }
 
-private fun NavGraphBuilder.sliderValueDialog() {
-    dialog<Route.SliderValueDialog> { entry ->
-        val navController = LocalNavController.current
+private fun NavEntryScope.sliderValueDialog() {
+    overlayEntry<Route.SliderValueDialog> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<SliderValueDialogViewModel>()
-        val route = entry.toRoute<Route.SliderValueDialog>()
-        val value = route.value
+        val value = entry.value
         SliderValueDialog(
             value = value,
             onValueChange = { viewModel.setValue(it) },
-            onDismissRequest = { navController.popBackStack() },
+            onDismissRequest = { navigator.popBackStack() },
             onConfirmation = {
-                navController.popBackStack()
+                navigator.popBackStack()
             }
         )
 
@@ -126,9 +118,9 @@ private fun NavGraphBuilder.sliderValueDialog() {
 }
 
 
-private fun NavGraphBuilder.exportUserDataDialog() {
-    dialog<Route.Main.ExportUserDataDialog> {
-        val navController = LocalNavController.current
+private fun NavEntryScope.exportUserDataDialog() {
+    overlayEntry<Route.Main.ExportUserDataDialog> {
+        val navigator = LocalNavigator.current
         val context = LocalContext.current
         val workManager = WorkManager.getInstance(context)
         val viewModel = hiltViewModel<ExportUserDataDialogViewModel>()
@@ -150,13 +142,13 @@ private fun NavGraphBuilder.exportUserDataDialog() {
                         }
                     }
             }
-            navController.popBackStack()
+            navigator.popBackStack()
         }
         ExportUserDataDialog(
-            onDismissRequest = { navController.popBackStack() },
+            onDismissRequest = { navigator.popBackStack() },
             onClickSaveAndSend = {
                 viewModel.exportAndSendToFile(exportContext, context) {
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 }
             },
             onClickSaveToFile = {
@@ -167,7 +159,7 @@ private fun NavGraphBuilder.exportUserDataDialog() {
     }
 }
 
-private fun NavController.navigateToExportUserDataDialog() {
+private fun Navigator.navigateToExportUserDataDialog() {
     navigate(Route.Main.ExportUserDataDialog)
 }
 

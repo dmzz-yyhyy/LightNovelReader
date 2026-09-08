@@ -2,7 +2,8 @@ package io.nightfish.lightnovelreader.api.plugin
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraphBuilder
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 
 /**
  * LightNovelReader 插件接口
@@ -32,7 +33,7 @@ interface LightNovelReaderPlugin {
      *
      * @since Api 2
      */
-    fun NavGraphBuilder.onBuildNavHost() {}
+    fun EntryProviderScope<NavKey>.onBuildNavHost() {}
 
     /**
      * 插件向软件注入的页面内容

@@ -7,17 +7,15 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import io.nightfish.lightnovelreader.api.content.component.ComponentRender
 
 /**
- * 当前页面的导航控制器
- * 需在Compose导航宿主内使用
+ * 返回当前 Navigation 3 页面。
  *
- * @since Api 2
+ * @since Api 4
  */
-val LocalNavController = compositionLocalOf<NavController> {
-    error("CompositionLocal LocalNavController not present")
+val LocalPopBackStack = compositionLocalOf<() -> Boolean> {
+    error("CompositionLocal LocalPopBackStack not present")
 }
 
 /**

@@ -28,11 +28,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hierarchy
-import io.nightfish.lightnovelreader.api.Route
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.Collections
@@ -89,18 +84,6 @@ fun LazyListState.isScrollingUp(): State<Boolean> {
     }
     return up
 }
-
-
-fun NavController.popBackStackIfResumed() {
-    if (isResumed()) {
-        popBackStack()
-    }
-}
-
-fun NavController.isResumed(): Boolean {
-    return this.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED
-}
-
 fun quickSelect(list: List<Int>, percentile: Double): Int {
     val targetIndex = (list.size * percentile).toInt().coerceIn(list.indices)
     val arr = list.toMutableList()
@@ -130,19 +113,6 @@ private fun partition(arr: MutableList<Int>, left: Int, right: Int): Int {
     }
     Collections.swap(arr, i, right)
     return i
-}
-
-fun NavDestination?.currentMainRoute(): Any? {
-    if (this == null) return null
-    return hierarchy.firstNotNullOfOrNull { dest ->
-        when (dest.route) {
-            Route.Main.Reading.Home::class.qualifiedName -> Route.Main.Reading
-            Route.Main.Bookshelf.Home::class.qualifiedName -> Route.Main.Bookshelf
-            Route.Main.Explore.Home::class.qualifiedName -> Route.Main.Explore
-            Route.Main.Settings.Home::class.qualifiedName -> Route.Main.Settings
-            else -> null
-        }
-    }
 }
 
 fun LazyListScope.navigationBarSpacer() {

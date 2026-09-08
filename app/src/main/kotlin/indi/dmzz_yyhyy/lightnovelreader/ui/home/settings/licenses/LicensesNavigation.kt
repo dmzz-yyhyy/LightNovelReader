@@ -1,21 +1,19 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.licenses
 
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsLicensesDestination() {
-    composable<Route.Main.Settings.Licenses> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsLicensesDestination() {
+    entry<Route.Main.Settings.Licenses> {
+        val navigator = LocalNavigator.current
         LicensesScreen(
-            onClickBack = navController::popBackStackIfResumed
+            onClickBack = navigator::popBackStack
         )
     }
 }
 
-fun NavController.navigateToSettingsLicensesDestination() {
+fun Navigator.navigateToSettingsLicensesDestination() {
     navigate(Route.Main.Settings.Licenses)
 }

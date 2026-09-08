@@ -2,7 +2,6 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.proxy
 
 import android.content.Context
 import android.net.Uri
-import androidx.navigation.NavController
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
@@ -15,9 +14,8 @@ interface ProxyWebBookDataSource : PriorityWebBookDataSource {
     override fun onLoad() = origin.onLoad()
     override val imageHeader get() = origin.imageHeader
     override fun progressBookTagClick(
-        tag: String,
-        navController: NavController
-    ) = origin.progressBookTagClick(tag, navController)
+        tag: String
+    ) = origin.progressBookTagClick(tag)
 
     override suspend fun isOffLine() = origin.isOffLine()
     override val offLine get() = origin.offLine

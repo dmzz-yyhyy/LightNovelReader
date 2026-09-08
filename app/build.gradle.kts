@@ -25,7 +25,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_03_00_006
+        versionCode = 1_03_00_008
         versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -137,11 +137,11 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 dependencies {
-    implementation(libs.androidx.ui)
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Android lib
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.documentfile)
     implementation(libs.androidx.foundation)
     implementation(libs.core.splashscreen)
     implementation(libs.lifecycle.runtime.ktx)
@@ -165,10 +165,11 @@ dependencies {
     implementation(libs.androidx.hilt.common)
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.work)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
     // Navigation
-    implementation(libs.navigation.ui.ktx)
-    implementation(libs.navigation.compose)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     // coil3
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

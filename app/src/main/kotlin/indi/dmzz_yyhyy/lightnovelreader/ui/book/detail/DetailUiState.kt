@@ -4,14 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.github.michaelbull.result.Result
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 
-@State
+@Stable
 interface DetailUiState {
     val bookInformation: Result<BookInformation, WebRequestError>?
     val bookVolumes: Result<BookVolumes, WebRequestError>?

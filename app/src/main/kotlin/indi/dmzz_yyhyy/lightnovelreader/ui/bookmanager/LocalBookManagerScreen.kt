@@ -78,8 +78,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.TagChip
 import indi.dmzz_yyhyy.lightnovelreader.utils.FileSizeUnit
-import indi.dmzz_yyhyy.lightnovelreader.utils.fadeEnter
-import indi.dmzz_yyhyy.lightnovelreader.utils.fadeExit
+import indi.dmzz_yyhyy.lightnovelreader.utils.theme.Anim
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import indi.dmzz_yyhyy.lightnovelreader.utils.formatSize
 import kotlin.math.roundToInt
@@ -669,7 +668,7 @@ private fun LocalBookInfoCard(
             AnimatedContent(
                 targetState = isClearing,
                 transitionSpec = {
-                    fadeEnter() togetherWith fadeExit()
+                    Anim.fadeEnter() togetherWith Anim.fadeExit()
                 },
                 label = "LocalBookInfoContent"
             ) { clearing ->

@@ -48,52 +48,44 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
 import coil3.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.StorePlugin
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.ApiCompat
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.pluginStoreInstallBottomSheet() {
-    dialog<Route.PluginStoreInstall>(
-        dialogProperties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
-    ) { entry ->
-        val navController = LocalNavController.current
-        val route = entry.toRoute<Route.PluginStoreInstall>()
+fun NavEntryScope.pluginStoreInstallBottomSheet() {
+    overlayEntry<Route.PluginStoreInstall> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<PluginStoreInstallViewModel>()
 
-        LaunchedEffect(route.pluginId) {
-            viewModel.load(route.pluginId)
+        LaunchedEffect(entry.pluginId) {
+            viewModel.load(entry.pluginId)
         }
 
         LaunchedEffect(viewModel) {
             viewModel.navigateToInstall.collect { file ->
-                navController.popBackStack()
-                navController.navigateToPluginInstallerDialog(file.toUri().toString())
+                navigator.popBackStack()
+                navigator.navigateToPluginInstallerDialog(file.toUri().toString())
             }
         }
 
         PluginStoreInstallSheet(
             state = viewModel.state,
             onInstall = { plugin -> viewModel.install(plugin) },
-            onDismiss = { navController.popBackStack() }
+            onDismiss = { navigator.popBackStack() }
         )
     }
 }
 
-fun NavController.navigateToPluginStoreInstall(pluginId: String) {
-    popBackStack<Route.PluginStoreInstall>(inclusive = true, saveState = false)
+fun Navigator.navigateToPluginStoreInstall(pluginId: String) {
+    if (currentRoute is Route.PluginStoreInstall) popBackStack()
     navigate(Route.PluginStoreInstall(pluginId))
 }
 

@@ -2,25 +2,23 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.dialog
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.DeleteProgressDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.InstallProgressDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginDialogMode
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.UpdateCheckDialog
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.pluginInstallerDialog() {
-    dialog<Route.PluginInstallerDialog> { entry ->
+fun NavEntryScope.pluginInstallerDialog() {
+    overlayEntry<Route.PluginInstallerDialog> { entry ->
         val snackbarHostState = LocalSnackbarHost.current
-        val navController = LocalNavController.current
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<PluginInstallerDialogViewModel>()
-        val route = entry.toRoute<Route.PluginInstallerDialog>()
-        val source = route.source
+        val source = entry.source
 
         LaunchedEffect(source) {
             if (source.isNotBlank()) viewModel.setSource(source)
@@ -33,7 +31,7 @@ fun NavGraphBuilder.pluginInstallerDialog() {
         val uiState = viewModel.uiState
 
         LaunchedEffect(uiState.closeSignal) {
-            if (uiState.closeSignal > 0) navController.popBackStack()
+            if (uiState.closeSignal > 0) navigator.popBackStack()
         }
         when (uiState.mode) {
             PluginDialogMode.Install -> {
@@ -65,6 +63,6 @@ fun NavGraphBuilder.pluginInstallerDialog() {
     }
 }
 
-fun NavController.navigateToPluginInstallerDialog(string: String) {
+fun Navigator.navigateToPluginInstallerDialog(string: String) {
     navigate(Route.PluginInstallerDialog(string))
 }

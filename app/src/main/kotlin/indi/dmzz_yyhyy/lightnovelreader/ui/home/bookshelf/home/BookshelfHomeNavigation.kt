@@ -7,54 +7,52 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.AddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit.navigateToBookshelfEditDestination
+import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Suppress("UNUSED_PARAMETER")
-fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransitionScope) {
-    composable<Route.Main.Bookshelf.Home> {
-        val navController = LocalNavController.current
-        val parentEntry = remember(it) { navController.getBackStackEntry(Route.Main) }
-        val bookshelfHomeViewModel = hiltViewModel<BookshelfHomeViewModel>(parentEntry)
+fun NavEntryScope.bookshelfHomeDestination(sharedTransitionScope: SharedTransitionScope) {
+    entry<Route.Main.Bookshelf.Home> {
+        val navigator = LocalNavigator.current
+        val bookshelfHomeViewModel = activityHiltViewModel<BookshelfHomeViewModel>()
         val bookshelfNewTitle = stringResource(R.string.bookshelf_new_title)
         val bookshelfEditTitle = stringResource(R.string.bookshelf_edit_title)
         val uiState =
-            remember(navController, bookshelfHomeViewModel, bookshelfNewTitle, bookshelfEditTitle) {
+            remember(navigator, bookshelfHomeViewModel, bookshelfNewTitle, bookshelfEditTitle) {
                 object : BookshelfHomeUiState by bookshelfHomeViewModel.uiState {
                     override val enableReorderMode: () -> Unit = {
-                        navController.navigate(
+                        navigator.navigate(
                             Route.Main.Bookshelf.ReorderBooks(
                                 bookshelfHomeViewModel.uiState.selectedBookshelfId
                             )
                         )
                     }
                     override val enableBookshelfReorderMode: () -> Unit = {
-                        navController.navigate(Route.Main.Bookshelf.ReorderBookshelves)
+                        navigator.navigate(Route.Main.Bookshelf.ReorderBookshelves)
                     }
                     override val onCreate: () -> Unit = {
-                        navController.navigateToBookshelfEditDestination(-1, bookshelfNewTitle)
+                        navigator.navigateToBookshelfEditDestination(-1, bookshelfNewTitle)
                     }
                     override val onEdit: (Int) -> Unit = { bookshelfId ->
-                        navController.navigateToBookshelfEditDestination(
+                        navigator.navigateToBookshelfEditDestination(
                             bookshelfId,
                             bookshelfEditTitle
                         )
                     }
                     override val onBookClick: (String) -> Unit =
-                        navController::navigateToBookDetailDestination
+                        navigator::navigateToBookDetailDestination
                     override val onRemove: () -> Unit = {
                         bookshelfHomeViewModel.removeSelectedBooks()
                         if (bookshelfHomeViewModel.uiState.selectedBookshelf?.allBookFlows?.isEmpty() == true) {
@@ -62,7 +60,7 @@ fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransi
                         }
                     }
                     override val onMarkSelectedBooks: () -> Unit = {
-                        navController.navigateToAddBookToBookshelfDialog(bookshelfHomeViewModel.uiState.selectedBookIds)
+                        navigator.navigateToAddBookToBookshelfDialog(bookshelfHomeViewModel.uiState.selectedBookIds)
                         bookshelfHomeViewModel.disableSelectMode()
                     }
                 }
@@ -77,24 +75,23 @@ fun NavGraphBuilder.bookshelfHomeDestination(sharedTransitionScope: SharedTransi
 }
 
 @Suppress("unused")
-fun NavController.navigateToBookshelfHomeDestination() {
+fun Navigator.navigateToBookshelfHomeDestination() {
     navigate(Route.Main.Bookshelf.Home)
 }
 
-private fun NavGraphBuilder.addBookToBookshelfDialog() {
-    dialog<Route.Main.Bookshelf.AddBookToBookshelfDialog> { entry ->
-        val navController = LocalNavController.current
+private fun NavEntryScope.addBookToBookshelfDialog() {
+    overlayEntry<Route.Main.Bookshelf.AddBookToBookshelfDialog> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<AddBookToBookshelfDialogViewModel>()
         val dialogSelectedBookshelves = remember { mutableStateListOf<Int>() }
-        val route = entry.toRoute<Route.Main.Bookshelf.AddBookToBookshelfDialog>()
         val allBookshelves by viewModel.allBookshelfFlow.collectAsStateWithLifecycle(emptyList<Bookshelf>())
         AddBookToBookshelfDialog(
-            onDismissRequest = { navController.popBackStack() },
+            onDismissRequest = { navigator.popBackStack() },
             onConfirmation = {
                 CoroutineScope(Dispatchers.Main).launch {
-                    viewModel.markSelectedBooks(route.selectedBookIds, dialogSelectedBookshelves)
+                    viewModel.markSelectedBooks(entry.selectedBookIds, dialogSelectedBookshelves)
                 }
-                navController.popBackStack()
+                navigator.popBackStack()
             },
             onSelectBookshelf = { dialogSelectedBookshelves.add(it) },
             onDeselectBookshelf = dialogSelectedBookshelves::remove,
@@ -104,6 +101,6 @@ private fun NavGraphBuilder.addBookToBookshelfDialog() {
     }
 }
 
-private fun NavController.navigateToAddBookToBookshelfDialog(selectedBookIds: List<String>) {
+private fun Navigator.navigateToAddBookToBookshelfDialog(selectedBookIds: List<String>) {
     navigate(Route.Main.Bookshelf.AddBookToBookshelfDialog(selectedBookIds))
 }

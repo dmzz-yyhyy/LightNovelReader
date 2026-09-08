@@ -100,6 +100,7 @@ import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.get
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
@@ -117,7 +118,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.isScrollingUp
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -139,7 +139,7 @@ fun DetailScreen(
     onClickCover: (Uri) -> Unit,
     onClickMarkAsRead: () -> Unit
 ) {
-    val navController = LocalNavController.current
+    val navigator = LocalNavigator.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = LocalSnackbarHost.current
     val context = LocalContext.current
@@ -255,7 +255,7 @@ fun DetailScreen(
                 onClickExport = { showExportBottomSheet = true },
                 onClickTextFormatting = {
                     uiState.bookInformation?.onOk {
-                        navController.navigateToSettingsTextFormattingRulesDestination(
+                        navigator.navigateToSettingsTextFormattingRulesDestination(
                             it.id
                         )
                     }?.onErr {

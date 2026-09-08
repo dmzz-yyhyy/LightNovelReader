@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
@@ -36,7 +35,6 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableDetailUiState()
     var exportSettings = ExportSettings()
-    var navController: NavController? = null
     val uiState: DetailUiState = _uiState
 
     var isInitialized by mutableStateOf(false)
@@ -105,10 +103,7 @@ class DetailViewModel @Inject constructor(
         return isCachedFlow
     }
 
-    fun onClickTag(tag: String) {
-        if (navController == null) return
-        bookRepository.progressBookTagClick(tag, navController!!)
-    }
+    fun onClickTag(tag: String) = bookRepository.progressBookTagClick(tag)
 
 
     fun exportToEpub(uri: Uri, bookId: String, title: String): Flow<WorkInfo?> {

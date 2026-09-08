@@ -8,36 +8,29 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginManagerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.PluginSignatureDialog
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.utils.restart
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsPluginManagerDetailDestination() {
-    composable<Route.Main.Settings.PluginManager.Detail> { navBackStackEntry ->
-        val navController = LocalNavController.current
-        val parentEntry = remember(navBackStackEntry) {
-            navBackStackEntry.destination.parent?.route
-                ?.let(navController::getBackStackEntry)
-        }
+fun NavEntryScope.settingsPluginManagerDetailDestination() {
+    entry<Route.Main.Settings.PluginManager.Detail> { navBackStackEntry ->
+        val navigator = LocalNavigator.current
         val coroutineScope = rememberCoroutineScope()
         val snackbarHostState = LocalSnackbarHost.current
         val context = LocalContext.current
         var showSignatureDialog by remember { mutableStateOf(false) }
-        val viewModel = hiltViewModel<PluginManagerViewModel>(parentEntry ?: navBackStackEntry)
+        val viewModel = activityHiltViewModel<PluginManagerViewModel>()
 
-        val pluginId = navBackStackEntry.toRoute<Route.Main.Settings.PluginManager.Detail>().id
+        val pluginId = navBackStackEntry.id
         val plugin = viewModel.pluginList.find { it.packageName == pluginId }
         val enabledPluginList by viewModel.enabledPluginFlow.collectAsStateWithLifecycle(emptyList())
         val enabled = enabledPluginList.contains(pluginId)
@@ -47,7 +40,7 @@ fun NavGraphBuilder.settingsPluginManagerDetailDestination() {
         PluginDetailScreen(
             isEnabled = enabled,
             pluginInfo = plugin,
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             onClickSwitch = { pluginMetadata ->
                 viewModel.onClickEnabledSwitch(pluginMetadata)
                 showSnackbar(
@@ -77,6 +70,6 @@ fun NavGraphBuilder.settingsPluginManagerDetailDestination() {
     }
 }
 
-fun NavController.navigateToSettingsPluginManagerDetailDestination(id: String) {
+fun Navigator.navigateToSettingsPluginManagerDetailDestination(id: String) {
     navigate(Route.Main.Settings.PluginManager.Detail(id))
 }

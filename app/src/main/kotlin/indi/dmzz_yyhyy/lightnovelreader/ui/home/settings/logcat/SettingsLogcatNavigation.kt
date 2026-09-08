@@ -6,17 +6,14 @@ import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsLogcatDestination() {
-    composable<Route.Main.Settings.Logcat> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsLogcatDestination() {
+    entry<Route.Main.Settings.Logcat> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<LogcatViewModel>()
         LifecycleEventEffect(Lifecycle.Event.ON_START) {
             if (!viewModel.uiState.isFileMode) viewModel.startLogging()
@@ -26,7 +23,7 @@ fun NavGraphBuilder.settingsLogcatDestination() {
             uiState = viewModel.uiState,
             logFiles = viewModel.logFilenameList,
             logEntries = logEntries,
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             onClickClearLogs = viewModel::clearLogs,
             onClickShareLogs = viewModel::shareLogs,
             onClickDeleteLogFile = viewModel::deleteLogFile,
@@ -36,8 +33,7 @@ fun NavGraphBuilder.settingsLogcatDestination() {
 }
 
 
-fun NavController.navigateToSettingsLogcatDestination() {
-    if (!this.isResumed()) return
+fun Navigator.navigateToSettingsLogcatDestination() {
     navigate(Route.Main.Settings.Logcat)
 }
 

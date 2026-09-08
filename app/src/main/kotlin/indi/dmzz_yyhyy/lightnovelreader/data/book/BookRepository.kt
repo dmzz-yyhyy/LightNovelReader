@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import android.util.Log
-import androidx.navigation.NavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
@@ -191,6 +190,6 @@ class BookRepository @Inject constructor(
         return true
     }
 
-    override fun progressBookTagClick(tag: String, navController: NavController) =
-        webBookDataSource.progressBookTagClick(tag, navController)
+    override fun progressBookTagClick(tag: String) =
+        webBookDataSource.progressBookTagClick(tag)
 }

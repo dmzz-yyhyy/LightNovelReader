@@ -2,40 +2,34 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
-import androidx.navigation.compose.navigation
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.EditTextFormattingRuleDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.navigateToSettingsTextFormattingRulesDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.settingsTextFormattingRulesDestination
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.editTextFormattingRuleDialog() {
-    dialog<Route.Main.EditTextFormattingRuleDialog> {
-        val navController = LocalNavController.current
-        val route = it.toRoute<Route.Main.EditTextFormattingRuleDialog>()
+fun NavEntryScope.editTextFormattingRuleDialog() {
+    overlayEntry<Route.Main.EditTextFormattingRuleDialog> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<EditTextFormattingRuleDialogViewModel>()
-        LaunchedEffect(route.bookId, route.ruleId) {
-            viewModel.load(route.bookId, route.ruleId)
+        LaunchedEffect(it.bookId, it.ruleId) {
+            viewModel.load(it.bookId, it.ruleId)
         }
         viewModel.formattingRule?.let { rule ->
             EditTextFormattingRuleDialog(
                 rule = rule,
                 matchTextFieldValue = viewModel.matchTextFieldValue,
-                onDismissRequest = navController::popBackStack,
+                onDismissRequest = { navigator.popBackStack() },
                 onConfirmation = {
                     viewModel.onConfirmation()
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 onDelete = {
                     viewModel.onDelete()
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 onNameChange = viewModel::updateName,
                 onMatchChange = viewModel::updateMatch,
@@ -46,33 +40,27 @@ fun NavGraphBuilder.editTextFormattingRuleDialog() {
     }
 }
 
-fun NavController.navigateToEditTextFormattingRuleDialog(bookId: String, ruleId: Int) {
-    if (!this.isResumed()) return
+fun Navigator.navigateToEditTextFormattingRuleDialog(bookId: String, ruleId: Int) {
     navigate(Route.Main.EditTextFormattingRuleDialog(bookId, ruleId))
 }
 
-fun NavGraphBuilder.settingsTextFormattingNavigation() {
-    navigation<Route.Main.Settings.TextFormatting>(
-        startDestination = Route.Main.Settings.TextFormatting.Manager
-    ) {
-        settingsTextFormattingManagerDestination()
-        settingsTextFormattingRulesDestination()
-    }
+fun NavEntryScope.settingsTextFormattingNavigation() {
+    settingsTextFormattingManagerDestination()
+    settingsTextFormattingRulesDestination()
 }
 
-fun NavGraphBuilder.settingsTextFormattingManagerDestination() {
-    composable<Route.Main.Settings.TextFormatting.Manager> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsTextFormattingManagerDestination() {
+    entry<Route.Main.Settings.TextFormatting.Manager> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<FormattingViewModel>()
         TextFormattingScreen(
-            onClickBack = navController::popBackStackIfResumed,
-            onClickGroup = navController::navigateToSettingsTextFormattingRulesDestination,
+            onClickBack = navigator::popBackStack,
+            onClickGroup = navigator::navigateToSettingsTextFormattingRulesDestination,
             groups = viewModel.formattingGroups
         )
     }
 }
 
-fun NavController.navigateToSettingsTextFormattingManagerDestination() {
-    if (!this.isResumed()) return
+fun Navigator.navigateToSettingsTextFormattingManagerDestination() {
     navigate(Route.Main.Settings.TextFormatting.Manager)
 }

@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,15 +45,15 @@ fun BookshelfHomeScreen(
     val context = LocalContext.current
     val workManager = WorkManager.getInstance(context)
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topAppBarColors = TopAppBarDefaults.topAppBarColors()
     val backgroundColor by animateColorAsState(
-        if (uiState.selectMode) MaterialTheme.colorScheme.surfaceVariant
-        else MaterialTheme.colorScheme.surface
+        if (uiState.selectMode) topAppBarColors.scrolledContainerColor
+        else topAppBarColors.containerColor
     )
     val saveAllBookshelfLauncher = launcher(uiState.saveAllBookshelfJsonData)
     val saveThisBookshelfLauncher = launcher(uiState.saveBookshelfJsonData)
     val importBookshelfLauncher = launcher(uiState.importBookshelf)
-    val listState =
-        remember(uiState.selectedBookshelfId) { androidx.compose.foundation.lazy.LazyListState() }
+    val listState = remember(uiState.selectedBookshelfId) { androidx.compose.foundation.lazy.LazyListState() }
 
     BackHandler(uiState.selectMode) {
         uiState.onDisableSelectMode()

@@ -1,48 +1,45 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.home
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.runtime.remember
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search.navigateToSearchDestination
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
+import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 @OptIn(ExperimentalSharedTransitionApi::class)
-fun NavGraphBuilder.exploreHomeDestination() {
-    composable<Route.Main.Explore.Home> { entry ->
-        val navController = LocalNavController.current
-        val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
-        val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
+fun NavEntryScope.exploreHomeDestination() {
+    entry<Route.Main.Explore.Home> {
+        val navigator = LocalNavigator.current
+        val exploreViewModel = activityHiltViewModel<ExploreViewModel>()
         val exploreHomeViewModel = hiltViewModel<ExploreHomeViewModel>()
         if (exploreHomeViewModel.customExplorePageProvider == null) {
             ExploreHomeScreen(
                 exploreUiState = exploreViewModel.uiState,
                 exploreHomeUiState = exploreHomeViewModel.uiState,
-                onClickExpand = navController::navigateToExploreExpandDestination,
-                onClickBook = navController::navigateToBookDetailDestination,
+                onClickExpand = navigator::navigateToExploreExpandDestination,
+                onClickBook = navigator::navigateToBookDetailDestination,
                 init = exploreHomeViewModel::init,
                 changePage = exploreHomeViewModel::changePage,
-                onClickSearch = navController::navigateToSearchDestination,
+                onClickSearch = navigator::navigateToSearchDestination,
                 refresh = exploreHomeViewModel::refresh
             )
         } else {
             CustomExploreHomeScreen(
                 init = exploreHomeViewModel::init,
-                onClickSearch = navController::navigateToSearchDestination,
+                onClickSearch = navigator::navigateToSearchDestination,
                 customExplorePageProvider = exploreHomeViewModel.customExplorePageProvider!!
             )
         }
     }
 }
 
-fun NavController.navigateToExploreHomeDestination() {
-    if (!this.isResumed()) return
+@Suppress("unused")
+fun Navigator.navigateToExploreHomeDestination() {
     navigate(Route.Main.Explore.Home)
 }

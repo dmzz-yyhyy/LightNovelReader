@@ -1,31 +1,27 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.debug
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsDebugDestination() {
-    composable<Route.Main.Settings.Debug> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsDebugDestination() {
+    entry<Route.Main.Settings.Debug> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<DebugScreenViewModel>()
         DebugScreen(
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             onClickQuery = viewModel::runSQLCommand,
             onClickOpenBook = {
-                navController.navigateToBookDetailDestination(it)
+                navigator.navigateToBookDetailDestination(it)
             },
             result = viewModel.result
         )
     }
 }
 
-fun NavController.navigateToSettingsDebugDestination() {
-    if (!this.isResumed()) return
+fun Navigator.navigateToSettingsDebugDestination() {
     navigate(Route.Main.Settings.Debug)
 }

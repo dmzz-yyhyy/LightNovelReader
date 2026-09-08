@@ -1,127 +1,101 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
-import androidx.hilt.lifecycle.viewmodel.HiltViewModelFactory
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle.navigateToSettingsReaderStyleDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.saveBitmapAsPng
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.uriToBitmap
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-fun NavGraphBuilder.bookReaderDestination() {
-    composable<Route.Book.Reader> { navBackStackEntry ->
-        val navController = LocalNavController.current
-        val parentEntry = remember(navBackStackEntry) {
-            navBackStackEntry.destination.parent?.route
-                ?.let(navController::getBackStackEntry)
+fun NavEntryScope.bookReaderDestination() {
+    entry<Route.Book.Reader> { route ->
+        val navigator = LocalNavigator.current
+        val viewModel = hiltViewModel<ReaderViewModel>()
+        LaunchedEffect(route) {
+            viewModel.bookId = route.bookId
+            viewModel.changeChapter(route.chapterId)
         }
-        val viewModel = hiltViewModel<ReaderViewModel>(parentEntry ?: navBackStackEntry)
         ReaderScreen(
             readingScreenUiState = viewModel.uiState,
             settingState = viewModel.settingState,
-            onClickBackButton = navController::popBackStackIfResumed,
+            onClickBackButton = { navigator.popBackStack() },
             updateTotalReadingTime = viewModel::updateTotalReadingTime,
             accumulateReadTime = viewModel::accumulateReadingTime,
             onClickPrevChapter = viewModel::prevChapter,
             onClickNextChapter = viewModel::nextChapter,
             onChangeChapter = viewModel::changeChapter,
-            onClickReaderStyleSettings = navController::navigateToSettingsReaderStyleDestination
+            onClickReaderStyleSettings = navigator::navigateToSettingsReaderStyleDestination
         )
     }
     colorPickerDialog()
     imageViewerDialog()
 }
 
-fun NavController.navigateToBookReaderDestination(
+fun Navigator.navigateToBookReaderDestination(
     bookId: String,
     chapterId: String,
-    context: Context
 ) {
-    val entry = this.getBackStackEntry<Route.Book>()
-    val viewModel = ViewModelProvider.create(
-        entry,
-        HiltViewModelFactory(
-            context = context,
-            delegateFactory = entry.defaultViewModelProviderFactory
-        ),
-    )[ReaderViewModel::class.java]
-    viewModel.bookId = bookId
-    viewModel.changeChapter(chapterId)
-    this.navigate(Route.Book.Reader)
+    navigate(Route.Book.Reader(bookId, chapterId))
 }
 
-private fun NavGraphBuilder.colorPickerDialog() {
-    dialog<Route.Book.ColorPickerDialog> { entry ->
-        val navController = LocalNavController.current
+private fun NavEntryScope.colorPickerDialog() {
+    overlayEntry<Route.Book.ColorPickerDialog> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<ColorPickerDialogViewModel>()
-        val route = entry.toRoute<Route.Book.ColorPickerDialog>()
-        val selectedColor by viewModel.init(route.colorUserDataPath)
+        val selectedColor by viewModel.init(entry.colorUserDataPath)
             .collectAsStateWithLifecycle(Color.Unspecified)
         ColorPickerDialog(
-            onDismissRequest = { navController.popBackStack() },
+            onDismissRequest = { navigator.popBackStack() },
             onConfirmation = {
                 viewModel.changeBackgroundColor(it)
-                navController.popBackStack()
+                navigator.popBackStack()
             },
             selectedColor = selectedColor ?: Color.Unspecified,
-            colors = route.colors.map { Color(if (it < 0) return@map Color.Unspecified else it) },
-            description = stringResource(route.target.toAppTarget().descriptionResId)
+            colors = entry.colors.map { Color(if (it < 0) return@map Color.Unspecified else it) },
+            description = stringResource(entry.target.toAppTarget().descriptionResId)
         )
     }
 }
 
-fun NavController.navigateToColorPickerDialog(
+fun Navigator.navigateToColorPickerDialog(
     colorUserDataPath: String,
     colors: List<Long>,
     target: Route.Book.ColorPickerTargetType = Route.Book.ColorPickerTargetType.BACKGROUND
 ) {
-    if (!this.isResumed()) return
     navigate(Route.Book.ColorPickerDialog(colorUserDataPath, colors.toLongArray(), target))
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")
-private fun NavGraphBuilder.imageViewerDialog() {
-    dialog<Route.Book.ImageViewerDialog>(
-        dialogProperties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
-    ) { entry ->
-        val navController = LocalNavController.current
-        val route = entry.toRoute<Route.Book.ImageViewerDialog>()
+private fun NavEntryScope.imageViewerDialog() {
+    overlayEntry<Route.Book.ImageViewerDialog> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<ImageViewerViewModel>()
 
         val context = LocalContext.current
@@ -138,14 +112,14 @@ private fun NavGraphBuilder.imageViewerDialog() {
 
                 coroutineScope.launch(Dispatchers.IO) {
                     uriToBitmap(
-                        imageUri = route.imageUri.toUri(),
+                        imageUri = entry.imageUri.toUri(),
                         context = context,
                         header = viewModel.imageHeader
                     ).onOk { bitmap ->
                         val result = runCatching {
                             context.contentResolver.openOutputStream(targetUri)?.use { out ->
                                 bitmap.compress(
-                                    android.graphics.Bitmap.CompressFormat.PNG,
+                                    Bitmap.CompressFormat.PNG,
                                     100,
                                     out
                                 )
@@ -181,12 +155,12 @@ private fun NavGraphBuilder.imageViewerDialog() {
             }
 
         ImageViewerScreen(
-            imageUri = route.imageUri.toUri(),
-            onDismissRequest = { navController.popBackStack() },
+            imageUri = entry.imageUri.toUri(),
+            onDismissRequest = { navigator.popBackStack() },
             onClickSave = {
                 coroutineScope.launch(Dispatchers.IO) {
                     uriToBitmap(
-                        imageUri = route.imageUri.toUri(),
+                        imageUri = entry.imageUri.toUri(),
                         context = context,
                         header = viewModel.imageHeader
                     ).onOk {
@@ -226,7 +200,7 @@ private fun NavGraphBuilder.imageViewerDialog() {
     }
 }
 
-fun NavController.navigateToImageViewerDialog(
+fun Navigator.navigateToImageViewerDialog(
     imageUri: Uri
 ) {
     navigate(

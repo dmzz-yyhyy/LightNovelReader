@@ -12,36 +12,32 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import androidx.work.WorkInfo
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToImageViewerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToMarkAllChaptersAsReadDialog
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @SuppressLint("LocalContextGetResourceValueCall")
-fun NavGraphBuilder.bookDetailDestination() {
-    composable<Route.Book.Detail> { entry ->
-        val navController = LocalNavController.current
-        val bookId = entry.toRoute<Route.Book.Detail>().bookId
-        val viewModel = hiltViewModel<DetailViewModel>(entry)
+fun NavEntryScope.bookDetailDestination() {
+    entry<Route.Book.Detail> { entry ->
+        val navigator = LocalNavigator.current
+        val bookId = entry.bookId
+        val viewModel = hiltViewModel<DetailViewModel>()
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
         val exportBookToEPUBLauncher = uriLauncher { uri ->
@@ -80,9 +76,8 @@ fun NavGraphBuilder.bookDetailDestination() {
                         Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                     }
             }
-            navController.popBackStack()
+            navigator.popBackStack()
         }
-        viewModel.navController = navController
         val snackbarHostState = LocalSnackbarHost.current
 
         LaunchedEffect(bookId) {
@@ -109,9 +104,9 @@ fun NavGraphBuilder.bookDetailDestination() {
                         Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                     }
             },
-            onClickBackButton = navController::popBackStackIfResumed,
+            onClickBackButton = { navigator.popBackStack() },
             onClickChapter = {
-                navController.navigateToBookReaderDestination(bookId, it, context)
+                navigator.navigateToBookReaderDestination(bookId, it)
             },
             onClickReadFromStart = {
                 viewModel.uiState.bookVolumes
@@ -119,7 +114,7 @@ fun NavGraphBuilder.bookDetailDestination() {
                         it.volumes.firstOrNull()?.chapters?.firstOrNull()?.id
                     }?.onOk { id ->
                         id?.let {
-                            navController.navigateToBookReaderDestination(bookId, it, context)
+                            navigator.navigateToBookReaderDestination(bookId, it)
                         }
                     }?.onErr {
                         Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
@@ -132,16 +127,15 @@ fun NavGraphBuilder.bookDetailDestination() {
                             it.volumes.firstOrNull()?.chapters?.firstOrNull()?.id
                         }?.onOk { id ->
                             id?.let {
-                                navController.navigateToBookReaderDestination(bookId, it, context)
+                                navigator.navigateToBookReaderDestination(bookId, it)
                             }
                         }?.onErr {
                             Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
                         }
                 else {
-                    navController.navigateToBookReaderDestination(
+                    navigator.navigateToBookReaderDestination(
                         bookId,
                         viewModel.uiState.userReadingData!!.lastReadChapterId!!,
-                        context
                     )
                 }
             },
@@ -199,18 +193,16 @@ fun NavGraphBuilder.bookDetailDestination() {
                     }
                 }
             },
-            requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
-            onClickTag = viewModel::onClickTag,
-            onClickCover = navController::navigateToImageViewerDialog,
+            requestAddBookToBookshelf = navigator::navigateToAddBookToBookshelfDialog,
+            onClickTag = { viewModel.onClickTag(it)?.let(navigator::navigate) },
+            onClickCover = navigator::navigateToImageViewerDialog,
             onClickMarkAsRead = {
-                navController.navigateToMarkAllChaptersAsReadDialog(bookId)
+                navigator.navigateToMarkAllChaptersAsReadDialog(bookId)
             }
         )
     }
 }
-
-fun NavController.navigateToBookDetailDestination(bookId: String) {
-    if (!this.isResumed()) return
+fun Navigator.navigateToBookDetailDestination(bookId: String) {
     navigate(Route.Book.Detail(bookId))
 }
 
@@ -245,4 +237,3 @@ fun selectDirectory(
     }
     launcher.launch(Intent.createChooser(intent, context.getString(R.string.select_location)))
 }
-

@@ -16,13 +16,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToPluginInstallerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToPluginStoreInstall
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.applist.navigateToSettingsPluginAppListDestination
@@ -30,32 +28,23 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.applist.s
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail.navigateToSettingsPluginManagerDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.detail.settingsPluginManagerDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.utils.restart
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.settingsPluginManagerNavigation() {
-    navigation<Route.Main.Settings.PluginManager>(
-        startDestination = Route.Main.Settings.PluginManager.Home
-    ) {
-        settingsPluginManagerHomeDestination()
-        settingsPluginAppListDestination()
-        settingsPluginManagerDetailDestination()
-    }
+fun NavEntryScope.settingsPluginManagerNavigation() {
+    settingsPluginManagerHomeDestination()
+    settingsPluginAppListDestination()
+    settingsPluginManagerDetailDestination()
 }
 
-fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
-    composable<Route.Main.Settings.PluginManager.Home> { navBackStackEntry ->
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsPluginManagerHomeDestination() {
+    entry<Route.Main.Settings.PluginManager.Home> {
+        val navigator = LocalNavigator.current
         val context = LocalContext.current
-        val parentEntry = remember(navBackStackEntry) {
-            navBackStackEntry.destination.parent?.route
-                ?.let(navController::getBackStackEntry)
-        }
-        val viewModel = hiltViewModel<PluginManagerViewModel>(parentEntry ?: navBackStackEntry)
+        val viewModel = activityHiltViewModel<PluginManagerViewModel>()
         val enabledPluginList by viewModel.enabledPluginFlow.collectAsStateWithLifecycle(emptyList())
         val errorMessageMap = viewModel.errorMessageMap
         val pluginUpdates by viewModel.pluginUpdates.collectAsStateWithLifecycle()
@@ -103,9 +92,9 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
             errorMessageMap = errorMessageMap,
             updateVersionNames = updateVersionNames,
             getPluginFile = viewModel::getPluginFile,
-            onClickBack = navController::popBackStackIfResumed,
-            onClickPluginApps = navController::navigateToSettingsPluginAppListDestination,
-            onClickDetail = navController::navigateToSettingsPluginManagerDetailDestination,
+            onClickBack = navigator::popBackStack,
+            onClickPluginApps = navigator::navigateToSettingsPluginAppListDestination,
+            onClickDetail = navigator::navigateToSettingsPluginManagerDetailDestination,
             onClickSwitch = { pluginMetadata ->
                 viewModel.onClickEnabledSwitch(pluginMetadata)
                 showSnackbar(
@@ -126,7 +115,7 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                     val intent = Intent(Intent.ACTION_DELETE, "package:$id".toUri())
                     uninstallLauncher.launch(intent)
                 } else {
-                    navController.navigateToPluginInstallerDialog("uninstall:$id")
+                    navigator.navigateToPluginInstallerDialog("uninstall:$id")
                 }
             },
             pluginInfoList = viewModel.pluginList,
@@ -142,7 +131,7 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
                     actionLabel = checkUpdateViewActionLabel
                 ) {
                     if (it == SnackbarResult.ActionPerformed) {
-                        navController.navigateToPluginStoreInstall(updateInfo.pluginId)
+                        navigator.navigateToPluginStoreInstall(updateInfo.pluginId)
                     }
                 }
             },
@@ -202,8 +191,8 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
         )
 
         if (pendingInstallUri != null) {
-            val uri = pendingInstallUri ?: return@composable
-            navController.navigateToPluginInstallerDialog(uri.toString())
+            val uri = pendingInstallUri ?: return@entry
+            navigator.navigateToPluginInstallerDialog(uri.toString())
             pendingInstallUri = null
         }
 
@@ -226,7 +215,6 @@ fun NavGraphBuilder.settingsPluginManagerHomeDestination() {
     }
 }
 
-fun NavController.navigateToSettingsPluginManagerHomeDestination() {
+fun Navigator.navigateToSettingsPluginManagerHomeDestination() {
     navigate(Route.Main.Settings.PluginManager.Home)
 }
-

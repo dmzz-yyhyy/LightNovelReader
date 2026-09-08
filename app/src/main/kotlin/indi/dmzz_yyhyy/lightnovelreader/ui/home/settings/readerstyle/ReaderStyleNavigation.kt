@@ -1,27 +1,25 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToColorPickerDialog
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 
-fun NavGraphBuilder.settingsReaderStyleDestination() {
-    composable<Route.Main.Settings.ReaderStyle> {
-        val navController = LocalNavController.current
+fun NavEntryScope.settingsReaderStyleDestination() {
+    entry<Route.Main.Settings.ReaderStyle> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<ReaderStyleViewModel>()
         val readerSettingState = viewModel.settingState
         val isDark = LocalAppTheme.current.isDark
         ReaderStyleScreen(
             settingState = readerSettingState,
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             onClickChangeTextColor = {
-                navController.navigateToColorPickerDialog(
+                navigator.navigateToColorPickerDialog(
                     if (isDark) UserDataPath.Reader.TextDarkColor.path
                     else UserDataPath.Reader.TextColor.path,
                     listOf(-1, 0xFF1D1B20, 0xFFE6E0E9),
@@ -29,7 +27,7 @@ fun NavGraphBuilder.settingsReaderStyleDestination() {
                 )
             },
             onClickChangeBackgroundColor = {
-                navController.navigateToColorPickerDialog(
+                navigator.navigateToColorPickerDialog(
                     if (isDark) UserDataPath.Reader.BackgroundDarkColor.path
                     else UserDataPath.Reader.BackgroundColor.path,
                     listOf(
@@ -50,6 +48,6 @@ fun NavGraphBuilder.settingsReaderStyleDestination() {
     }
 }
 
-fun NavController.navigateToSettingsReaderStyleDestination() {
+fun Navigator.navigateToSettingsReaderStyleDestination() {
     navigate(Route.Main.Settings.ReaderStyle)
 }

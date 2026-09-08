@@ -4,10 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 
-@State
+@Stable
 interface ExploreHomeUiState {
     val pageTitles: List<String>
     val selectedPage: Int

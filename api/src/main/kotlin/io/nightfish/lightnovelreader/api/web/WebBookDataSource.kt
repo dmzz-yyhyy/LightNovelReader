@@ -2,7 +2,7 @@ package io.nightfish.lightnovelreader.api.web
 
 import android.content.Context
 import android.net.Uri
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -146,11 +146,11 @@ interface WebBookDataSource {
      * 用于处理书本tag的点击跳转事件
      *
      * @param tag 被点击的tag内容
-     * @param navController 导航控制器
+     * @return 由宿主应用打开的 Navigation 3 路由或 `null`
      *
      * @since Api 4
      */
-    fun progressBookTagClick(tag: String, navController: NavController) {}
+    fun progressBookTagClick(tag: String): NavKey? = null
 
     /**
      * 根据卷获取该卷封面的Uri, 用于EPUB分卷导出

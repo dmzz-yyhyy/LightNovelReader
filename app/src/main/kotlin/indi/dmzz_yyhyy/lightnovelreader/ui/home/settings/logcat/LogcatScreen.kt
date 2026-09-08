@@ -210,7 +210,7 @@ private fun BottomBar(
                         .fillMaxWidth(),
                     maxLines = 1
                 )
-                ExposedDropdownMenu(
+                DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.width(320.dp)
