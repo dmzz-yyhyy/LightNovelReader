@@ -3,7 +3,7 @@
     <string name="language">简体中文 (中国大陆)</string>
     <string name="language_translators">NightFish, yukonisen</string>
     <!-- Navigation Items -->
-    <string name="nav_reading">正在阅读</string>
+    <string name="nav_reading">阅读中</string>
     <string name="nav_bookshelf">书架</string>
     <string name="nav_bookshelf_select_mode">选择 书架 (%d)</string>
     <string name="nav_explore">探索</string>
