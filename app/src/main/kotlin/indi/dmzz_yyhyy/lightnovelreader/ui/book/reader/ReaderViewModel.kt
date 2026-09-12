@@ -20,7 +20,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.scroll.ScrollCont
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -29,7 +28,7 @@ import javax.inject.Inject
 class ReaderViewModel @Inject constructor(
     private val statsRepository: StatsRepository,
     private val bookRepository: BookRepository,
-    private val userDataRepository: UserDataRepository,
+    userDataRepository: UserDataRepository,
     val contentComponentRepository: ContentComponentRepository
 ) : ViewModel() {
     val settingState = SettingState(userDataRepository, viewModelScope)
@@ -69,9 +68,9 @@ class ReaderViewModel @Inject constructor(
                     contentViewModel = FlipPageContentViewModel(
                         bookRepository = bookRepository,
                         coroutineScope = viewModelScope,
-                        updateReadingProgress = ::saveReadingProgress,
-                        getReadingLocationHash = ::getReadingLocationHash,
-                        contentComponentRepository = contentComponentRepository
+                        updateReadingProgress = TODO(),
+                        contentComponentRepository = contentComponentRepository,
+                        getReadingLocationHash = TODO()
                     )
                     contentViewModel?.changeBookId(bookId)
                     contentViewModel?.changeChapter(chapterId)
@@ -101,24 +100,13 @@ class ReaderViewModel @Inject constructor(
         contentViewModel?.changeChapter(chapterId)
     }
 
-    private fun readingLocationPath(chapterId: String) =
-        "reader.reading_location.$bookId.$chapterId"
-
-    private suspend fun getReadingLocationHash(chapterId: String): Int? =
-        userDataRepository.intUserData(readingLocationPath(chapterId)).get()
-
-    private fun saveReadingProgress(
-        chapterId: String,
-        locationHash: Int,
-        progress: Float,
-    ): Job? {
-        if (progress.isNaN() || progress <= 0f || bookId.isBlank()) return null
+    private fun saveReadingProgress(chapterId: String, progress: Float) {
+        if (progress.isNaN() || progress <= 0f || bookId.isBlank()) return
         val title = _uiState.contentUiState?.readingChapterContent
             ?.map { it.title }
-            ?.getOrElse { return null }
-            ?: return null
-        return viewModelScope.launch(Dispatchers.IO) {
-            userDataRepository.intUserData(readingLocationPath(chapterId)).set(locationHash)
+            ?.getOrElse { return }
+            ?: return
+        viewModelScope.launch(Dispatchers.IO) {
             val currentTime = LocalDateTime.now()
 
             bookRepository.updateUserReadingData(bookId) { userReadingData ->

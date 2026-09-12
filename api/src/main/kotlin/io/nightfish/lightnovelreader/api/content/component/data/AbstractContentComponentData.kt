@@ -38,4 +38,11 @@ abstract class AbstractContentComponentData {
      * @since Api 2
      */
     abstract fun toHtmlElement(context: Context): Element
+
+    /**
+     * 内容控件的长度系数, 用于计算阅读进度, 一般是字数
+     *
+     * @since Api 4
+     */
+    open val contentLengthWeight: Int = 1
 }

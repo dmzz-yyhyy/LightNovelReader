@@ -155,6 +155,8 @@ data class ParagraphComponentData(
             )
         )
 
+    override val contentLengthWeight = paragraph.textNodes.sumOf { it.text.length }
+
     /**
      * [ParagraphComponentData]工厂方法和常量集合
      *
