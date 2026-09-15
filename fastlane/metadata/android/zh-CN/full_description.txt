@@ -1,4 +1,4 @@
-你说得对，但是LightNovelReader 是由稻荷屋开发组开发的一款开源的轻小说阅读软件，使用 Kotlin 和 Jetpack Compose 编写，具有轻量化的体积和流畅的阅读体验。 此外，还有多种有用的功能，如 EPUB 导出、离线阅读和多数据源支持。
+LightNovelReader 是一款开源的轻小说阅读软件，使用 Kotlin 和 Jetpack Compose 编写，具有轻量化的体积和流畅的阅读体验。 此外，还有多种有用的功能，如 EPUB 导出、离线阅读和多数据源支持。
 
 <h3>特性</h3>
 <ul>
