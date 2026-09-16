@@ -8,8 +8,7 @@ import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import com.github.michaelbull.result.onErr
-import com.github.michaelbull.result.onOk
+import com.github.michaelbull.result.get
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ChapterSelectionBottomSheet
@@ -43,28 +42,22 @@ fun NavEntryScope.readingHomeDestination(sharedTransitionScope: SharedTransition
 
         viewModel.chapterSheetUiState?.let { chapterSheetUi ->
             val result by chapterSheetUi.bookVolumeFlow.collectAsStateWithLifecycle(null)
-            result?.onOk {
-                ChapterSelectionBottomSheet(
-                    sheetState = chapterSheetState,
-                    selectedVolumeId = chapterSheetUi.selectedVolumeId,
-                    bookVolumes = it,
-                    readingChapterId = chapterSheetUi.readingChapterId,
-                    onDismissRequest = viewModel::closeContents,
-                    onClickChapter = { chapterId ->
-                        navigator.navigateToBookDetailDestination(chapterSheetUi.bookId)
-                        navigator.navigateToBookReaderDestination(
-                            chapterSheetUi.bookId,
-                            chapterId,
-                        )
-                        viewModel.closeContents()
-                    },
-                    onChangeSelectedVolumeId = viewModel::setVolume
-                )
-            }?.onErr {
-                //TODO 错误显示
-            } ?: {
-                //TODO 加载显示
-            }
+            ChapterSelectionBottomSheet(
+                sheetState = chapterSheetState,
+                selectedVolumeId = chapterSheetUi.selectedVolumeId,
+                bookVolumes = result?.get(),
+                readingChapterId = chapterSheetUi.readingChapterId,
+                onDismissRequest = viewModel::closeContents,
+                onClickChapter = { chapterId ->
+                    navigator.navigateToBookDetailDestination(chapterSheetUi.bookId)
+                    navigator.navigateToBookReaderDestination(
+                        chapterSheetUi.bookId,
+                        chapterId,
+                    )
+                    viewModel.closeContents()
+                },
+                onChangeSelectedVolumeId = viewModel::setVolume
+            )
         }
     }
 }

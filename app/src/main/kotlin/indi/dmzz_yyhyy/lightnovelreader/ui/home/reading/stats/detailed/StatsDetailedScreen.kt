@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -45,6 +46,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -310,9 +313,7 @@ fun BookStack(
                     )
                 }?.onErr {
                     //TODO 错误显示
-                } ?: {
-                    //TODO 加载显示
-                }
+                } ?: StatsDetailedBookCoverSkeleton()
             }
         }
     }
@@ -403,5 +404,15 @@ private fun TopBar(
             }
         },
         scrollBehavior = scrollBehavior,
+    )
+}
+
+@Composable
+private fun StatsDetailedBookCoverSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    Box(
+        Modifier.size(63.dp, 90.dp)
+            .shimmer(shimmer)
+            .background(colorScheme.surfaceContainerLow, RoundedCornerShape(6.dp))
     )
 }

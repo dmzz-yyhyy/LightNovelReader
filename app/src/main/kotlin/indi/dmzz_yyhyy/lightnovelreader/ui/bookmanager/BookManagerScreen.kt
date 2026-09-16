@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.onErr
@@ -511,7 +514,30 @@ private fun Card(
         }
     }?.onErr {
         //TODO 错误显示
-    } ?: {
-        //TODO 加载显示
+    } ?: DownloadItemSkeleton()
+}
+
+@Composable
+private fun DownloadItemSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    val placeholder = MaterialTheme.colorScheme.surfaceContainerLow
+    val smallShape = RoundedCornerShape(4.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(93.dp)
+            .shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.width(64.dp).height(93.dp).background(placeholder, RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(16.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(Modifier.fillMaxWidth(0.72f).height(20.dp).background(placeholder, smallShape))
+            Box(Modifier.fillMaxWidth(0.4f).height(16.dp).background(placeholder, smallShape))
+            Box(Modifier.fillMaxWidth(0.64f).height(16.dp).background(placeholder, smallShape))
+        }
     }
 }

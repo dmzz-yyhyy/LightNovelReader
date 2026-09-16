@@ -49,7 +49,7 @@ import io.nightfish.lightnovelreader.api.book.BookVolumes
 fun ChapterSelectionBottomSheet(
     sheetState: SheetState,
     selectedVolumeId: String,
-    bookVolumes: BookVolumes,
+    bookVolumes: BookVolumes?,
     readingChapterId: String,
     onDismissRequest: () -> Unit,
     onClickChapter: (chapterId: String) -> Unit,
@@ -65,6 +65,7 @@ fun ChapterSelectionBottomSheet(
         if (autoScrolled) return@LaunchedEffect
         if (sheetState.currentValue != SheetValue.Expanded) return@LaunchedEffect
         if (readingChapterId.isBlank()) return@LaunchedEffect
+        val bookVolumes: BookVolumes = bookVolumes ?: return@LaunchedEffect
 
         val volumes = bookVolumes.volumes
         val volumeIndex = volumes.indexOfFirst { volume ->
@@ -112,9 +113,7 @@ fun ChapterSelectionBottomSheet(
 
                 Spacer(Modifier.height(8.dp))
 
-                val isEmpty = bookVolumes.volumes.all { it.chapters.isEmpty() }
-
-                if (isEmpty) {
+                if (bookVolumes == null) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -124,6 +123,19 @@ fun ChapterSelectionBottomSheet(
                         Loading()
                     }
                 } else {
+                    val isEmpty = bookVolumes.volumes.all { it.chapters.isEmpty() }
+
+                    if (isEmpty) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Loading()
+                        }
+                        return@Column
+                    }
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()

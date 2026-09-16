@@ -1,3 +1,4 @@
+//FIXME: TEST 停止书籍信息与目录流发射，以测试所有依赖 BookRepository 的加载 UI。
 package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import android.util.Log

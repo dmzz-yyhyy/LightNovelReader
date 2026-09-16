@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -264,12 +266,11 @@ fun ReaderScreen(
 
     AnimatedVisibility(visible = showChapterSelectionBottomSheet) {
         readingScreenUiState.contentUiState?.let { contentUiState ->
-            readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
-                contentUiState.readingChapterId?.let { readingChapterId ->
-                    ChapterSelectionBottomSheet(
+            contentUiState.readingChapterId?.let { readingChapterId ->
+                ChapterSelectionBottomSheet(
                         sheetState = chaptersBottomSheetState,
                         selectedVolumeId = selectedVolumeId,
-                        bookVolumes = bookVolumes,
+                        bookVolumes = readingScreenUiState.bookVolumes?.get(),
                         readingChapterId = readingChapterId,
                         onDismissRequest = {
                             coroutineScope.launch { chaptersBottomSheetState.hide() }
@@ -279,12 +280,12 @@ fun ReaderScreen(
                                     }
                                 }
                             showChapterSelectionBottomSheet = false
-                            selectedVolumeId =
-                                bookVolumes.volumes.firstOrNull { volume ->
+                            selectedVolumeId = readingScreenUiState.bookVolumes?.get()?.volumes
+                                ?.firstOrNull { volume ->
                                     volume.chapters.any {
                                         it.id == readingChapterId
                                     }
-                                }?.volumeId ?: ""
+                                }?.volumeId.orEmpty()
                         },
                         onClickChapter = { chapterId ->
                             onChangeChapter(chapterId)
@@ -298,12 +299,7 @@ fun ReaderScreen(
                         onChangeSelectedVolumeId = {
                             selectedVolumeId = it
                         }
-                    )
-                }
-            }?.onErr {
-                //TODO 错误显示
-            } ?: {
-                //TODO 加载显示
+                )
             }
 
             LaunchedEffect(readingScreenUiState.bookVolumes) {
@@ -320,6 +316,7 @@ fun ReaderScreen(
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

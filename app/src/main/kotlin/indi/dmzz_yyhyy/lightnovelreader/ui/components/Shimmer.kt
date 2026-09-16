@@ -4,6 +4,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -16,10 +17,11 @@ import com.valentinilk.shimmer.rememberShimmer
 @Composable
 fun rememberSkeletonShimmer(
     baseColor: Color,
-    highlightColor: Color
+    highlightColor: Color,
+    shimmerBounds: ShimmerBounds = ShimmerBounds.View
 ): Shimmer {
     return rememberShimmer(
-        shimmerBounds = ShimmerBounds.View,
+        shimmerBounds = shimmerBounds,
         theme = ShimmerTheme(
             animationSpec = infiniteRepeatable(
                 animation = tween(
@@ -37,3 +39,14 @@ fun rememberSkeletonShimmer(
         )
     )
 }
+
+@Composable
+fun rememberLoadingSkeletonShimmer(
+    shimmerBounds: ShimmerBounds = ShimmerBounds.View,
+    baseColor: Color? = null,
+    highlightColor: Color? = null
+): Shimmer = rememberSkeletonShimmer(
+    baseColor ?: colorScheme.surfaceContainerLow,
+    highlightColor ?: colorScheme.surfaceContainerHigh,
+    shimmerBounds
+)

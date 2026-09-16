@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
@@ -133,9 +135,7 @@ private fun BookActivitySection(
                     )
                 }?.onErr {
                     //TODO 错误显示
-                } ?: {
-                    //TODO 加载显示
-                }
+                } ?: StatsCardBookTitleSkeleton()
             }
             if (books.size > bookList.size)
                 Text(
@@ -156,6 +156,16 @@ private fun BookActivitySection(
             )
         }
     }
+}
+
+@Composable
+private fun StatsCardBookTitleSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    Box(
+        Modifier.fillMaxWidth(0.8f).height(20.dp)
+            .shimmer(shimmer)
+            .background(colorScheme.surfaceContainerLow, RoundedCornerShape(4.dp))
+    )
 }
 
 /**

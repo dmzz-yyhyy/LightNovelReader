@@ -51,7 +51,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -70,6 +69,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.ShimmerBounds
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
@@ -81,7 +81,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ElasticPressContainer
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberSkeletonShimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
@@ -147,6 +147,40 @@ fun ReadingScreen(
     }
 }
 
+@Composable
+private fun ReadingHomeCardSkeleton() {
+    val baseColor = colorScheme.surfaceContainer.copy(alpha = 0.7f)
+
+    val shimmer = rememberLoadingSkeletonShimmer(
+        baseColor = baseColor,
+    )
+    val cornerShape = RoundedCornerShape(6.dp)
+    val cornerShapeLarge = RoundedCornerShape(10.dp)
+
+    Row(
+        modifier = Modifier.fillMaxSize()
+            .shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(width = 118.dp, height = 172.dp).background(baseColor, cornerShapeLarge))
+        Column(
+            modifier = Modifier.padding(start = 14.dp, top = 4.dp).fillMaxHeight().weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Box(Modifier.size(128.dp, 28.dp).background(baseColor, cornerShape))
+            Box(Modifier.fillMaxWidth(0.9f).height(58.dp).background(baseColor, cornerShape))
+            Box(Modifier.fillMaxWidth(0.65f).height(20.dp).background(baseColor, cornerShape))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Box(Modifier.weight(1f).height(40.dp).background(baseColor, cornerShapeLarge))
+                Box(Modifier.weight(3f).height(40.dp).background(baseColor, cornerShapeLarge))
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun ReadingContent(
@@ -163,16 +197,7 @@ private fun ReadingContent(
     val snackbarHostState = LocalSnackbarHost.current
     val listState = rememberLazyListState()
 
-    var started by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) {
-        delay(1.seconds)
-        started = true
-    }
-
-    val shimmerInstance = rememberSkeletonShimmer(
-        baseColor = colorScheme.surfaceContainerLow,
-        highlightColor = colorScheme.surfaceContainerHigh
-    )
+    val shimmerInstance = rememberLoadingSkeletonShimmer(ShimmerBounds.Custom)
 
     val removedItemString = stringResource(R.string.removed_item)
     val undoString = stringResource(R.string.undo)
@@ -278,7 +303,7 @@ private fun ReadingContent(
                 } ?: ReadingBookCardSkeleton(
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(if (started) Modifier.shimmer(shimmerInstance) else Modifier)
+                        .shimmer(shimmerInstance)
                 )
             }
         }
@@ -291,57 +316,23 @@ private fun ReadingContent(
 fun ReadingBookCardSkeleton(
     modifier: Modifier = Modifier
 ) {
-    val roundedSmall = RoundedCornerShape(4.dp)
-    val roundedLarge = RoundedCornerShape(8.dp)
+    val cornerShape = RoundedCornerShape(4.dp)
+    val cornerShapeLarge = RoundedCornerShape(8.dp)
     val baseColor = colorScheme.surfaceContainerLow
 
     Row(
-        modifier = modifier
-            .height(144.dp)
-            .padding(4.dp)
+        modifier = modifier.height(144.dp).padding(4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(94.dp, 142.dp)
-                .clip(roundedLarge)
-                .background(baseColor)
-        )
+        Box(Modifier.size(94.dp, 142.dp).clip(cornerShapeLarge).background(baseColor))
 
         Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(start = 12.dp)
-                .weight(1f),
+            modifier = Modifier.fillMaxHeight().padding(start = 12.dp).weight(1f),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .height(40.dp)
-                    .clip(roundedSmall)
-                    .background(baseColor)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.43f)
-                    .height(20.dp)
-                    .clip(roundedSmall)
-                    .background(baseColor)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .clip(roundedSmall)
-                    .background(baseColor)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp)
-                    .clip(roundedSmall)
-                    .background(baseColor)
-            )
+            Box(Modifier.fillMaxWidth(0.9f).height(40.dp).clip(cornerShape).background(baseColor))
+            Box(Modifier.fillMaxWidth(0.43f).height(20.dp).clip(cornerShape).background(baseColor))
+            Box(Modifier.fillMaxWidth().height(48.dp).clip(cornerShape).background(baseColor))
+            Box(Modifier.fillMaxWidth().height(6.dp).clip(cornerShape).background(baseColor))
         }
     }
 }
@@ -562,9 +553,7 @@ fun ReadingHeaderCardPager(
                     )
                 }?.onErr {
                     //TODO 错误显示
-                } ?: {
-                    //TODO 加载显示
-                }
+                } ?: ReadingHomeCardSkeleton()
             }
         }
 
