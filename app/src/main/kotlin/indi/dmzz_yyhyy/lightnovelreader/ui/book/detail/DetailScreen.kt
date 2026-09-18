@@ -481,7 +481,8 @@ private fun DetailContent(
                         translationY = lazyListState.firstVisibleItemScrollOffset * 0.5f
                     }
                     .fillMaxWidth(),
-                onClickCover = onClickCover
+                onClickCover = onClickCover,
+                onClickAuthor = { onClickTag("作者：${bookInformation.author.trim()}") }
             )
         }
 
@@ -714,7 +715,8 @@ private fun TopBarActions(
 private fun BookCardBlock(
     bookInformation: BookInformation,
     modifier: Modifier,
-    onClickCover: (Uri) -> Unit
+    onClickCover: (Uri) -> Unit,
+    onClickAuthor: () -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -787,6 +789,11 @@ private fun BookCardBlock(
             }
             Text(
                 text = bookInformation.author,
+                modifier = Modifier.clickable(
+                    enabled = bookInformation.author.isNotBlank(),
+                    role = androidx.compose.ui.semantics.Role.Button,
+                    onClick = onClickAuthor
+                ),
                 maxLines = 1,
                 fontWeight = FontWeight.W600,
                 color = colorScheme.primary,

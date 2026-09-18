@@ -12,6 +12,7 @@ import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpage.AuthorExpandPageDataSource
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
@@ -246,6 +247,18 @@ class Wenku8Api : WebBookDataSource {
 
 
     override fun progressBookTagClick(tag: String, navController: NavController) {
+        // Use the same author tag convention as the Linovelib plugin.
+        if (tag.startsWith("作者：")) {
+            val author = tag.removePrefix("作者：").trim()
+            if (author.isBlank()) return
+            val pageId = "作者：$author"
+            (explorePageProvider as Wenku8ExplorePageProvider)
+                .exploreExpandedPageDataSourceMap.getOrPut(pageId) {
+                    AuthorExpandPageDataSource(author, searchProvider)
+                }
+            navController.navigateToExploreExpandDestination(pageId)
+            return
+        }
         if (tagList.contains(tag))
             navController.navigateToExploreExpandDestination(tag)
     }
