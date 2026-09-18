@@ -16,6 +16,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
+import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
@@ -30,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val bookRepository: BookRepository,
+    private val exploreRepository: ExploreRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val downloadProgressRepository: DownloadProgressRepository,
     private val workManager: WorkManager
@@ -38,6 +40,7 @@ class DetailViewModel @Inject constructor(
     var exportSettings = ExportSettings()
     var navController: NavController? = null
     val uiState: DetailUiState = _uiState
+    val canSearchAuthor: Boolean get() = exploreRepository.authorSearchType != null
 
     var isInitialized by mutableStateOf(false)
         private set

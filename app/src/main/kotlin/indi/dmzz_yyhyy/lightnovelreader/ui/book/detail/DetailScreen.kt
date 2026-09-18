@@ -136,6 +136,7 @@ fun DetailScreen(
     cacheBook: (String) -> Unit,
     requestAddBookToBookshelf: (String) -> Unit,
     onClickTag: (String) -> Unit,
+    onClickAuthor: ((String) -> Unit)?,
     onClickCover: (Uri) -> Unit,
     onClickMarkAsRead: () -> Unit
 ) {
@@ -283,6 +284,7 @@ fun DetailScreen(
                         cacheBook = cacheBook,
                         requestAddBookToBookshelf = requestAddBookToBookshelf,
                         onClickTag = onClickTag,
+                        onClickAuthor = onClickAuthor,
                         onClickCover = onClickCover,
                         onClickShowInfo = { showInfoBottomSheet = true }
                     )
@@ -453,6 +455,7 @@ private fun DetailContent(
     cacheBook: (String) -> Unit,
     requestAddBookToBookshelf: (String) -> Unit,
     onClickTag: (String) -> Unit,
+    onClickAuthor: ((String) -> Unit)?,
     onClickCover: (Uri) -> Unit,
     onClickShowInfo: () -> Unit
 ) {
@@ -482,7 +485,7 @@ private fun DetailContent(
                     }
                     .fillMaxWidth(),
                 onClickCover = onClickCover,
-                onClickAuthor = { onClickTag("作者：${bookInformation.author.trim()}") }
+                onClickAuthor = onClickAuthor
             )
         }
 
@@ -716,7 +719,7 @@ private fun BookCardBlock(
     bookInformation: BookInformation,
     modifier: Modifier,
     onClickCover: (Uri) -> Unit,
-    onClickAuthor: () -> Unit
+    onClickAuthor: ((String) -> Unit)?
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -790,9 +793,9 @@ private fun BookCardBlock(
             Text(
                 text = bookInformation.author,
                 modifier = Modifier.clickable(
-                    enabled = bookInformation.author.isNotBlank(),
+                    enabled = onClickAuthor != null && bookInformation.author.isNotBlank(),
                     role = androidx.compose.ui.semantics.Role.Button,
-                    onClick = onClickAuthor
+                    onClick = { onClickAuthor?.invoke(bookInformation.author.trim()) }
                 ),
                 maxLines = 1,
                 fontWeight = FontWeight.W600,

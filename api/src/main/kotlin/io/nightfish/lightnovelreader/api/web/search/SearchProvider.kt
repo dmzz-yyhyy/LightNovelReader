@@ -15,6 +15,15 @@ interface SearchProvider {
      * @since Api 2
      */
     val searchTypes: List<SearchType>
+
+    /**
+     * The registered search type that searches by author, or null if unsupported.
+     * Its [SearchType.type] must match an entry in [searchTypes].
+     * Hosts use [search] with this type and the author name as the keyword.
+     * The default keeps existing providers opted out.
+     */
+    val authorSearchType: SearchType? get() = null
+
     /**
      * 执行搜索任务
      *
