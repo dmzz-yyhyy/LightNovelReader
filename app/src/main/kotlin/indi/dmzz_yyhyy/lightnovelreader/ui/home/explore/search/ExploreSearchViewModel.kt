@@ -26,13 +26,16 @@ class ExploreSearchViewModel @Inject constructor(
     private val searchHistoryUserData = userDataRepository.stringListUserData(UserDataPath.Search.History.path)
     private var searchTypeTipMap = mutableMapOf<String, LocalString>()
     private var searchJob: Job? = null
+    private var initialized = false
     val uiState: ExploreSearchUiState = _uiState
 
     override fun onCleared() {
         searchJob?.cancel()
     }
 
-    fun init() {
+    fun init(author: String? = null, autoSearch: Boolean = false) {
+        if (initialized) return
+        initialized = true
         viewModelScope.launch(Dispatchers.IO) {
             searchTypeTipMap.clear()
             _uiState.searchTypeNameMap.clear()
@@ -42,8 +45,24 @@ class ExploreSearchViewModel @Inject constructor(
                 _uiState.searchTypeNameMap[type.type] = type.name
                 _uiState.searchTypeIdList.add(type.type)
             }
-            _uiState.searchType = _uiState.searchTypeIdList.getOrNull(0) ?: return@launch
-            _uiState.searchTip = searchTypeTipMap.getOrDefault(_uiState.searchType, LocalString(""))
+            val initialType = if (author == null) {
+                _uiState.searchTypeIdList.firstOrNull()
+            } else {
+                exploreRepository.authorSearchType?.type
+            }
+            if (initialType == null) {
+                _uiState.isLoading = false
+                _uiState.isLoadingComplete = true
+                _uiState.searchBarExpanded = false
+                _uiState.errorMessage = "This source does not support the requested search."
+                return@launch
+            }
+            _uiState.searchType = initialType
+            _uiState.searchTip = searchTypeTipMap.getOrDefault(initialType, LocalString(""))
+            if (autoSearch && !author.isNullOrBlank()) {
+                _uiState.searchBarExpanded = false
+                search(author.trim(), navigateToSingleBook = {}, keepSingleResult = true, recordHistory = false)
+            }
             searchHistoryUserData.getFlow().collect {
                 it?.let {
                     _uiState.historyList = it.reversed()
@@ -82,22 +101,29 @@ class ExploreSearchViewModel @Inject constructor(
 
     fun search(
         keyword: String,
-        navigateToSingleBook: (bookId: String) -> Unit
+        navigateToSingleBook: (bookId: String) -> Unit,
+        keepSingleResult: Boolean = false,
+        recordHistory: Boolean = true
     ) {
+        val searchType = exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
         _uiState.isLoading = true
         _uiState.isLoadingComplete = false
         _uiState.errorMessage = ""
         _uiState.searchResult.clear()
         searchJob?.cancel()
-        val searchType = exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
         searchJob = viewModelScope.launch(Dispatchers.IO) {
             val flow = exploreRepository.search(searchType, keyword)
             _uiState.isLoading = false
             flow.collect {
                 when(it) {
-                    is SearchResult.SingleBook -> launch(Dispatchers.Main) {
-                        _uiState.searchBarExpanded = true
-                        navigateToSingleBook(it.bookId)
+                    is SearchResult.SingleBook -> {
+                        if (keepSingleResult) {
+                            _uiState.searchResult.add(it.bookId to bookRepository.getBookInformationFlow(it.bookId))
+                            _uiState.isLoadingComplete = true
+                        } else launch(Dispatchers.Main) {
+                            _uiState.searchBarExpanded = true
+                            navigateToSingleBook(it.bookId)
+                        }
                     }
                     is SearchResult.MultipleBook -> _uiState.searchResult.add(it.bookId to bookRepository.getBookInformationFlow(it.bookId))
                     is SearchResult.Error -> {
@@ -111,7 +137,7 @@ class ExploreSearchViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        if (recordHistory) viewModelScope.launch(Dispatchers.IO) {
             searchHistoryUserData.update {
                 val newList = it.toMutableList()
                 if (it.contains(keyword))

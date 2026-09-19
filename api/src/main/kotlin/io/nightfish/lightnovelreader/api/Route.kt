@@ -93,6 +93,9 @@ object Route {
             /** 搜索界面路由 */
             @Serializable
             object Search
+            /** Author search using the current source's declared search capability. */
+            @Serializable
+            data class AuthorSearch(val author: String)
             /**
              * 探索展开页界面路由
              *

@@ -1,6 +1,13 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.toRoute
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -15,29 +22,48 @@ import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
 fun NavGraphBuilder.exploreSearchDestination() {
     composable<Route.Main.Explore.Search> { entry ->
-        val navController = LocalNavController.current
-        val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
-        val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
-        val exploreSearchViewModel = hiltViewModel<ExploreSearchViewModel>()
-        ExploreSearchScreen(
-            exploreUiState = exploreViewModel.uiState,
-            exploreSearchUiState = exploreSearchViewModel.uiState,
-            refresh = exploreViewModel::refresh,
-            requestAddBookToBookshelf = {
-                navController.navigateToAddBookToBookshelfDialog(it)
-            },
-            onClickBack = { navController.popBackStackIfResumed() },
-            init = exploreSearchViewModel::init,
-            onChangeSearchType = { exploreSearchViewModel.changeSearchType(it) },
-            onSearch = { exploreSearchViewModel.search(it, navController::navigateToBookDetailDestination) },
-            onClickDeleteHistory = { exploreSearchViewModel.deleteHistory(it) },
-            onClickClearAllHistory = exploreSearchViewModel::clearAllHistory,
-            onClickBook = {
-                navController.navigateToBookDetailDestination(it)
-            },
-            updateSuggestions = exploreSearchViewModel::updateSuggestions
-        )
+        SearchDestination(entry)
     }
+    composable<Route.Main.Explore.AuthorSearch> { entry ->
+        SearchDestination(entry, entry.toRoute<Route.Main.Explore.AuthorSearch>().author)
+    }
+}
+
+@Composable
+private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) {
+    // Consume the shortcut once; restoring an old page must not trigger a new search.
+    var autoSearchPending by rememberSaveable { mutableStateOf(author != null) }
+    val navController = LocalNavController.current
+    val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
+    val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
+    val exploreSearchViewModel = hiltViewModel<ExploreSearchViewModel>()
+    ExploreSearchScreen(
+        exploreUiState = exploreViewModel.uiState,
+        exploreSearchUiState = exploreSearchViewModel.uiState,
+        refresh = exploreViewModel::refresh,
+        requestAddBookToBookshelf = {
+            navController.navigateToAddBookToBookshelfDialog(it)
+        },
+        onClickBack = { navController.popBackStackIfResumed() },
+        initialKeyword = author.orEmpty(),
+        init = {
+            exploreSearchViewModel.init(author, autoSearch = autoSearchPending)
+            autoSearchPending = false
+        },
+        onChangeSearchType = { exploreSearchViewModel.changeSearchType(it) },
+        onSearch = { exploreSearchViewModel.search(it, navController::navigateToBookDetailDestination) },
+        onClickDeleteHistory = { exploreSearchViewModel.deleteHistory(it) },
+        onClickClearAllHistory = exploreSearchViewModel::clearAllHistory,
+        onClickBook = {
+            navController.navigateToBookDetailDestination(it)
+        },
+        updateSuggestions = exploreSearchViewModel::updateSuggestions
+    )
+}
+
+fun NavController.navigateToAuthorSearchDestination(author: String) {
+    if (!isResumed() || author.isBlank()) return
+    navigate(Route.Main.Explore.AuthorSearch(author.trim()))
 }
 
 fun NavController.navigateToSearchDestination() {

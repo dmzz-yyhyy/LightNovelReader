@@ -136,6 +136,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Android lib

@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search.navigateToAuthorSearchDestination
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -175,6 +176,9 @@ fun NavGraphBuilder.bookDetailDestination() {
             },
             requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
             onClickTag = viewModel::onClickTag,
+            onClickAuthor = if (viewModel.canSearchAuthor) {
+                { author -> navController.navigateToAuthorSearchDestination(author) }
+            } else null,
             onClickCover = navController::navigateToImageViewerDialog,
             onClickMarkAsRead = {
                 navController.navigateToMarkAllChaptersAsReadDialog(bookId)

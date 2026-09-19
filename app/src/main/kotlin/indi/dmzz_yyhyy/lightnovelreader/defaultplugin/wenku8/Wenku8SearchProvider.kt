@@ -17,6 +17,9 @@ class Wenku8SearchProvider(
         return dispatcher.search(searchType.type, keyword)
     }
 
+    override val authorSearchType: SearchType
+        get() = searchTypes.first { it.type == "author" }
+
     init {
         registerSearchType("articlename", "按书名搜索".local(), "请输入书本名称".local())
         registerSearchType("author", "按作者名搜索".local(), "请输入作者名称".local())
