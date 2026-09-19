@@ -15,8 +15,6 @@ import kotlinx.coroutines.flow.Flow
 
 @State
 interface ExploreSearchUiState {
-    val keyword: String
-    val resultKeyword: String
     val isFocused: Boolean
     val isLoading: Boolean
     val isLoadingComplete: Boolean
@@ -36,8 +34,6 @@ interface ExploreSearchUiState {
 }
 
 class MutableExploreSearchUiState : ExploreSearchUiState {
-    override var keyword: String by mutableStateOf("")
-    override var resultKeyword: String by mutableStateOf("")
     override var isFocused: Boolean by mutableStateOf(true)
     override var isLoading: Boolean by mutableStateOf(true)
     override var isLoadingComplete: Boolean by mutableStateOf(false)

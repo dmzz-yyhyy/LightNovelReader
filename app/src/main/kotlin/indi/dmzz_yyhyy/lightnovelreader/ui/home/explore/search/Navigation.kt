@@ -1,6 +1,10 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.toRoute
@@ -27,6 +31,8 @@ fun NavGraphBuilder.exploreSearchDestination() {
 
 @Composable
 private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) {
+    // Consume the shortcut once; restoring an old page must not trigger a new search.
+    var autoSearchPending by rememberSaveable { mutableStateOf(author != null) }
     val navController = LocalNavController.current
     val parentEntry = remember(entry) { navController.getBackStackEntry(Route.Main) }
     val exploreViewModel = hiltViewModel<ExploreViewModel>(parentEntry)
@@ -39,7 +45,11 @@ private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) 
             navController.navigateToAddBookToBookshelfDialog(it)
         },
         onClickBack = { navController.popBackStackIfResumed() },
-        init = { exploreSearchViewModel.init(author, navController::navigateToBookDetailDestination) },
+        initialKeyword = author.orEmpty(),
+        init = {
+            exploreSearchViewModel.init(author, autoSearch = autoSearchPending)
+            autoSearchPending = false
+        },
         onChangeSearchType = { exploreSearchViewModel.changeSearchType(it) },
         onSearch = { exploreSearchViewModel.search(it, navController::navigateToBookDetailDestination) },
         onClickDeleteHistory = { exploreSearchViewModel.deleteHistory(it) },
@@ -47,7 +57,7 @@ private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) 
         onClickBook = {
             navController.navigateToBookDetailDestination(it)
         },
-        onKeywordChange = exploreSearchViewModel::updateKeyword
+        updateSuggestions = exploreSearchViewModel::updateSuggestions
     )
 }
 
