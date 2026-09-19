@@ -61,7 +61,7 @@ class ExploreSearchViewModel @Inject constructor(
             _uiState.searchTip = searchTypeTipMap.getOrDefault(initialType, LocalString(""))
             if (autoSearch && !author.isNullOrBlank()) {
                 _uiState.searchBarExpanded = false
-                search(author.trim(), navigateToSingleBook = {}, keepSingleResult = true)
+                search(author.trim(), navigateToSingleBook = {}, keepSingleResult = true, recordHistory = false)
             }
             searchHistoryUserData.getFlow().collect {
                 it?.let {
@@ -102,7 +102,8 @@ class ExploreSearchViewModel @Inject constructor(
     fun search(
         keyword: String,
         navigateToSingleBook: (bookId: String) -> Unit,
-        keepSingleResult: Boolean = false
+        keepSingleResult: Boolean = false,
+        recordHistory: Boolean = true
     ) {
         val searchType = exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
         _uiState.isLoading = true
@@ -136,7 +137,7 @@ class ExploreSearchViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch(Dispatchers.IO) {
+        if (recordHistory) viewModelScope.launch(Dispatchers.IO) {
             searchHistoryUserData.update {
                 val newList = it.toMutableList()
                 if (it.contains(keyword))
