@@ -31,10 +31,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,15 +65,14 @@ fun ExploreSearchScreen(
     requestAddBookToBookshelf: (String) -> Unit,
     onClickBack: () -> Unit,
     init: () -> Unit,
-    initialKeyword: String = "",
     onChangeSearchType: (String) -> Unit,
     onSearch: (String) -> Unit,
     onClickDeleteHistory: (String) -> Unit,
     onClickClearAllHistory: () -> Unit,
     onClickBook: (String) -> Unit,
-    updateSuggestions: (keyword: String) -> Unit
+    onKeywordChange: (keyword: String) -> Unit
 ) {
-    var searchKeyword by rememberSaveable { mutableStateOf(initialKeyword) }
+    val searchKeyword = exploreSearchUiState.keyword
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke()
     }
@@ -123,8 +118,7 @@ fun ExploreSearchScreen(
                         SearchBarDefaults.InputField(
                             query = searchKeyword,
                             onQueryChange = {
-                                searchKeyword = it
-                                updateSuggestions(it)
+                                onKeywordChange(it)
                             },
                             onSearch = {
                                 exploreSearchUiState.setSearchBarExpandedState(false)
@@ -147,7 +141,7 @@ fun ExploreSearchScreen(
                                     if (searchKeyword.isNotBlank())
                                         IconButton(onClick = {
                                             exploreSearchUiState.setSearchBarExpandedState(true)
-                                            searchKeyword = ""
+                                            onKeywordChange("")
                                         }) {
                                             Icon(painter = painterResource(R.drawable.close_24px), contentDescription = "clear")
                                         }
@@ -229,7 +223,7 @@ fun ExploreSearchScreen(
                                             .height(46.dp)
                                             .padding(horizontal = 16.dp)
                                             .clickable {
-                                                searchKeyword = it
+                                                onKeywordChange(it)
                                                 exploreSearchUiState.setSearchBarExpandedState(false)
                                                 onSearch.invoke(history)
                                             },
@@ -276,7 +270,7 @@ fun ExploreSearchScreen(
                                             .height(46.dp)
                                             .padding(horizontal = 16.dp)
                                             .clickable {
-                                                searchKeyword = it
+                                                onKeywordChange(it)
                                                 exploreSearchUiState.setSearchBarExpandedState(false)
                                                 onSearch.invoke(history)
                                             },
@@ -348,7 +342,7 @@ fun ExploreSearchScreen(
                                 modifier = Modifier.padding(vertical = 12.dp, horizontal = 20.dp),
                                 text = stringResource(
                                     R.string.search_results_title,
-                                    searchKeyword,
+                                    exploreSearchUiState.resultKeyword,
                                     exploreSearchUiState.searchResult.size,
                                     if (exploreSearchUiState.isLoadingComplete) "" else "..."
                                 ),

@@ -792,11 +792,11 @@ private fun BookCardBlock(
             }
             Text(
                 text = bookInformation.author,
-                modifier = Modifier.clickable(
-                    enabled = onClickAuthor != null && bookInformation.author.isNotBlank(),
-                    role = androidx.compose.ui.semantics.Role.Button,
-                    onClick = { onClickAuthor?.invoke(bookInformation.author.trim()) }
-                ),
+                modifier = if (onClickAuthor != null && bookInformation.author.isNotBlank()) {
+                    Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button) {
+                        onClickAuthor(bookInformation.author.trim())
+                    }
+                } else Modifier,
                 maxLines = 1,
                 fontWeight = FontWeight.W600,
                 color = colorScheme.primary,

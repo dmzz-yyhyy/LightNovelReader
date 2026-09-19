@@ -39,8 +39,7 @@ private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) 
             navController.navigateToAddBookToBookshelfDialog(it)
         },
         onClickBack = { navController.popBackStackIfResumed() },
-        initialKeyword = author.orEmpty(),
-        init = { exploreSearchViewModel.init(author) },
+        init = { exploreSearchViewModel.init(author, navController::navigateToBookDetailDestination) },
         onChangeSearchType = { exploreSearchViewModel.changeSearchType(it) },
         onSearch = { exploreSearchViewModel.search(it, navController::navigateToBookDetailDestination) },
         onClickDeleteHistory = { exploreSearchViewModel.deleteHistory(it) },
@@ -48,7 +47,7 @@ private fun SearchDestination(entry: NavBackStackEntry, author: String? = null) 
         onClickBook = {
             navController.navigateToBookDetailDestination(it)
         },
-        updateSuggestions = exploreSearchViewModel::updateSuggestions
+        onKeywordChange = exploreSearchViewModel::updateKeyword
     )
 }
 

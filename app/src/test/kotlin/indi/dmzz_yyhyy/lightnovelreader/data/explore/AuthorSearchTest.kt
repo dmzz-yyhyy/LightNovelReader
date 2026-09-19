@@ -15,7 +15,7 @@ import java.lang.reflect.Proxy
 
 class AuthorSearchTest {
     @Test
-    fun authorCapabilityIsOptInAndSearchKeepsSingleResultsInTheList() = runBlocking {
+    fun authorCapabilityIsOptInAndSearchPreservesProviderResults() = runBlocking {
         val titleType = SearchType("title", "Title".local(), "".local())
         // Capability is explicit: neither this identifier nor its label is interpreted by the host.
         val authorType = SearchType("writer-id", "Writer".local(), "".local())
@@ -41,8 +41,7 @@ class AuthorSearchTest {
         val repository = repository(provider)
         assertEquals(authorType, repository.authorSearchType)
         val authorResults = repository.search(authorType, "川原 砾").toList()
-        assertEquals("42", (authorResults.first() as SearchResult.MultipleBook).bookId)
-        assertTrue(authorResults.last() is SearchResult.End)
+        assertSame(single, authorResults.single())
         assertEquals(listOf("writer-id" to "川原 砾"), requests)
         assertSame(single, repository.search(titleType, "Book").toList().single())
 
