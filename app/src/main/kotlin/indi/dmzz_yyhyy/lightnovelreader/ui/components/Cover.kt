@@ -23,6 +23,7 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalImageHeaderGetter
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import kotlinx.coroutines.Dispatchers
 
 @Composable
@@ -40,6 +41,9 @@ fun Cover(width: Dp, height: Dp, uri: Uri, rounded: Dp = 8.dp) {
             .httpHeaders(
                 NetworkHeaders.Builder().apply {
                     headers.forEach { (key, value) -> add(key, value) }
+                    if (headers.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
+                        add("User-Agent", UserAgentGenerator.generate())
+                    }
                 }.build()
             )
             .build()

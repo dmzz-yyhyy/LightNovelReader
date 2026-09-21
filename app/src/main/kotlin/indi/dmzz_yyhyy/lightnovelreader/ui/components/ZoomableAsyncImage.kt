@@ -44,6 +44,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlinx.coroutines.Dispatchers
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -76,6 +77,9 @@ fun ZoomableImage(
                         .httpHeaders(
                             NetworkHeaders.Builder().apply {
                                 header.forEach { (key, value) -> add(key, value) }
+                                if (header.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
+                                    add("User-Agent", UserAgentGenerator.generate())
+                                }
                             }.build()
                         )
                         .build()
