@@ -16,6 +16,7 @@ import coil3.request.SuccessResult
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -33,6 +34,9 @@ object ImageUtils {
                 .httpHeaders(
                     NetworkHeaders.Builder().apply {
                         header.forEach { (key, value) -> add(key, value) }
+                        if (header.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
+                            add("User-Agent", UserAgentGenerator.generate())
+                        }
                     }.build()
                 )
                 .build()
@@ -51,7 +55,7 @@ object ImageUtils {
             } else {
                 return@withContext Err(Throwable("Unknown result type"))
             }
-        } catch (e: Throwable) {
+        } catch (_: Throwable) {
             withContext(Dispatchers.Main) {
                 return@withContext Err(Throwable("Failed to cast drawable to BitmapDrawable"))
             }

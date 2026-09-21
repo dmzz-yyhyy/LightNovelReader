@@ -26,6 +26,7 @@ import coil3.request.crossfade
 import coil3.request.transformations
 import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalImageHeaderGetter
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
 import kotlinx.coroutines.Dispatchers
 
@@ -67,6 +68,9 @@ private fun RemoteBookCover(width: Dp, height: Dp, uri: Uri) {
             .httpHeaders(
                 NetworkHeaders.Builder().apply {
                     headers.forEach { (key, value) -> add(key, value) }
+                    if (headers.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
+                        add("User-Agent", UserAgentGenerator.generate())
+                    }
                 }.build()
             )
             .build()

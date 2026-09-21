@@ -30,6 +30,7 @@ import coil3.request.transformations
 import com.github.panpf.zoomimage.CoilZoomAsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
 import kotlinx.coroutines.Dispatchers
 
@@ -55,6 +56,9 @@ fun ImageViewerScreen(
             .httpHeaders(
                 NetworkHeaders.Builder().apply {
                     header.forEach { (key, value) -> add(key, value) }
+                    if (header.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
+                        add("User-Agent", UserAgentGenerator.generate())
+                    }
                 }.build()
             )
             .build()
