@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.detail
 
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search.navigateToAuthorSearchDestination
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -26,6 +25,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDesti
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToImageViewerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToMarkAllChaptersAsReadDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToRelatedBooksDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
 import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
@@ -69,7 +69,6 @@ fun NavGraphBuilder.bookDetailDestination() {
             }
             navController.popBackStack()
         }
-        viewModel.navController = navController
         val snackbarHostState = LocalSnackbarHost.current
 
         LaunchedEffect(bookId) {
@@ -175,10 +174,7 @@ fun NavGraphBuilder.bookDetailDestination() {
                 }
             },
             requestAddBookToBookshelf = navController::navigateToAddBookToBookshelfDialog,
-            onClickTag = viewModel::onClickTag,
-            onClickAuthor = if (viewModel.canSearchAuthor) {
-                { author -> navController.navigateToAuthorSearchDestination(author) }
-            } else null,
+            onClickRelatedBooks = navController::navigateToRelatedBooksDestination,
             onClickCover = navController::navigateToImageViewerDialog,
             onClickMarkAsRead = {
                 navController.navigateToMarkAllChaptersAsReadDialog(bookId)
@@ -217,4 +213,3 @@ fun selectDirectory(context: Context, launcher: ManagedActivityResultLauncher<In
     }
     launcher.launch(Intent.createChooser(intent, context.getString(R.string.select_location)))
 }
-

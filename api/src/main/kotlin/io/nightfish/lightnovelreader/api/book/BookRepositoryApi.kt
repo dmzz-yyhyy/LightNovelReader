@@ -1,6 +1,5 @@
 package io.nightfish.lightnovelreader.api.book
 
-import androidx.navigation.NavController
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
@@ -135,12 +134,4 @@ interface BookRepositoryApi {
      */
     suspend fun getIsBookCached(bookId: String): Boolean
 
-    /**
-     * 将书本标签点击事件交于数据源处处理
-     *
-     * @param tag 书本标签名称
-     * @param navController 导航控制器
-     *
-     */
-    fun progressBookTagClick(tag: String, navController: NavController)
 }

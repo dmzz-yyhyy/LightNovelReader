@@ -92,44 +92,46 @@ class Wenku8ExplorePageProvider(
         tagList.forEach { tag ->
             registerExpandedPageDataSource(
                 id = tag,
-                exploreExpandedPageDataSource = HomeBookExpandPageDataSource(
-                    host = host,
-                    wenku8Api = wenku8Api,
-                    baseUrl = "$host/modules/article/tags.php",
-                    title = tag,
-                    filtersBuilder = {
-                        val choicesMap = mapOf(
-                            Pair("默认", ""),
-                            Pair("按更新时间排序", ""),
-                            Pair("按热度排序", "&v=1"),
-                            Pair("仅动画化", "&v=3")
-                        )
-                        listOf(
-                            IsCompletedSwitchFilter(),
-                            SingleChoiceFilter(
-                                title = "排序".local(),
-                                dialogTitle = "文库筛选".local(),
-                                description = "根据小说的文库筛选".local(),
-                                choices = listOf(
-                                    "默认",
-                                    "按更新时间排序",
-                                    "按热度排序",
-                                    "仅动画化"
-                                ),
-                                defaultChoice = "默认"
-                            ).apply {
-                                addOnChangeListener {
-                                    this@HomeBookExpandPageDataSource.arg = choicesMap[it.trim()] ?: ""
-                                }
-                            },
-                            PublishingHouseSingleChoiceFilter(),
-                            WordCountFilter()
-                        )
-                    },
-                    extendedParameters = "&t=${URLEncoder.encode(tag, "gb2312")}",
-                    contentSelector = "#content > table > tbody > tr:nth-child(2) > td > div"
-                )
+                exploreExpandedPageDataSource = createTagPage(tag)
             )
         }
     }
+
+    fun createTagPage(tag: String) = HomeBookExpandPageDataSource(
+        host = host,
+        wenku8Api = wenku8Api,
+        baseUrl = "$host/modules/article/tags.php",
+        title = tag,
+        filtersBuilder = {
+            val choicesMap = mapOf(
+                Pair("默认", ""),
+                Pair("按更新时间排序", ""),
+                Pair("按热度排序", "&v=1"),
+                Pair("仅动画化", "&v=3")
+            )
+            listOf(
+                IsCompletedSwitchFilter(),
+                SingleChoiceFilter(
+                    title = "排序".local(),
+                    dialogTitle = "文库筛选".local(),
+                    description = "根据小说的文库筛选".local(),
+                    choices = listOf(
+                        "默认",
+                        "按更新时间排序",
+                        "按热度排序",
+                        "仅动画化"
+                    ),
+                    defaultChoice = "默认"
+                ).apply {
+                    addOnChangeListener {
+                        this@HomeBookExpandPageDataSource.arg = choicesMap[it.trim()] ?: ""
+                    }
+                },
+                PublishingHouseSingleChoiceFilter(),
+                WordCountFilter()
+            )
+        },
+        extendedParameters = "&t=${URLEncoder.encode(tag, "gb2312")}",
+        contentSelector = "#content > table > tbody > tr:nth-child(2) > td > div"
+    )
 }

@@ -69,7 +69,6 @@ fun ExploreSearchScreen(
     requestAddBookToBookshelf: (String) -> Unit,
     onClickBack: () -> Unit,
     init: () -> Unit,
-    initialKeyword: String = "",
     onChangeSearchType: (String) -> Unit,
     onSearch: (String) -> Unit,
     onClickDeleteHistory: (String) -> Unit,
@@ -77,7 +76,7 @@ fun ExploreSearchScreen(
     onClickBook: (String) -> Unit,
     updateSuggestions: (keyword: String) -> Unit
 ) {
-    var searchKeyword by rememberSaveable { mutableStateOf(initialKeyword) }
+    var searchKeyword by rememberSaveable { mutableStateOf("") }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
         init.invoke()
     }

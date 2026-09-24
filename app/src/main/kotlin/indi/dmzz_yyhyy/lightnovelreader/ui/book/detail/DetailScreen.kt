@@ -116,6 +116,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.isScrollingUp
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.Dispatchers
@@ -135,8 +136,7 @@ fun DetailScreen(
     onClickContinueReading: () -> Unit,
     cacheBook: (String) -> Unit,
     requestAddBookToBookshelf: (String) -> Unit,
-    onClickTag: (String) -> Unit,
-    onClickAuthor: ((String) -> Unit)?,
+    onClickRelatedBooks: (String, RelatedBooksRequest) -> Unit,
     onClickCover: (Uri) -> Unit,
     onClickMarkAsRead: () -> Unit
 ) {
@@ -268,10 +268,10 @@ fun DetailScreen(
             )
 
             Crossfade(
-                targetState = uiState.bookInformation,
+                targetState = uiState.bookInformation to uiState.relatedBooks,
                 animationSpec = tween(300),
                 label = "DetailScreenCrossfade"
-            ) { result ->
+            ) { (result, relatedBooks) ->
                 result?.onOk {
                     DetailContent(
                         modifier = Modifier
@@ -279,12 +279,12 @@ fun DetailScreen(
                             .background(colorScheme.surface),
                         uiState = uiState,
                         bookInformation = it,
+                        relatedBooks = relatedBooks,
                         onClickChapter = onClickChapter,
                         lazyListState = lazyListState,
                         cacheBook = cacheBook,
                         requestAddBookToBookshelf = requestAddBookToBookshelf,
-                        onClickTag = onClickTag,
-                        onClickAuthor = onClickAuthor,
+                        onClickRelatedBooks = onClickRelatedBooks,
                         onClickCover = onClickCover,
                         onClickShowInfo = { showInfoBottomSheet = true }
                     )
@@ -450,12 +450,12 @@ private fun DetailContent(
     modifier: Modifier = Modifier,
     uiState: DetailUiState,
     bookInformation: BookInformation,
+    relatedBooks: DetailRelatedBooks?,
     lazyListState: LazyListState,
     onClickChapter: (String) -> Unit,
     cacheBook: (String) -> Unit,
     requestAddBookToBookshelf: (String) -> Unit,
-    onClickTag: (String) -> Unit,
-    onClickAuthor: ((String) -> Unit)?,
+    onClickRelatedBooks: (String, RelatedBooksRequest) -> Unit,
     onClickCover: (Uri) -> Unit,
     onClickShowInfo: () -> Unit
 ) {
@@ -463,6 +463,8 @@ private fun DetailContent(
     val deferred = 6
     val framesPerStep = 2
     var visible by rememberSaveable { mutableIntStateOf(0) }
+    val sourceId = relatedBooks?.sourceId
+    val authorRequest = relatedBooks?.authorRequest
 
     LaunchedEffect(Unit) {
         while (visible < deferred) {
@@ -485,7 +487,9 @@ private fun DetailContent(
                     }
                     .fillMaxWidth(),
                 onClickCover = onClickCover,
-                onClickAuthor = onClickAuthor
+                onClickAuthor = if (sourceId != null && authorRequest != null) {
+                    { onClickRelatedBooks(sourceId, authorRequest) }
+                } else null
             )
         }
 
@@ -493,7 +497,10 @@ private fun DetailContent(
             TagsBlock(
                 modifier = Modifier.fadeInOnce("tags"),
                 bookInformation = bookInformation,
-                onClickTag = onClickTag
+                tags = relatedBooks?.tags.orEmpty(),
+                onClickTag = { request ->
+                    if (sourceId != null) onClickRelatedBooks(sourceId, request)
+                }
             )
         }
 
@@ -719,7 +726,7 @@ private fun BookCardBlock(
     bookInformation: BookInformation,
     modifier: Modifier,
     onClickCover: (Uri) -> Unit,
-    onClickAuthor: ((String) -> Unit)?
+    onClickAuthor: (() -> Unit)?
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -792,10 +799,8 @@ private fun BookCardBlock(
             }
             Text(
                 text = bookInformation.author,
-                modifier = if (onClickAuthor != null && bookInformation.author.isNotBlank()) {
-                    Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button) {
-                        onClickAuthor(bookInformation.author.trim())
-                    }
+                modifier = if (onClickAuthor != null) {
+                    Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClickAuthor)
                 } else Modifier,
                 maxLines = 1,
                 fontWeight = FontWeight.W600,
@@ -850,7 +855,8 @@ private fun InfoRow(
 private fun TagsBlock(
     modifier: Modifier,
     bookInformation: BookInformation,
-    onClickTag: (String) -> Unit
+    tags: List<DetailBookTag>,
+    onClickTag: (RelatedBooksRequest) -> Unit
 ) {
     Row(
         modifier = modifier
@@ -867,10 +873,11 @@ private fun TagsBlock(
             )
         }
 
-        bookInformation.tags.forEach { tag ->
+        tags.forEach { tag ->
             SuggestionChip(
-                label = { Text(tag) },
-                onClick = { onClickTag(tag) }
+                label = { Text(tag.value) },
+                enabled = tag.request != null,
+                onClick = { tag.request?.let(onClickTag) }
             )
         }
     }

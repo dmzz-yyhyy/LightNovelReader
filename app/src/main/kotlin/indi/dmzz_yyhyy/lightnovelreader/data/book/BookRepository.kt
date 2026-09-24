@@ -1,7 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import android.util.Log
-import androidx.navigation.NavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
@@ -16,21 +15,46 @@ import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.EmptyWebDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import indi.dmzz_yyhyy.lightnovelreader.data.web.proxy.ProxyWebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
+import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+
+internal data class RawBookInformation(
+    val sourceId: String?,
+    val supportedRelatedBookKinds: Set<RelatedBookKind>,
+    val information: BookInformation,
+)
+
+internal fun WebBookDataSourceProvider.relatedBooksSource(): ProxyWebBookDataSource? =
+    if (isWebDataSourceFounded()) value.takeUnless { it.origin === EmptyWebDataSource } else null
+
+internal fun WebBookDataSourceProvider.createRelatedBooksPage(
+    sourceId: String,
+    request: RelatedBooksRequest,
+): ExploreExpandedPageDataSource {
+    val source = checkNotNull(relatedBooksSource()) { "Book source is unavailable" }
+    check(source.id.toString() == sourceId) { "Book source has changed" }
+    require(request.kind in source.supportedRelatedBookKinds) { "Related books are unsupported" }
+    require(request.value.isNotBlank()) { "Related book value is blank" }
+    return source.createRelatedBooksPage(request)
+}
 
 @Singleton
 class BookRepository @Inject constructor(
@@ -46,15 +70,33 @@ class BookRepository @Inject constructor(
 
     private val webBookDataSource get() = webBookDataSourceProvider.value
 
+    val sourceId: String? get() = webBookDataSourceProvider.relatedBooksSource()?.id?.toString()
+    val supportedRelatedBookKinds: Set<RelatedBookKind>
+        get() = webBookDataSourceProvider.relatedBooksSource()?.supportedRelatedBookKinds.orEmpty()
+
+    fun createRelatedBooksPage(sourceId: String, request: RelatedBooksRequest): ExploreExpandedPageDataSource =
+        webBookDataSourceProvider.createRelatedBooksPage(sourceId, request)
+
     override fun getBookInformationFlow(
         id: String,
         priority: WebDataSourcePriority
-    ): Flow<Result<BookInformation, WebRequestError>> = flow {
+    ): Flow<Result<BookInformation, WebRequestError>> = getRawBookInformationFlow(id, priority).map { result ->
+        result.map { textProcessingRepository.processBookInformation { it.information } }
+    }
+
+    internal fun getRawBookInformationFlow(
+        id: String,
+        priority: WebDataSourcePriority,
+    ): Flow<Result<RawBookInformation, WebRequestError>> = flow {
+        val availableSource = webBookDataSourceProvider.relatedBooksSource()
+        val source = availableSource ?: webBookDataSource
+        val sourceId = availableSource?.id?.toString()
+        val supportedKinds = availableSource?.supportedRelatedBookKinds.orEmpty()
         localBookDataSource.getBookInformation(id)?.also {
-            emit(Ok(it))
+            emit(Ok(RawBookInformation(sourceId, supportedKinds, it)))
             if (BuildConfig.BENCHMARK) return@flow
         }
-        webBookDataSource.getBookInformation(id, priority)
+        source.getBookInformation(id, priority)
             .onOk { remote ->
                 localBookDataSource.updateBookInformation(remote)
                 val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
@@ -71,12 +113,8 @@ class BookRepository @Inject constructor(
                 it.throwable?.printStackTrace()
             }
             .also {
-                emit(it)
+                emit(it.map { information -> RawBookInformation(sourceId, supportedKinds, information) })
             }
-    }.map { result ->
-        result.map {
-            textProcessingRepository.processBookInformation { it }
-        }
     }
 
     override fun getBookVolumesFlow(
@@ -186,7 +224,4 @@ class BookRepository @Inject constructor(
         } ?: return false
         return true
     }
-
-    override fun progressBookTagClick(tag: String, navController: NavController) =
-        webBookDataSource.progressBookTagClick(tag, navController)
 }

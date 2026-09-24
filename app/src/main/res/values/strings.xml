@@ -704,4 +704,7 @@
     <string name="restart">Restart</string>
     <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
     <string name="never_read">Never read</string>
+    <string name="related_books_load_failed">Unable to load books</string>
+    <string name="related_books_retry">Retry</string>
+    <string name="related_books_empty">No books were found for this list.</string>
 </resources>

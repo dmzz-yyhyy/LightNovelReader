@@ -2,6 +2,7 @@ package io.nightfish.lightnovelreader.api
 
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
 import kotlinx.serialization.Serializable
 
 /**
@@ -93,9 +94,14 @@ object Route {
             /** 搜索界面路由 */
             @Serializable
             object Search
-            /** Author search using the current source's declared search capability. */
+            /** 当前书源中按作者或标签关联的书籍列表。 */
             @Serializable
-            data class AuthorSearch(val author: String)
+            data class RelatedBooks(
+                val sourceId: String,
+                val bookId: String,
+                val kind: RelatedBookKind,
+                val value: String
+            )
             /**
              * 探索展开页界面路由
              *
