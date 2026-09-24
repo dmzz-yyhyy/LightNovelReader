@@ -63,9 +63,11 @@
 -keep class indi.dmzz_yyhyy.lightnovelreader.R$* { *; }
 -keep class io.nightfish.** { *; }
 
-# Shared ABI used by dynamically loaded plugins.
+# Dynamically loaded plugins share the API and AndroidX public binary interface.
 -keep,includedescriptorclasses class io.nightfish.lightnovelreader.api.** { *; }
--keep,includedescriptorclasses class androidx.** { *; }
+-keep,includedescriptorclasses public class androidx.** {
+    public protected *;
+}
 -keepclasseswithmembers class indi.dmzz_yyhyy.lightnovelreader.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
