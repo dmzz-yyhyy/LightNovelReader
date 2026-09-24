@@ -100,11 +100,12 @@ import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.get
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SwitchChip
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberSkeletonShimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookStatusIcon
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.navigateToSettingsTextFormattingRulesDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.DefaultBookCoverRenderer
@@ -117,12 +118,9 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.isScrollingUp
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -139,12 +137,13 @@ fun DetailScreen(
     onClickCover: (Uri) -> Unit,
     onClickMarkAsRead: () -> Unit
 ) {
-    val navController = LocalNavController.current
+    val navigator = LocalNavigator.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = LocalSnackbarHost.current
     val context = LocalContext.current
 
-    val exportBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val exportBottomSheetState =
+        rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
     val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
 
     var showExportBottomSheet by remember { mutableStateOf(false) }
@@ -254,7 +253,7 @@ fun DetailScreen(
                 onClickExport = { showExportBottomSheet = true },
                 onClickTextFormatting = {
                     uiState.bookInformation?.onOk {
-                        navController.navigateToSettingsTextFormattingRulesDestination(
+                        navigator.navigateToSettingsTextFormattingRulesDestination(
                             it.id
                         )
                     }?.onErr {
@@ -289,10 +288,10 @@ fun DetailScreen(
                 }?.onErr {
                     //TODO 错误显示
                 } ?: DetailContentSkeleton(
-                        Modifier
-                            .fillMaxSize()
-                            .background(colorScheme.surface)
-                    )
+                    Modifier
+                        .fillMaxSize()
+                        .background(colorScheme.surface)
+                )
             }
         }
 
@@ -327,37 +326,25 @@ fun DetailScreen(
 
 @Composable
 private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
-    val rounded = RoundedCornerShape(6.dp)
-    var started by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        delay(0.5.seconds)
-        started = true
-    }
-
+    val cornerShape = RoundedCornerShape(6.dp)
+    val cornerShapeLarge = RoundedCornerShape(8.dp)
     val baseColor = colorScheme.surfaceContainerLow
-    val highlightColor = colorScheme.surfaceContainerHigh
-
-    val shimmer = rememberSkeletonShimmer(
-        baseColor, highlightColor
-    )
+    val shimmer = rememberLoadingSkeletonShimmer()
 
     Column(
         modifier = modifier
-            .then(if (started) Modifier.shimmer(shimmer) else Modifier),
+            .shimmer(shimmer),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.Top),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
                 .heightIn(188.dp)
                 .padding(horizontal = itemHorizontalPadding, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier
-                    .size(width = 122.dp, height = 178.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                modifier = Modifier.size(width = 122.dp, height = 178.dp)
+                    .clip(cornerShapeLarge)
                     .background(baseColor)
             )
             Column(
@@ -366,10 +353,9 @@ private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
             ) {
                 repeat(3) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                        modifier = Modifier.fillMaxWidth(0.8f)
                             .height(20.dp)
-                            .clip(rounded)
+                            .clip(cornerShape)
                             .background(baseColor)
                     )
                 }
@@ -384,8 +370,7 @@ private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
         ) {
             repeat(3) {
                 Box(
-                    modifier = Modifier
-                        .width(64.dp)
+                    modifier = Modifier.width(64.dp)
                         .height(32.dp)
                         .clip(RoundedCornerShape(50))
                         .background(baseColor)
@@ -401,11 +386,10 @@ private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
         ) {
             repeat(3) {
                 Box(
-                    modifier = Modifier
-                        .weight(1f)
+                    modifier = Modifier.weight(1f)
                         .height(90.dp)
                         .padding(vertical = itemVerticalPadding)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(cornerShapeLarge)
                         .background(baseColor)
                 )
             }
@@ -418,19 +402,17 @@ private fun DetailContentSkeleton(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.4f)
+                modifier = Modifier.fillMaxWidth(0.4f)
                     .height(24.dp)
-                    .clip(rounded)
+                    .clip(cornerShape)
                     .background(baseColor)
             )
             Spacer(Modifier.height(10.dp))
             repeat(4) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth()
                         .height(18.dp)
-                        .clip(rounded)
+                        .clip(cornerShape)
                         .background(baseColor)
                 )
             }
@@ -543,7 +525,8 @@ private fun DetailContent(
                         modifier = Modifier.fadeInOnce(volume.volumeId),
                         volume = volume,
                         hideReadChapters = hideReadChapters,
-                        readCompletedChapterIds = uiState.userReadingData?.maxChapterReadingProgressMap?.filterValues { it >= 1f }?.keys?.toList() ?: emptyList(),
+                        readCompletedChapterIds = uiState.userReadingData?.maxChapterReadingProgressMap?.filterValues { it >= 1f }?.keys?.toList()
+                            ?: emptyList(),
                         onClickChapter = onClickChapter,
                         volumesSize = bookVolumes.volumes.size,
                         lastReadingChapterId = uiState.userReadingData?.lastReadChapterId
@@ -641,7 +624,10 @@ private fun TopBar(
             },
             navigationIcon = {
                 IconButton(onClick = onClickBackButton) {
-                    Icon(painterResource(id = R.drawable.arrow_back_24px), contentDescription = "back")
+                    Icon(
+                        painterResource(id = R.drawable.arrow_back_24px),
+                        contentDescription = "back"
+                    )
                 }
             },
             actions = {
@@ -699,7 +685,12 @@ private fun TopBarActions(
         }
         DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.mark_as_read), style = typography.bodyLarge) },
+                text = {
+                    Text(
+                        stringResource(R.string.mark_as_read),
+                        style = typography.bodyLarge
+                    )
+                },
                 onClick = {
                     menuExpanded = false
                     onClickMarkAsRead()
@@ -962,7 +953,9 @@ private fun QuickOperationsBlock(
                     stringResource(R.string.cached_false)
                 else
                     "${(downloadItem.progress * 100).toInt()}%",
-                onClick = if (downloadItem == null) onClickCache else { {} },
+                onClick = if (downloadItem == null) onClickCache else {
+                    {}
+                },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -1070,7 +1063,10 @@ private fun VolumeItem(
     var expanded by rememberSaveable {
         mutableStateOf(readCount < totalCount || volumesSize > 8)
     }
-    val rotation by animateFloatAsState(targetValue = if (expanded) 90f else 0f, animationSpec = tween(200))
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 90f else 0f,
+        animationSpec = tween(200)
+    )
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -1081,9 +1077,10 @@ private fun VolumeItem(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier
-                .weight(5f)
-                .padding(vertical = 12.dp)
+            Column(
+                modifier = Modifier
+                    .weight(5f)
+                    .padding(vertical = 12.dp)
             ) {
                 Text(
                     text = volume.volumeTitle,

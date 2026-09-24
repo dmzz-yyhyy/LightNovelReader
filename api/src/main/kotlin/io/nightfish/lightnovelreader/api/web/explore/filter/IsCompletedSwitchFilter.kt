@@ -9,7 +9,7 @@ import io.nightfish.lightnovelreader.api.util.local
  *
  * @since Api 2
  */
-class IsCompletedSwitchFilter: SwitchFilter("\u5df2\u5b8c\u7ed3".local(), false), LocalFilter {
+class IsCompletedSwitchFilter : SwitchFilter("\u5df2\u5b8c\u7ed3".local(), false), LocalFilter {
     override fun filter(bookInformation: BookInformation): Boolean =
         !this.value || bookInformation.isComplete
 }

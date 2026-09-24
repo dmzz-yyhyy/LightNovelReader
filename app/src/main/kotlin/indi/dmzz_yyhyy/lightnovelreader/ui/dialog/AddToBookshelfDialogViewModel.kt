@@ -2,7 +2,6 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.dialog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
@@ -21,23 +20,22 @@ class AddToBookshelfDialogViewModel @Inject constructor(
 ) : ViewModel() {
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
 
-    var navController: NavController? = null
     var bookId = ""
         set(value) {
+            field = value
             viewModelScope.launch {
                 val allBookshelf = withContext(Dispatchers.IO) {
                     bookshelfRepository.getAllBookshelfIds()
                         .mapNotNull { bookshelfRepository.getBookshelf(it) }
                 }
                 val selectedBookshelfIds = withContext(Dispatchers.IO) {
-                    bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds.orEmpty()
+                    bookshelfRepository.getBookshelfBookMetadata(value)?.bookShelfIds.orEmpty()
                 }
 
                 _addToBookshelfDialogUiState.allBookShelf.clear()
                 _addToBookshelfDialogUiState.allBookShelf.addAll(allBookshelf)
                 _addToBookshelfDialogUiState.selectedBookshelfIds.clear()
                 _addToBookshelfDialogUiState.selectedBookshelfIds.addAll(selectedBookshelfIds)
-                field = value
             }
         }
     val addToBookshelfDialogUiState: AddToBookshelfDialogUiState = _addToBookshelfDialogUiState
@@ -53,17 +51,16 @@ class AddToBookshelfDialogViewModel @Inject constructor(
     }
 
     fun onDismissAddToBookshelfRequest() {
-        navController?.popBackStack()
         if (bookId.isBlank()) return
         _addToBookshelfDialogUiState.selectedBookshelfIds.clear()
     }
 
     fun processAddToBookshelfRequest() {
-        navController?.popBackStack()
         if (bookId.isBlank()) return
         viewModelScope.launch(Dispatchers.IO) {
             statsRepository.markBookFavorited(bookId)
-            val oldBookShelfIds = bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
+            val oldBookShelfIds =
+                bookshelfRepository.getBookshelfBookMetadata(bookId)?.bookShelfIds ?: emptyList()
             viewModelScope.launch(Dispatchers.IO) {
                 bookRepository.getBookInformationFlow(bookId).collect { result ->
                     result.onOk { bookInformation ->
@@ -73,9 +70,10 @@ class AddToBookshelfDialogViewModel @Inject constructor(
                     }
                 }
             }
-            oldBookShelfIds.filter { !_addToBookshelfDialogUiState.selectedBookshelfIds.contains(it) }.forEach {
-                bookshelfRepository.deleteBookFromBookshelf(it, bookId)
-            }
+            oldBookShelfIds.filter { !_addToBookshelfDialogUiState.selectedBookshelfIds.contains(it) }
+                .forEach {
+                    bookshelfRepository.deleteBookFromBookshelf(it, bookId)
+                }
         }
     }
 }

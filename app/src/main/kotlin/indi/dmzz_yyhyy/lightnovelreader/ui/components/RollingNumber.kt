@@ -111,7 +111,8 @@ private fun intermediateToNumberOffset(circleOffset: Offset): Float {
 
 private fun normalize(degree: Float) = (degree - 2 * PI * floor(degree / (2 * PI))).toFloat()
 
-private fun numberOffsetToUIOffset(heightPx: Int, number: Float) = IntOffset(0, -(heightPx * 2 * number).toInt())
+private fun numberOffsetToUIOffset(heightPx: Int, number: Float) =
+    IntOffset(0, -(heightPx * 2 * number).toInt())
 
 @Composable
 fun RollingNumber(
@@ -129,12 +130,14 @@ fun RollingNumber(
     val styleNoSpacing = style.merge(color = textColor).copy(letterSpacing = TextUnit.Unspecified)
     val size = rememberTextStyleNumberMaxSize(style)
     LazyRow(
-        modifier = modifier.clipToBounds().layout { measurable, constraints ->
-            val placeable = measurable.measure(constraints.copy(maxHeight = Int.MAX_VALUE))
-            layout(width = placeable.width, height = size.height.roundToPx()) {
-                placeable.place(0, 0)
-            }
-        },
+        modifier = modifier
+            .clipToBounds()
+            .layout { measurable, constraints ->
+                val placeable = measurable.measure(constraints.copy(maxHeight = Int.MAX_VALUE))
+                layout(width = placeable.width, height = size.height.roundToPx()) {
+                    placeable.place(0, 0)
+                }
+            },
         reverseLayout = true,
         horizontalArrangement = Arrangement.Center,
     ) {
@@ -156,10 +159,12 @@ fun RollingNumber(
                 )
             }
             Column(
-                modifier = Modifier.animateItem().offset {
-                    val number = intermediateToNumberOffset(rotate)
-                    numberOffsetToUIOffset(size.height.roundToPx(), number)
-                },
+                modifier = Modifier
+                    .animateItem()
+                    .offset {
+                        val number = intermediateToNumberOffset(rotate)
+                        numberOffsetToUIOffset(size.height.roundToPx(), number)
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 repeat(10) { i ->
@@ -182,7 +187,9 @@ fun RollingNumber(
             item(key = -1) {
                 Text(
                     text = "-",
-                    modifier = Modifier.size(size).animateItem(),
+                    modifier = Modifier
+                        .size(size)
+                        .animateItem(),
                     style = styleNoSpacing,
                     textAlign = TextAlign.Center,
                 )

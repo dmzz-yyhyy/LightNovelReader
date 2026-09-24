@@ -52,7 +52,10 @@ class PluginStoreInstallViewModel @Inject constructor(
                     if (!response.isSuccessful) throw Exception("HTTP ${response.code}")
                     response.body.string()
                 }
-                val plugin = json.decodeFromJsonElement(StorePlugin.serializer(), json.parseToJsonElement(body).jsonObject["plugin"]!!)
+                val plugin = json.decodeFromJsonElement(
+                    StorePlugin.serializer(),
+                    json.parseToJsonElement(body).jsonObject["plugin"]!!
+                )
                 withContext(Dispatchers.Main) {
                     state = StoreInstallState.Ready(plugin)
                 }

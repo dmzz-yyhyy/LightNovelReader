@@ -7,13 +7,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.github.michaelbull.result.Result
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.LocalString
 import kotlinx.coroutines.flow.Flow
 
-@State
+@Stable
 interface ExploreSearchUiState {
     val isFocused: Boolean
     val isLoading: Boolean
@@ -44,13 +44,15 @@ class MutableExploreSearchUiState : ExploreSearchUiState {
     override var searchTypeNameMap = mutableStateMapOf<String, LocalString>()
     override var searchType: String by mutableStateOf("")
     override var searchTip: LocalString by mutableStateOf(LocalString(""))
-    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> = mutableStateListOf()
+    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> =
+        mutableStateListOf()
     override var allBookshelfBookIds: List<String> by mutableStateOf(emptyList())
     override var dropdownMenuExpanded by mutableStateOf(false)
     override var searchBarExpanded by mutableStateOf(true)
     override fun setDropdownMenuExpandedState(state: Boolean) {
         dropdownMenuExpanded = state
     }
+
     override fun setSearchBarExpandedState(state: Boolean) {
         searchBarExpanded = state
     }

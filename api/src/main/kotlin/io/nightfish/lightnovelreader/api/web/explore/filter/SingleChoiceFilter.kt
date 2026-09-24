@@ -17,7 +17,7 @@ open class SingleChoiceFilter(
     val description: LocalString,
     private val choices: List<String>,
     private val defaultChoice: String
-): Filter<String>(defaultChoice) {
+) : Filter<String>(defaultChoice) {
     /**
      * 获取过滤器的显示标题
      *

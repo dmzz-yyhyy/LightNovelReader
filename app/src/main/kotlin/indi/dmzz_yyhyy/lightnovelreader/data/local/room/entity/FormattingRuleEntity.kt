@@ -19,6 +19,6 @@ data class FormattingRuleEntity(
     val replacement: String,
     @ColumnInfo(name = "is_enabled")
     val isEnabled: Boolean
-): Mergeable<FormattingRuleEntity> {
+) : Mergeable<FormattingRuleEntity> {
     override fun merge(new: FormattingRuleEntity): FormattingRuleEntity = new
 }

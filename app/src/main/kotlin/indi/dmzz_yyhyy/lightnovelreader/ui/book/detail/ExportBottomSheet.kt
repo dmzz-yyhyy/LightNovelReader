@@ -71,9 +71,19 @@ fun ExportBottomSheet(
                 Spacer(Modifier.width(16.dp))
                 Button(onClick = {
                     if (isSplitEnabled) {
-                        onClickExport(settings.copy(selectedVolumeIds = selectedVolumeIds, exportType = ExportType.VOLUMES))
+                        onClickExport(
+                            settings.copy(
+                                selectedVolumeIds = selectedVolumeIds,
+                                exportType = ExportType.VOLUMES
+                            )
+                        )
                     } else {
-                        onClickExport(settings.copy(selectedVolumeIds = emptySet(), exportType = ExportType.BOOK))
+                        onClickExport(
+                            settings.copy(
+                                selectedVolumeIds = emptySet(),
+                                exportType = ExportType.BOOK
+                            )
+                        )
                     }
                     onDismissRequest()
                 }) {

@@ -170,7 +170,9 @@ private fun AppCard(
                 )
             }
             Icon(
-                modifier = Modifier.padding(horizontal = 12.dp).size(24.dp),
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .size(24.dp),
                 painter = painterResource(R.drawable.open_in_new_24px),
                 tint = colorScheme.onSurfaceVariant,
                 contentDescription = "detail",

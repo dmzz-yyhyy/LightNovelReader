@@ -9,9 +9,15 @@ import java.util.Locale
 
 private fun Int.numberTransform(): String =
     when {
-        0 <= this && this == 1_000 -> NumberFormat.getNumberInstance(Locale.getDefault()).format(this)
-        this in 1_000..<1_000_000 -> NumberFormat.getNumberInstance(Locale.getDefault()).format(this / 1000) + "K"
-        1_000_000 <= this -> NumberFormat.getNumberInstance(Locale.getDefault()).format(this / 10000) + "W"
+        0 <= this && this == 1_000 -> NumberFormat.getNumberInstance(Locale.getDefault())
+            .format(this)
+
+        this in 1_000..<1_000_000 -> NumberFormat.getNumberInstance(Locale.getDefault())
+            .format(this / 1000) + "K"
+
+        1_000_000 <= this -> NumberFormat.getNumberInstance(Locale.getDefault())
+            .format(this / 10000) + "W"
+
         else -> this.toString()
     }
 

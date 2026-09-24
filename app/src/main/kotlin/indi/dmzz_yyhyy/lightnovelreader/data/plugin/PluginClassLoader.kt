@@ -16,14 +16,18 @@ class PluginClassLoader(
         if (sharedPrefixes.any { name.startsWith(it) }) {
             val p = parent
             if (p != null) {
-                try { return p.loadClass(name) } catch (_: ClassNotFoundException) { }
+                try {
+                    return p.loadClass(name)
+                } catch (_: ClassNotFoundException) {
+                }
             }
             return findClass(name)
         }
 
         try {
             return findClass(name)
-        } catch (_: ClassNotFoundException) { }
+        } catch (_: ClassNotFoundException) {
+        }
 
         val p = parent
         if (p != null) return p.loadClass(name)

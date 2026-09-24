@@ -60,28 +60,29 @@ class PluginInjector @Inject constructor(
         pluginInjectorProvider.setPluginInjector(this)
     }
 
-    fun <T>provide(clazz: Class<*>): T? = provide(clazz, injectMap)
+    fun <T> provide(clazz: Class<*>): T? = provide(clazz, injectMap)
 
     @Suppress("UNCHECKED_CAST")
-    fun <T>provide(clazz: Class<*>, injectMap: Map<Class<*>, Any>): T? {
+    fun <T> provide(clazz: Class<*>, injectMap: Map<Class<*>, Any>): T? {
         try {
             return clazz.getDeclaredField("INSTANCE").get(null) as T
+        } catch (_: NoSuchFieldException) {
+        } catch (_: ClassCastException) {
         }
-        catch (_: NoSuchFieldException) { }
-        catch (_: ClassCastException) { }
         try {
             return clazz.getDeclaredConstructor().newInstance() as T
+        } catch (_: NoSuchMethodException) {
+        } catch (_: SecurityException) {
         }
-        catch (_: NoSuchMethodException) { }
-        catch (_: SecurityException) { }
         try {
             clazz.constructors.forEach { constructor ->
                 if (!constructor.parameterTypes.all { injectMap.keys.contains(it) }) return@forEach
-                return constructor.newInstance(*constructor.parameterTypes.map { injectMap[it] }.toTypedArray()) as T
+                return constructor.newInstance(*constructor.parameterTypes.map { injectMap[it] }
+                    .toTypedArray()) as T
             }
+        } catch (_: NoSuchFieldException) {
+        } catch (_: ClassCastException) {
         }
-        catch (_: NoSuchFieldException) { }
-        catch (_: ClassCastException) { }
         return null
     }
 

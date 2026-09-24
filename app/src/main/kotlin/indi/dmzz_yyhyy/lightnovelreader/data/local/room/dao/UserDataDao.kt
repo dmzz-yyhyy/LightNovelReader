@@ -9,9 +9,11 @@ import io.nightfish.lightnovelreader.api.userdata.UserDataDaoApi
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface UserDataDao: UserDataDaoApi {
-    @Query("replace into user_data (path, `group`, type, value) " +
-            "values (:path, :group, :type, :value)")
+interface UserDataDao : UserDataDaoApi {
+    @Query(
+        "replace into user_data (path, `group`, type, value) " +
+                "values (:path, :group, :type, :value)"
+    )
     override suspend fun insert(path: String, group: String, type: String, value: String)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,9 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
@@ -101,7 +105,10 @@ fun TextFormattingScreen(
                             maxLines = 1
                         )
                         Text(
-                            text = stringResource(R.string.n_rules, groups.firstOrNull { it.id.isEmpty() }?.size ?: 0),
+                            text = stringResource(
+                                R.string.n_rules,
+                                groups.firstOrNull { it.id.isEmpty() }?.size ?: 0
+                            ),
                             style = typography.labelMedium,
                             color = colorScheme.secondary
                         )
@@ -167,33 +174,32 @@ private fun Group(
                 title = it.title,
                 rounded = 8.dp
             )
-            Spacer(Modifier.width(10.dp))
+            Spacer(Modifier.width(16.dp))
             Column(
                 modifier = Modifier.weight(1f, fill = true),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = it.title,
-                    style = typography.bodyLarge,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    style = typography.titleMedium,
+                    fontWeight = FontWeight.W600
                 )
                 Text(
                     text = it.author,
-                    style = typography.labelMedium,
+                    style = typography.bodyMedium,
                     color = colorScheme.primary
                 )
                 Text(
-                    text = "${formattingGroup.size} 个规则",
-                    style = typography.labelMedium,
+                    text = "${formattingGroup.size} 个规则", // FIXME: ADD L10N !
+                    style = typography.bodyMedium,
                     color = colorScheme.secondary
                 )
             }
         }?.onErr {
             //TODO 错误显示
-        } ?: {
-            //TODO 加载显示
-        }
+        } ?: FormattingBookSkeleton()
         IconButton(
             onClick = { onClickGroup(formattingGroup.id) }
         ) {
@@ -233,4 +239,27 @@ private fun TopBar(
         },
         scrollBehavior = scrollBehavior
     )
+}
+
+@Composable
+private fun FormattingBookSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    val baseColor = colorScheme.surfaceContainerLow
+    val cornerShape = RoundedCornerShape(4.dp)
+
+    Row(
+        modifier = Modifier.shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(width = 60.dp, height = 87.dp).background(baseColor, RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(16.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(Modifier.fillMaxWidth(0.85f).height(24.dp).background(baseColor, cornerShape))
+            Box(Modifier.fillMaxWidth(0.4f).height(16.dp).background(baseColor, cornerShape))
+            Box(Modifier.fillMaxWidth(0.3f).height(16.dp).background(baseColor, cornerShape))
+        }
+    }
 }

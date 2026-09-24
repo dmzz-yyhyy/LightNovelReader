@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow.Companion.Ellipsis
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
@@ -101,8 +103,7 @@ fun StatsOverviewScreen(
                 ) {
                     CircularProgressIndicator()
                 }
-            }
-            else {
+            } else {
                 LazyColumn(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -123,6 +124,22 @@ fun StatsOverviewScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun StatsOverviewRecordSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    val baseColor = MaterialTheme.colorScheme.surfaceContainerLow
+    val cornerShape = RoundedCornerShape(4.dp)
+
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .shimmer(shimmer)
+    ) {
+        Box(Modifier.weight(1f).height(20.dp).background(baseColor, cornerShape))
+        Spacer(Modifier.width(8.dp))
+        Box(Modifier.width(42.dp).height(20.dp).background(baseColor, cornerShape))
     }
 }
 
@@ -247,22 +264,24 @@ private fun DailyStatsBlock(
                 title = stringResource(R.string.activity_reading_time),
                 value = details?.formattedTotalTime ?: "--"
             ) {
-                Crossfade(targetState = details?.timeDetails.isNullOrEmpty(), label = "") { isEmpty ->
+                Crossfade(
+                    targetState = details?.timeDetails.isNullOrEmpty(),
+                    label = ""
+                ) { isEmpty ->
                     if (isEmpty) {
                         NoRecords()
                     } else {
                         Column {
                             details?.timeDetails?.forEach { pair ->
                                 val duration = pair.second.toDuration(DurationUnit.SECONDS)
-                                val formattedTime = DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
+                                val formattedTime =
+                                    DurationFormat().format(duration, DurationFormat.Unit.MINUTE)
                                 val bookInformation by pair.first.collectAsStateWithLifecycle(null)
                                 bookInformation?.onOk {
                                     DataItem(it.title, formattedTime)
                                 }?.onErr {
                                     //TODO 错误显示
-                                } ?: {
-                                    //TODO 加载显示
-                                }
+                                } ?: StatsOverviewRecordSkeleton()
                             }
                         }
                     }

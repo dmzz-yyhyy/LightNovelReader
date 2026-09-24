@@ -1,16 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme
 
-import android.content.Context
-import android.net.Uri
 import android.os.Build
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,89 +29,41 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
-import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.rememberAsyncImagePainter
-import coil3.imageLoader
-import coil3.memory.MemoryCache
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.theme.AppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalDarkColorScheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalLightColorScheme
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsMenuEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
-import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
-import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
-import indi.dmzz_yyhyy.lightnovelreader.utils.readerTextColor
-import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
-import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderFontFamily
-import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileInputStream
 
 @Composable
 fun ThemeScreen(
-    themeSettingState: SettingState,
-    onClickBack: () -> Unit,
-    onClickChangeTextColor: () -> Unit,
-    onClickChangeBackgroundColor: () -> Unit
+    settingState: ThemeSettingState,
+    onClickBack: () -> Unit
 ) {
-    val context = LocalContext.current
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         TopBar(onClickBack)
         LazyColumn {
             item {
-                DarkModeSettings(themeSettingState)
+                DarkModeSettings(settingState)
             }
             item {
-                ThemeSettingsList(themeSettingState)
-            }
-            item {
-                ReaderThemeSettingsList(themeSettingState, onClickChangeBackgroundColor)
-            }
-            item {
-                BackgroundSettings(themeSettingState, context)
-            }
-            item {
-                ReaderTextSettings(themeSettingState, context, onClickChangeTextColor)
+                AppThemeSettingsList(settingState)
             }
             navigationBarSpacer()
         }
@@ -129,7 +72,7 @@ fun ThemeScreen(
 
 @Composable
 fun DarkModeSettings(
-    settingState: SettingState
+    settingState: ThemeSettingState
 ) {
     SectionHeader(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
@@ -157,10 +100,13 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "Disabled",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("Disabled") }
+                        selected = settingState.darkMode == "Disabled",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("Disabled") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_disabled), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_disabled),
+                        style = typography.labelLarge
+                    )
                 }
             }
 
@@ -173,10 +119,13 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "Enabled",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("Enabled") }
+                        selected = settingState.darkMode == "Enabled",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("Enabled") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_enabled), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_enabled),
+                        style = typography.labelLarge
+                    )
                 }
             }
 
@@ -228,10 +177,13 @@ fun DarkModeSettings(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         modifier = Modifier.size(32.dp),
-                        selected = settingState.darkModeKey == "FollowSystem",
-                        onClick = { settingState.darkModeKeyUserData.asynchronousSet("FollowSystem") }
+                        selected = settingState.darkMode == "FollowSystem",
+                        onClick = { settingState.darkModeUserData.asynchronousSet("FollowSystem") }
                     )
-                    Text(stringResource(R.string.key_dark_mode_follow_system), style = typography.labelLarge)
+                    Text(
+                        stringResource(R.string.key_dark_mode_follow_system),
+                        style = typography.labelLarge
+                    )
                 }
             }
         }
@@ -239,8 +191,8 @@ fun DarkModeSettings(
 }
 
 @Composable
-fun ThemeSettingsList(
-    settingState: SettingState,
+fun AppThemeSettingsList(
+    settingState: ThemeSettingState,
 ) {
     SettingsCategory(
         title = stringResource(R.string.theme_settings),
@@ -252,455 +204,30 @@ fun ThemeSettingsList(
             description = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S)
                 stringResource(R.string.settings_theme_dynamic_colors_desc_unavailable)
             else stringResource(R.string.settings_theme_dynamic_colors_desc),
-            checked = settingState.dynamicColorsKey,
-            booleanUserData = settingState.dynamicColorsKeyUserData,
-            disabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+            checked = settingState.dynamicColors,
+            booleanUserData = settingState.dynamicColorsUserData,
+            enabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         )
-        SettingsSwitchEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.experiment_24px),
-            title = stringResource(R.string.settings_theme_m3e),
-            description = stringResource(R.string.settings_theme_m3e_description),
-            checked = settingState.enableM3E,
-            booleanUserData = settingState.enableM3EUserData
-        )
-        if (!settingState.dynamicColorsKey) {
-            SettingsMenuEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.light_mode_24px),
-                title = stringResource(R.string.settings_theme_light_theme),
-                description = stringResource(R.string.settings_theme_light_theme_desc),
-                options = MenuOptions.LightThemeNameOptions,
-                selectedOptionKey = settingState.lightThemeName,
-                onOptionChange = settingState.lightThemeNameUserData::asynchronousSet
-            )
-            SettingsMenuEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.dark_mode_24px),
-                title = stringResource(R.string.settings_theme_dark_theme),
-                description = stringResource(R.string.settings_theme_dark_theme_desc),
-                options = MenuOptions.DarkThemeNameOptions,
-                selectedOptionKey = settingState.darkThemeName,
-                onOptionChange = settingState.darkThemeNameUserData::asynchronousSet
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalCoilApi::class)
-@Composable
-fun ReaderThemeSettingsList(
-    settingState: SettingState,
-    onClickChangeBackgroundColor: () -> Unit
-) {
-    SettingsCategory(
-        title = stringResource(R.string.paper_settings),
-    ) {
-        val context = LocalContext.current
-        val snackbarHostState = LocalSnackbarHost.current
-
-        var lastEnabled by remember { mutableStateOf(settingState.enableBackgroundImage) }
-
-        LaunchedEffect(settingState.enableBackgroundImage) {
-            val now = settingState.enableBackgroundImage
-            if (!lastEnabled && now) {
-                val loader = context.imageLoader
-
-                val key = "default_kraft_paper"
-
-                val memHit = loader.memoryCache?.get(MemoryCache.Key(key)) != null
-                val diskHit = loader.diskCache?.openSnapshot(key)?.use { true } ?: false
-
-                if (!memHit && !diskHit) {
-                    snackbarHostState.showSnackbar("正在下载纸张背景…")
-
-                    loader.enqueue(
-                        ImageRequest.Builder(context)
-                            .data(key)
-                            .memoryCachePolicy(CachePolicy.ENABLED)
-                            .diskCachePolicy(CachePolicy.ENABLED)
-                            .networkCachePolicy(CachePolicy.ENABLED)
-                            .memoryCacheKey(key)
-                            .build()
-                    )
-                }
-            }
-            lastEnabled = now
-        }
-
-
-        SettingsSwitchEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.imagesearch_roller_24px),
-            title = stringResource(R.string.settings_theme_bg_image),
-            description = stringResource(R.string.settings_theme_bg_image_desc),
-            checked = settingState.enableBackgroundImage,
-            booleanUserData = settingState.enableBackgroundImageUserData
-        )
-        if (settingState.enableBackgroundImage) {
-            SettingsMenuEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                title = stringResource(R.string.settings_theme_bg_display_mode),
-                painter = painterResource(R.drawable.insert_page_break_24px),
-                description = stringResource(R.string.settings_theme_bg_display_mode_desc),
-                options = MenuOptions.ReaderBgImageDisplayModeOptions,
-                selectedOptionKey = settingState.backgroundImageDisplayMode,
-                stringUserData = settingState.backgroundImageDisplayModeUserData
-            )
-        } else {
-            val onSecondaryContainer = colorScheme.onSecondaryContainer
-            val background = colorScheme.background
-            val currentBgColor = readerBackgroundColor(settingState)
-            SettingsClickableEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.colorize_24px),
-                title = stringResource(R.string.settings_theme_bg_color),
-                description = stringResource(R.string.settings_theme_bg_color_desc),
-                onClick = onClickChangeBackgroundColor,
-                trailingContent = {
-                    Canvas(
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        drawCircle(
-                            color = onSecondaryContainer,
-                            radius = 20.dp.toPx(),
-                        )
-                        drawCircle(
-                            color = background,
-                            radius = 17.5.dp.toPx(),
-                        )
-                        drawCircle(
-                            color = currentBgColor,
-                            radius = 17.5.dp.toPx(),
-                        )
-                    }
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChangeTextColor: () -> Unit) {
-    val coroutineScope = rememberCoroutineScope()
-    val textMeasurer = rememberTextMeasurer()
-    val onSecondaryContainer = colorScheme.onSecondaryContainer
-    val background = colorScheme.background
-    val currentColor = readerTextColor(settingState)
-
-    SettingsCategory(
-        title = stringResource(R.string.text_settings),
-    ) {
-        SettingsClickableEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.palette_24px),
-            title = stringResource(R.string.settings_theme_text_color),
-            description = stringResource(R.string.settings_theme_text_color_desc),
-            onClick = onClickChangeTextColor,
-            trailingContent = {
-                Canvas(
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    drawCircle(
-                        color = onSecondaryContainer,
-                        radius = 20.dp.toPx(),
-                    )
-                    drawCircle(
-                        color = background,
-                        radius = 17.5.dp.toPx(),
-                    )
-                    drawCircle(
-                        color = currentColor,
-                        radius = 17.5.dp.toPx(),
-                    )
-                }
-            }
-        )
-
-        val fontPicker = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
-        ) { uri ->
-            uri ?: return@rememberLauncherForActivityResult
-            coroutineScope.launch(Dispatchers.IO) {
-                val fontFile = saveFontToLocal(context, uri) ?: run {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.font_file_error),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    return@launch
-                }
-
-                try {
-                    textMeasurer.measure(
-                        text = "",
-                        style = TextStyle(fontFamily = FontFamily(Font(fontFile)))
-                    )
-                    settingState.fontFamilyUriUserData.set(fontFile.toUri())
-                } catch (_: Exception) {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            context,
-                            context.getString(R.string.font_file_error),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
-        }
-
         SettingsMenuEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.text_fields_24px),
-            title = stringResource(R.string.settings_theme_text_font),
-            description = stringResource(R.string.settings_theme_text_font_desc),
-            options = MenuOptions.SelectText,
-            selectedOptionKey = if (settingState.fontFamilyUri.toString().isEmpty())
-                MenuOptions.SelectText.Default else MenuOptions.SelectText.Customize,
-            onOptionChange = {
-                when (it) {
-                    MenuOptions.SelectText.Default -> settingState.fontFamilyUriUserData.asynchronousSet(Uri.EMPTY)
-                    MenuOptions.SelectText.Customize -> fontPicker.launch("*/*")
-                }
-            }
+            painter = painterResource(R.drawable.light_mode_24px),
+            title = stringResource(R.string.settings_theme_light_theme),
+            description = stringResource(R.string.settings_theme_light_theme_desc),
+            options = MenuOptions.LightThemeNameOptions,
+            selectedOptionKey = settingState.lightThemeName,
+            onOptionChange = settingState.lightThemeNameUserData::asynchronousSet,
+            enabled = !settingState.dynamicColors
         )
-    }
-    BasePageItem(
-        Modifier
-            .fillMaxWidth()
-            .height(260.dp)
-            .padding(horizontal = 16.dp)
-            .padding(top = 0.dp, bottom = 16.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(9.dp))
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            if (settingState.enableBackgroundImage) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = rememberReaderBackgroundPainter(settingState),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(modifier = Modifier.fillMaxSize().background(readerBackgroundColor(settingState)))
-            }
-
-            Text(
-                modifier = Modifier.padding(horizontal = 18.dp),
-                text = stringResource(R.string.settings_about_oss),
-                fontSize = settingState.fontSize.sp,
-                lineHeight = (settingState.fontLineHeight + settingState.fontSize).sp,
-                fontWeight = FontWeight(settingState.fontWeigh.toInt()),
-                textAlign = TextAlign.Center,
-                fontFamily = rememberReaderFontFamily(settingState.fontFamilyUriUserData),
-                color = readerTextColor(settingState)
-            )
-        }
-    }
-
-    SettingsCategory {
-        SettingsSliderEntry(
+        SettingsMenuEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.format_bold_24px),
-            title = stringResource(R.string.settings_theme_text_font_weight),
-            unit = "", valueRange = 100f..900f,
-            value = settingState.fontWeigh,
-            valueFormat = { (it / 100).toInt() * 100f },
-            floatUserData = settingState.fontWeighUserData
+            painter = painterResource(R.drawable.dark_mode_24px),
+            title = stringResource(R.string.settings_theme_dark_theme),
+            description = stringResource(R.string.settings_theme_dark_theme_desc),
+            options = MenuOptions.DarkThemeNameOptions,
+            selectedOptionKey = settingState.darkThemeName,
+            onOptionChange = settingState.darkThemeNameUserData::asynchronousSet,
+            enabled = !settingState.dynamicColors
         )
-
-        SettingsSliderEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.format_size_24px),
-            title = stringResource(R.string.settings_reader_font_size),
-            unit = "sp",
-            valueRange = 8f..64f,
-            value = settingState.fontSize,
-            floatUserData = settingState.fontSizeUserData
-        )
-
-        SettingsSliderEntry(
-            modifier = Modifier.background(colorScheme.surfaceContainer),
-            painter = painterResource(R.drawable.format_line_spacing_24px),
-            title = stringResource(R.string.settings_reader_line_spacing),
-            unit = "sp",
-            valueRange = 0f..32f,
-            value = settingState.fontLineHeight,
-            floatUserData = settingState.fontLineHeightUserData
-        )
-    }
-}
-
-private suspend fun saveFontToLocal(context: Context, uri: Uri): File? = withContext(Dispatchers.IO) {
-    val fontFile = context.filesDir.resolve("readerTextFont").apply {
-        if (exists()) delete()
-        createNewFile()
-    }
-    try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-            FileInputStream(fd.fileDescriptor).use { input ->
-                fontFile.outputStream().use { output -> input.copyTo(output) }
-            }
-        }
-        fontFile
-    } catch (e: Exception) {
-        Log.e("ReaderTextFont", "Failed to import font", e)
-        null
-    }
-}
-
-@Composable
-fun BackgroundSettings(settingState: SettingState, context: Context) {
-    val scope = rememberCoroutineScope()
-
-    val isCustomSelected = settingState.backgroundImageUri.toString().isNotBlank() ||
-            settingState.backgroundDarkImageUri.toString().isNotBlank()
-    var isDarkSelection by remember { mutableStateOf(false) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        scope.launch(Dispatchers.IO) {
-            val fileName = if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
-            val file = context.filesDir.resolve(fileName).apply {
-                if (exists()) delete()
-                createNewFile()
-            }
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-                FileInputStream(fd.fileDescriptor).use { input ->
-                    file.outputStream().use { output -> input.copyTo(output) }
-                }
-            }
-            val fileUri = file.toUri()
-            if (isDarkSelection)
-                settingState.backgroundDarkImageUriUserData.set(fileUri)
-            else
-                settingState.backgroundImageUriUserData.set(fileUri)
-        }
-    }
-
-    if (!settingState.enableBackgroundImage) return
-
-    SettingsCategory(title = "自定义纸张") {
-        BackgroundCard(
-            title = stringResource(R.string.settings_theme_bg_image_built_in),
-            desc = stringResource(R.string.settings_theme_bg_image_built_in_desc),
-            selected = !isCustomSelected,
-            onClick = {
-                settingState.enableBackgroundImageUserData.asynchronousSet(true)
-                settingState.backgroundImageUriUserData.asynchronousSet(Uri.EMPTY)
-                settingState.backgroundDarkImageUriUserData.asynchronousSet(Uri.EMPTY)
-            }
-        )
-
-        BackgroundCard(
-            title = stringResource(R.string.settings_theme_bg_image_custom),
-            selected = isCustomSelected,
-            enabled = isCustomSelected,
-            onClick = { },
-            contentBelow = {
-                Column {
-                    Spacer(Modifier.height(6.dp))
-                    BackgroundSelectRow(
-                        label = stringResource(R.string.choose_light_bg),
-                        uri = settingState.backgroundImageUri,
-                        previewSize = 52.dp,
-                        onClick = {
-                            settingState.backgroundImageUriUserData.asynchronousSet(Uri.EMPTY)
-                            isDarkSelection = false
-                            launcher.launch("image/*")
-                        }
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    BackgroundSelectRow(
-                        label = stringResource(R.string.choose_dark_bg),
-                        uri = settingState.backgroundDarkImageUri,
-                        previewSize = 52.dp,
-                        onClick = {
-                            settingState.backgroundDarkImageUriUserData.asynchronousSet(Uri.EMPTY)
-                            isDarkSelection = true
-                            launcher.launch("image/*")
-                        }
-                    )
-                }
-            }
-        )
-    }
-}
-
-@Composable
-private fun BackgroundSelectRow(
-    label: String,
-    uri: Uri,
-    previewSize: Dp = 32.dp,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(colorScheme.background, RoundedCornerShape(8.dp))
-            .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(label, style = typography.headlineSmall)
-        Spacer(Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .size(previewSize)
-                .clip(RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            if (uri.toString().isNotBlank()) {
-                Image(
-                    painter = rememberAsyncImagePainter(uri),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                Icon(
-                    painter = painterResource(R.drawable.arrow_forward_24px),
-                    contentDescription = null,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun BackgroundCard(
-    title: String,
-    desc: String? = null,
-    selected: Boolean,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    contentBelow: (@Composable ColumnScope.() -> Unit)? = null
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .background(colorScheme.surfaceContainer)
-            .clip(RoundedCornerShape(8.dp))
-            .padding(12.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(title, style = typography.headlineSmall)
-                desc?.let { Text(it, style = typography.bodyMedium, color = colorScheme.secondary) }
-            }
-            Spacer(Modifier.weight(1f))
-            RadioButton(selected = selected, onClick = onClick, enabled = enabled)
-        }
-        contentBelow?.let { it() }
     }
 }
 
@@ -708,7 +235,7 @@ private fun BackgroundCard(
 private fun LightThemeSettingsItem(
     modifier: Modifier = Modifier
 ) {
-    MaterialTheme (
+    MaterialTheme(
         LocalLightColorScheme.current
     ) {
         DarkModeSettingItem(modifier)
@@ -719,7 +246,7 @@ private fun LightThemeSettingsItem(
 private fun DarkThemeSettingsItem(
     modifier: Modifier = Modifier,
 ) {
-    MaterialTheme (
+    MaterialTheme(
         LocalDarkColorScheme.current
     ) {
         DarkModeSettingItem(modifier)

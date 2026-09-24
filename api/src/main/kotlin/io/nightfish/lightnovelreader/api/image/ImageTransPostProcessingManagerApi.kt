@@ -49,7 +49,10 @@ interface ImageTransPostProcessingManagerApi {
      *
      * @since Api 4
      */
-    fun getImageTransformation(pipeline: Identifier, transformation: Identifier): ImageTransformation?
+    fun getImageTransformation(
+        pipeline: Identifier,
+        transformation: Identifier
+    ): ImageTransformation?
 
     /**
      * 取消注册图片转换器

@@ -15,27 +15,30 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BaseDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.CheckBoxListItem
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.addBookToBookshelfDialog() {
-    dialog<Route.AddBookToBookshelfDialog> {
-        val navController = LocalNavController.current
+fun NavEntryScope.addBookToBookshelfDialog() {
+    overlayEntry<Route.AddBookToBookshelfDialog> {
+        val navigator = LocalNavigator.current
         val addToBookshelfDialogViewModel = hiltViewModel<AddToBookshelfDialogViewModel>()
-        val route = it.toRoute<Route.AddBookToBookshelfDialog>()
-        addToBookshelfDialogViewModel.bookId = route.bookId
-        addToBookshelfDialogViewModel.navController = navController
+        addToBookshelfDialogViewModel.bookId = it.bookId
         AddBookToBookshelfDialog(
-            onDismissRequest = addToBookshelfDialogViewModel::onDismissAddToBookshelfRequest,
-            onConfirmation = addToBookshelfDialogViewModel::processAddToBookshelfRequest,
+            onDismissRequest = {
+                addToBookshelfDialogViewModel.onDismissAddToBookshelfRequest()
+                navigator.popBackStack()
+            },
+            onConfirmation = {
+                addToBookshelfDialogViewModel.processAddToBookshelfRequest()
+                navigator.popBackStack()
+            },
             onSelectBookshelf = addToBookshelfDialogViewModel::onSelectBookshelf,
             onDeselectBookshelf = addToBookshelfDialogViewModel::onDeselectBookshelf,
             allBookshelf = addToBookshelfDialogViewModel.addToBookshelfDialogUiState.allBookShelf,
@@ -44,7 +47,7 @@ fun NavGraphBuilder.addBookToBookshelfDialog() {
     }
 }
 
-fun NavController.navigateToAddBookToBookshelfDialog(bookId: String) {
+fun Navigator.navigateToAddBookToBookshelfDialog(bookId: String) {
     navigate(Route.AddBookToBookshelfDialog(bookId))
 }
 
@@ -67,7 +70,12 @@ fun AddBookToBookshelfDialog(
         dismissText = stringResource(R.string.cancel),
         confirmationText = stringResource(R.string.add_to_bookshelf),
     ) {
-        Column(Modifier.width(IntrinsicSize.Max).sizeIn(maxHeight = 350.dp).verticalScroll(scrollState)) {
+        Column(
+            Modifier
+                .width(IntrinsicSize.Max)
+                .sizeIn(maxHeight = 350.dp)
+                .verticalScroll(scrollState)
+        ) {
             if (allBookshelf.isEmpty()) {
                 CheckBoxListItem(
                     modifier = Modifier
@@ -87,7 +95,10 @@ fun AddBookToBookshelfDialog(
                         .sizeIn(minWidth = 325.dp)
                         .padding(horizontal = 10.dp),
                     title = bookshelf.name,
-                    supportingText = stringResource(R.string.bookshelf_book_count, bookshelf.allBookIds.size),
+                    supportingText = stringResource(
+                        R.string.bookshelf_book_count,
+                        bookshelf.allBookIds.size
+                    ),
                     checked = selectedBookshelfIds.contains(bookshelf.id),
                     onCheckedChange = {
                         if (it) onSelectBookshelf(bookshelf.id) else onDeselectBookshelf(

@@ -2,18 +2,20 @@ package io.nightfish.lightnovelreader.api.ui
 
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.intl.LocaleList
-import androidx.navigation.NavController
+import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.unit.sp
+import io.nightfish.lightnovelreader.api.content.component.ComponentRender
 
 /**
- * 当前页面的导航控制器
- * 需在Compose导航宿主内使用
+ * 返回当前 Navigation 3 页面。
  *
- * @since Api 2
+ * @since Api 4
  */
-val LocalNavController = compositionLocalOf<NavController> {
-    error("CompositionLocal LocalNavController not present")
+val LocalPopBackStack = compositionLocalOf<() -> Boolean> {
+    error("CompositionLocal LocalPopBackStack not present")
 }
 
 /**
@@ -23,11 +25,18 @@ val LocalNavController = compositionLocalOf<NavController> {
  */
 val LocalReaderStyle = compositionLocalOf {
     ReaderStyle(
-        fontSize = 15f,
-        fontLineHeight = 7f,
-        fontWeight = 500f,
+        fontSize = 15.sp,
+        lineHeight = 7.sp,
+        fontWeight = FontWeight.W500,
         textColor = Color.Unspecified,
         textDarkColor = Color.Unspecified,
+        spacingBeforeParagraph = 0.sp,
+        spacingAfterParagraph = 0.sp,
+        textIndent = TextIndent(
+            firstLine = 30.sp,
+        ),
+        fontUri = null,
+        letterSpacing = 0.2.sp
     )
 }
 
@@ -39,6 +48,10 @@ val LocalReaderStyle = compositionLocalOf {
  */
 val LocalTextLocaleList = compositionLocalOf {
     LocaleList(Locale.current)
+}
+
+val LocalComponentRender = compositionLocalOf<ComponentRender> {
+    error("CompositionLocal LocalComponentRender not present")
 }
 
 /**

@@ -69,6 +69,7 @@ import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfBookItem
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
@@ -157,7 +158,12 @@ internal fun BookshelfHomeContent(
                     }
             }
             val allBooks by allBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedAllBooks = remember(selectedBookshelfUiState.allBookFlows, allBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedAllBooks = remember(
+                selectedBookshelfUiState.allBookFlows,
+                allBooks,
+                selectedBookshelfUiState.sortType,
+                selectedBookshelfUiState.sortReversed
+            ) {
                 sortBooks(
                     source = allBooks,
                     allBookIds = allBookIds,
@@ -184,7 +190,12 @@ internal fun BookshelfHomeContent(
                     }
             }
             val updatedBooks by updatedBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedUpdatedBooks = remember(selectedBookshelfUiState.updatedBookFlows, updatedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedUpdatedBooks = remember(
+                selectedBookshelfUiState.updatedBookFlows,
+                updatedBooks,
+                selectedBookshelfUiState.sortType,
+                selectedBookshelfUiState.sortReversed
+            ) {
                 sortBooks(
                     source = updatedBooks,
                     allBookIds = allBookIds,
@@ -211,7 +222,12 @@ internal fun BookshelfHomeContent(
                     }
             }
             val pinnedBooks by pinnedBooksFlow.collectAsStateWithLifecycle(emptyList())
-            val sortedPinnedBooks = remember(selectedBookshelfUiState.pinnedBookFlows, pinnedBooks, selectedBookshelfUiState.sortType, selectedBookshelfUiState.sortReversed) {
+            val sortedPinnedBooks = remember(
+                selectedBookshelfUiState.pinnedBookFlows,
+                pinnedBooks,
+                selectedBookshelfUiState.sortType,
+                selectedBookshelfUiState.sortReversed
+            ) {
                 sortBooks(
                     source = pinnedBooks,
                     allBookIds = allBookIds,
@@ -235,7 +251,7 @@ internal fun BookshelfHomeContent(
                 initialScrollApplied = true
             }
 
-            val shimmerInstance = rememberShimmer(ShimmerBounds.Custom)
+            val shimmerInstance = rememberLoadingSkeletonShimmer(shimmerBounds = ShimmerBounds.Custom)
             val density = LocalDensity.current
             val lineHeight = MaterialTheme.typography.titleMedium.lineHeight
             val titleHeight = with(density) { (lineHeight * 2.2f).toDp() }
@@ -531,11 +547,13 @@ private fun sortBooks(
         BookshelfSortType.Default -> source.sortedBy {
             stableIndexMap[it.first] ?: Int.MAX_VALUE
         }
+
         BookshelfSortType.Latest -> source.sortedWith(
             compareByDescending<Pair<String, Result<BookshelfBookItem, WebRequestError>>> { pair ->
                 pair.second.map { it.bookInformation.lastUpdated }.get()
             }.thenBy { stableIndexMap[it.first] ?: Int.MAX_VALUE }
         )
+
         BookshelfSortType.Name -> source.sortedWith(
             Comparator { left, right ->
                 val leftTitle = left.second.map { it.bookInformation.title }.getOrElse { "" }
@@ -547,10 +565,12 @@ private fun sortBooks(
                 if (nameCompare != 0) {
                     nameCompare
                 } else {
-                    (stableIndexMap[left.first] ?: Int.MAX_VALUE).compareTo(stableIndexMap[right.first] ?: Int.MAX_VALUE)
+                    (stableIndexMap[left.first]
+                        ?: Int.MAX_VALUE).compareTo(stableIndexMap[right.first] ?: Int.MAX_VALUE)
                 }
             }
         )
+
         BookshelfSortType.WordCount -> source.sortedWith(
             compareByDescending<Pair<String, Result<BookshelfBookItem, WebRequestError>>> { pair ->
                 pair.second.map { it.bookInformation.wordCount.count }.getOrElse { 0 }

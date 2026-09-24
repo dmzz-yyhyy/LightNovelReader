@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
  *
  * @since Api 4
  */
-class BooleanUserData (
+class BooleanUserData(
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<Boolean>(path) {

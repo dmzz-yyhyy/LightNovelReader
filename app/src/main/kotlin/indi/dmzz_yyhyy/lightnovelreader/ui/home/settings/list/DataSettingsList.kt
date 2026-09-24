@@ -24,8 +24,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ImportUserDataDialog
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import kotlinx.coroutines.launch
@@ -59,17 +59,20 @@ fun DataSettingsList(
                         pendingImportUri = null
                         Toast.makeText(context, dataImportFailedText, Toast.LENGTH_SHORT).show()
                     }
+
                     WorkInfo.State.SUCCEEDED -> {
                         isImporting = false
                         showImportDialog = false
                         pendingImportUri = null
                         Toast.makeText(context, dataImportSuccessText, Toast.LENGTH_SHORT).show()
                     }
+
                     WorkInfo.State.CANCELLED -> {
                         isImporting = false
                         showImportDialog = false
                         pendingImportUri = null
                     }
+
                     else -> {}
                 }
             }
@@ -126,7 +129,10 @@ fun DataSettingsList(
 }
 
 fun selectDataFile(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+    val initUri = DocumentsContract.buildDocumentUri(
+        "com.android.externalstorage.documents",
+        "primary:Documents"
+    )
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"

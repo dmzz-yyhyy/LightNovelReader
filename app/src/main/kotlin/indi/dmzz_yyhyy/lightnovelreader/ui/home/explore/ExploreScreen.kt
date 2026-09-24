@@ -60,7 +60,9 @@ fun ExploreScreen(
             LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
                 item {
                     EmptyPage(
-                        modifier = Modifier.navigationBarsPadding().bottomBarPadding(),
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .bottomBarPadding(),
                         icon = painterResource(R.drawable.link_off_24px),
                         title = stringResource(R.string.offline),
                         description = stringResource(R.string.offline_desc)
@@ -76,8 +78,10 @@ fun ExploreScreen(
                                 duration = SnackbarDuration.Long
                             ) { }
                         }) {
-                            Icon(painterResource(
-                                id = R.drawable.help_24px),
+                            Icon(
+                                painterResource(
+                                    id = R.drawable.help_24px
+                                ),
                                 contentDescription = "help",
                                 tint = colorScheme.secondary
                             )

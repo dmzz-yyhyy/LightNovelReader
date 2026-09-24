@@ -3,7 +3,6 @@ package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.navigation.NavController
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -12,7 +11,6 @@ import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
@@ -39,7 +37,8 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.book.WordCount
-import io.nightfish.lightnovelreader.api.content.component.ImageComponentData
+import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
@@ -104,16 +103,19 @@ class Wenku8Api : WebBookDataSource {
         install(HttpCookies) {
             storage = ConstantCookiesStorage(
                 *(
-                    createCookies("www.wenku8.net") +
-                    createCookies("www.wenku8.cc") +
-                    createCookies("www.wenku8.com")
-                ).toTypedArray()
+                        createCookies("www.wenku8.net") +
+                                createCookies("www.wenku8.cc") +
+                                createCookies("www.wenku8.com")
+                        ).toTypedArray()
             )
         }
 
         install(DefaultRequest) {
             headers {
-                append(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                append(
+                    HttpHeaders.Accept,
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+                )
                 append(HttpHeaders.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8")
                 append(HttpHeaders.CacheControl, "max-age=0")
                 append("Upgrade-Insecure-Requests", "1")
@@ -226,29 +228,31 @@ class Wenku8Api : WebBookDataSource {
                 }
             }.status.isSuccess()
         }.getOrElse { false }
-        return@withContext !anyTrue(listOf(
-            { webSite(0) },
-            { webSite(1) },
-            { webSite(2) },
-        ))
+        return@withContext !anyTrue(
+            listOf(
+                { webSite(0) },
+                { webSite(1) },
+                { webSite(2) },
+            )
+        )
     }
 
     override val id = "Wenku8".ofId()
 
-    override suspend fun getBookInformation(id: String) = bookRequestDispatcher.getBookInformation(id)
+    override suspend fun getBookInformation(id: String) =
+        bookRequestDispatcher.getBookInformation(id)
 
     override suspend fun getBookVolumes(id: String) = bookRequestDispatcher.getBookVolumes(id)
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String) = bookRequestDispatcher.getChapterContent(chapterId, bookId)
+    override suspend fun getChapterContent(chapterId: String, bookId: String) =
+        bookRequestDispatcher.getChapterContent(chapterId, bookId)
 
     override val searchProvider: SearchProvider = Wenku8SearchProvider(bookRequestDispatcher)
     override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider(host, this)
 
 
-    override fun progressBookTagClick(tag: String, navController: NavController) {
-        if (tagList.contains(tag))
-            navController.navigateToExploreExpandDestination(tag)
-    }
+    override fun progressBookTagClick(tag: String) =
+        if (tag in tagList) Route.Main.Explore.Expanded(tag) else null
 
     override suspend fun getCoverUriInVolume(
         bookId: String,

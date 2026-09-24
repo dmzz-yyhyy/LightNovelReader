@@ -74,7 +74,9 @@ fun LnrSnackbar(
         content = {
             Box {
                 Text(
-                    modifier = Modifier.align(Alignment.Center).padding(vertical = 12.dp),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(vertical = 12.dp),
                     text = snackbarData.visuals.message,
                     style = typography.bodyMedium
                 )

@@ -10,10 +10,13 @@ package io.nightfish.lightnovelreader.api.bookshelf
 enum class BookshelfSortType(val key: String) {
     /** 默认排序(添加的逆序) */
     Default("default"),
+
     /** 按最新更新时间排序 */
     Latest("latest"),
+
     /** 按名称排序 */
     Name("name"),
+
     /** 按字数排序 */
     WordCount("word_count");
 

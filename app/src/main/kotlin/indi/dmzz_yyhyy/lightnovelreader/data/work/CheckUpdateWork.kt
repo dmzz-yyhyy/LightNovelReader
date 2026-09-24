@@ -54,12 +54,18 @@ class CheckUpdateWork @AssistedInject constructor(
                 val webBookLastUpdate = bookInformation.lastUpdated
                 if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
                     bookshelfBookMetadata.bookShelfIds.forEach {
-                        bookshelfRepository.addUpdatedBooksIntoBookShelf(it, bookshelfBookMetadata.id)
+                        bookshelfRepository.addUpdatedBooksIntoBookShelf(
+                            it,
+                            bookshelfBookMetadata.id
+                        )
                         val bookshelf = bookshelfRepository.getBookshelf(it)
                         if (bookshelf != null && bookshelf.systemUpdateReminder)
                             reminderBookMap[bookshelfBookMetadata.id] = bookInformation
                     }
-                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookInformation.id, webBookLastUpdate)
+                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
+                        bookInformation.id,
+                        webBookLastUpdate
+                    )
                 }
             }
         }

@@ -30,7 +30,11 @@ class FormattingViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             snapshotFlow { formattingRepository.getFormattingMap() }.collect { map ->
                 formattingGroups = map.map {
-                    FormattingGroup(it.key, bookRepository.getBookInformationFlow(it.key), it.value.size)
+                    FormattingGroup(
+                        it.key,
+                        bookRepository.getBookInformationFlow(it.key),
+                        it.value.size
+                    )
                 }
             }
         }
@@ -40,6 +44,7 @@ class FormattingViewModel @Inject constructor(
         this.bookId = bookId
         rules = formattingRepository.getStateBookFormattingRules(bookId)
     }
+
     fun onToggle(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             formattingRepository.updateRule(

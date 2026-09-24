@@ -20,12 +20,12 @@ data class ProxyCsdnDataProxyData(
     val proxies: List<String>
 )
 
-object ProxyCsdnSource: ProxySource {
+object ProxyCsdnSource : ProxySource {
     private val defaultJson = Json {
         ignoreUnknownKeys = true
     }
 
-    override suspend fun getProxies(): List<Proxy>  = withContext(Dispatchers.IO) {
+    override suspend fun getProxies(): List<Proxy> = withContext(Dispatchers.IO) {
         val json = Jsoup
             .connect("https://proxy.scdn.io/api/get_proxy.php?protocol=https&count=20")
             .ignoreContentType(true)

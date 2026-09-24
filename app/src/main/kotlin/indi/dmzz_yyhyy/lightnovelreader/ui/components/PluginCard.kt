@@ -96,12 +96,15 @@ fun PluginCard(
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(18.dp)
     ) {
-        Column(Modifier
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp, bottom = 10.dp)) {
+        Column(
+            Modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 10.dp)
+        ) {
             Row(verticalAlignment = Alignment.Top) {
                 val context = LocalContext.current
-                val iconState = remember(pluginInfo.packageName) { mutableStateOf<ImageBitmap?>(null) }
+                val iconState =
+                    remember(pluginInfo.packageName) { mutableStateOf<ImageBitmap?>(null) }
 
                 LaunchedEffect(pluginInfo.packageName) {
                     val bitmap = withContext(Dispatchers.IO) {
@@ -109,7 +112,10 @@ fun PluginCard(
                             if (pluginInfo.source == PluginSource.InstalledApp) {
                                 context.packageManager.getApplicationIcon(pluginInfo.packageName)
                             } else {
-                                context.packageManager.getPackageArchiveInfo(pluginFile.absolutePath, 0)
+                                context.packageManager.getPackageArchiveInfo(
+                                    pluginFile.absolutePath,
+                                    0
+                                )
                                     ?.applicationInfo
                                     ?.apply {
                                         sourceDir = pluginFile.absolutePath
@@ -182,7 +188,12 @@ fun PluginCard(
                     Spacer(Modifier.height(2.dp))
 
                     Text(
-                        text = "${pluginInfo.versionName} · ${stringResource(R.string.plugin_by_author, pluginInfo.author)}",
+                        text = "${pluginInfo.versionName} · ${
+                            stringResource(
+                                R.string.plugin_by_author,
+                                pluginInfo.author
+                            )
+                        }",
                         style = typography.labelMedium,
                         color = colorScheme.onSurfaceVariant,
                         maxLines = 1,

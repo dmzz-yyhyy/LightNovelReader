@@ -14,9 +14,17 @@ import io.nightfish.lightnovelreader.api.book.Volume
 
 @Dao
 interface BookVolumesDao {
-    @Query("replace into volume (book_id, volume_id, volume_title, chapter_id_list, volume_index)" +
-            " values (:bookId, :volumeId, :volumeTitle, :chapterIds, :index)")
-    suspend fun insertVolume(bookId: String, volumeId: String, volumeTitle: String, chapterIds: String, index: Int)
+    @Query(
+        "replace into volume (book_id, volume_id, volume_title, chapter_id_list, volume_index)" +
+                " values (:bookId, :volumeId, :volumeTitle, :chapterIds, :index)"
+    )
+    suspend fun insertVolume(
+        bookId: String,
+        volumeId: String,
+        volumeTitle: String,
+        chapterIds: String,
+        index: Int
+    )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertVolume(entity: VolumeEntity)
@@ -33,7 +41,13 @@ interface BookVolumesDao {
     @Transaction
     suspend fun insertVolume(bookId: String, volumes: BookVolumes) {
         volumes.volumes.forEachIndexed { index, volume ->
-            insertVolume(bookId, volume.volumeId, volume.volumeTitle, ListConverter.stringListToString(volume.chapters.map { it.id }), index)
+            insertVolume(
+                bookId,
+                volume.volumeId,
+                volume.volumeTitle,
+                ListConverter.stringListToString(volume.chapters.map { it.id }),
+                index
+            )
             volume.chapters.forEach {
                 insertChapterInformation(ChapterInformationEntity(it.id, it.title))
             }
@@ -54,15 +68,15 @@ interface BookVolumesDao {
         return BookVolumes(
             bookId,
             getVolumeEntitiesByBookId(bookId)
-            .sortedBy { it.index }
-            .map { volumeEntity ->
-                Volume(
-                    volumeEntity.volumeId,
-                    volumeEntity.volumeTitle,
-                    volumeEntity.chapterIds.map {
-                        getChapterInformation(it) ?: ChapterInformation("", "")
-                    })
-        })
+                .sortedBy { it.index }
+                .map { volumeEntity ->
+                    Volume(
+                        volumeEntity.volumeId,
+                        volumeEntity.volumeTitle,
+                        volumeEntity.chapterIds.map {
+                            getChapterInformation(it) ?: ChapterInformation("", "")
+                        })
+                })
     }
 
     @Query("delete from volume")

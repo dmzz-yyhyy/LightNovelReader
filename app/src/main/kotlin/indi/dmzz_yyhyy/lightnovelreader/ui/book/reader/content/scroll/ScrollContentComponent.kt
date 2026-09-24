@@ -13,19 +13,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,6 +37,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -54,7 +63,6 @@ import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentError
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentLoading
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
@@ -63,6 +71,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.readerTextColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderFontFamily
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
+import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -99,10 +108,34 @@ fun ScrollContentTextComponent(
 ) {
     val snackbarHostState = LocalSnackbarHost.current
     val density = LocalDensity.current
-    val screenHeight = LocalResources.current.displayMetrics.heightPixels
     val listState = uiState.lazyListState
     val scope = rememberCoroutineScope()
+    val loopBackgroundEnabled = settingState.enableBackgroundImage &&
+        settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop
     var lazyColumnSize by remember { mutableStateOf(IntSize(0, 0)) }
+    var backgroundViewportHeightPx by remember { mutableIntStateOf(0) }
+    var backgroundPhasePx by remember { mutableFloatStateOf(0f) }
+    val backgroundScrollConnection = remember(loopBackgroundEnabled) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                val height = backgroundViewportHeightPx
+                if (loopBackgroundEnabled && height > 0 && consumed.y != 0f) {
+                    backgroundPhasePx = positiveModulo(
+                        backgroundPhasePx + consumed.y,
+                        height.toFloat(),
+                    )
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    LaunchedEffect(loopBackgroundEnabled) {
+        backgroundPhasePx = 0f
+    }
 
     val reachedTopMsg = stringResource(R.string.reader_reached_top)
     val prevChapterLabel = stringResource(R.string.previous_chapter)
@@ -112,18 +145,22 @@ fun ScrollContentTextComponent(
     val reachedStartMsg = stringResource(R.string.reader_reached_start)
     val reachedEndMsg = stringResource(R.string.reader_reached_end)
 
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo }.first { it.isNotEmpty() }
-        withFrameNanos {  }
+    LaunchedEffect(listState, uiState.readingChapterId) {
+        if (!uiState.isRestoringProgress) return@LaunchedEffect
+        val chapterId = uiState.readingChapterId ?: return@LaunchedEffect
         listState.scrollToItem(1)
-        val item = uiState.lazyListState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == uiState.readingChapterId } ?: return@LaunchedEffect
         snapshotFlow { lazyColumnSize }.first { lazyColumnSize.height > 0 }
+        val item = snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo.firstOrNull { it.key == chapterId }
+        }.first { it != null } ?: return@LaunchedEffect
         val offset = if (uiState.readingProgress <= 0f) {
             0
         } else {
-            (item.size * uiState.readingProgress).toInt() - lazyColumnSize.height
+            ((item.size - lazyColumnSize.height / 2).coerceAtLeast(0) * uiState.readingProgress).toInt()
         }
         listState.scrollToItem(1, offset)
+        withFrameNanos { }
+        uiState.finishProgressRestore()
     }
     LaunchedEffect(listState) {
         var atTop = false
@@ -146,7 +183,8 @@ fun ScrollContentTextComponent(
                     when {
                         isAtTop -> {
                             if (atTop) {
-                                if (uiState.readingChapterContent?.map { it.hasPrevChapter() }?.get() == true)
+                                if (uiState.readingChapterContent?.map { it.hasPrevChapter() }
+                                        ?.get() == true)
                                     launch {
                                         showSnackbar(
                                             coroutineScope = this,
@@ -170,7 +208,8 @@ fun ScrollContentTextComponent(
 
                         isAtBottom -> {
                             if (atBottom) {
-                                if (uiState.readingChapterContent?.map { it.hasNextChapter() }?.get() == true)
+                                if (uiState.readingChapterContent?.map { it.hasNextChapter() }
+                                        ?.get() == true)
                                     launch {
                                         showSnackbar(
                                             coroutineScope = this,
@@ -201,95 +240,105 @@ fun ScrollContentTextComponent(
             }
     }
 
-    if (settingState.enableBackgroundImage && settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop) {
-        Image(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(with(density) {
-                    screenHeight.toDp()
-                })
-                .offset(y = with(density) {
-                    ((uiState.lazyListState.layoutInfo.visibleItemsInfo.getOrNull(0)?.offset
-                        ?: 0) % screenHeight + screenHeight).toDp()
-                }),
-            painter = rememberReaderBackgroundPainter(settingState),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
-        Image(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(with(density) {
-                    screenHeight.toDp()
-                })
-                .offset(y = with(density) {
-                    ((uiState.lazyListState.layoutInfo.visibleItemsInfo.getOrNull(0)?.offset
-                        ?: 0) % screenHeight).toDp()
-                }),
-            painter = rememberReaderBackgroundPainter(settingState),
-            contentDescription = null,
-            contentScale = ContentScale.Crop
-        )
-    }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
         uiState.writeProgressRightNow()
     }
-    AnimatedVisibility(
-        uiState.contentList.getOrNull(1) == null,
-        enter = fadeIn(),
-        exit = fadeOut()
+    val loopBackgroundPainter = if (loopBackgroundEnabled) {
+        rememberReaderBackgroundPainter(settingState)
+    } else null
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .onGloballyPositioned { backgroundViewportHeightPx = it.size.height }
     ) {
-        Loading()
-    }
-    AnimatedVisibility(
-        uiState.contentList.getOrNull(1) != null,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        LazyColumn(
-            modifier = modifier
-                .padding(paddingValues)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            changeIsImmersive.invoke()
-                        }
-                    )
-                }
-                .onGloballyPositioned {
-                    scope.launch {
-                        withFrameNanos { }
-                        uiState.setLazyColumnSize(it.size)
-                        lazyColumnSize = it.size
-                    }
-                },
-            state = listState,
+        if (loopBackgroundPainter != null && backgroundViewportHeightPx > 0) {
+            val backgroundHeight = with(density) { backgroundViewportHeightPx.toDp() }
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(backgroundHeight)
+                    .graphicsLayer {
+                        translationY = backgroundPhasePx - backgroundViewportHeightPx
+                    },
+                painter = loopBackgroundPainter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+            )
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(backgroundHeight)
+                    .graphicsLayer { translationY = backgroundPhasePx },
+                painter = loopBackgroundPainter,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+            )
+        }
+
+        AnimatedVisibility(
+            uiState.contentList.getOrNull(1) == null,
+            enter = fadeIn(),
+            exit = fadeOut()
         ) {
-            itemsIndexed(
-                items = uiState.contentList,
-                key = { index, pair -> pair?.first ?: "placeholder-$index" }
-            ) { index, pair ->
-                pair?.second.let { result ->
+            Loading()
+        }
+        AnimatedVisibility(
+            uiState.contentList.getOrNull(1) != null,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            SelectionContainer {
+                LazyColumn(
+                modifier = modifier
+                    .nestedScroll(backgroundScrollConnection)
+                    .padding(paddingValues)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                changeIsImmersive.invoke()
+                            }
+                        )
+                    }
+                    .onGloballyPositioned {
+                        scope.launch {
+                            withFrameNanos { }
+                            uiState.setLazyColumnSize(it.size)
+                            lazyColumnSize = it.size
+                        }
+                    },
+                state = listState,
+                ) {
+                    itemsIndexed(
+                    items = uiState.contentList,
+                    key = { index, pair -> pair?.first ?: "placeholder-$index" }
+                    ) { index, pair ->
+                    val result = pair?.second ?: return@itemsIndexed
                     uiState.contentList.getOrNull(index + 1)?.second?.get()?.let {
                         if (!it.hasPrevChapter()) return@itemsIndexed
                     }
                     uiState.contentList.getOrNull(index - 1)?.second?.get()?.let {
                         if (!it.hasNextChapter()) return@itemsIndexed
                     }
-                    result?.onOk {
+                    result.onOk {
                         TextContent(
                             modifier = modifier,
                             settingState = settingState,
                             content = it
                         )
-                    }?.onErr {
+                    }.onErr {
                         ChapterContentError(it)
-                    } ?: ChapterContentLoading()
+                    }
+                    }
                 }
             }
         }
     }
 }
+
+private fun positiveModulo(value: Float, modulus: Float): Float =
+    if (modulus <= 0f) 0f else ((value % modulus) + modulus) % modulus
 
 @Composable
 private fun TextContent(
@@ -297,18 +346,18 @@ private fun TextContent(
     settingState: SettingState,
     content: ChapterContentUiState
 ) {
+    val componentRender = LocalComponentRender.current
     val density = LocalDensity.current
     val screenHeight = LocalResources.current.displayMetrics.heightPixels
     val textColor = readerTextColor(settingState)
-    val fontFamily = rememberReaderFontFamily(settingState.fontFamilyUriUserData)
+    val fontFamily = rememberReaderFontFamily(settingState.fontUriUserData)
     Column(
-        Modifier.defaultMinSize(
-            minHeight = with(density) {
-                screenHeight.toDp()
-            }
-        )
+            Modifier.defaultMinSize(
+                minHeight = with(density) {
+                    screenHeight.toDp()
+                }
+            )
     ) {
-        if (settingState.isUsingContinuousScrolling) {
             val titleRegex = Regex("^(第[一二三四五六七八九十]+卷)\\s+(.*)")
             val matchResult = titleRegex.find(content.title)
             Column(
@@ -335,7 +384,7 @@ private fun TextContent(
                         text = chapterTitle,
                         textAlign = TextAlign.Center,
                         fontSize = (settingState.fontSize + 6).sp,
-                        lineHeight = (settingState.fontSize + settingState.fontLineHeight + 6).sp,
+                        lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
                         fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
                         fontFamily = fontFamily,
                         color = textColor
@@ -348,7 +397,7 @@ private fun TextContent(
                         text = content.title,
                         textAlign = TextAlign.Center,
                         fontSize = (settingState.fontSize + 6).sp,
-                        lineHeight = (settingState.fontSize + settingState.fontLineHeight + 6).sp,
+                        lineHeight = (settingState.fontSize + settingState.lineHeight + 6).sp,
                         fontWeight = FontWeight((settingState.fontWeigh.toInt() + 100)),
                         fontFamily = fontFamily,
                         color = textColor
@@ -365,9 +414,12 @@ private fun TextContent(
                 }
                 Spacer(Modifier.height(16.dp))
             }
-        }
-        for (component in content.content) {
-            component.Content(modifier)
-        }
+            for (data in content.content) {
+                componentRender.Component(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    componentData = data,
+                )
+            }
     }
 }

@@ -21,7 +21,7 @@ data class BookshelfBookMetadataEntity(
     val lastUpdate: LocalDateTime,
     @ColumnInfo(name = "book_shelf_ids")
     val bookShelfIds: List<Int>,
-): Mergeable<BookshelfBookMetadataEntity> {
+) : Mergeable<BookshelfBookMetadataEntity> {
     override fun merge(new: BookshelfBookMetadataEntity): BookshelfBookMetadataEntity =
         BookshelfBookMetadataEntity(
             id = new.id,

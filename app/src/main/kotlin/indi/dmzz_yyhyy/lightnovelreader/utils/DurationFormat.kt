@@ -16,7 +16,11 @@ data class DurationFormat(val locale: Locale = Locale.getDefault()) {
         DAY, HOUR, MINUTE, SECOND, MILLISECOND
     }
 
-    fun format(duration: Duration, smallestUnit: Unit = Unit.SECOND, largestUnit: Unit = Unit.DAY): String {
+    fun format(
+        duration: Duration,
+        smallestUnit: Unit = Unit.SECOND,
+        largestUnit: Unit = Unit.DAY
+    ): String {
         val formattedStringComponents = mutableListOf<String>()
         var remainder = duration
 
@@ -36,7 +40,8 @@ data class DurationFormat(val locale: Locale = Locale.getDefault()) {
             val unitDisplayName = unitDisplayName(unit)
 
             if (component > 0) {
-                val formattedComponent = android.icu.text.NumberFormat.getInstance(locale).format(component)
+                val formattedComponent =
+                    android.icu.text.NumberFormat.getInstance(locale).format(component)
                 formattedStringComponents.add("$formattedComponent$unitDisplayName")
             }
 

@@ -1,9 +1,9 @@
 package io.nightfish.potatoepub.otf
 
 import io.nightfish.potatoepub.xml.Version
+import io.nightfish.potatoepub.xml.WriteToZipAble
 import io.nightfish.potatoepub.xml.XmlBuilder
 import io.nightfish.potatoepub.xml.XmlBuilder.Companion.xml
-import io.nightfish.potatoepub.xml.WriteToZipAble
 import io.nightfish.potatoepub.xml.asFormatedXml
 import java.util.zip.ZipEntry
 
@@ -14,10 +14,11 @@ data class TocNcx(
     val uid: String,
     val title: String,
     val navPoints: List<NavPoint>
-): WriteToZipAble {
+) : WriteToZipAble {
     override val zipEntry = ZipEntry("EPUB/toc.ncx")
     override fun toByteArray(): ByteArray =
-        xml("ncx",
+        xml(
+            "ncx",
             "http://www.daisy.org/z3986/2005/ncx/",
             Version("2005-1")
         ) {

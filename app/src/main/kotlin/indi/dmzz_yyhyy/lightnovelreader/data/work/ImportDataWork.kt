@@ -32,11 +32,12 @@ class ImportDataWork @AssistedInject constructor(
         val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return Result.failure()
         val overwrite = inputData.getBoolean("overwrite", false)
         val appLocalData = try {
-            applicationContext.contentResolver.openFileDescriptor(fileUri, "r")?.use { parcelFileDescriptor ->
-                FileInputStream(parcelFileDescriptor.fileDescriptor).use { inputStream ->
-                    Cbor.decodeFromByteArray<AppLocalData>(inputStream.readAppLocalData())
+            applicationContext.contentResolver.openFileDescriptor(fileUri, "r")
+                ?.use { parcelFileDescriptor ->
+                    FileInputStream(parcelFileDescriptor.fileDescriptor).use { inputStream ->
+                        Cbor.decodeFromByteArray<AppLocalData>(inputStream.readAppLocalData())
+                    }
                 }
-            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to load file")
             e.printStackTrace()

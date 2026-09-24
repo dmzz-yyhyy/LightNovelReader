@@ -1,9 +1,9 @@
 package io.nightfish.lightnovelreader.api.content
 
-import io.nightfish.lightnovelreader.api.identifier.Identifier
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlin.reflect.KClass
 
 /**
@@ -29,7 +29,11 @@ interface ContentComponentRepositoryApi {
          *
          * @since Api 2
          */
-        fun component(value: KClass<out AbstractContentComponent<out AbstractContentComponentData>>): RegisterBuilder
+        fun <Render, Data> component(
+            value: KClass<Render>
+        ): RegisterBuilder
+                where Render : AbstractContentComponentRender<Data>,
+                      Data : AbstractContentComponentData
 
         /**
          * 指定该组件对应的数据类

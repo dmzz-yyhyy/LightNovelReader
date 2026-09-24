@@ -89,7 +89,8 @@ fun ExploreSearchScreen(
                 Box(
                     Modifier
                         .align(Alignment.TopEnd)
-                        .height(56.dp)) {
+                        .height(56.dp)
+                ) {
                     DropdownMenu(
                         offset = DpOffset((-12).dp, 0.dp),
                         expanded = exploreSearchUiState.dropdownMenuExpanded,
@@ -131,14 +132,19 @@ fun ExploreSearchScreen(
                             },
                             expanded = exploreSearchUiState.searchBarExpanded,
                             onExpandedChange = exploreSearchUiState::setSearchBarExpandedState,
-                            placeholder = { AnimatedText(
-                                text = exploreSearchUiState.searchTip.resolve(),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            ) },
+                            placeholder = {
+                                AnimatedText(
+                                    text = exploreSearchUiState.searchTip.resolve(),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            },
                             leadingIcon = {
                                 IconButton(onClick = onClickBack) {
-                                    Icon(painter = painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
+                                    Icon(
+                                        painter = painterResource(R.drawable.arrow_back_24px),
+                                        contentDescription = "back"
+                                    )
                                 }
                             },
                             trailingIcon = {
@@ -148,11 +154,21 @@ fun ExploreSearchScreen(
                                             exploreSearchUiState.setSearchBarExpandedState(true)
                                             searchKeyword = ""
                                         }) {
-                                            Icon(painter = painterResource(R.drawable.close_24px), contentDescription = "clear")
+                                            Icon(
+                                                painter = painterResource(R.drawable.close_24px),
+                                                contentDescription = "clear"
+                                            )
                                         }
                                     if (exploreSearchUiState.searchBarExpanded)
-                                        IconButton(onClick = { exploreSearchUiState.setDropdownMenuExpandedState(true) }) {
-                                            Icon(painter = painterResource(R.drawable.filter_alt_24px), contentDescription = "filter")
+                                        IconButton(onClick = {
+                                            exploreSearchUiState.setDropdownMenuExpandedState(
+                                                true
+                                            )
+                                        }) {
+                                            Icon(
+                                                painter = painterResource(R.drawable.filter_alt_24px),
+                                                contentDescription = "filter"
+                                            )
                                         }
                                 }
                             },
@@ -162,7 +178,8 @@ fun ExploreSearchScreen(
                     onExpandedChange = { if (!it) onClickBack.invoke() }
                 ) {
                     val hasHistory = exploreSearchUiState.historyList.isNotEmpty()
-                    val showHistory = exploreSearchUiState.suggestions.isEmpty() || searchKeyword.isEmpty()
+                    val showHistory =
+                        exploreSearchUiState.suggestions.isEmpty() || searchKeyword.isEmpty()
                     AnimatedVisibility(
                         visible = !hasHistory && showHistory,
                         enter = fadeIn(),
@@ -198,7 +215,7 @@ fun ExploreSearchScreen(
 
                                 Box(Modifier.weight(2f))
 
-                                TextButton (
+                                TextButton(
                                     onClick = onClickClearAllHistory,
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color.Transparent,
@@ -222,7 +239,7 @@ fun ExploreSearchScreen(
                                     targetState = history,
                                     label = "HistoryItemAnimation"
                                 ) {
-                                    Row (
+                                    Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(46.dp)
@@ -269,7 +286,7 @@ fun ExploreSearchScreen(
                                     targetState = history,
                                     label = "SuggestionsItemAnimation"
                                 ) {
-                                    Row (
+                                    Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(46.dp)
@@ -339,7 +356,8 @@ fun ExploreSearchScreen(
                 LazyColumn {
                     stickyHeader {
                         Box(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
                                 .background(MaterialTheme.colorScheme.background)
                                 .padding(top = 8.dp)
                         ) {
@@ -363,7 +381,9 @@ fun ExploreSearchScreen(
                             requestAddBookToBookshelf(it.first)
                         }
                         BookCardItem(
-                            modifier = Modifier.padding(horizontal = 16.dp).padding(vertical = 3.dp),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(vertical = 3.dp),
                             bookInformationFlow = it.second,
                             onClick = { onClickBook(it.first) },
                             onLongPress = withHaptic {},

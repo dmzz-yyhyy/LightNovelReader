@@ -67,7 +67,9 @@ class UpdateCheckRepository @Inject constructor(
 
     init {
         coroutineScope.launch {
-            if (userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path).getOrDefault(true))
+            if (userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
+                    .getOrDefault(true)
+            )
                 check()
         }
     }
@@ -81,9 +83,16 @@ class UpdateCheckRepository @Inject constructor(
     fun check() {
         if (checkJob != null && checkJob!!.isActive) return
         checkJob = coroutineScope.launch {
-            val updateChannelKey = userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path).get() ?: MenuOptions.UpdateChannelOptions.DEVELOPMENT
-            val distributionPlatform = userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path).get() ?: MenuOptions.UpdatePlatformOptions.LnrAPI
-            Log.i("UpdateChecker", "Checking for updates from $distributionPlatform/$updateChannelKey")
+            val updateChannelKey =
+                userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
+                    .get() ?: MenuOptions.UpdateChannelOptions.DEVELOPMENT
+            val distributionPlatform =
+                userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
+                    .get() ?: MenuOptions.UpdatePlatformOptions.LnrAPI
+            Log.i(
+                "UpdateChecker",
+                "Checking for updates from $distributionPlatform/$updateChannelKey"
+            )
             _updatePhase.update { "已请求更新，等待 $distributionPlatform 应答" }
             try {
                 release =
@@ -176,7 +185,10 @@ class UpdateCheckRepository @Inject constructor(
 
                                     val now = System.currentTimeMillis()
                                     if (now - lastNotificationUpdate > 500) {
-                                        showDownloadNotification(progressPercent, release.versionName)
+                                        showDownloadNotification(
+                                            progressPercent,
+                                            release.versionName
+                                        )
                                         lastNotificationUpdate = now
                                     }
                                 }
@@ -231,13 +243,18 @@ class UpdateCheckRepository @Inject constructor(
                 description = "应用更新下载进度"
                 setShowBadge(false)
             }
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
 
     private fun showDownloadNotification(progress: Int, versionName: String) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) return
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.icon_foreground)
             .setContentTitle("正在下载更新 $versionName")
@@ -251,7 +268,11 @@ class UpdateCheckRepository @Inject constructor(
     }
 
     private fun showDownloadCompleteNotification(apkFile: File) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) return
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", apkFile)
         val installIntent = Intent(Intent.ACTION_VIEW).apply {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -274,7 +295,11 @@ class UpdateCheckRepository @Inject constructor(
     }
 
     private fun showDownloadFailedNotification(reason: String) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) return
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) return
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.icon_foreground)
             .setContentTitle("更新下载失败")

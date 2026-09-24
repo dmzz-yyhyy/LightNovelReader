@@ -37,7 +37,7 @@ class ExportOptionLocalData(
         var enable: Boolean = false
         abstract suspend fun solve()
     }
-    
+
     val bookInformationEntities = mutableListOf<BookInformationEntity>()
     val bookRecordEntities = mutableListOf<BookRecordEntity>()
     val dailyCountEntities = mutableListOf<DailyCountEntity>()

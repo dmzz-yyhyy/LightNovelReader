@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
  *
  * @since Api 4
  */
-class IntUserData (
+class IntUserData(
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<Int>(path) {

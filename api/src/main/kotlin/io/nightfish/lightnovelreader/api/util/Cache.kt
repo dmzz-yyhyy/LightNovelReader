@@ -24,7 +24,7 @@ class Cache(
      *
      * @since Api 2
      */
-    data class CacheData<T> (
+    data class CacheData<T>(
         val time: Long,
         val data: T
     )

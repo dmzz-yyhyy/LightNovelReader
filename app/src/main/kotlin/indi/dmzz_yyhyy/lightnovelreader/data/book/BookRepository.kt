@@ -1,7 +1,7 @@
+//FIXME: TEST 停止书籍信息与目录流发射，以测试所有依赖 BookRepository 的加载 UI。
 package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import android.util.Log
-import androidx.navigation.NavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
@@ -39,7 +39,7 @@ class BookRepository @Inject constructor(
     private val bookshelfRepository: BookshelfRepository,
     private val textProcessingRepository: TextProcessingRepository,
     private val workManager: WorkManager
-): BookRepositoryApi {
+) : BookRepositoryApi {
     companion object {
         private const val TAG = "BookRepository"
     }
@@ -57,7 +57,8 @@ class BookRepository @Inject constructor(
         webBookDataSource.getBookInformation(id, priority)
             .onOk { remote ->
                 localBookDataSource.updateBookInformation(remote)
-                val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
+                val bookshelfBookMetadata =
+                    bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
                 if (bookshelfBookMetadata.lastUpdate.isBefore(remote.lastUpdated))
                     bookshelfBookMetadata.bookShelfIds.forEach {
                         bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
@@ -151,7 +152,10 @@ class BookRepository @Inject constructor(
     override suspend fun getAllUserReadingData(): List<UserReadingData> =
         localBookDataSource.getAllUserReadingData()
 
-    override suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData) {
+    override suspend fun updateUserReadingData(
+        id: String,
+        update: (UserReadingData) -> UserReadingData
+    ) {
         localBookDataSource.updateUserReadingData(id, update)
     }
 
@@ -187,6 +191,6 @@ class BookRepository @Inject constructor(
         return true
     }
 
-    override fun progressBookTagClick(tag: String, navController: NavController) =
-        webBookDataSource.progressBookTagClick(tag, navController)
+    override fun progressBookTagClick(tag: String) =
+        webBookDataSource.progressBookTagClick(tag)
 }

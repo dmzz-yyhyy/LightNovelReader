@@ -94,9 +94,10 @@ class BookManagerViewModel @Inject constructor(
     }
 
     fun toggleLocalBookSelect(id: String) {
-        localBookManagerUiState.selectedIds = localBookManagerUiState.selectedIds.toMutableSet().apply {
-            if (!add(id)) remove(id)
-        }
+        localBookManagerUiState.selectedIds =
+            localBookManagerUiState.selectedIds.toMutableSet().apply {
+                if (!add(id)) remove(id)
+            }
         localBookManagerUiState.isSelecting = true
     }
 
@@ -186,11 +187,12 @@ class BookManagerViewModel @Inject constructor(
             .distinct()
         val targetSet = targets.toSet()
         val hasReadingRecord = database.userReadingDataDao().getEntity(bookId) != null
-        val chapterContentIds = if (LocalBookClearTarget.ChapterContent in targetSet && chapterIds.isNotEmpty()) {
-            chapterIds.filter { database.chapterContentDao().getId(it) != null }
-        } else {
-            emptyList()
-        }
+        val chapterContentIds =
+            if (LocalBookClearTarget.ChapterContent in targetSet && chapterIds.isNotEmpty()) {
+                chapterIds.filter { database.chapterContentDao().getId(it) != null }
+            } else {
+                emptyList()
+            }
 
         database.withTransaction {
             if (LocalBookClearTarget.VolumeAndChapterIndex in targetSet) {
@@ -256,11 +258,13 @@ class BookManagerViewModel @Inject constructor(
                 readingRecordBytes = readingRecordBytes
             )
         }.filter { it.size > 0L }
-        val retainedSelectedIds = localBookManagerUiState.selectedIds.intersect(bookList.map { it.id }.toSet())
+        val retainedSelectedIds =
+            localBookManagerUiState.selectedIds.intersect(bookList.map { it.id }.toSet())
 
         localBookManagerUiState.isLoading = loading
         localBookManagerUiState.bookList = bookList
         localBookManagerUiState.selectedIds = retainedSelectedIds
-        localBookManagerUiState.isSelecting = localBookManagerUiState.isSelecting && retainedSelectedIds.isNotEmpty()
+        localBookManagerUiState.isSelecting =
+            localBookManagerUiState.isSelecting && retainedSelectedIds.isNotEmpty()
     }
 }

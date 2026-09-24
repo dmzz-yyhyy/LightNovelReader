@@ -3,9 +3,9 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 
-@State
+@Stable
 interface ExploreUiState {
     val isOffLine: Boolean
     val isRefreshing: Boolean

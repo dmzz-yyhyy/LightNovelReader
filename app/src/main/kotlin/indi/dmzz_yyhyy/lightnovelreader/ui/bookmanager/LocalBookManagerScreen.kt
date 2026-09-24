@@ -14,6 +14,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,7 +47,8 @@ import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -69,6 +72,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
@@ -78,8 +83,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.TagChip
 import indi.dmzz_yyhyy.lightnovelreader.utils.FileSizeUnit
-import indi.dmzz_yyhyy.lightnovelreader.utils.fadeEnter
-import indi.dmzz_yyhyy.lightnovelreader.utils.fadeExit
+import indi.dmzz_yyhyy.lightnovelreader.utils.theme.Anim
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import indi.dmzz_yyhyy.lightnovelreader.utils.formatSize
 import kotlin.math.roundToInt
@@ -253,7 +257,10 @@ fun LocalBookManagerContent(
                 stickyHeader(key = "index_only_header") {
                     CollapseHeader(
                         icon = painterResource(R.drawable.menu_book_24px),
-                        title = stringResource(R.string.book_manager_group_index_only, indexOnlyList.size),
+                        title = stringResource(
+                            R.string.book_manager_group_index_only,
+                            indexOnlyList.size
+                        ),
                         expanded = !indexOnlyCollapsed,
                         onToggleExpand = { indexOnlyCollapsed = !indexOnlyCollapsed }
                     )
@@ -289,16 +296,16 @@ fun LocalBookManagerContent(
             targetState = shownInfoItem,
             transitionSpec = {
                 (
-                    slideInVertically(
-                        initialOffsetY = { it / 3 },
-                        animationSpec = tween(250, easing = FastOutSlowInEasing)
-                    ) + fadeIn(tween(200, easing = FastOutSlowInEasing))
-                    ) togetherWith (
-                    slideOutVertically(
-                        targetOffsetY = { it / 3 },
-                        animationSpec = tween(180, easing = FastOutSlowInEasing)
-                    ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
-                    )
+                        slideInVertically(
+                            initialOffsetY = { it / 3 },
+                            animationSpec = tween(250, easing = FastOutSlowInEasing)
+                        ) + fadeIn(tween(200, easing = FastOutSlowInEasing))
+                        ) togetherWith (
+                        slideOutVertically(
+                            targetOffsetY = { it / 3 },
+                            animationSpec = tween(180, easing = FastOutSlowInEasing)
+                        ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
+                        )
             },
             label = "infoBar"
         ) { item ->
@@ -398,7 +405,7 @@ private fun CollapseHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
+            .background(colorScheme.background)
             .padding(horizontal = 6.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onToggleExpand)
@@ -409,13 +416,13 @@ private fun CollapseHeader(
             modifier = Modifier.width(20.dp),
             painter = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.width(10.dp))
         Text(
             text = title,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleSmall,
+            style = typography.titleSmall,
             fontWeight = FontWeight.W600
         )
         val rotation by animateFloatAsState(if (expanded) 0f else 180f, label = "rotation")
@@ -423,8 +430,58 @@ private fun CollapseHeader(
             modifier = Modifier.graphicsLayer { rotationZ = rotation },
             painter = painterResource(R.drawable.keyboard_arrow_up_24px),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun LocalBookListItemSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    val baseColor = colorScheme.surfaceContainerLow
+    val roundCorner = RoundedCornerShape(4.dp)
+
+    Row(
+        modifier = Modifier.shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.size(width = 60.dp, height = 87.dp).background(baseColor, RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(16.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(Modifier.fillMaxWidth(0.85f).height(24.dp).background(baseColor, roundCorner))
+            Box(Modifier.fillMaxWidth(0.4f).height(16.dp).background(baseColor, roundCorner))
+            Box(Modifier.fillMaxWidth(0.3f).height(16.dp).background(baseColor, roundCorner))
+        }
+    }
+}
+
+@Composable
+private fun LocalBookDetailSkeleton() {
+    val baseColor = colorScheme.surfaceContainerHighest
+    val shimmer = rememberLoadingSkeletonShimmer(
+         baseColor = baseColor
+    )
+    val textShape = RoundedCornerShape(6.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(93.dp)
+            .shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.width(64.dp).height(93.dp).background(baseColor, RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(12.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(Modifier.fillMaxWidth(0.86f).height(34.dp).background(baseColor, textShape))
+            Box(Modifier.fillMaxWidth(0.46f).height(18.dp).background(baseColor, textShape))
+            Box(Modifier.fillMaxWidth(0.58f).height(18.dp).background(baseColor, textShape))
+        }
     }
 }
 
@@ -482,13 +539,13 @@ private fun LocalBookRow(
             val result by item.bookInformationFlow.collectAsStateWithLifecycle(null)
             result?.onOk {
                 Cover(
-                    width = 64.dp,
-                    height = 93.dp,
+                    width = 60.dp,
+                    height = 87.dp,
                     uri = it.coverUri,
                     title = it.title
                 )
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(16.dp))
 
                 Column(
                     modifier = Modifier.weight(1f),
@@ -498,13 +555,13 @@ private fun LocalBookRow(
                         text = it.title,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = typography.titleMedium,
                         fontWeight = FontWeight.W600
                     )
                     Text(
                         text = formatSize(item.size),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        style = typography.bodyMedium,
+                        color = colorScheme.secondary
                     )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -514,16 +571,14 @@ private fun LocalBookRow(
                         Text(
                             text = if (item.lastReadTime != null) formTime(item.lastReadTime)
                             else stringResource(R.string.book_manager_no_local_reading_record),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
+                            style = typography.bodyMedium,
+                            color = colorScheme.secondary
                         )
                     }
                 }
             }?.onErr {
                 //TODO 错误显示
-            } ?: {
-                //TODO 加载显示
-            }
+            } ?: LocalBookListItemSkeleton()
         }
 
         if (progress > 0.001f) {
@@ -567,7 +622,7 @@ private fun LocalBookRow(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.info_24px),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = colorScheme.onSurfaceVariant,
                         contentDescription = "info"
                     )
                 }
@@ -593,10 +648,10 @@ private fun LocalBookInfoCard(
             .fillMaxWidth()
             .widthIn(max = 640.dp),
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
+        color = colorScheme.surfaceContainerHigh
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
+            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
@@ -614,8 +669,8 @@ private fun LocalBookInfoCard(
                 }
                 Text(
                     text = stringResource(R.string.local_book_info_title),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = typography.displayMedium,
+                    color = colorScheme.onSurface
                 )
                 Spacer(Modifier.weight(1f))
             }
@@ -632,20 +687,20 @@ private fun LocalBookInfoCard(
                     Spacer(Modifier.width(12.dp))
                     Column(
                         modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
                             text = it.title,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.titleMedium,
+                            style = typography.titleMedium,
                             fontWeight = FontWeight.W600
                         )
                         Text(
                             text = it.author,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = typography.bodyLarge,
                             fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = colorScheme.primary
                         )
                         Text(
                             text = stringResource(
@@ -653,20 +708,18 @@ private fun LocalBookInfoCard(
                                 item.volumeCount,
                                 item.chapterCount
                             ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary
+                            style = typography.bodyMedium,
+                            color = colorScheme.secondary
                         )
                     }
                 }?.onErr {
                     //TODO 错误显示
-                } ?: {
-                    //TODO 加载显示
-                }
+                } ?: LocalBookDetailSkeleton()
             }
             AnimatedContent(
                 targetState = isClearing,
                 transitionSpec = {
-                    fadeEnter() togetherWith fadeExit()
+                    Anim.fadeEnter() togetherWith Anim.fadeExit()
                 },
                 label = "LocalBookInfoContent"
             ) { clearing ->
@@ -707,7 +760,7 @@ private fun LocalBookInfoCard(
                                 minUnit = FileSizeUnit.KB
                             )
                         )
-                        HorizontalDivider()
+                        HorizontalDivider(Modifier.padding(vertical = 3.dp))
                         LocalBookInfoRow(
                             stringResource(R.string.local_book_info_total),
                             formatSize(item.size),
@@ -715,16 +768,20 @@ private fun LocalBookInfoCard(
                         )
                     }
                 } else {
+
                     Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
                         SectionHeader(
                             modifier = Modifier.padding(bottom = 8.dp),
                             text = stringResource(R.string.local_book_clear_options)
                         )
                         LocalBookClearTarget.entries.forEachIndexed { index, target ->
+                            val interactionSource = remember { MutableInteractionSource() }
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable(
+                                        interactionSource = interactionSource,
                                         onClick = { onToggleClearTarget(target) }
                                     )
                             ) {
@@ -732,21 +789,22 @@ private fun LocalBookInfoCard(
                                     modifier = Modifier
                                         .padding(vertical = 4.dp)
                                         .weight(1f)
-                                    ) {
+                                ) {
                                     Text(
                                         text = stringResource(target.label),
-                                        style = MaterialTheme.typography.bodyLarge,
+                                        style = typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
                                         text = formatSize(item.bytesOf(target)),
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = typography.bodyMedium
                                     )
                                 }
                                 Checkbox(
                                     modifier = Modifier.align(Alignment.CenterVertically),
                                     checked = target in clearTargets,
-                                    onCheckedChange = { onToggleClearTarget(target) }
+                                    onCheckedChange = { onToggleClearTarget(target) },
+                                    interactionSource = interactionSource
                                 )
                             }
                             if (index != LocalBookClearTarget.entries.size - 1) {
@@ -775,8 +833,8 @@ private fun LocalBookInfoCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
+                            containerColor = colorScheme.error,
+                            contentColor = colorScheme.onError
                         )
                     ) {
                         Text(stringResource(R.string.local_book_clear))
@@ -795,8 +853,8 @@ private fun LocalBookInfoCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary
                         )
                     ) {
                         Text(stringResource(R.string.detail_title))
@@ -820,12 +878,12 @@ private fun LocalBookInfoRow(
         Text(
             text = label,
             modifier = Modifier.weight(1f),
-            style = if (emphasized) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+            style = if (emphasized) typography.titleSmall else typography.bodyMedium,
             fontWeight = if (emphasized) FontWeight.W600 else null
         )
         Text(
             text = value,
-            style = if (emphasized) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+            style = if (emphasized) typography.titleSmall else typography.bodyMedium,
             fontWeight = if (emphasized) FontWeight.W600 else null
         )
     }

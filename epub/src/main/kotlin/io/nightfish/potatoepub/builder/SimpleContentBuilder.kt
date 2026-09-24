@@ -40,7 +40,10 @@ class SimpleContentBuilder {
 
     fun text(content: String) {
         var result = Regex("&#([0-8]|1[1-2]|1[4-9]|2[0-9]|3[0-1]);").replace(content, "")
-        result = Regex("&#x(0[0-8BCEF]|1[0-9A-F]|7F|8[0-9A-F]|9[0-9A-F]|A[0-9A-F]|B[0-9A-F]|C[0-9A-F]|D[0-9A-F]|E[0-9A-F]|F[0-9A-F]);", RegexOption.IGNORE_CASE)
+        result = Regex(
+            "&#x(0[0-8BCEF]|1[0-9A-F]|7F|8[0-9A-F]|9[0-9A-F]|A[0-9A-F]|B[0-9A-F]|C[0-9A-F]|D[0-9A-F]|E[0-9A-F]|F[0-9A-F]);",
+            RegexOption.IGNORE_CASE
+        )
             .replace(result, "")
         contentElement.addText(result)
     }
@@ -48,7 +51,11 @@ class SimpleContentBuilder {
     /**
      * make sure image is jpeg file
      */
-    fun image(image: File, id: String = "image_${image.hashCode()}", src: String = "image/$id.jpg") {
+    fun image(
+        image: File,
+        id: String = "image_${image.hashCode()}",
+        src: String = "image/$id.jpg"
+    ) {
         _images[Pair(id, src)] = image
         XmlBuilder.ElementBuilder(contentElement, "div", arrayOf(Attribute("class", "div_image"))) {
             "img"(

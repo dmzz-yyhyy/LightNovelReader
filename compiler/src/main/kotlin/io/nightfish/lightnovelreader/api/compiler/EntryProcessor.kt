@@ -33,7 +33,11 @@ class EntryProcessor(
                           xmlns:tools="http://schemas.android.com/tools">
                     <application>
                     <meta-data android:name="lnr_plugin" android:value="$pluginClass" tools:node="merge"/>
-                    <meta-data android:name="lnr_web_data_source" android:value="${webDataSourceClassList.joinToString(separator = ";")}" tools:node="merge"/>
+                    <meta-data android:name="lnr_web_data_source" android:value="${
+                    webDataSourceClassList.joinToString(
+                        separator = ";"
+                    )
+                }" tools:node="merge"/>
                     </application>
                 </manifest>
                 """.trimIndent()

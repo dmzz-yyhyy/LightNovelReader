@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * @since Api 4
  */
-class StringUserData (
+class StringUserData(
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<String>(path) {

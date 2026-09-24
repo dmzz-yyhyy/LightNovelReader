@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -45,6 +46,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -101,10 +104,11 @@ sealed class StatsViewOption(val viewIndex: Int) {
     }
 }
 
-private operator fun LocalDate.rangeTo(other: LocalDate): ClosedRange<LocalDate> = object : ClosedRange<LocalDate> {
-    override val start: LocalDate = this@rangeTo
-    override val endInclusive: LocalDate = other
-}
+private operator fun LocalDate.rangeTo(other: LocalDate): ClosedRange<LocalDate> =
+    object : ClosedRange<LocalDate> {
+        override val start: LocalDate = this@rangeTo
+        override val endInclusive: LocalDate = other
+    }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,7 +162,8 @@ private fun StatisticsContent(
     LazyColumn(modifier.fillMaxSize()) {
         stickyHeader {
             Box(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(colorScheme.background)
                     .padding(bottom = 12.dp),
                 contentAlignment = Alignment.Center
@@ -171,9 +176,11 @@ private fun StatisticsContent(
                                 index = index,
                                 count = viewOptions.size
                             ),
-                            onClick = { onViewSelected(index).let {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            } },
+                            onClick = {
+                                onViewSelected(index).let {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
+                            },
                             selected = uiState.selectedViewIndex == index
                         ) {
                             Text(label)
@@ -306,9 +313,7 @@ fun BookStack(
                     )
                 }?.onErr {
                     //TODO 错误显示
-                } ?: {
-                    //TODO 加载显示
-                }
+                } ?: StatsDetailedBookCoverSkeleton()
             }
         }
     }
@@ -399,5 +404,15 @@ private fun TopBar(
             }
         },
         scrollBehavior = scrollBehavior,
+    )
+}
+
+@Composable
+private fun StatsDetailedBookCoverSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    Box(
+        Modifier.size(63.dp, 90.dp)
+            .shimmer(shimmer)
+            .background(colorScheme.surfaceContainerLow, RoundedCornerShape(6.dp))
     )
 }

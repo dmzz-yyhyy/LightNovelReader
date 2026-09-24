@@ -32,7 +32,7 @@ import androidx.work.OneTimeWorkRequest
 import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AboutSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.AppSettingsList
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.list.DataSettingsList
@@ -55,7 +55,7 @@ fun SettingsScreen(
     onClickExportUserData: () -> Unit,
     onClickDebugMode: () -> Unit,
     onClickLicenses: () -> Unit,
-    onClickThemeSettings: () -> Unit,
+    onClickReaderStyleSettings: () -> Unit,
     onClickPluginManager: () -> Unit,
     onClickTextFormatting: () -> Unit,
     onClickStorageManager: () -> Unit,
@@ -85,7 +85,7 @@ fun SettingsScreen(
                 ) {
                     ReadingSettingsList(
                         settingState = settingState,
-                        onClickTheme = onClickThemeSettings,
+                        onClickReaderStyle = onClickReaderStyleSettings,
                         onClickTextFormatting = onClickTextFormatting
                     )
                 }

@@ -13,7 +13,8 @@ import javax.net.ssl.X509TrustManager
 private fun ignoreSSL() {
     try {
         val context = SSLContext.getInstance("TLS")
-        context.init(null, arrayOf<X509TrustManager>(
+        context.init(
+            null, arrayOf<X509TrustManager>(
             @Suppress("CustomX509TrustManager")
             object : X509TrustManager {
                 @Suppress("TrustAllX509TrustManager")

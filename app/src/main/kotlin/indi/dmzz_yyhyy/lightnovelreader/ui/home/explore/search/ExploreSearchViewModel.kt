@@ -23,7 +23,8 @@ class ExploreSearchViewModel @Inject constructor(
     userDataRepository: UserDataRepository
 ) : ViewModel() {
     private val _uiState = MutableExploreSearchUiState()
-    private val searchHistoryUserData = userDataRepository.stringListUserData(UserDataPath.Search.History.path)
+    private val searchHistoryUserData =
+        userDataRepository.stringListUserData(UserDataPath.Search.History.path)
     private var searchTypeTipMap = mutableMapOf<String, LocalString>()
     private var searchJob: Job? = null
     val uiState: ExploreSearchUiState = _uiState
@@ -89,21 +90,29 @@ class ExploreSearchViewModel @Inject constructor(
         _uiState.errorMessage = ""
         _uiState.searchResult.clear()
         searchJob?.cancel()
-        val searchType = exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
+        val searchType =
+            exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
         searchJob = viewModelScope.launch(Dispatchers.IO) {
             val flow = exploreRepository.search(searchType, keyword)
             _uiState.isLoading = false
             flow.collect {
-                when(it) {
+                when (it) {
                     is SearchResult.SingleBook -> launch(Dispatchers.Main) {
                         _uiState.searchBarExpanded = true
                         navigateToSingleBook(it.bookId)
                     }
-                    is SearchResult.MultipleBook -> _uiState.searchResult.add(it.bookId to bookRepository.getBookInformationFlow(it.bookId))
+
+                    is SearchResult.MultipleBook -> _uiState.searchResult.add(
+                        it.bookId to bookRepository.getBookInformationFlow(
+                            it.bookId
+                        )
+                    )
+
                     is SearchResult.Error -> {
                         _uiState.isLoadingComplete = true
                         _uiState.errorMessage = it.error.message.toString()
                     }
+
                     is SearchResult.End -> _uiState.isLoadingComplete = true
                     is SearchResult.Empty -> {
                         _uiState.isLoadingComplete = true

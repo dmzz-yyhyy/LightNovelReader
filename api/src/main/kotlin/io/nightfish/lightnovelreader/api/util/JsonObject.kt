@@ -10,4 +10,4 @@ import kotlinx.serialization.json.buildJsonObject
  *
  * @since Api 2
  */
-fun JsonObject.Companion.empty() = buildJsonObject {  }
+fun JsonObject.Companion.empty() = buildJsonObject { }

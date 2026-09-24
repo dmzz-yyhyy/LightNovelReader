@@ -32,14 +32,14 @@ class XmlBuilder {
             xmlns: String,
             attrs: Array<out Attribute> = emptyArray(),
             builder: (ElementBuilder.() -> Any)? = null
-        ): this(attrs, branch.addElement(name, xmlns), builder)
+        ) : this(attrs, branch.addElement(name, xmlns), builder)
 
         constructor(
             branch: Branch,
             name: String,
             attrs: Array<out Attribute> = emptyArray(),
             builder: (ElementBuilder.() -> Any)? = null
-        ): this(attrs, branch.addElement(name), builder)
+        ) : this(attrs, branch.addElement(name), builder)
 
         init {
             element.apply {
@@ -80,6 +80,7 @@ class XmlBuilder {
          * @since Api 2
          */
         infix fun String.to(that: Any?) = Attribute(this, that)
+
         /**
          * 在当前元素下创建以此字符串为名称的子元素
          *
@@ -95,52 +96,7 @@ class XmlBuilder {
             ElementBuilder(element, this, attrs, builder)
         }
     }
-    private val document: Document = DocumentHelper
-        .createDocument()
-    /** [XmlBuilder] 工厂方法集合 @since Api 2 */
-    companion object {
-        /**
-         * 创建一个带命名空间的XML文档
-         *
-         * @param root 根元素名称
-         * @param xmlns 根元素的命名空间URI
-         * @param attrs 根元素的属性列表
-         * @param builder 用于构建子元素的 DSL 块
-         *
-         * @return 构建完成的 dom4j [Document]
-         *
-         * @since Api 2
-         */
-        fun xml(
-            root: String,
-            xmlns: String,
-            vararg attrs: Attribute = emptyArray(),
-            builder: (ElementBuilder.() -> Any)? = null
-        ): Document {
-            val xmlBuilder = XmlBuilder()
-            ElementBuilder(xmlBuilder.document, root, xmlns, attrs, builder)
-            return xmlBuilder.document
-        }
 
-        /**
-         * 创建一个无命名空间的XML文档
-         *
-         * @param root 根元素名称
-         * @param attrs 根元素的属性列表
-         * @param builder 用于构建子元素的 DSL 块
-         *
-         * @return 构建完成的 dom4j [Document]
-         *
-         * @since Api 2
-         */
-        fun xml(
-            root: String,
-            vararg attrs: Attribute = emptyArray(),
-            builder: (ElementBuilder.() -> Any)? = null
-        ): Document {
-            val xmlBuilder = XmlBuilder()
-            ElementBuilder(xmlBuilder.document, root, attrs, builder)
-            return xmlBuilder.document
-        }
-    }
+    val document: Document = DocumentHelper
+        .createDocument()
 }

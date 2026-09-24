@@ -19,28 +19,31 @@ class HomeBookExpandPageDataSource(
     private val contentSelector: String = "#content > table.grid > tbody > tr > td > div",
     override val title: String,
     filtersBuilder: HomeBookExpandPageDataSource.() -> List<Filter<*>>,
-): ExploreExpandedPageDataSource {
+) : ExploreExpandedPageDataSource {
     override val filters = filtersBuilder(this)
     private var maxPage = 1
     private var targetPage = 1
     private var currentPage = 1
     var arg = ""
 
-    override fun getResultFlow(): Flow<SearchResult>  = flow {
+    override fun getResultFlow(): Flow<SearchResult> = flow {
         maxPage = 1
         targetPage = 1
         currentPage = 1
-        while(targetPage <= maxPage) {
+        while (targetPage <= maxPage) {
             if (targetPage < currentPage) {
                 delay(1.milliseconds)
                 continue
             }
-            val soup = wenku8Api.getWithWenku8Cookie("${baseUrl}?page=$currentPage$arg$extendedParameters").component1()
+            val soup =
+                wenku8Api.getWithWenku8Cookie("${baseUrl}?page=$currentPage$arg$extendedParameters")
+                    .component1()
             if (soup == null) {
                 emit(SearchResult.Error("Failed to request the web page"))
                 return@flow
             }
-            val menu = soup.selectFirstXpath("//*[@id=\"content\"]/div[1]/div[4]/div/span[1]/fieldset/div/a")
+            val menu =
+                soup.selectFirstXpath("//*[@id=\"content\"]/div[1]/div[4]/div/span[1]/fieldset/div/a")
             if (menu != null && menu.text().contains("小说目录")) {
                 val id = menu.attr("href").split("/").getOrNull(3)
                 if (id == null) {
@@ -51,7 +54,8 @@ class HomeBookExpandPageDataSource(
                 return@flow
             }
             if (maxPage == 1) {
-                val page = soup.selectFirstXpath("//*[@id=\"pagelink\"]/em")?.text()?.split("/")?.getOrNull(1)?.toIntOrNull()
+                val page = soup.selectFirstXpath("//*[@id=\"pagelink\"]/em")?.text()?.split("/")
+                    ?.getOrNull(1)?.toIntOrNull()
                 if (page == null) {
                     emit(SearchResult.Error("Failed to request the web page"))
                     return@flow

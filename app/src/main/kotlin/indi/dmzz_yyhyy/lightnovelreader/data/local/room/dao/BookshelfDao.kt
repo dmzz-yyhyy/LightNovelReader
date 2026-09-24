@@ -42,14 +42,15 @@ interface BookshelfDao {
     suspend fun getAllBookshelfBookMetadataEntities(): List<BookshelfBookMetadataEntity>
 
     @Transaction
-    suspend fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> = getAllBookshelfBookMetadataEntities()
-        .map {
-            BookshelfBookMetadata(
-                it.id,
-                it.lastUpdate,
-                it.bookShelfIds
-            )
-        }
+    suspend fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> =
+        getAllBookshelfBookMetadataEntities()
+            .map {
+                BookshelfBookMetadata(
+                    it.id,
+                    it.lastUpdate,
+                    it.bookShelfIds
+                )
+            }
 
     @Query("select * from book_shelf_book_metadata where id=:id")
     suspend fun getBookshelfBookMetadataEntity(id: String): BookshelfBookMetadataEntity?
@@ -58,8 +59,10 @@ interface BookshelfDao {
     fun getBookshelfBookMetadataEntityFlow(id: String): Flow<BookshelfBookMetadataEntity?>
 
     @TypeConverters(LocalDateTimeConverter::class, ListConverter::class)
-    @Query("replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
-            " values (:id, :lastUpdate, :bookshelfIds)")
+    @Query(
+        "replace into book_shelf_book_metadata (id, last_update, book_shelf_ids)" +
+                " values (:id, :lastUpdate, :bookshelfIds)"
+    )
     suspend fun insertBookshelfBookMetadata(
         id: String,
         lastUpdate: LocalDateTime,
@@ -73,13 +76,14 @@ interface BookshelfDao {
     suspend fun getAllBookshelfIds(): List<Int>
 
     @Transaction
-    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? = getBookshelfBookMetadataEntity(id)?.let {
-        BookshelfBookMetadata(
-            it.id,
-            it.lastUpdate,
-            it.bookShelfIds
-        )
-    }
+    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? =
+        getBookshelfBookMetadataEntity(id)?.let {
+            BookshelfBookMetadata(
+                it.id,
+                it.lastUpdate,
+                it.bookShelfIds
+            )
+        }
 
     @Transaction
     suspend fun addBookshelfMetadata(
@@ -88,10 +92,18 @@ interface BookshelfDao {
         bookshelfIds: List<Int>
     ) {
         getBookshelfBookMetadataEntity(id).let {
-            if ( it == null)
-                insertBookshelfBookMetadata(id, lastUpdate, ListConverter.intListToString(bookshelfIds))
+            if (it == null)
+                insertBookshelfBookMetadata(
+                    id,
+                    lastUpdate,
+                    ListConverter.intListToString(bookshelfIds)
+                )
             else
-                insertBookshelfBookMetadata(id, lastUpdate, ListConverter.intListToString((bookshelfIds + it.bookShelfIds).distinct()))
+                insertBookshelfBookMetadata(
+                    id,
+                    lastUpdate,
+                    ListConverter.intListToString((bookshelfIds + it.bookShelfIds).distinct())
+                )
         }
     }
 

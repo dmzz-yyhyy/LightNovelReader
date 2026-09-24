@@ -27,15 +27,23 @@ interface StatsDetailedUiState {
 
 class MutableStatsDetailedUiState : StatsDetailedUiState {
     override var targetDateRangeCountMap: Map<LocalDate, Count> by mutableStateOf(emptyMap())
-    override var targetDateRangeRecordsMap: Map<LocalDate, List<BookRecord>> by mutableStateOf(emptyMap())
+    override var targetDateRangeRecordsMap: Map<LocalDate, List<BookRecord>> by mutableStateOf(
+        emptyMap()
+    )
     override var targetDateRange: Pair<LocalDate, LocalDate> by mutableStateOf(LocalDate.now() to LocalDate.now())
     override var selectedChartDateRange: Pair<LocalDate, LocalDate>? by mutableStateOf(null)
     override var selectedDate: LocalDate by mutableStateOf(LocalDate.now())
     override var selectedViewIndex: Int by mutableIntStateOf(0)
     override var isLoading: Boolean by mutableStateOf(false)
-    override var bookFirstReadDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(emptyMap())
-    override var bookFirstFinishedDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(emptyMap())
-    override var bookFavoriteDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(emptyMap())
+    override var bookFirstReadDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+        emptyMap()
+    )
+    override var bookFirstFinishedDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+        emptyMap()
+    )
+    override var bookFavoriteDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+        emptyMap()
+    )
 }
 
 val StatsDetailedUiState.currentDateRange: ClosedRange<LocalDate>

@@ -1,6 +1,6 @@
 package io.nightfish.lightnovelreader.api.content
 
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponent
+import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentRender
 
 /**
  * 章节内容数据, 封装组件列表
@@ -9,8 +9,8 @@ import io.nightfish.lightnovelreader.api.content.component.AbstractContentCompon
  *
  * @since Api 2
  */
-data class ContentData (
-    val components: List<AbstractContentComponent<*>>
+data class ContentData(
+    val components: List<AbstractContentComponentRender<*>>
 ) {
     /**
      * [ContentData]工厂方法集合

@@ -1,6 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.scroll
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.layout.LazyLayoutCacheWindow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -12,11 +14,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiS
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentUiState
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 
-interface ScrollContentUiState: ContentUiState {
+interface ScrollContentUiState : ContentUiState {
     val lazyListState: LazyListState
     val contentList: List<Pair<String, Result<ChapterContentUiState, WebRequestError>>?>
     val setLazyColumnSize: (IntSize) -> Unit
     val writeProgressRightNow: () -> Unit
+    val finishProgressRestore: () -> Unit
+    val isRestoringProgress: Boolean
     override val readingChapterContent: Result<ChapterContentUiState, WebRequestError>?
         get() = contentList.firstOrNull { it?.first == readingChapterId }?.second
 }
@@ -30,7 +34,23 @@ class MutableScrollContentUiSate(
 ) : ScrollContentUiState {
     override var bookId by mutableStateOf("")
     override var readingProgress by mutableFloatStateOf(0f)
-    override var lazyListState: LazyListState by mutableStateOf(LazyListState())
+    override var isRestoringProgress by mutableStateOf(false)
+        internal set
+    override val finishProgressRestore: () -> Unit = { isRestoringProgress = false }
+    override var lazyListState: LazyListState by mutableStateOf(preloadedChapterListState())
     override var readingChapterId: String? by mutableStateOf(null)
-    override val contentList = mutableStateListOf<Pair<String, Result<ChapterContentUiState, WebRequestError>>?>(null, null, null)
+    override val contentList =
+        mutableStateListOf<Pair<String, Result<ChapterContentUiState, WebRequestError>>?>(
+            null,
+            null,
+            null
+        )
 }
+
+@OptIn(ExperimentalFoundationApi::class)
+internal fun preloadedChapterListState() = LazyListState(
+    cacheWindow = LazyLayoutCacheWindow(
+        aheadFraction = 1000f,
+        behindFraction = 1000f,
+    )
+)

@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -54,6 +55,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.onErr
@@ -318,7 +321,10 @@ private fun SelectingAppBar(
         ),
         title = {
             Text(
-                text = stringResource(R.string.book_manager_selected_count, uiState.selectedIds.size),
+                text = stringResource(
+                    R.string.book_manager_selected_count,
+                    uiState.selectedIds.size
+                ),
                 style = MaterialTheme.typography.displayLarge,
                 fontWeight = FontWeight.W600
             )
@@ -357,7 +363,9 @@ private fun DownloadManagerContent(
         if (itemList.any { it.progress < 1f })
             item {
                 Text(
-                    modifier = Modifier.height(34.dp).animateItem(),
+                    modifier = Modifier
+                        .height(34.dp)
+                        .animateItem(),
                     text = stringResource(R.string.download_in_progress),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W600
@@ -467,13 +475,20 @@ private fun Card(
                     Text(
                         text =
                             if (downloadItem.progress < 1)
-                                stringResource(R.string.download_item_progress,
+                                stringResource(
+                                    R.string.download_item_progress,
                                     formTime(downloadItem.startTime),
-                                    (downloadItem.progress*100).toInt()
+                                    (downloadItem.progress * 100).toInt()
                                 )
                             else if (downloadItem.progress > 0)
-                                stringResource(R.string.download_item_finished, downloadItem.type.typeName)
-                            else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                                stringResource(
+                                    R.string.download_item_finished,
+                                    downloadItem.type.typeName
+                                )
+                            else stringResource(
+                                R.string.download_item_failed,
+                                downloadItem.type.typeName
+                            ),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodyMedium,
@@ -499,7 +514,30 @@ private fun Card(
         }
     }?.onErr {
         //TODO 错误显示
-    } ?: {
-        //TODO 加载显示
+    } ?: DownloadItemSkeleton()
+}
+
+@Composable
+private fun DownloadItemSkeleton() {
+    val shimmer = rememberLoadingSkeletonShimmer()
+    val placeholder = MaterialTheme.colorScheme.surfaceContainerLow
+    val smallShape = RoundedCornerShape(4.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(93.dp)
+            .shimmer(shimmer),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(Modifier.width(64.dp).height(93.dp).background(placeholder, RoundedCornerShape(8.dp)))
+        Spacer(Modifier.width(16.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(Modifier.fillMaxWidth(0.72f).height(20.dp).background(placeholder, smallShape))
+            Box(Modifier.fillMaxWidth(0.4f).height(16.dp).background(placeholder, smallShape))
+            Box(Modifier.fillMaxWidth(0.64f).height(16.dp).background(placeholder, smallShape))
+        }
     }
 }

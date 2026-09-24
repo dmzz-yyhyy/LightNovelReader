@@ -59,7 +59,8 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         private const val TAG = "ExportEPUB"
     }
 
-    private val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    private val notificationManager =
+        appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     private var notification: Notification? = null
     private var includeImages = true
 
@@ -81,7 +82,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
 
     private fun showProgressNotification(bookId: String) {
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
-            .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
+            .setContentTitle(
+                applicationContext.getString(
+                    R.string.export_book_started,
+                    inputData.getString("title") ?: ""
+                )
+            )
             .setContentText(applicationContext.getString(R.string.epub_export_notification_preparing))
             .setSmallIcon(R.drawable.file_export_24px)
             .setProgress(100, 0, true)
@@ -93,7 +99,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
     private fun updateFailureNotification(bookId: String) {
 
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
-            .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
+            .setContentTitle(
+                applicationContext.getString(
+                    R.string.export_book_started,
+                    inputData.getString("title") ?: ""
+                )
+            )
             .setContentText(applicationContext.getString(R.string.epub_export_notification_failed))
             .setSmallIcon(R.drawable.file_export_24px)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -106,7 +117,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
 
     private fun updateCompletionNotification(bookId: String) {
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
-            .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
+            .setContentTitle(
+                applicationContext.getString(
+                    R.string.export_book_started,
+                    inputData.getString("title") ?: ""
+                )
+            )
             .setContentText(applicationContext.getString(R.string.epub_export_notification_success))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setSmallIcon(R.drawable.file_export_24px)
@@ -126,7 +142,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
 
         if (notification == null) {
             notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
-                .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
+                .setContentTitle(
+                    applicationContext.getString(
+                        R.string.export_book_started,
+                        inputData.getString("title") ?: ""
+                    )
+                )
                 .setSmallIcon(R.drawable.file_export_24px)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -134,7 +155,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         }
 
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
-            .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: "") + " ($progress%)")
+            .setContentTitle(
+                applicationContext.getString(
+                    R.string.export_book_started,
+                    inputData.getString("title") ?: ""
+                ) + " ($progress%)"
+            )
             .setContentText(text)
             .setSmallIcon(R.drawable.file_export_24px)
             .setProgress(100, progress, false)
@@ -149,12 +175,18 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         createNotificationChannel()
         val bookId = inputData.getString("bookId") ?: return@withContext Result.failure()
         showProgressNotification(bookId)
-        val exportType = ExportType.valueOf(inputData.getString("exportType") ?: return@withContext Result.failure())
+        val exportType = ExportType.valueOf(
+            inputData.getString("exportType") ?: return@withContext Result.failure()
+        )
         includeImages = inputData.getBoolean("includeImages", true)
         val selectedVolumeRaw = inputData.getString("selectedVolume")
         val selectedVolumes = selectedVolumeRaw?.split(",")
-        Log.d(TAG, "start export bookId=$bookId type=$exportType includeImages=$includeImages selectedVolume=$selectedVolumeRaw")
-        val fileUri = inputData.getString("uri")?.let(Uri::parse) ?: return@withContext Result.failure()
+        Log.d(
+            TAG,
+            "start export bookId=$bookId type=$exportType includeImages=$includeImages selectedVolume=$selectedVolumeRaw"
+        )
+        val fileUri =
+            inputData.getString("uri")?.let(Uri::parse) ?: return@withContext Result.failure()
         val tempDir = applicationContext.cacheDir.resolve("epub").resolve(bookId)
         val cover = tempDir.resolve("cover.jpg")
             .also {
@@ -207,7 +239,8 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                                     ).last().bind()
 
                                     processedChapters++
-                                    val progress = (processedChapters.toFloat() / totalChapters * 50).toInt()
+                                    val progress =
+                                        (processedChapters.toFloat() / totalChapters * 50).toInt()
                                     buildProgressNotification(
                                         bookId,
                                         progress,
@@ -234,6 +267,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                                     cover,
                                     fileUri
                                 )
+
                                 ExportType.VOLUMES -> volumesToEPUB(
                                     selectedVolumes!!,
                                     bookInformation,
@@ -356,7 +390,10 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         }
         for (epub in epubMap.entries) {
             Log.d(TAG, "save epub=${epub.key}")
-            val epubUri = folder.createFile("application/epub+zip", "${bookInformation.title} ${epub.key}.epub")?.uri
+            val epubUri = folder.createFile(
+                "application/epub+zip",
+                "${bookInformation.title} ${epub.key}.epub"
+            )?.uri
             if (epubUri == null) {
                 downloadItem.progress = -1f
                 return@withContext Result.failure()
@@ -483,7 +520,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         Log.d(TAG, "render chapter=${it.title}")
         title(it.title)
         content {
-            contentComponentRepository.getDataFromJsonObject(bookContentMap[it.id]!!.content) {
+            contentComponentRepository.forEachComponent(bookContentMap[it.id]!!.content) {
                 bodyElement.add(
                     it.toHtmlElement(applicationContext).also { element ->
                         element.parseSrc(tempDir, tasks, epubBuilder, includeImages)
@@ -550,7 +587,11 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                         totalBytes += bytesRead
                         if (fileSize > 0) {
                             val writeProgress = 90 + (totalBytes.toFloat() / fileSize * 10).toInt()
-                            buildProgressNotification(bookId, writeProgress, "${totalBytes / 1024}/${fileSize / 1024} KB")
+                            buildProgressNotification(
+                                bookId,
+                                writeProgress,
+                                "${totalBytes / 1024}/${fileSize / 1024} KB"
+                            )
                             downloadItem.progress = writeProgress / 100f
                         }
                     }

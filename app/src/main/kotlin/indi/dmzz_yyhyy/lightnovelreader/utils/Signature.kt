@@ -53,7 +53,8 @@ fun getApkSignatures(apkFile: File): List<ApkSignatureInfo>? {
         fun recordCert(cert: X509Certificate?, scheme: ApkSignatureScheme) {
             if (cert == null) return
             val key = bytesToHex(cert.encoded)
-            val pair = certMap.getOrPut(key) { Pair(cert, EnumSet.noneOf(ApkSignatureScheme::class.java)) }
+            val pair =
+                certMap.getOrPut(key) { Pair(cert, EnumSet.noneOf(ApkSignatureScheme::class.java)) }
             pair.second.add(scheme)
         }
 

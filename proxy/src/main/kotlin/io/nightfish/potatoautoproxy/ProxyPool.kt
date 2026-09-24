@@ -42,25 +42,26 @@ object ProxyPool {
             offerProxies(times - 1)
     }
 
-    private suspend fun checkProxyAndJoinQueue(proxies: List<Proxy>): Int = withContext(Dispatchers.IO) {
-        var number: Int
-        proxies
-            .filter {
-                try {
-                    Jsoup
-                        .connect("https://www.baidu.com")
-                        .timeout(2000)
-                        .proxy(it.host, it.port)
-                        .ignoreSSLGet()
-                    return@filter true
-                } catch (_: Exception) {
-                    return@filter false
+    private suspend fun checkProxyAndJoinQueue(proxies: List<Proxy>): Int =
+        withContext(Dispatchers.IO) {
+            var number: Int
+            proxies
+                .filter {
+                    try {
+                        Jsoup
+                            .connect("https://www.baidu.com")
+                            .timeout(2000)
+                            .proxy(it.host, it.port)
+                            .ignoreSSLGet()
+                        return@filter true
+                    } catch (_: Exception) {
+                        return@filter false
+                    }
                 }
-            }
-            .also { number = it.size }
-            .forEach(proxyQueue::offer)
-        return@withContext number
-    }
+                .also { number = it.size }
+                .forEach(proxyQueue::offer)
+            return@withContext number
+        }
 
     fun takeProxy(): Proxy? {
         if (proxyQueue.size <= TARGET_NUMBER)

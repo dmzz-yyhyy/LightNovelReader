@@ -14,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,9 +45,10 @@ fun BookshelfHomeScreen(
     val context = LocalContext.current
     val workManager = WorkManager.getInstance(context)
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val topAppBarColors = TopAppBarDefaults.topAppBarColors()
     val backgroundColor by animateColorAsState(
-        if (uiState.selectMode) MaterialTheme.colorScheme.surfaceVariant
-        else MaterialTheme.colorScheme.surface
+        if (uiState.selectMode) topAppBarColors.scrolledContainerColor
+        else topAppBarColors.containerColor
     )
     val saveAllBookshelfLauncher = launcher(uiState.saveAllBookshelfJsonData)
     val saveThisBookshelfLauncher = launcher(uiState.saveBookshelfJsonData)
@@ -144,8 +144,14 @@ fun BookshelfHomeScreen(
 }
 
 @Suppress("DuplicatedCode")
-fun createBookshelfDataFile(fileName: String, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+fun createBookshelfDataFile(
+    fileName: String,
+    launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+) {
+    val initUri = DocumentsContract.buildDocumentUri(
+        "com.android.externalstorage.documents",
+        "primary:Documents"
+    )
     val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "application/x-lightnovelreader-data"
@@ -168,7 +174,10 @@ fun launcher(block: (Uri) -> Unit): ManagedActivityResultLauncher<Intent, Activi
 
 @Suppress("DuplicatedCode")
 fun selectBookshelfDataFile(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-    val initUri = DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:Documents")
+    val initUri = DocumentsContract.buildDocumentUri(
+        "com.android.externalstorage.documents",
+        "primary:Documents"
+    )
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "*/*"

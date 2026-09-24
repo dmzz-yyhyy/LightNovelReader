@@ -12,7 +12,11 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
 @Serializable
-@TypeConverters(ListConverter::class, LocalDateTimeConverter::class, ChapterReadingProgressMapConverter::class)
+@TypeConverters(
+    ListConverter::class,
+    LocalDateTimeConverter::class,
+    ChapterReadingProgressMapConverter::class
+)
 @Entity(tableName = "user_reading_data")
 data class UserReadingDataEntity(
     @PrimaryKey
@@ -32,7 +36,7 @@ data class UserReadingDataEntity(
     val currentChapterReadingProgressMap: Map<String, Float>,
     @ColumnInfo(name = "max_chapter_reading_progress_map")
     val maxChapterReadingProgressMap: Map<String, Float>
-): Mergeable<UserReadingDataEntity> {
+) : Mergeable<UserReadingDataEntity> {
     override fun merge(new: UserReadingDataEntity): UserReadingDataEntity = new.copy(
         lastReadTime = new.lastReadTime.coerceAtLeast(this.lastReadTime),
         totalReadTime = new.totalReadTime.coerceAtLeast(this.totalReadTime),

@@ -1,4 +1,4 @@
-package io.nightfish.lightnovelreader.api.sample
+package io.nightfish.lightnovelreader.api.doc.sample
 
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
 

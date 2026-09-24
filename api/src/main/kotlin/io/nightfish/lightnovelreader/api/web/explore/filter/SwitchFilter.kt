@@ -11,7 +11,7 @@ import io.nightfish.lightnovelreader.api.util.LocalString
 abstract class SwitchFilter(
     private var title: LocalString,
     default: Boolean
-): Filter<Boolean>(default) {
+) : Filter<Boolean>(default) {
     /**
      * 获取过滤器的显示标题
      *

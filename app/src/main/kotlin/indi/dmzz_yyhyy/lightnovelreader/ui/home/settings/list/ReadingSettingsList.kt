@@ -7,22 +7,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsClickableEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSwitchEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingState
 
 @Composable
 fun ReadingSettingsList(
     settingState: SettingState,
-    onClickTheme: () -> Unit,
+    onClickReaderStyle: () -> Unit,
     onClickTextFormatting: () -> Unit
 ) {
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
-        painter = painterResource(R.drawable.format_paint_24px),
-        title = stringResource(R.string.settings_theme),
-        description = stringResource(R.string.settings_theme_desc),
-        onClick = onClickTheme
+        painter = painterResource(R.drawable.chrome_reader_mode_24px),
+        title = stringResource(R.string.settings_reader_style),
+        description = stringResource(R.string.settings_reader_style_desc),
+        onClick = onClickReaderStyle
     )
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),

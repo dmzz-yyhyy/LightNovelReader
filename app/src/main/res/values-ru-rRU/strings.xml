@@ -172,8 +172,6 @@
     <string name="settings_reader_left_margin">Левое поле</string>
     <string name="settings_reader_right_margin">Правое поле</string>
     <string name="display_settings">Отображение</string>
-    <string name="settings_theme">Тема и бумага</string>
-    <string name="settings_theme_desc">Настройте тему приложения и текстуру бумаги</string>
     <string name="settings_text_formatting">Форматирование текста</string>
     <string name="settings_text_formatting_desc">Форматирование текстового содержимого на основе правил</string>
     <string name="settings_theme_light_theme">Светлая тема</string>
@@ -183,9 +181,6 @@
     <string name="settings_theme_dynamic_colors">Динамичные цвета</string>
     <string name="settings_theme_dynamic_colors_desc_unavailable">Применять системные динамические цвета</string>
     <string name="settings_theme_dynamic_colors_desc">Применять системные динамические цвета (требуется Android 12+)</string>
-    <string name="settings_theme_m3e_description">
-        Enables the Material 3 Expressive design. This feature is experimental and still in beta
-    </string>
     <string name="settings_formats">Formats</string>
     <string name="settings_formats_desc">Set date or text format</string>
     <string name="date_time_formats_settings">Date &amp; Time</string>
@@ -306,8 +301,6 @@
     <string name="appearance_settings">	Облик</string>
     <string name="control_settings">	Управление</string>
     <string name="margin_settings">	Поля</string>
-    <string name="settings_theme_settings">Настройки темы…</string>
-    <string name="settings_theme_settings_desc">Настройки чтения и бумаги</string>
     <string name="settings_hide_status_bar">Скрыть строку состояния</string>
     <string name="settings_hide_status_bar_desc">Скрывать системные панели состояния и навигации в режиме полного погружения в чтение</string>
     <string name="settings_trad_conversion">Перейти на традиционный китайский</string>

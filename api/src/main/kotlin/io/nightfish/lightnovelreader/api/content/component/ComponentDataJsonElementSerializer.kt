@@ -4,7 +4,7 @@ import kotlinx.serialization.json.JsonElement
 
 /**
  * 内容组件数据的JSON序列化器接口
- * 用于将[AbstractContentComponentData]与JSON互转
+ * 用于将[io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData]与JSON互转
  *
  * @param Data 序列化器处理的数据类型
  *

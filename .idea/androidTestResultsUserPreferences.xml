@@ -160,6 +160,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="463892477">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Tests" value="360" />
+                  <entry key="vivo V2324HA" value="120" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="748055945">
           <value>
             <AndroidTestResultsTableState>

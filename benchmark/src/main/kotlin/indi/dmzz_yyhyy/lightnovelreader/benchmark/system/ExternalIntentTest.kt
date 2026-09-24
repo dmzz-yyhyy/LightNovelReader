@@ -14,8 +14,8 @@ class ExternalIntentTest : UiAutomatorTest() {
         launchApp()
         shell(
             "am start -W -a android.intent.action.VIEW " +
-                "-d 'lightnovelreader://install_plugin?id=benchmark.invalid' " +
-                TARGET_PACKAGE
+                    "-d 'lightnovelreader://install_plugin?id=benchmark.invalid' " +
+                    TARGET_PACKAGE
         )
         assertForegroundPackage(TARGET_PACKAGE)
     }
@@ -25,8 +25,8 @@ class ExternalIntentTest : UiAutomatorTest() {
         launchApp()
         shell(
             "am start -W -a android.intent.action.VIEW " +
-                "-d 'content://benchmark.invalid/plugin.apk' " +
-                "-t application/vnd.android.package-archive $TARGET_PACKAGE"
+                    "-d 'content://benchmark.invalid/plugin.apk' " +
+                    "-t application/vnd.android.package-archive $TARGET_PACKAGE"
         )
         assertForegroundPackage(TARGET_PACKAGE)
     }

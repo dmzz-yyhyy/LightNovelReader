@@ -8,6 +8,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ImageViewerViewModel @Inject constructor(
     val webBookDataSourceProvider: WebBookDataSourceProvider
-): ViewModel() {
+) : ViewModel() {
     val imageHeader get() = webBookDataSourceProvider.value.imageHeader
 }

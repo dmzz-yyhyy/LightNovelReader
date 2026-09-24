@@ -10,12 +10,14 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,51 +50,49 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.valentinilk.shimmer.shimmer
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.markAllChaptersAsReadDialog() {
-    dialog<Route.MarkAllChaptersAsReadDialog> { backStackEntry ->
-        val navController = LocalNavController.current
+fun NavEntryScope.markAllChaptersAsReadDialog() {
+    overlayEntry<Route.MarkAllChaptersAsReadDialog> { backStackEntry ->
+        val navigator = LocalNavigator.current
         val viewModel: MarkAllChaptersAsReadDialogViewModel = hiltViewModel()
-        val route = backStackEntry.toRoute<Route.MarkAllChaptersAsReadDialog>()
 
-        LaunchedEffect(route.bookId) {
-            viewModel.load(route.bookId)
+        LaunchedEffect(backStackEntry.bookId) {
+            viewModel.load(backStackEntry.bookId)
         }
 
         viewModel.bookVolumeResult?.onOk {
             MarkAllChaptersAsReadDialog(
-                onDismissRequest = navController::popBackStack,
+                onDismissRequest = { navigator.popBackStack() },
                 onConfirmAll = {
                     viewModel.markAllChaptersAsRead()
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 onConfirmRange = { ids ->
                     viewModel.markChaptersAsRead(ids)
-                    navController.popBackStack()
+                    navigator.popBackStack()
                 },
                 volumes = it.volumes
             )
         }?.onErr {
             //TODO 错误显示
-        } ?: {
-            //TODO 加载显示
-        }
+        } // ?: {} 如果没加载出卷将不能打开此对话框，故无意义
     }
 }
 
-fun NavController.navigateToMarkAllChaptersAsReadDialog(bookId: String) {
+fun Navigator.navigateToMarkAllChaptersAsReadDialog(bookId: String) {
     navigate(Route.MarkAllChaptersAsReadDialog(bookId))
 }
 
@@ -142,9 +142,11 @@ fun MarkAllChaptersAsReadDialog(
                 startChapterId = id
                 endChapterId = null
             }
+
             e == null -> {
                 if (id == s) clearSelection() else endChapterId = id
             }
+
             else -> {
                 startChapterId = id
                 endChapterId = null

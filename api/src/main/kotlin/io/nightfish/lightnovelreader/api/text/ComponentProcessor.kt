@@ -1,7 +1,7 @@
 package io.nightfish.lightnovelreader.api.text
 
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
@@ -31,12 +31,13 @@ class ComponentProcessor(
      * 对指定类型的所有组件数据应用变换
      * 不匹配类型的组件将原样保留
      *
-     * @param T 需要处理的组件数据类型
+     * @param Input 需要处理的组件数据类型
+     * @param Output 处理后的组件数据类型
      * @param block 接收原组件数据并返回变换后数据的函数
      *
      * @since Api 2
      */
-    inline fun <reified T: AbstractContentComponentData> process(crossinline block: (T) -> T) {
+    inline fun <reified Input, Output : AbstractContentComponentData> process(crossinline block: (Input) -> Output) {
         content = buildJsonObject {
             putJsonArray("components") {
                 content["components"]
@@ -47,21 +48,25 @@ class ComponentProcessor(
                             ?: return@forEach
                         val data = it["data"]?.jsonObject
                             ?: return@forEach
-                        if (dataKClassMap[id] != T::class) {
-                            addJsonObject {
-                                put("id", id)
-                                put("data", data)
-                            }
-                            return@forEach
-                        }
                         val serializer = serializerMap[id]
                             ?: return@forEach
-                        addJsonObject {
-                            put("id", id)
-                            put(
-                                "data",
-                                block(serializer.fromJsonElement(data) as T).toJsonElement()
-                            )
+                        when (val component = serializer.fromJsonElement(data)) {
+                            is Input -> {
+                                addJsonObject {
+                                    put("id", id)
+                                    put(
+                                        "data",
+                                        block(component).toJsonElement()
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                addJsonObject {
+                                    put("id", id)
+                                    put("data", data)
+                                }
+                            }
                         }
                     }
             }

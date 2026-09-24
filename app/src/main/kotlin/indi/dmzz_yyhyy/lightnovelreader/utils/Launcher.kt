@@ -30,13 +30,14 @@ fun uriLauncherWithFlag(
 ): Pair<ManagedActivityResultLauncher<Intent, ActivityResult>, (Boolean) -> Unit> {
     var isDarkFlag by remember { mutableStateOf(false) }
 
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
-        if (activityResult.resultCode == Activity.RESULT_OK) {
-            activityResult.data?.data?.let { uri ->
-                block(uri, isDarkFlag)
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+            if (activityResult.resultCode == Activity.RESULT_OK) {
+                activityResult.data?.data?.let { uri ->
+                    block(uri, isDarkFlag)
+                }
             }
         }
-    }
 
     val setFlag: (Boolean) -> Unit = { flag ->
         isDarkFlag = flag

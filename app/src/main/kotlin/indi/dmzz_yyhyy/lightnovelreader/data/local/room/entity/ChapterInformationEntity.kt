@@ -10,6 +10,6 @@ data class ChapterInformationEntity(
     @PrimaryKey
     val id: String,
     val title: String
-): Mergeable<ChapterInformationEntity> {
+) : Mergeable<ChapterInformationEntity> {
     override fun merge(new: ChapterInformationEntity): ChapterInformationEntity = new
 }

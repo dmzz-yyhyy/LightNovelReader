@@ -26,15 +26,18 @@ object GithubParser {
         try {
             Jsoup.connect(host).timeout(1500).get()
             return host
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
         try {
             Jsoup.connect(RAW_HOST).timeout(1500).get()
             return RAW_HOST
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
         try {
             Jsoup.connect(PROXY_HOST).timeout(1500).get()
             return PROXY_HOST
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
         try {
             Jsoup
                 .connect("https://gh-proxy.com/raw.githubusercontent.com/frankwuzp/github-host/main/hosts")
@@ -63,7 +66,7 @@ object GithubParser {
         override val releaseNotes: String,
         override val downloadUrl: String,
         override val downloadFileProgress: ((File, File) -> Unit)? = null
-    ): Release
+    ) : Release
 
     private fun progressReleasePage(url: String, updatePhase: MutableStateFlow<String>): Release? {
         Jsoup
@@ -86,7 +89,10 @@ object GithubParser {
                     .select("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/download/"]""")
                     .map { it.attr("href") }
                     .firstOrNull { it.endsWith("apk") }
-                    ?.let { "https://gh-proxy.com/github.com$it" }?: Log.e("GithubParser", "failed to get downloadUrl").let { return null }
+                    ?.let { "https://gh-proxy.com/github.com$it" } ?: Log.e(
+                    "GithubParser",
+                    "failed to get downloadUrl"
+                ).let { return null }
                 updatePhase.tryEmit("GitHub步骤: 拉取远程分支版本号")
                 val gradle = releaseDocument
                     .select("""a[href^="/dmzz-yyhyy/LightNovelReader/tree/"]""")
@@ -102,8 +108,13 @@ object GithubParser {
                             .syntax(Document.OutputSettings.Syntax.xml)
                     )
                     .toString()
-                val versionCode = versionCodeRegex.find(gradle)?.groups?.get(1)?.value?.replace("_", "")?.toInt() ?: Log.e("GithubParser", "failed to get versionCode").also { return null }
-                val versionName = versionNameRegex.find(gradle)?.groups?.get(1)?.value ?: Log.e("GithubParser", "failed to get versionName").also { return null }
+                val versionCode =
+                    versionCodeRegex.find(gradle)?.groups?.get(1)?.value?.replace("_", "")?.toInt()
+                        ?: Log.e("GithubParser", "failed to get versionCode").also { return null }
+                val versionName = versionNameRegex.find(gradle)?.groups?.get(1)?.value ?: Log.e(
+                    "GithubParser",
+                    "failed to get versionName"
+                ).also { return null }
                 updatePhase.tryEmit("GitHub步骤: 解析更新日志")
                 val releaseNotes = releaseDocument
                     .selectFirst("div.markdown-body")
@@ -118,31 +129,32 @@ object GithubParser {
             }
     }
 
-    object ReleaseParser: UpdateParser {
+    object ReleaseParser : UpdateParser {
         private const val URL = "/dmzz-yyhyy/LightNovelReader"
         override fun parser(updatePhase: MutableStateFlow<String>): Release? {
             System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
             host = updateHost()
             return Jsoup
-                .connect(host+ URL)
+                .connect(host + URL)
                 .also {
                     if (host.startsWith("http://")) it.header("Host", "github.com")
                 }
                 .get()
                 .selectFirst("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/tag/"]""")
                 ?.attr("href")
-                .let { host+it }
+                .let { host + it }
                 .also { updatePhase.tryEmit("GitHub步骤: 获取最新Release") }
                 .let { progressReleasePage(it, updatePhase) }
         }
     }
-    object DevelopmentParser: UpdateParser {
+
+    object DevelopmentParser : UpdateParser {
         private const val URL = "/dmzz-yyhyy/LightNovelReader/releases"
         override fun parser(updatePhase: MutableStateFlow<String>): Release? {
             System.setProperty("sun.net.http.allowRestrictedHeaders", "true")
             host = updateHost()
             return Jsoup
-                .connect(host+ URL)
+                .connect(host + URL)
                 .also {
                     if (host.startsWith("http://")) it.header("Host", "github.com")
                 }
@@ -150,11 +162,12 @@ object GithubParser {
                 .selectFirst("""a[href^="/dmzz-yyhyy/LightNovelReader/releases/tag/"]""")
                 ?.attr("href")
                 .also { updatePhase.tryEmit("GitHub步骤: 获取最新Release") }
-                .let { host+it }
+                .let { host + it }
                 .let { progressReleasePage(it, updatePhase) }
         }
     }
-    object CIParser: UpdateParser {
+
+    object CIParser : UpdateParser {
         private const val URL = "/dmzz-yyhyy/LightNovelReader/actions/workflows/marge.yml"
         private val prIdRegex = Regex("Merge pull request #([0-9]*)")
         override fun parser(updatePhase: MutableStateFlow<String>): Release? {
@@ -173,8 +186,12 @@ object GithubParser {
                         .syntax(Document.OutputSettings.Syntax.xml)
                 )
                 .toString()
-            val versionCode = versionCodeRegex.find(gradle)?.groups?.get(1)?.value?.replace("_", "")?.toInt() ?: Log.e("GithubParser", "failed to get versionCode").also { return null }
-            val versionName = versionNameRegex.find(gradle)?.groups?.get(1)?.value?.replace("\"", "") ?: Log.e("GithubParser", "failed to get versionName").also { return null }
+            val versionCode =
+                versionCodeRegex.find(gradle)?.groups?.get(1)?.value?.replace("_", "")?.toInt()
+                    ?: Log.e("GithubParser", "failed to get versionCode").also { return null }
+            val versionName =
+                versionNameRegex.find(gradle)?.groups?.get(1)?.value?.replace("\"", "")
+                    ?: Log.e("GithubParser", "failed to get versionName").also { return null }
             val connection = Jsoup.connect(host + URL)
             if (host.startsWith("http://")) {
                 connection.header("Host", "github.com")
@@ -242,7 +259,7 @@ object GithubParser {
             return if (lastReleaseRelease == null || lastReleaseRelease.version < versionCode)
                 GithubRelease(
                     versionCode,
-                    versionName.toString() ,
+                    versionName.toString(),
                     releaseNotes!!,
                     downloadUrl,
                     downloadFileProgress

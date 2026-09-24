@@ -7,8 +7,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
-object Ip89Source: ProxySource {
-    override suspend fun getProxies(): List<Proxy>  = withContext(Dispatchers.IO) {
+object Ip89Source : ProxySource {
+    override suspend fun getProxies(): List<Proxy> = withContext(Dispatchers.IO) {
         return@withContext Jsoup
             .connect("https://api.89ip.cn/tqdl.html?api=1&num=40&port=&address=&isp=")
             .ignoreContentType(true)
@@ -32,7 +32,8 @@ fun main() {
         .mapNotNull {
             Proxy(
                 host = it.selectFirst("td:nth-child(1) > a")?.text() ?: return@mapNotNull null,
-                port = it.selectFirst("td:nth-child(2) > div")?.text()?.toInt() ?: return@mapNotNull null
+                port = it.selectFirst("td:nth-child(2) > div")?.text()?.toInt()
+                    ?: return@mapNotNull null
             )
         }
         .forEach {

@@ -24,11 +24,13 @@ class MutableDownloadItem(
     override val bookId: String,
     override val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>,
     override val startTime: LocalDateTime = LocalDateTime.now()
-): DownloadItem {
+) : DownloadItem {
     override var progress by mutableFloatStateOf(0f)
 
     override fun equals(other: Any?): Boolean {
-        return if (other is DownloadItem) other.type == this.type && other.bookId == this.bookId else super.equals(other)
+        return if (other is DownloadItem) other.type == this.type && other.bookId == this.bookId else super.equals(
+            other
+        )
     }
 
     override fun toString(): String {

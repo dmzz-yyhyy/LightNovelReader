@@ -57,7 +57,7 @@ class CacheBookWork @AssistedInject constructor(
                                 bookId = bookId
                             ).bind()
                             localBookDataSource.updateChapterContent(chapter)
-                            count ++
+                            count++
                             downloadItem.progress = count.toFloat() / total
                         }
                     }
@@ -65,7 +65,8 @@ class CacheBookWork @AssistedInject constructor(
             }
             .andThen {
                 coroutineBinding {
-                    val bookInformation = webBookDataSourceProvider.value.getBookInformation(bookId).bind()
+                    val bookInformation =
+                        webBookDataSourceProvider.value.getBookInformation(bookId).bind()
                     localBookDataSource.updateBookInformation(bookInformation)
                 }
             }
@@ -74,7 +75,8 @@ class CacheBookWork @AssistedInject constructor(
             }
             .onErr {
                 Looper.prepare()
-                Toast.makeText(applicationContext, "缓存失败, ${it.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "缓存失败, ${it.message}", Toast.LENGTH_SHORT)
+                    .show()
                 it.throwable?.stackTraceToString()?.let { msg -> Log.e(TAG, msg) }
                 Looper.loop()
             }

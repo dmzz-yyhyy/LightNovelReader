@@ -20,15 +20,21 @@ class ProxyCachedWebBookDataSource(
         return Ok(value)
     }
 
-    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) = getOrCache(id) {
-        proxiedWebBookDataSource.getBookInformation(id, priority)
-    }
+    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) =
+        getOrCache(id) {
+            proxiedWebBookDataSource.getBookInformation(id, priority)
+        }
 
-    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) = getOrCache(id) {
-        proxiedWebBookDataSource.getBookVolumes(id, priority)
-    }
+    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) =
+        getOrCache(id) {
+            proxiedWebBookDataSource.getBookVolumes(id, priority)
+        }
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String, priority: WebDataSourcePriority) = getOrCache(chapterId + bookId) {
+    override suspend fun getChapterContent(
+        chapterId: String,
+        bookId: String,
+        priority: WebDataSourcePriority
+    ) = getOrCache(chapterId + bookId) {
         proxiedWebBookDataSource.getChapterContent(chapterId, bookId, priority)
     }
 }

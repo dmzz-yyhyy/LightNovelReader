@@ -7,14 +7,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.github.michaelbull.result.Result
-import com.google.android.material.bottomsheet.BottomSheetBehavior.State
+import androidx.compose.runtime.Stable
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfBookItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfUiState
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.flow.Flow
 
-@State
+@Stable
 interface BookshelfHomeUiState {
     val bookshelfList: List<BookshelfUiState>
     val selectedBookshelfId: Int
@@ -89,7 +89,8 @@ class MutableBookshelfHomeUiState(
     override var pinnedExpanded by mutableStateOf(true)
     override var allExpanded by mutableStateOf(true)
     override val selectedBookIds: MutableList<String> = mutableStateListOf()
-    override val reorderBookIds: MutableList<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>> = mutableStateListOf()
+    override val reorderBookIds: MutableList<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>> =
+        mutableStateListOf()
     override val reorderBookshelfIds: MutableList<Int> = mutableStateListOf()
     override var toast by mutableStateOf("")
 }

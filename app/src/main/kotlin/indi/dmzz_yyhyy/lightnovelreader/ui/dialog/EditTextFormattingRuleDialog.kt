@@ -44,7 +44,8 @@ fun EditTextFormattingRuleDialog(
         try {
             Regex(rule.match)
             v = false
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
         return@remember v
     }
     AlertDialog(

@@ -65,7 +65,10 @@ class PluginUpdateCheckRepository @Inject constructor(
                 )
                 val remoteVersionCode = storePlugin.release.versionCode ?: return@forEach
                 if (remoteVersionCode > meta.version) {
-                    Log.d(TAG, "Updates available for $pluginId: ${storePlugin.release.versionName} ($remoteVersionCode)")
+                    Log.d(
+                        TAG,
+                        "Updates available for $pluginId: ${storePlugin.release.versionName} ($remoteVersionCode)"
+                    )
 
                     result[meta.packageName] = PluginUpdateInfo(
                         pluginId = pluginId,
@@ -73,7 +76,10 @@ class PluginUpdateCheckRepository @Inject constructor(
                         storePlugin = storePlugin
                     )
                 } else {
-                    Log.d(TAG, "Up to date for $pluginId: ${storePlugin.release.versionName} ($remoteVersionCode)")
+                    Log.d(
+                        TAG,
+                        "Up to date for $pluginId: ${storePlugin.release.versionName} ($remoteVersionCode)"
+                    )
                 }
             } catch (_: Exception) {
             }

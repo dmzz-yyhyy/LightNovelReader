@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class UserDataRepository @Inject constructor(
     private val userDataDao: UserDataDao
-): io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi {
+) : io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi {
     override fun stringUserData(path: String) = StringUserData(path, userDataDao)
     override fun floatUserData(path: String) = FloatUserData(path, userDataDao)
     override fun intUserData(path: String) = IntUserData(path, userDataDao)

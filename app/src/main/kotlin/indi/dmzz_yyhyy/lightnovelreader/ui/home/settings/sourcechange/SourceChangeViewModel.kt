@@ -44,6 +44,7 @@ class SourceChangeViewModel @Inject constructor(
         webDataSourceItems = webBookDataSourceManager.webDataSourceItems
     }
     val uiState: SourceChangeUiState = _uiState
+
     @Suppress("OPT_IN_USAGE")
     fun changeWebSource(newWebDataSourceId: Identifier) {
         if (newWebDataSourceId == _uiState.currentSourceId) return
@@ -72,9 +73,12 @@ class SourceChangeViewModel @Inject constructor(
                     runCatching {
                         localDataManager.cleanDatabaseWithoutGlobalUserData()
                     }
-                }.andThen out@ {
-                    val file = if (newWebDataSourceId == "Wenku8".ofId()) localDataManager.localDataDir.resolve("-791439186")
-                    else localDataManager.localDataDir.resolve(newWebDataSourceId.toString())
+                }.andThen out@{
+                    val file =
+                        if (newWebDataSourceId == "Wenku8".ofId()) localDataManager.localDataDir.resolve(
+                            "-791439186"
+                        )
+                        else localDataManager.localDataDir.resolve(newWebDataSourceId.toString())
                     if (!file.exists()) return@out Ok(Unit)
                     runCatching {
                         file
@@ -87,11 +91,16 @@ class SourceChangeViewModel @Inject constructor(
                     }
                 }.andThen {
                     runCatching {
-                        userDataRepository.stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path).set(newWebDataSourceId.toString())
+                        userDataRepository.stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+                            .set(newWebDataSourceId.toString())
                     }
                 }.onErr {
                     CoroutineScope(Dispatchers.Main).launch {
-                        Toast.makeText(appContext, "Failed to change data source. Please check the log for more information", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            appContext,
+                            "Failed to change data source. Please check the log for more information",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
                     Log.e("SourceChangeViewModel", "Failed to change data source.")
                     it.printStackTrace()

@@ -24,7 +24,7 @@ object ImageUtils {
         imageUri: Uri,
         context: Context,
         header: Map<String, String> = emptyMap()
-    ):  Result<Bitmap, Throwable> = withContext(Dispatchers.IO) {
+    ): Result<Bitmap, Throwable> = withContext(Dispatchers.IO) {
         try {
             val loader = ImageLoader(context)
             val request = ImageRequest.Builder(context)

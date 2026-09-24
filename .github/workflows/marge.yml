@@ -1,7 +1,7 @@
 name: ReleaseApkBuild
 on:
   push:
-    branches: [master, refactoring]
+    branches: [ master, refactoring ]
     paths:
       - app/src/**
       - app/proguard-rules.pro

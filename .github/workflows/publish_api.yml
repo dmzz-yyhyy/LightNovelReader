@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   merge_group:
   push:
-    branches: [refactoring]
+    branches: [ refactoring ]
     paths:
       - .github/workflows/publish_api.yml
       - api/**

@@ -27,7 +27,8 @@ class PluginManagerViewModel @Inject constructor(
     val pluginUpdateCheckRepository: PluginUpdateCheckRepository,
 ) : ViewModel() {
 
-    private val enabledPluginUserData = userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
+    private val enabledPluginUserData =
+        userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
     private val disenabledPlugin = mutableSetOf<String>()
     val enabledPluginFlow = enabledPluginUserData.getFlowWithDefault(emptyList())
 

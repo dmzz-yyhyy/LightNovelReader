@@ -10,23 +10,29 @@ class ProxyCoalescingWebBookDataSource(
 ) : ProxyWebBookDataSource {
     private val scope = ResilientScope(Dispatchers.IO)
 
-    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) = resilient(scope) {
-        coalesce {
-            key = id
+    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) =
+        resilient(scope) {
+            coalesce {
+                key = id
+            }
+        }.execute {
+            proxiedWebBookDataSource.getBookInformation(id, priority)
         }
-    }.execute {
-        proxiedWebBookDataSource.getBookInformation(id, priority)
-    }
 
-    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) = resilient(scope) {
-        coalesce {
-            key = id
+    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) =
+        resilient(scope) {
+            coalesce {
+                key = id
+            }
+        }.execute {
+            proxiedWebBookDataSource.getBookVolumes(id, priority)
         }
-    }.execute {
-        proxiedWebBookDataSource.getBookVolumes(id, priority)
-    }
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String, priority: WebDataSourcePriority) = resilient(scope) {
+    override suspend fun getChapterContent(
+        chapterId: String,
+        bookId: String,
+        priority: WebDataSourcePriority
+    ) = resilient(scope) {
         coalesce {
             key = chapterId + bookId
         }

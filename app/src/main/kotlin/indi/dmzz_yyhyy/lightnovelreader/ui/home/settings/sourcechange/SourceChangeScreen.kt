@@ -164,9 +164,11 @@ private fun SourceChangeBottomBar(
                         Spacer(Modifier.width(8.dp))
                         Text(text = stringResource(R.string.processing))
                     } else {
-                        Text(text = stringResource(
-                            R.string.apply
-                        ))
+                        Text(
+                            text = stringResource(
+                                R.string.apply
+                            )
+                        )
                     }
                 }
             }

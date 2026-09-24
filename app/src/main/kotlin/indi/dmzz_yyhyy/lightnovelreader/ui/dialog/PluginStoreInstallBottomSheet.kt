@@ -48,52 +48,44 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.dialog
-import androidx.navigation.toRoute
 import coil3.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.StorePlugin
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.ApiCompat
 import io.nightfish.lightnovelreader.api.Route
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
 
-fun NavGraphBuilder.pluginStoreInstallBottomSheet() {
-    dialog<Route.PluginStoreInstall>(
-        dialogProperties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false
-        )
-    ) { entry ->
-        val navController = LocalNavController.current
-        val route = entry.toRoute<Route.PluginStoreInstall>()
+fun NavEntryScope.pluginStoreInstallBottomSheet() {
+    overlayEntry<Route.PluginStoreInstall> { entry ->
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<PluginStoreInstallViewModel>()
 
-        LaunchedEffect(route.pluginId) {
-            viewModel.load(route.pluginId)
+        LaunchedEffect(entry.pluginId) {
+            viewModel.load(entry.pluginId)
         }
 
         LaunchedEffect(viewModel) {
             viewModel.navigateToInstall.collect { file ->
-                navController.popBackStack()
-                navController.navigateToPluginInstallerDialog(file.toUri().toString())
+                navigator.popBackStack()
+                navigator.navigateToPluginInstallerDialog(file.toUri().toString())
             }
         }
 
         PluginStoreInstallSheet(
             state = viewModel.state,
             onInstall = { plugin -> viewModel.install(plugin) },
-            onDismiss = { navController.popBackStack() }
+            onDismiss = { navigator.popBackStack() }
         )
     }
 }
 
-fun NavController.navigateToPluginStoreInstall(pluginId: String) {
-    popBackStack<Route.PluginStoreInstall>(inclusive = true, saveState = false)
+fun Navigator.navigateToPluginStoreInstall(pluginId: String) {
+    if (currentRoute is Route.PluginStoreInstall) popBackStack()
     navigate(Route.PluginStoreInstall(pluginId))
 }
 
@@ -129,6 +121,7 @@ private fun PluginStoreInstallSheet(
                     onInstall = { onInstall(state.plugin) },
                     onDismiss = onDismiss
                 )
+
                 is StoreInstallState.Downloading -> PluginContent(
                     plugin = state.lastPlugin,
                     downloading = true,
@@ -158,7 +151,11 @@ private fun ErrorContent(message: String, onDismiss: () -> Unit) {
     Text(text = stringResource(R.string.plugin_store_load_failed), style = typography.titleLarge)
     Spacer(Modifier.height(8.dp))
 
-    Text(stringResource(R.string.plugin_store_load_failed_desc), style = typography.bodyMedium, color = colorScheme.error)
+    Text(
+        stringResource(R.string.plugin_store_load_failed_desc),
+        style = typography.bodyMedium,
+        color = colorScheme.error
+    )
     Spacer(Modifier.height(2.dp))
     Text(message, style = typography.bodyMedium, color = colorScheme.onSurfaceVariant)
     Spacer(Modifier.height(16.dp))
@@ -279,7 +276,9 @@ private fun PluginContent(
                     .align(Alignment.BottomEnd)
             ) {
                 Text(
-                    text = if (descriptionExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
+                    text = if (descriptionExpanded) stringResource(R.string.collapse) else stringResource(
+                        R.string.expand
+                    ),
                     style = typography.bodyMedium,
                     color = colorScheme.primary
                 )
@@ -290,7 +289,7 @@ private fun PluginContent(
     }
 
     val changelog = plugin.changelog
-    if (changelog.isNotEmpty()){
+    if (changelog.isNotEmpty()) {
         Text(
             text = stringResource(R.string.changelog),
             style = typography.bodyMedium,
@@ -344,11 +343,16 @@ private fun PluginContent(
 
         val sizeLabel = formatSize(
             plugin.download.sizeBytes
-                ?: plugin.download.parts.mapNotNull { it.sizeBytes }.takeIf { it.isNotEmpty() }?.sum()
+                ?: plugin.download.parts.mapNotNull { it.sizeBytes }.takeIf { it.isNotEmpty() }
+                    ?.sum()
         )
         val buttonText = when {
             !isCompatible -> stringResource(R.string.plugin_disabled)
-            downloading -> stringResource(R.string.plugin_store_download_progress, (downloadProgress * 100).toInt())
+            downloading -> stringResource(
+                R.string.plugin_store_download_progress,
+                (downloadProgress * 100).toInt()
+            )
+
             sizeLabel != null -> stringResource(R.string.plugin_store_install_with_size, sizeLabel)
             else -> stringResource(R.string.plugin_install_action_install)
         }

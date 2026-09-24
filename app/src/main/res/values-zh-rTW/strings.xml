@@ -172,8 +172,6 @@
     <string name="settings_reader_left_margin">左邊距</string>
     <string name="settings_reader_right_margin">右邊距</string>
     <string name="display_settings">顯示</string>
-    <string name="settings_theme">主題與紙張</string>
-    <string name="settings_theme_desc">設定應用程式主題和閱讀器紙張</string>
     <string name="settings_text_formatting">文本格式化</string>
     <string name="settings_text_formatting_desc">根據規則格式化文字內容</string>
     <string name="settings_theme_light_theme">淺色主題</string>
@@ -183,7 +181,6 @@
     <string name="settings_theme_dynamic_colors">系統動態配色</string>
     <string name="settings_theme_dynamic_colors_desc_unavailable">從系統主題套用動態配色 (需要 Android 12+)</string>
     <string name="settings_theme_dynamic_colors_desc">從系統主題套用動態配色</string>
-    <string name="settings_theme_m3e_description">啟用 Material 3 Expressive 設計。此功能屬於實驗性內容，仍處於測試階段</string>
     <string name="settings_formats">格式</string>
     <string name="settings_formats_desc">設定日期或文字格式</string>
     <string name="date_time_formats_settings">日期和時間</string>
@@ -304,8 +301,6 @@
     <string name="appearance_settings">外觀</string>
     <string name="control_settings">操作</string>
     <string name="margin_settings">邊距</string>
-    <string name="settings_theme_settings">主題設定……</string>
-    <string name="settings_theme_settings_desc">調整閱讀器和紙張選項</string>
     <string name="settings_hide_status_bar">隱藏狀態列</string>
     <string name="settings_hide_status_bar_desc">處於沉浸閱讀模式時，允許隱藏系統狀態列和導覽列</string>
     <string name="settings_trad_conversion">簡繁轉換</string>

@@ -9,9 +9,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.InstallState
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.install.PluginInstallError
-import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.DeleteStepState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.InstallDecision
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager.InstallDecisionType
@@ -56,16 +56,19 @@ class PluginInstallerDialogViewModel @Inject constructor(
                 throwable.pluginUsedApiVersion,
                 ApiMetadata.API_VERSION
             )
-            is PluginInstallError.AppPluginExist ->  context.getString(
+
+            is PluginInstallError.AppPluginExist -> context.getString(
                 R.string.plugin_error_app_plugin_exist
             )
 
             is PluginInstallError.CurrentPluginVersionTooHighError -> context.getString(
                 R.string.plugin_error_version_too_high
             )
+
             is PluginInstallError.PluginSignatureNotMatchError -> context.getString(
                 R.string.plugin_error_signature_mismatch
             )
+
             else -> throwable.localizedMessage
                 ?: throwable.message
                 ?: context.getString(R.string.plugin_error_unknown, throwable.toString())
@@ -78,6 +81,7 @@ class PluginInstallerDialogViewModel @Inject constructor(
                 val packageName = source.removePrefix("uninstall:")
                 startUninstall(packageName)
             }
+
             else -> {
                 startInstall(source)
             }
@@ -101,13 +105,15 @@ class PluginInstallerDialogViewModel @Inject constructor(
                     withContext(Dispatchers.Main) {
                         mutableUiState.installStep = InstallStepState.Completed
                         mutableUiState.installCompletedSuccess = false
-                        mutableUiState.installCompletedMessage = context.getString(R.string.plugin_install_read_failed)
+                        mutableUiState.installCompletedMessage =
+                            context.getString(R.string.plugin_install_read_failed)
                     }
                     return@launch
                 }
 
                 withContext(Dispatchers.Main) {
-                    mutableUiState.installMessage = context.getString(R.string.plugin_install_parse_package_info)
+                    mutableUiState.installMessage =
+                        context.getString(R.string.plugin_install_parse_package_info)
                 }
                 val packageInfo = context.packageManager.getPackageArchiveInfo(tempFile.path, 0)
                 if (packageInfo == null) {
@@ -115,7 +121,8 @@ class PluginInstallerDialogViewModel @Inject constructor(
                     withContext(Dispatchers.Main) {
                         mutableUiState.installStep = InstallStepState.Completed
                         mutableUiState.installCompletedSuccess = false
-                        mutableUiState.installCompletedMessage = context.getString(R.string.plugin_install_read_failed)
+                        mutableUiState.installCompletedMessage =
+                            context.getString(R.string.plugin_install_read_failed)
                     }
                     return@launch
                 }
@@ -136,7 +143,10 @@ class PluginInstallerDialogViewModel @Inject constructor(
                     )
                     mutableUiState.installDecision = InstallDecision(
                         type = InstallDecisionType.ConfirmInstall,
-                        message = context.getString(R.string.plugin_install_confirm_body, pluginLabel)
+                        message = context.getString(
+                            R.string.plugin_install_confirm_body,
+                            pluginLabel
+                        )
                     )
                     mutableUiState.installStep = InstallStepState.AwaitingDecision
                 }
@@ -157,7 +167,8 @@ class PluginInstallerDialogViewModel @Inject constructor(
                 withContext(Dispatchers.Main) {
                     mutableUiState.installStep = InstallStepState.Working
                     mutableUiState.installDecision = null
-                    mutableUiState.installMessage = context.getString(R.string.plugin_install_preparing)
+                    mutableUiState.installMessage =
+                        context.getString(R.string.plugin_install_preparing)
                 }
 
                 pluginManager.installPlugin(tempFile).collect { state ->
@@ -166,6 +177,7 @@ class PluginInstallerDialogViewModel @Inject constructor(
                             is InstallState.Start -> {
                                 mutableUiState.installMessage = context.getString(state.strId)
                             }
+
                             is InstallState.Info -> {
                                 mutableUiState.installInfo = PluginInstallInfo(
                                     packageName = state.packageName,
@@ -173,11 +185,14 @@ class PluginInstallerDialogViewModel @Inject constructor(
                                     versionName = state.versionName
                                 )
                             }
+
                             is InstallState.Completed -> {
                                 mutableUiState.installStep = InstallStepState.Completed
                                 mutableUiState.installCompletedSuccess = true
-                                mutableUiState.installCompletedMessage = context.getString(R.string.plugin_install_completed)
+                                mutableUiState.installCompletedMessage =
+                                    context.getString(R.string.plugin_install_completed)
                             }
+
                             is InstallState.Error -> {
                                 Log.e(TAG, "Plugin install failed", state.result)
                                 mutableUiState.installStep = InstallStepState.Completed
@@ -228,7 +243,8 @@ class PluginInstallerDialogViewModel @Inject constructor(
                 withContext(Dispatchers.Main) {
                     mutableUiState.uninstallStep = DeleteStepState.Completed
                     mutableUiState.uninstallCompletedSuccess = true
-                    mutableUiState.uninstallCompletedMessage = context.getString(R.string.plugin_delete_completed)
+                    mutableUiState.uninstallCompletedMessage =
+                        context.getString(R.string.plugin_delete_completed)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Plugin delete failed", e)

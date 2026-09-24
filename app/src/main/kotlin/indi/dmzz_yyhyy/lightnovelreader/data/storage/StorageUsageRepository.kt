@@ -25,7 +25,8 @@ class StorageUsageRepository @Inject constructor(
         private const val DB_NAME = "light_novel_reader_database"
     }
 
-    private val snapshotUserData = userDataRepository.stringUserData(UserDataPath.Settings.Data.StorageUsageSnapshot.path)
+    private val snapshotUserData =
+        userDataRepository.stringUserData(UserDataPath.Settings.Data.StorageUsageSnapshot.path)
     private val json = Json {
         ignoreUnknownKeys = true
     }
@@ -96,7 +97,10 @@ class StorageUsageRepository @Inject constructor(
 
         val appBytes = getAppFileBytes(context)
         val databaseDiskBytes = getRoomFileBytes(context, DB_NAME)
-        val pluginRoots = setOf(pluginManager.pluginsDir.canonicalPath, pluginManager.pluginsTempDir.canonicalPath)
+        val pluginRoots = setOf(
+            pluginManager.pluginsDir.canonicalPath,
+            pluginManager.pluginsTempDir.canonicalPath
+        )
         val pluginBytes = pluginRoots.sumOf { fileSize(File(it)) }
         val cacheBytes = childrenSizeExcept(context.cacheDir, pluginRoots)
         val otherFileBytes = childrenSizeExcept(

@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
@@ -36,7 +35,6 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableDetailUiState()
     var exportSettings = ExportSettings()
-    var navController: NavController? = null
     val uiState: DetailUiState = _uiState
 
     var isInitialized by mutableStateOf(false)
@@ -47,16 +45,24 @@ class DetailViewModel @Inject constructor(
         if (isInitialized) return
         isInitialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High).collect { result ->
-                result.onOk {
-                    val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
-                    bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
-                        bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(bookshelfId, bookId)
+            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High)
+                .collect { result ->
+                    result.onOk {
+                        val bookshelfBookMetadata =
+                            bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
+                        bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
+                            bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(
+                                bookshelfId,
+                                bookId
+                            )
+                        }
+                        bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
+                            bookId,
+                            it.lastUpdated
+                        )
                     }
-                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookId, it.lastUpdated)
+                    _uiState.bookInformation = result
                 }
-                _uiState.bookInformation = result
-            }
         }
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.getBookVolumesFlow(bookId, WebDataSourcePriority.High).collect {
@@ -78,7 +84,8 @@ class DetailViewModel @Inject constructor(
         }
         viewModelScope.launch {
             snapshotFlow { downloadProgressRepository.downloadItemIdList }.collect {
-                _uiState.downloadItem = downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
+                _uiState.downloadItem =
+                    downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
             }
         }
     }
@@ -96,10 +103,7 @@ class DetailViewModel @Inject constructor(
         return isCachedFlow
     }
 
-    fun onClickTag(tag: String) {
-        if (navController == null) return
-        bookRepository.progressBookTagClick(tag, navController!!)
-    }
+    fun onClickTag(tag: String) = bookRepository.progressBookTagClick(tag)
 
 
     fun exportToEpub(uri: Uri, bookId: String, title: String): Flow<WorkInfo?> {

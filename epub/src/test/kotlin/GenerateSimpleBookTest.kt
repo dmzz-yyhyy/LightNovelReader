@@ -15,7 +15,12 @@ fun main() {
                 content {
                     title("干夜鱼的一百种方法")
                     text("话说很久以前，有只叫做夜鱼的狐狸，他终日与他人尾交......")
-                    image(File(ClassLoader.getSystemClassLoader().getResource("70d0a8f050ac1b4dfffb5665ce052498.jpg")?.toURI()!!))
+                    image(
+                        File(
+                            ClassLoader.getSystemClassLoader()
+                                .getResource("70d0a8f050ac1b4dfffb5665ce052498.jpg")?.toURI()!!
+                        )
+                    )
                 }
             }
             chapter {
@@ -34,7 +39,7 @@ fun main() {
                             "head" {
                                 "title" { "神秘章节" }
                             }
-                            "body"{
+                            "body" {
                                 "a"("href" to "https://pornhub.com") {
                                     "click for 0721"
                                 }

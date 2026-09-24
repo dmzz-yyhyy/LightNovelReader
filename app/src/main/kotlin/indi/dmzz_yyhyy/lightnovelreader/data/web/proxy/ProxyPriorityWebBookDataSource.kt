@@ -11,15 +11,21 @@ class ProxyPriorityWebBookDataSource(
     override val proxiedWebBookDataSource: ProxyWebBookDataSource = this
     private val dispatcher: PriorityDispatcher = PriorityDispatcher(origin.permits)
 
-    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) = withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
-        origin.getBookInformation(id)
-    }
+    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) =
+        withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
+            origin.getBookInformation(id)
+        }
 
-    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) = withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
-        origin.getBookVolumes(id)
-    }
+    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) =
+        withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
+            origin.getBookVolumes(id)
+        }
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String, priority: WebDataSourcePriority) = withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
+    override suspend fun getChapterContent(
+        chapterId: String,
+        bookId: String,
+        priority: WebDataSourcePriority
+    ) = withContext(dispatcher + PriorityDispatcher.Priority(priority.priority)) {
         origin.getChapterContent(chapterId, bookId)
     }
 }

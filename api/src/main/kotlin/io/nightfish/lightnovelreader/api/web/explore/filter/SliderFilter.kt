@@ -26,6 +26,7 @@ abstract class SliderFilter(
     abstract var enabled: Boolean
     abstract val displayValue: String
     open val displayTitle = title
+
     /**
      * 获取过滤器的显示标题
      *

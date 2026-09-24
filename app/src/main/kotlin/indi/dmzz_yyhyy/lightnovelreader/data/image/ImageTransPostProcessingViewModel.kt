@@ -7,4 +7,4 @@ import javax.inject.Inject
 @HiltViewModel
 class ImageTransPostProcessingViewModel @Inject constructor(
     val imageTransPostProcessingManager: ImageTransPostProcessingManager
-): ViewModel()
+) : ViewModel()

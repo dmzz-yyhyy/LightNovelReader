@@ -1,26 +1,22 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.storagemanager
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
-import io.nightfish.lightnovelreader.api.ui.LocalNavController
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import io.nightfish.lightnovelreader.api.Route
-import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
-import indi.dmzz_yyhyy.lightnovelreader.utils.popBackStackIfResumed
 
-fun NavGraphBuilder.storageManager() {
-    composable<Route.StorageManager> {
-        val navController = LocalNavController.current
+fun NavEntryScope.storageManagerDestination() {
+    entry<Route.StorageManager> {
+        val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<StorageManagerViewModel>()
         StorageManagerScreen(
-            onClickBack = navController::popBackStackIfResumed,
+            onClickBack = navigator::popBackStack,
             uiState = viewModel.uiState
         )
     }
 }
 
-fun NavController.navigateToStorageManager() {
-    if (!this.isResumed()) return
+fun Navigator.navigateToStorageManager() {
     navigate(Route.StorageManager)
 }

@@ -2,7 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.proxy
 
 import android.content.Context
 import android.net.Uri
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -40,7 +40,7 @@ interface PriorityWebBookDataSource {
 
     val imageHeader: Map<String, String>
 
-    fun progressBookTagClick(tag: String, navController: NavController)
+    fun progressBookTagClick(tag: String): NavKey?
 
     suspend fun getCoverUriInVolume(
         bookId: String,

@@ -1,8 +1,8 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.book.reader
 
 import androidx.annotation.StringRes
-import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.R
+import io.nightfish.lightnovelreader.api.Route
 
 sealed class AppColorPickerTarget(
     @get:StringRes

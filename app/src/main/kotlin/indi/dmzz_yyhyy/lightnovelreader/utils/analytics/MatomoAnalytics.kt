@@ -23,7 +23,8 @@ class MatomoAnalytics @Inject constructor(
     private var isStatisticsEnabled = false
 
     companion object {
-        private const val SERVER = "eNpb85aBtYRBPaOkpKDYSl8_MS8xp7IkM7lYLy-xKDM7Xy-_KF0_N7EkPzdfryCjAACLuxEn"
+        private const val SERVER =
+            "eNpb85aBtYRBPaOkpKDYSl8_MS8xp7IkM7lYLy-xKDM7Xy-_KF0_N7EkPzdfryCjAACLuxEn"
         private const val SITE_ID = 4
 
         private const val DIMENSION_APP_INF = 1

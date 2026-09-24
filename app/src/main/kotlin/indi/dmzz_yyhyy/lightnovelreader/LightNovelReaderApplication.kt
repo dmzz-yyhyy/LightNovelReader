@@ -25,18 +25,24 @@ import javax.inject.Inject
 @HiltAndroidApp
 class LightNovelReaderApplication : Application(), Configuration.Provider {
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
-    @Inject lateinit var workerFactory: HiltWorkerFactory
-    @Inject lateinit var loggerRepository: LoggerRepository
-    @Inject lateinit var userDataRepository: UserDataRepository
-    @Inject lateinit var pluginManager: PluginManager
-    @Inject lateinit var pluginUpdateCheckRepository: PluginUpdateCheckRepository
-    @Inject lateinit var matomoAnalytics: MatomoAnalytics
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
+    @Inject
+    lateinit var loggerRepository: LoggerRepository
+    @Inject
+    lateinit var userDataRepository: UserDataRepository
+    @Inject
+    lateinit var pluginManager: PluginManager
+    @Inject
+    lateinit var pluginUpdateCheckRepository: PluginUpdateCheckRepository
+    @Inject
+    lateinit var matomoAnalytics: MatomoAnalytics
 
     override val workManagerConfiguration: Configuration
-        get()  =
-        Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
+        get() =
+            Configuration.Builder()
+                .setWorkerFactory(workerFactory)
+                .build()
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
@@ -56,9 +62,14 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
         coroutineScope.launch(Dispatchers.IO) {
             matomoAnalytics.initialize()
             matomoAnalytics.trackAppLaunch()
-            loggerRepository.logLevel = LogLevel.from(userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path).getOrDefault("none"))
+            loggerRepository.logLevel = LogLevel.from(
+                userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path)
+                    .getOrDefault("none")
+            )
             loggerRepository.startLogging()
-            ProxyPool.enable = userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path).getOrDefault(false)
+            ProxyPool.enable =
+                userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path)
+                    .getOrDefault(false)
         }
         WorkManager.getInstance(this).cancelAllWork()
     }

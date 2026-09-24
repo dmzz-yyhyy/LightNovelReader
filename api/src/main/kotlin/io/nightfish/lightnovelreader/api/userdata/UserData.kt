@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
  *
  * @since Api 4
  */
-abstract class UserData<T> (
+abstract class UserData<T>(
     open val path: String
 ) {
     /** 该条数据所属的组路径 */

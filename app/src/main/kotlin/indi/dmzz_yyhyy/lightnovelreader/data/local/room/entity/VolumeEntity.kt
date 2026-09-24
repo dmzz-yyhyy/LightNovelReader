@@ -22,6 +22,6 @@ data class VolumeEntity(
     val chapterIds: List<String>,
     @ColumnInfo(name = "volume_index")
     val index: Int
-): Mergeable<VolumeEntity> {
+) : Mergeable<VolumeEntity> {
     override fun merge(new: VolumeEntity): VolumeEntity = new
 }

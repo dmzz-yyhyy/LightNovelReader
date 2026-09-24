@@ -1,7 +1,7 @@
 package io.nightfish.lightnovelreader.api.content.builder
 
 import android.net.Uri
-import io.nightfish.lightnovelreader.api.content.component.ImageComponentData
+import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
 
 /**
  * 向[ContentBuilder]中添加一个图片组件

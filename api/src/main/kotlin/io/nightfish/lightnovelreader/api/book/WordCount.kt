@@ -21,7 +21,7 @@ data class WordCount(
     val unit: String?,
     @param:StringRes val unitResId: Int?
 ) {
-    constructor(count: Int): this(count, null, null)
-    constructor(count: Int, unit: String): this(count, unit, null)
-    constructor(count: Int, @StringRes unitResId: Int): this(count, null, unitResId)
+    constructor(count: Int) : this(count, null, null)
+    constructor(count: Int, unit: String) : this(count, unit, null)
+    constructor(count: Int, @StringRes unitResId: Int) : this(count, null, unitResId)
 }

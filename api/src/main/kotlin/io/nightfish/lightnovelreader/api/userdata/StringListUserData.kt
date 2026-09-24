@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
  *
  * @since Api 4
  */
-class StringListUserData (
+class StringListUserData(
     override val path: String,
     private val userDataDao: UserDataDaoApi
 ) : UserData<List<String>>(path) {

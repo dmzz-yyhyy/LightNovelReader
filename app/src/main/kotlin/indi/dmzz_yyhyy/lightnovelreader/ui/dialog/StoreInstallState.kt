@@ -7,10 +7,12 @@ sealed interface StoreInstallState {
     data class Ready(
         val plugin: StorePlugin
     ) : StoreInstallState
+
     data class Downloading(
         val lastPlugin: StorePlugin,
         val progress: Float
     ) : StoreInstallState
+
     data class Error(
         val message: String
     ) : StoreInstallState

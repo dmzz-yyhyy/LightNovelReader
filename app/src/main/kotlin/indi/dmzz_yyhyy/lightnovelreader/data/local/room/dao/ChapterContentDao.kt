@@ -13,10 +13,17 @@ import kotlinx.serialization.json.JsonObject
 @Dao
 interface ChapterContentDao {
     @TypeConverters(JsonObjectConverter::class)
-    @Query("replace into chapter_content (id, title, content, lastChapter, nextChapter) " +
-            "values (:id, :title, :content, :prevChapter, :nextChapter)"
+    @Query(
+        "replace into chapter_content (id, title, content, lastChapter, nextChapter) " +
+                "values (:id, :title, :content, :prevChapter, :nextChapter)"
     )
-    suspend fun update(id: String, title: String, content: JsonObject, prevChapter: String, nextChapter: String)
+    suspend fun update(
+        id: String,
+        title: String,
+        content: JsonObject,
+        prevChapter: String,
+        nextChapter: String
+    )
 
     @Transaction
     suspend fun update(chapterContent: ChapterContent) {

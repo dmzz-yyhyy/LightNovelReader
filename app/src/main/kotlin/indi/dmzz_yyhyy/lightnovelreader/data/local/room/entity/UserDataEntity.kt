@@ -12,7 +12,7 @@ data class UserDataEntity(
     val group: String,
     val type: String,
     val value: String
-): Mergeable<UserDataEntity> {
+) : Mergeable<UserDataEntity> {
     override fun merge(new: UserDataEntity): UserDataEntity {
         return when (type) {
             "StringList" -> copy(
@@ -21,6 +21,7 @@ data class UserDataEntity(
                     .distinct()
                     .joinToString(",")
             )
+
             else -> new
         }
     }
