@@ -94,7 +94,14 @@ object Route {
             /** 搜索界面路由 */
             @Serializable
             object Search
-            /** 当前书源中按作者或标签关联的书籍列表。 */
+            /**
+             * 当前书源中按作者或标签关联的书籍列表。
+             *
+             * @property sourceId 书源唯一标识，用于恢复页面时校验当前书源
+             * @property bookId 发起查询的书籍在该书源中的 ID
+             * @property kind 按作者或标签查询的类型
+             * @property value 书源提供的原始作者名或标签值，不经过显示文本转换
+             */
             @Serializable
             data class RelatedBooks(
                 val sourceId: String,
