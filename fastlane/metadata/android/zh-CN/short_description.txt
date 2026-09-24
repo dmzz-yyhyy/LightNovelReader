@@ -1,1 +1,1 @@
-Light novel reader with multiple sources
+多数据源轻小说阅读器
