@@ -6,6 +6,8 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
@@ -22,6 +24,9 @@ import kotlinx.coroutines.flow.flow
 
 object EmptyWebDataSource : WebBookDataSource {
     override val id: Identifier = "EmptyWebDataSource".ofId()
+    override val supportedRelatedBookKinds = emptySet<RelatedBookKind>()
+    override fun createRelatedBooksPage(request: RelatedBooksRequest): ExploreExpandedPageDataSource =
+        error("Empty data source does not support related books")
     override suspend fun isOffLine(): Boolean = true
 
     override val offLine: Boolean = true

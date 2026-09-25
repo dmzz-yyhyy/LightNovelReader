@@ -2,6 +2,7 @@ package io.nightfish.lightnovelreader.api
 
 import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
 import kotlinx.serialization.Serializable
 
 /**
@@ -106,6 +107,24 @@ sealed interface Route : NavKey {
             /** 搜索界面路由 */
             @Serializable
             object Search : Route
+
+            /**
+             * 当前书源中按作者或标签关联的书籍列表。
+             *
+             * @property sourceId 书源唯一标识，用于恢复页面时校验当前书源
+             * @property bookId 发起查询的书籍在该书源中的 ID
+             * @property kind 按作者或标签查询的类型
+             * @property value 书源提供的原始作者名或标签值，不经过显示文本转换
+             * @property entryId 页面实例标识，新建页面时生成，恢复返回栈时保留
+             */
+            @Serializable
+            data class RelatedBooks(
+                val sourceId: String,
+                val bookId: String,
+                val kind: RelatedBookKind,
+                val value: String,
+                val entryId: String
+            ) : Route
 
             /**
              * 探索展开页界面路由

@@ -25,7 +25,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_03_00_009
+        versionCode = 1_03_00_010
         versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -137,6 +137,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 dependencies {
+    testImplementation("junit:junit:4.13.2")
     // Desugaring
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     // Android lib

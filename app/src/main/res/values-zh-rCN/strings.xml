@@ -669,4 +669,7 @@
     <string name="restart">重启</string>
     <string name="current_web_data_source_not_founded">当前网络数据源不可用，请检查插件与数据源设置</string>
     <string name="never_read">未读</string>
+    <string name="related_books_load_failed">加载书籍失败</string>
+    <string name="related_books_retry">重试</string>
+    <string name="related_books_empty">这个列表中没有找到书籍。</string>
 </resources>

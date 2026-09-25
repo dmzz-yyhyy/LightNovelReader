@@ -2,16 +2,18 @@ package io.nightfish.lightnovelreader.api.web
 
 import android.content.Context
 import android.net.Uri
-import androidx.navigation3.runtime.NavKey
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
 import kotlinx.coroutines.flow.StateFlow
 
@@ -143,14 +145,16 @@ interface WebBookDataSource {
     ): Result<ChapterContent, WebRequestError>
 
     /**
-     * 用于处理书本tag的点击跳转事件
-     *
-     * @param tag 被点击的tag内容
-     * @return 由宿主应用打开的 Navigation 3 路由或 `null`
-     *
-     * @since Api 4
+     * 书源支持的关联书籍查询类型；空集合表示不支持关联查询。
      */
-    fun progressBookTagClick(tag: String): NavKey? = null
+    val supportedRelatedBookKinds: Set<RelatedBookKind>
+
+    /**
+     * 为已支持的关联请求创建独立页面数据源，不执行网络请求或导航。
+     * 请求使用书源原始作者或标签值，网络请求在结果流被收集时执行。
+     * 每次调用返回新的页面会话，分页和筛选状态不能跨页面共享。
+     */
+    fun createRelatedBooksPage(request: RelatedBooksRequest): ExploreExpandedPageDataSource
 
     /**
      * 根据卷获取该卷封面的Uri, 用于EPUB分卷导出

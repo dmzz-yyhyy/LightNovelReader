@@ -2,11 +2,12 @@ package indi.dmzz_yyhyy.lightnovelreader.data.web.proxy
 
 import android.content.Context
 import android.net.Uri
-import androidx.navigation3.runtime.NavKey
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
@@ -14,6 +15,7 @@ import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
 import kotlinx.coroutines.flow.StateFlow
 
@@ -40,7 +42,9 @@ interface PriorityWebBookDataSource {
 
     val imageHeader: Map<String, String>
 
-    fun progressBookTagClick(tag: String): NavKey?
+    val supportedRelatedBookKinds: Set<RelatedBookKind>
+
+    fun createRelatedBooksPage(request: RelatedBooksRequest): ExploreExpandedPageDataSource
 
     suspend fun getCoverUriInVolume(
         bookId: String,

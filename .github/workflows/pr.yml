@@ -2,12 +2,15 @@ name: DebugApkBuild
 on:
   merge_group:
   pull_request:
-    branches: [ master, refactoring ]
+    branches: [ master, dev/1.3 ]
     paths:
-      - app/src/**
+      - .github/workflows/pr.yml
+      - app/**
+      - api/**
+      - gradle/**
       - build.gradle.kts
       - gradle.properties
-      - settings.gradle
+      - settings.gradle.kts
 
 jobs:
   BuildDebugApk:
@@ -28,8 +31,8 @@ jobs:
         run: |
           echo "::set-output name=VERSION_CODE::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
         id: android_version
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Test and build debug APK
+        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
           name: LightNovelReader-${{steps.android_version.outputs.VERSION_CODE}}-debug
