@@ -172,6 +172,10 @@
     <string name="settings_reader_left_margin">左邊距</string>
     <string name="settings_reader_right_margin">右邊距</string>
     <string name="display_settings">顯示</string>
+    <string name="settings_theme">App Theme</string>
+    <string name="settings_theme_desc">Adjust the appearance of the app</string>
+    <string name="settings_reader_style">Reader Style</string>
+    <string name="settings_reader_style_desc">Adjust the appearance of the reading page</string>
     <string name="settings_text_formatting">文本格式化</string>
     <string name="settings_text_formatting_desc">根據規則格式化文字內容</string>
     <string name="settings_theme_light_theme">淺色主題</string>
@@ -663,4 +667,7 @@
     <string name="restart">重新啟動</string>
     <string name="current_web_data_source_not_founded">找不到目前資料源，請確認您的外掛和資料源設定</string>
     <string name="never_read">從未閱讀</string>
+    <string name="settings_paragraph_spacing">Paragraph Spacing</string>
+    <string name="settings_text_indent">Text Indent</string>
+    <string name="settings_line_height">Line Height</string>
 </resources>
