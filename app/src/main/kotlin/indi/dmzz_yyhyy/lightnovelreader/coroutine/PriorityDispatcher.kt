@@ -4,6 +4,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -60,29 +61,33 @@ class PriorityDispatcher(
         var acceptingTasks = true
         var nextSequence = 0L
 
+        @OptIn(ExperimentalCoroutinesApi::class)
         fun enqueue(priority: Int, block: Runnable, job: Job?) {
+            // Nested coroutines share their active request's permit so their parent can finish.
+            val requestJob = generateSequence(job) { it.parent }
+                .firstOrNull { it in activeJobs } ?: job
             val task = ScheduledTask(
                 priority = priority,
                 sequence = nextSequence++,
                 block = block,
-                job = job,
+                job = requestJob,
             )
 
-            if (job == null) {
+            if (requestJob == null) {
                 readyTasks.add(task)
                 return
             }
 
-            if (job !in knownJobs) {
-                knownJobs += job
-                job.invokeOnCompletion {
-                    commands.trySend(Command.JobCompleted(job))
+            if (requestJob !in knownJobs) {
+                knownJobs += requestJob
+                requestJob.invokeOnCompletion {
+                    commands.trySend(Command.JobCompleted(requestJob))
                 }
                 pendingStarts.add(task)
                 return
             }
 
-            if (job in activeJobs) {
+            if (requestJob in activeJobs) {
                 readyTasks.add(task)
             } else {
                 pendingStarts.add(task)
