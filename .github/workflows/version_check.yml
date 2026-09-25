@@ -2,12 +2,13 @@ name: VersionCheck
 on:
   merge_group:
   pull_request:
-    branches: [ master, refactoring ]
+    branches: [ master, dev/1.3 ]
     paths:
       - app/src/main/kotlin/**
+      - app/build.gradle.kts
       - build.gradle.kts
       - gradle.properties
-      - settings.gradle
+      - settings.gradle.kts
 
 jobs:
   check-version:
@@ -29,11 +30,13 @@ jobs:
         run: |
           chmod +x ${{github.workspace}}/gradlew
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
-      - name: Get current version from main branch
+      - name: Get version from target commit
         id: get-current-version
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
         run: |
-          git fetch origin refactoring
-          git checkout refactoring
+          git fetch origin "$BASE_SHA"
+          git checkout --detach FETCH_HEAD
           chmod +x ./gradlew
           echo "::set-output name=VERSION_NAME::$(${{github.workspace}}/gradlew -q app:printVersionCode)"
       - name: Compare versions

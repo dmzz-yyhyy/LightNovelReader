@@ -13,12 +13,14 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onOk
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
+import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportBookToEPUBWork
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DetailViewModel @Inject constructor(
     private val bookRepository: BookRepository,
+    private val textProcessingRepository: TextProcessingRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val downloadProgressRepository: DownloadProgressRepository,
     private val workManager: WorkManager
@@ -45,24 +48,29 @@ class DetailViewModel @Inject constructor(
         if (isInitialized) return
         isInitialized = true
         viewModelScope.launch(Dispatchers.IO) {
-            bookRepository.getBookInformationFlow(bookId, WebDataSourcePriority.High)
-                .collect { result ->
-                    result.onOk {
-                        val bookshelfBookMetadata =
-                            bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
-                        bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
-                            bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(
-                                bookshelfId,
-                                bookId
-                            )
-                        }
-                        bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
-                            bookId,
-                            it.lastUpdated
-                        )
-                    }
-                    _uiState.bookInformation = result
+            bookRepository.getRawBookInformationFlow(bookId, WebDataSourcePriority.High).collect { rawResult ->
+                var relatedBooks: DetailRelatedBooks? = null
+                val result = rawResult.map { raw ->
+                    val display = textProcessingRepository.processBookInformation { raw.information }
+                    relatedBooks = relatedBooksForDetail(
+                        sourceId = raw.sourceId,
+                        bookId = raw.information.id,
+                        author = raw.information.author,
+                        tags = raw.information.tags,
+                        supportedKinds = raw.supportedRelatedBookKinds,
+                    )
+                    display
                 }
+                result.onOk {
+                    val bookshelfBookMetadata = bookshelfRepository.getBookshelfBookMetadata(bookId) ?: return@onOk
+                    bookshelfBookMetadata.bookShelfIds.forEach { bookshelfId ->
+                        bookshelfRepository.deleteBookFromBookshelfUpdatedBookIds(bookshelfId, bookId)
+                    }
+                    bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(bookId, it.lastUpdated)
+                }
+                _uiState.relatedBooks = relatedBooks
+                _uiState.bookInformation = result
+            }
         }
         viewModelScope.launch(Dispatchers.IO) {
             bookRepository.getBookVolumesFlow(bookId, WebDataSourcePriority.High).collect {
@@ -84,8 +92,7 @@ class DetailViewModel @Inject constructor(
         }
         viewModelScope.launch {
             snapshotFlow { downloadProgressRepository.downloadItemIdList }.collect {
-                _uiState.downloadItem =
-                    downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
+                _uiState.downloadItem = downloadProgressRepository.downloadItemIdList.findLast { it.bookId == bookId && it.type == DownloadType.CACHE }
             }
         }
     }
@@ -102,9 +109,6 @@ class DetailViewModel @Inject constructor(
         }
         return isCachedFlow
     }
-
-    fun onClickTag(tag: String) = bookRepository.progressBookTagClick(tag)
-
 
     fun exportToEpub(uri: Uri, bookId: String, title: String): Flow<WorkInfo?> {
         val workRequest = OneTimeWorkRequestBuilder<ExportBookToEPUBWork>()

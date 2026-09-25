@@ -35,15 +35,17 @@ import io.ktor.http.isSuccess
 import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.book.RelatedBookKind
+import io.nightfish.lightnovelreader.api.book.RelatedBooksRequest
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.book.WordCount
-import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
-import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
+import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,18 +83,6 @@ private val WENKU8_CHARSET: Charset = Charset.forName("GB18030")
     "LightNovelReader from wenku8.net"
 )
 class Wenku8Api : WebBookDataSource {
-    private val tagList = listOf(
-        "校园", "青春", "恋爱", "治愈", "群像",
-        "竞技", "音乐", "美食", "旅行", "欢乐向",
-        "经营", "职场", "斗智", "脑洞", "宅文化",
-        "穿越", "奇幻", "魔法", "异能", "战斗",
-        "科幻", "机战", "战争", "冒险", "龙傲天",
-        "悬疑", "犯罪", "复仇", "黑暗", "猎奇",
-        "惊悚", "间谍", "末日", "游戏", "大逃杀",
-        "青梅竹马", "妹妹", "女儿", "JK", "JC",
-        "大小姐", "性转", "伪娘", "人外",
-        "后宫", "百合", "耽美", "NTR", "女性视角"
-    )
     val ktorClient = HttpClient(OkHttp) {
         install(UserAgent) {
             agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
@@ -248,11 +238,21 @@ class Wenku8Api : WebBookDataSource {
         bookRequestDispatcher.getChapterContent(chapterId, bookId)
 
     override val searchProvider: SearchProvider = Wenku8SearchProvider(bookRequestDispatcher)
-    override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider(host, this)
+    override val explorePageProvider = Wenku8ExplorePageProvider(host, this)
 
 
-    override fun progressBookTagClick(tag: String) =
-        if (tag in tagList) Route.Main.Explore.Expanded(tag) else null
+    override val supportedRelatedBookKinds = setOf(RelatedBookKind.AUTHOR, RelatedBookKind.TAG)
+
+    override fun createRelatedBooksPage(request: RelatedBooksRequest): ExploreExpandedPageDataSource =
+        when (request.kind) {
+            RelatedBookKind.AUTHOR -> object : ExploreExpandedPageDataSource {
+                override val title = request.value
+                override val filters = emptyList<Filter<*>>()
+                override fun getResultFlow() = bookRequestDispatcher.search("author", request.value)
+                override fun loadMore() = Unit
+            }
+            RelatedBookKind.TAG -> explorePageProvider.createTagPage(request.value)
+        }
 
     override suspend fun getCoverUriInVolume(
         bookId: String,

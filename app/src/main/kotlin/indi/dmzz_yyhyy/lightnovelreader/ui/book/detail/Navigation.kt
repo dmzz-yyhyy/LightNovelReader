@@ -24,6 +24,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDesti
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToImageViewerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToMarkAllChaptersAsReadDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToRelatedBooksDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
@@ -194,7 +195,7 @@ fun NavEntryScope.bookDetailDestination() {
                 }
             },
             requestAddBookToBookshelf = navigator::navigateToAddBookToBookshelfDialog,
-            onClickTag = { viewModel.onClickTag(it)?.let(navigator::navigate) },
+            onClickRelatedBooks = navigator::navigateToRelatedBooksDestination,
             onClickCover = navigator::navigateToImageViewerDialog,
             onClickMarkAsRead = {
                 navigator.navigateToMarkAllChaptersAsReadDialog(bookId)
