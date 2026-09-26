@@ -4,14 +4,34 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.navigation.NavController
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.get
-import cxhttp.CxHttp
+import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
-import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.DefaultRequest
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.cookies.ConstantCookiesStorage
+import io.ktor.client.plugins.cookies.HttpCookies
+import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.cookie
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.Cookie
+import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
+import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
@@ -27,30 +47,37 @@ import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import kotlinx.io.EOFException
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import java.net.ConnectException
+import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @WebDataSource(
     "Wenku8",
     "LightNovelReader from wenku8.net"
 )
-object Wenku8Api : WebBookDataSource {
-    init {
-        CxHttpInit.init()
-    }
-
+class Wenku8Api : WebBookDataSource {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -63,28 +90,71 @@ object Wenku8Api : WebBookDataSource {
         "大小姐", "性转", "伪娘", "人外",
         "后宫", "百合", "耽美", "NTR", "女性视角"
     )
-    private val bookRequestDispatcher = BookRequestDispatcher()
-    private val isOffLineStateFlow = MutableStateFlow(false)
-    private val DATA_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val ktorClient = HttpClient(OkHttp) {
+        install(UserAgent) {
+            agent = UserAgentGenerator.generate()
+        }
 
-    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
-    private val titleRegex = Regex("(.*) ?[(（](.*)[)）] ?$")
+        install(HttpCookies) {
+            storage = ConstantCookiesStorage(
+                *(
+                        createCookies("www.wenku8.net") +
+                                createCookies("www.wenku8.cc") +
+                                createCookies("www.wenku8.com")
+                        ).toTypedArray()
+            )
+        }
+
+        install(DefaultRequest) {
+            headers {
+                append(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
+                append(HttpHeaders.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8")
+                append(HttpHeaders.CacheControl, "max-age=0")
+                append("Upgrade-Insecure-Requests", "1")
+                append("Sec-Fetch-Dest", "document")
+                append("Sec-Fetch-Mode", "navigate")
+                append("Sec-Fetch-Site", "none")
+                append("Sec-Fetch-User", "?1")
+            }
+        }
+        install(HttpRequestRetry) {
+            retryOnServerErrors(maxRetries = 3)
+            exponentialDelay()
+            retryIf { _, response ->
+                !response.status.isSuccess()
+            }
+            retryOnExceptionIf { _, cause ->
+                cause is EOFException || cause is ConnectException
+            }
+        }
+        install(HttpTimeout)
+        install(Logging) {
+            logger = Logger.ANDROID
+            level = LogLevel.HEADERS
+        }
+    }
     private val hosts =
         listOf("https://www.wenku8.cc", "https://www.wenku8.net", "https://www.wenku8.com")
+    var host = hosts[0]
+    private val bookRequestDispatcher = BookRequestDispatcher(host, this)
+    private val isOffLineStateFlow = MutableStateFlow(false)
+    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    private val requestLimiter = Semaphore(3)
+    private var coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+    private val titleRegex = Regex("(.*) ?[(（](.*)[)）] ?$")
     override val cache = Cache(
         timeout = 2 * 60 * 60 * 1000
     )
     private val _cache = Cache(
         timeout = 2 * 60 * 60 * 1000
     )
-    var host = hosts[0]
 
     override fun onLoad() {
         coroutineScope.launch {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay(if (offLine) 3000 else 100000)
+                delay((if (offLine) 3000 else 100000).milliseconds)
             }
         }
     }
@@ -104,22 +174,69 @@ object Wenku8Api : WebBookDataSource {
 
     override val isOffLineFlow = isOffLineStateFlow
 
-    override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
-        suspend fun webSite(index: Int): Boolean {
-            return !CxHttp
-                .get(hosts[index]) {
-                    header("user-agent", UserAgentGenerator.generate())
-                    header(
-                        "cookie",
-                        wenku8Cookies().map { "${it.key}=${it.value}" }
-                            .joinToString(separator = ";")
-                    )
-                }
-                .await()
-                .isSuccessful
-                .also { host = hosts[index] }
+    fun wenku8Cookies(): Map<String, String> = mapOf(
+        "jieqiUserInfo" to "jieqiUserId=1125456,jieqiUserName=yyhyy,jieqiUserGroup=3,jieqiUserVip=0,jieqiUserPassword=eb62861281462fd923fb99218735fef0,jieqiUserName_un=yyhyy,jieqiUserHonor_un=&#x4E2D;&#x7EA7;&#x4F1A;&#x5458;,jieqiUserGroupName_un=&#x666E;&#x901A;&#x4F1A;&#x5458;,jieqiUserLogin=1739294499",
+        "jieqiVisitInfo" to "jieqiUserLogin=1739294499,jieqiUserId=1125456",
+    )
+
+    fun createCookies(domain: String): List<Cookie> {
+        return wenku8Cookies().map {
+            Cookie(
+                name = it.key,
+                value = it.value,
+                domain = domain,
+            )
         }
-        return@withContext webSite(0) && webSite(1) && webSite(2)
+    }
+
+
+    suspend fun anyTrue(
+        tasks: List<suspend () -> Boolean>
+    ): Boolean = coroutineScope {
+        val deferredList = tasks.map { task ->
+            async {
+                task()
+            }
+        }.toMutableList()
+
+        try {
+            while (deferredList.isNotEmpty()) {
+                val (finished, value) = select {
+                    deferredList.forEach { deferred ->
+                        deferred.onAwait { result ->
+                            deferred to result
+                        }
+                    }
+                }
+
+                deferredList.remove(finished)
+
+                if (value) {
+                    deferredList.forEach { it.cancel() }
+                    return@coroutineScope true
+                }
+            }
+
+            false
+        } finally {
+            deferredList.forEach { it.cancel() }
+        }
+    }
+
+    override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
+        suspend fun webSite(index: Int): Boolean = runCatching {
+            ktorClient.get(hosts[index]) {
+                userAgent(UserAgentGenerator.generate())
+                wenku8Cookies().forEach { (name, value) ->
+                    cookie(name, value)
+                }
+            }.status.isSuccess()
+        }.getOrElse { false }
+        return@withContext !anyTrue(listOf(
+            { webSite(0) },
+            { webSite(1) },
+            { webSite(2) },
+        ))
     }
 
     override val id: Int = "wenku8".hashCode()
@@ -138,7 +255,7 @@ object Wenku8Api : WebBookDataSource {
         }
 
     override val searchProvider: SearchProvider = Wenku8SearchProvider(bookRequestDispatcher)
-    override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider()
+    override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider(host, this)
 
 
     override fun progressBookTagClick(tag: String, navController: NavController) {
@@ -231,7 +348,7 @@ object Wenku8Api : WebBookDataSource {
                             ?.text()?.split("/")?.getOrNull(0)
                             ?.split(":")?.getOrNull(1)
                             ?.let {
-                                LocalDate.parse(it, DATA_TIME_FORMATTER)
+                                LocalDate.parse(it, dateTimeFormatter)
                             }
                             ?.atStartOfDay() ?: LocalDateTime.MIN,
                         isComplete = element.selectFirst("div > div:nth-child(2) > p:nth-child(3)")
@@ -239,4 +356,18 @@ object Wenku8Api : WebBookDataSource {
                     )
                 }
             }
+
+    suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
+        requestLimiter.withPermit {
+            runCatching {
+                 val res = ktorClient.get(url)
+                     .bodyAsText(Charset.forName("GBK"))
+                Jsoup.parse(res).outputSettings(
+                    Document.OutputSettings()
+                        .prettyPrint(false)
+                        .syntax(Document.OutputSettings.Syntax.xml)
+                )
+            }
+        }
+    }
 }
