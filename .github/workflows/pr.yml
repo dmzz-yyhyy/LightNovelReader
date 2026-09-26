@@ -2,7 +2,7 @@ name: DebugApkBuild
 on:
   merge_group:
   pull_request:
-    branches: [master, refactoring]
+    branches: [dev/**, release/**]
     paths:
       - app/src/**
       - build.gradle.kts

@@ -24,8 +24,8 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_02_02_002
-        versionName = "1.2.2a"
+        versionCode = 1_02_03_001
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -170,7 +170,6 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.room.ktx)
     // Splash API
-    implementation(libs.core.splashscreen)
     // WorkManager
     implementation(libs.work.runtime.ktx)
     // Potato EPUB
@@ -199,7 +198,6 @@ dependencies {
     // apksig
     implementation(libs.apksig)
     // http
-    implementation(libs.cxhttp)
     implementation(libs.okhttp)
     implementation(libs.okhttp3.logging.interceptor)
     implementation(libs.androidx.profileinstaller)
@@ -210,19 +208,28 @@ dependencies {
     // Reorderable
     implementation(libs.reorderable)
     // TinyPinyin
-    implementation(libs.tinypinyin)}
+    implementation(libs.tinypinyin)
+    // Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.logging)
+    // Logger
+    implementation(libs.slf4j.android)
+}
 
 configurations.implementation {
     exclude(group = "com.intellij", module = "annotations")
 }
 
 tasks.register("printVersion") {
+    description = "print the version name of the project"
     doFirst {
         println(android.defaultConfig.versionName)
     }
 }
 
 tasks.register("printVersionCode") {
+    description = "print the version code of the project"
     doFirst {
         println(android.defaultConfig.versionCode)
     }

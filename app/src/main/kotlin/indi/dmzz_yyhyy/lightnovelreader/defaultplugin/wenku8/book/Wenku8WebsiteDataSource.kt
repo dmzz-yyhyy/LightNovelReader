@@ -2,8 +2,6 @@ package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book
 
 import androidx.core.net.toUri
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.autoReconnectionGetWithWenku8Cookie
-import indi.dmzz_yyhyy.lightnovelreader.utils.CxHttpInit
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -31,8 +29,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.time.Duration.Companion.seconds
 
-class Wenku8WebsiteDataSource: Wenku8BookDataSource {
-    private val host get() = Wenku8Api.host
+class Wenku8WebsiteDataSource(
+    val host: String,
+    val wenku8Api: Wenku8Api
+): Wenku8BookDataSource {
     private val titleRegex = Regex("(.*) ?[(（](.*)[)）] ?$")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -54,7 +54,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
     private fun url(string: String) = "$host/$string"
 
     override suspend fun getBookInformation(id: String): BookInformation = ifCache(id) {
-        val soup = autoReconnectionGetWithWenku8Cookie(url("book/$id.htm")) ?: return@ifCache BookInformation.empty(id)
+        val soup = wenku8Api.getWithWenku8Cookie(url("book/$id.htm")).component1() ?: return@ifCache BookInformation.empty(id)
         if (soup.text().contains("因版权问题")) return@ifCache BookInformation.empty()
         val titleGroup = soup
             .selectFirstXpath("//*[@id=\"content\"]/div[1]/table[1]/tbody/tr[1]/td/table/tbody/tr/td[1]/span/b")
@@ -121,7 +121,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
     }
 
     override suspend fun getBookVolumes(id: String): BookVolumes = ifCache(id) {
-        val soup = autoReconnectionGetWithWenku8Cookie(url("novel/${id.toInt() / 1000}/$id/index.htm")) ?: return@ifCache BookVolumes.empty(id)
+        val soup = wenku8Api.getWithWenku8Cookie(url("novel/${id.toInt() / 1000}/$id/index.htm")).component1() ?: return@ifCache BookVolumes.empty(id)
         val trs = soup.selectXpath("/html/body/table/tbody/tr")
         val volumes = mutableListOf<Volume>()
         var volume: Volume? = null
@@ -154,7 +154,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
         chapterId: String,
         bookId: String
     ): ChapterContent = ifCache(chapterId + bookId) {
-        val soup = autoReconnectionGetWithWenku8Cookie(url("novel/${bookId.toInt() / 1000}/$bookId/$chapterId.htm")) ?: return@ifCache ChapterContent.empty(chapterId)
+        val soup = wenku8Api.getWithWenku8Cookie(url("novel/${bookId.toInt() / 1000}/$bookId/$chapterId.htm")).component1() ?: return@ifCache ChapterContent.empty(chapterId)
         if (soup.text().contains("因版权问题")) return@ifCache ChapterContent.empty(chapterId)
         val content = soup.selectFirstXpath("//*[@id=\"content\"]") ?: return@ifCache ChapterContent.empty(chapterId)
         val jsonObject = ContentBuilder().apply {
@@ -203,7 +203,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
         var presentPage = 1
         while (presentPage <= targetPage) {
             val soup =
-                autoReconnectionGetWithWenku8Cookie(url("modules/article/search.php?searchtype=$searchType&searchkey=$encodedKeyword&page=$presentPage"))
+                wenku8Api.getWithWenku8Cookie(url("modules/article/search.php?searchtype=$searchType&searchkey=$encodedKeyword&page=$presentPage")).component1()
             if (soup == null) {
                 emit(SearchResult.Error("Failed to request the web page"))
                 return@flow
@@ -235,7 +235,7 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
             }
 
             val books =
-                Wenku8Api.getBookInformationListFromBookCards(soup.selectXpath("//*[@id=\"content\"]/table/tbody/tr/td/div"))
+                wenku8Api.getBookInformationListFromBookCards(soup.selectXpath("//*[@id=\"content\"]/table/tbody/tr/td/div"))
             for (information in books) {
                 emit(SearchResult.MultipleBook(information))
             }
@@ -253,8 +253,4 @@ class Wenku8WebsiteDataSource: Wenku8BookDataSource {
         emit(SearchResult.End())
     }
         .flowOn(Dispatchers.IO)
-
-    init {
-        CxHttpInit.init()
-    }
 }
