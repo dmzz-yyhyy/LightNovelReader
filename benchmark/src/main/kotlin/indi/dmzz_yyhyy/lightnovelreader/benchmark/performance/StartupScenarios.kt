@@ -6,33 +6,31 @@ import androidx.benchmark.macro.StartupTimingMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import indi.dmzz_yyhyy.lightnovelreader.benchmark.ui.UiAutomatorTest
+import indi.dmzz_yyhyy.lightnovelreader.benchmark.framework.BenchmarkTestCase
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
-class StartupBenchmark {
+class StartupScenarios {
     @get:Rule
-    val benchmarkRule = MacrobenchmarkRule()
+    val benchmark = MacrobenchmarkRule()
 
     @Test
-    fun coldStartup() = measureStartup(StartupMode.COLD)
+    fun coldStartup() = measure(StartupMode.COLD)
 
     @Test
-    fun warmStartup() = measureStartup(StartupMode.WARM)
+    fun warmStartup() = measure(StartupMode.WARM)
 
-    private fun measureStartup(mode: StartupMode) {
-        benchmarkRule.measureRepeated(
-            packageName = UiAutomatorTest.TARGET_PACKAGE,
+    private fun measure(mode: StartupMode) {
+        benchmark.measureRepeated(
+            packageName = BenchmarkTestCase.TARGET_PACKAGE,
             metrics = listOf(StartupTimingMetric()),
             compilationMode = CompilationMode.Partial(),
             startupMode = mode,
             iterations = 5,
-            setupBlock = {
-                pressHome()
-            },
+            setupBlock = { pressHome() },
         ) {
             startActivityAndWait()
         }

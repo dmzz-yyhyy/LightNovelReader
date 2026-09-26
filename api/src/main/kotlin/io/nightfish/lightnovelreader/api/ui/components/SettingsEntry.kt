@@ -47,6 +47,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -242,14 +244,16 @@ fun SettingsSwitchEntry(
 
     SettingsBasicEntry(
         enabled = enabled,
-        modifier = modifier.toggleable(
-            value = checked,
-            interactionSource = interactionSource,
-            role = Role.Switch,
-            enabled = enabled,
-            indication = LocalIndication.current,
-            onValueChange = checkedChange
-        ),
+        modifier = modifier
+            .toggleable(
+                value = checked,
+                interactionSource = interactionSource,
+                role = Role.Switch,
+                enabled = enabled,
+                indication = LocalIndication.current,
+                onValueChange = checkedChange
+            )
+            .semantics { contentDescription = "$title switch" },
         painter = painter,
         title = title,
         description = description,
@@ -576,7 +580,9 @@ private fun SettingsSliderEntry(
         description = description,
         extraBelowContent = {
             Slider(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "$title slider" },
                 enabled = enabled,
                 value = animatedPosition,
                 valueRange = sliderRange,

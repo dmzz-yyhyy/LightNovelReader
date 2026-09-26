@@ -58,6 +58,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -754,6 +756,7 @@ fun ColorPickerDialog(
                 Box(
                     modifier = Modifier
                         .size(44.dp)
+                        .semantics { contentDescription = "color option $index" }
                         .clickable {
                             currentColor = color
                         }

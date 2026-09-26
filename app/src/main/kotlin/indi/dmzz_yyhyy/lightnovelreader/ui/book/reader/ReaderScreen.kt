@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,7 +37,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -67,6 +65,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -81,7 +81,6 @@ import coil3.compose.AsyncImagePainter
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.map
-import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentComponent
@@ -448,7 +447,8 @@ fun Content(
 
     Box(modifier = Modifier.fillMaxSize()) {
         val isEnableIndicator =
-            settingState.enableTimeIndicator ||
+            settingState.batteryIndicatorDisplayMode == "classic" ||
+                    settingState.enableTimeIndicator ||
                     settingState.enableReadingChapterProgressIndicator ||
                     settingState.enableChapterTitleIndicator
 
@@ -719,7 +719,9 @@ fun Indicator(
                 )
                 Spacer(Modifier.width(4.dp))
                 Icon(
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier
+                        .size(20.dp)
+                        .semantics { contentDescription = "battery indicator" },
                     painter =
                         when {
                             (batLevel in 0..15) -> painterResource(R.drawable.battery_android_alert_24px)
@@ -737,7 +739,9 @@ fun Indicator(
             }
             if (enableTimeIndicator) {
                 AnimatedText(
-                    modifier = Modifier.align(Alignment.CenterVertically),
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .semantics { contentDescription = "time indicator" },
                     text = String.format(
                         Locale.US,
                         "%d:%02d",
@@ -760,7 +764,9 @@ fun Indicator(
         ) {
             if (enableChapterTitle) {
                 AnimatedTextLine(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = "chapter indicator" },
                     text = chapterTitle,
                     textAlign = TextAlign.End,
                     style = typography.bodyLarge,
@@ -785,6 +791,7 @@ fun Indicator(
                     length = 3
                 )
                 Text(
+                    modifier = Modifier.semantics { contentDescription = "progress indicator" },
                     text = "%",
                     style = typography.bodyLarge,
                     fontWeight = FontWeight.W500,

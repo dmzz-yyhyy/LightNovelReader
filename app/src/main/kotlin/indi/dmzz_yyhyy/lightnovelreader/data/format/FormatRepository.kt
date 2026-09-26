@@ -6,11 +6,15 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
+import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.content.component.data.TextData
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
+import io.nightfish.lightnovelreader.api.text.ComponentProcessor
 import io.nightfish.lightnovelreader.api.text.TextProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.regex.PatternSyntaxException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,24 +27,29 @@ class FormatRepository @Inject constructor(
     private val processorMap = mutableMapOf<String, SnapshotStateList<FormattingRule>>()
 
     init {
+        runBlocking(Dispatchers.IO) {
+            replaceRules(formattingRuleDao.getAllBookRuleEntity())
+        }
         CoroutineScope(Dispatchers.IO).launch {
             formattingRuleDao.getAllBookRuleEntityFlow().collect { formattingRuleEntities ->
-                processorMap.values.forEach { it.clear() }
-                for (formattingRule in formattingRuleEntities) {
-                    if (!processorMap.contains(formattingRule.bookId)) processorMap[formattingRule.bookId] =
-                        mutableStateListOf()
-                    processorMap[formattingRule.bookId]!!.add(
-                        FormattingRule(
-                            id = formattingRule.id,
-                            name = formattingRule.name,
-                            isRegex = formattingRule.isRegex,
-                            match = formattingRule.match,
-                            replacement = formattingRule.replacement,
-                            isEnabled = formattingRule.isEnabled
-                        )
-                    )
-                }
+                replaceRules(formattingRuleEntities)
             }
+        }
+    }
+
+    private fun replaceRules(formattingRuleEntities: List<FormattingRuleEntity>) {
+        processorMap.values.forEach { it.clear() }
+        formattingRuleEntities.forEach { formattingRule ->
+            processorMap.getOrPut(formattingRule.bookId) { mutableStateListOf() }.add(
+                FormattingRule(
+                    id = formattingRule.id,
+                    name = formattingRule.name,
+                    isRegex = formattingRule.isRegex,
+                    match = formattingRule.match,
+                    replacement = formattingRule.replacement,
+                    isEnabled = formattingRule.isEnabled,
+                )
+            )
         }
     }
 
@@ -160,11 +169,27 @@ class FormatRepository @Inject constructor(
         return processorMap[bookId]!!
     }
 
-    override fun processText(text: String): String = text
-    override fun List<String>.process() = this
-    override fun <T> Map<T, String>.process() = this
+    override fun processText(text: String): String = processText("", text)
+
+    override fun processChapterContent(
+        bookId: String,
+        chapterContent: ChapterContent,
+        componentProcessor: ComponentProcessor,
+    ): ChapterContent {
+        return chapterContent.copy(
+            content = componentProcessor.apply {
+                process { data: TextData<*> ->
+                    data.processText { text -> processText(bookId, text) }
+                }
+            }.get(),
+        )
+    }
+
     override fun processExploreBooksRow(exploreDisplayBook: ExploreDisplayBook): ExploreDisplayBook =
-        exploreDisplayBook
+        exploreDisplayBook.copy(
+            title = processText("", exploreDisplayBook.title),
+            author = processText("", exploreDisplayBook.author),
+        )
 
     override fun processBookInformation(bookInformation: BookInformation): BookInformation =
         bookInformation.copy(

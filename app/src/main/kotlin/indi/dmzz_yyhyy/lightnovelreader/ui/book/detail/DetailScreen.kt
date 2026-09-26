@@ -144,7 +144,7 @@ fun DetailScreen(
 
     val exportBottomSheetState =
         rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
-    val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.PartiallyExpanded)
+    val infoBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Expanded)
 
     var showExportBottomSheet by remember { mutableStateOf(false) }
     var showInfoBottomSheet by remember { mutableStateOf(false) }
