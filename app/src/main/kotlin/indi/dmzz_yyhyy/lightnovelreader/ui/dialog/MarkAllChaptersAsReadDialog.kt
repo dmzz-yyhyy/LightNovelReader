@@ -10,14 +10,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,8 +48,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.shimmer
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
@@ -87,7 +83,22 @@ fun NavEntryScope.markAllChaptersAsReadDialog() {
                 volumes = it.volumes
             )
         }?.onErr {
-            //TODO 错误显示
+            AlertDialog(
+                onDismissRequest = { navigator.popBackStack() },
+                title = { Text(stringResource(R.string.mark_as_read)) },
+                text = {
+                    Text(
+                        text = stringResource(R.string.error_book_volumes_unavailable_generic),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = { navigator.popBackStack() }) {
+                        Text(stringResource(R.string.cancel))
+                    }
+                }
+            )
         } // ?: {} 如果没加载出卷将不能打开此对话框，故无意义
     }
 }

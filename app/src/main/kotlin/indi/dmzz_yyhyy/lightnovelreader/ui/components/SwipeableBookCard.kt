@@ -35,11 +35,13 @@ fun BookCardItem(
     swipeToLeftActions: List<SwipeAction> = listOf(),
     titleHeight: Dp?
 ) {
+    val result by bookInformationFlow.collectAsStateWithLifecycle(null)
+    val actionsEnabled = result?.isErr != true
+
     SwipeableActionsBox(
-        startActions = swipeToRightActions,
-        endActions = swipeToLeftActions
+        startActions = if (actionsEnabled) swipeToRightActions else emptyList(),
+        endActions = if (actionsEnabled) swipeToLeftActions else emptyList()
     ) {
-        val result by bookInformationFlow.collectAsStateWithLifecycle(null)
         Crossfade(
             targetState = result,
             label = "BookCardCrossfade"
@@ -55,8 +57,14 @@ fun BookCardItem(
                     onLongPress = onLongPress,
                     titleHeight = titleHeight
                 )
-            }?.onErr {
-                //TODO 错误显示
+            }?.onErr { error ->
+                BookInformationUnavailableCard(
+                    modifier = modifier,
+                    webRequestError = error,
+                    onClick = onClick,
+                    onLongPress = onLongPress,
+                    titleHeight = titleHeight
+                )
             } ?: BookCardContentSkeleton(
                 modifier = if (shimmer != null) modifier.shimmer(shimmer)
                 else modifier

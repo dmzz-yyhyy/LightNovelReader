@@ -31,6 +31,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -131,7 +132,7 @@ fun ZoomableImage(
                             retryKey++
                             lastError = null
                         }) {
-                            Text("重试")
+                            Text(stringResource(R.string.retry))
                         }
                     }
                 },

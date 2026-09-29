@@ -134,7 +134,13 @@ private fun BookActivitySection(
                         overflow = TextOverflow.Ellipsis
                     )
                 }?.onErr {
-                    //TODO 错误显示
+                    Text(
+                        text = stringResource(R.string.error_book_title),
+                        style = typography.bodyMedium,
+                        maxLines = 1,
+                        color = colorScheme.outline,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 } ?: StatsCardBookTitleSkeleton()
             }
             if (books.size > bookList.size)

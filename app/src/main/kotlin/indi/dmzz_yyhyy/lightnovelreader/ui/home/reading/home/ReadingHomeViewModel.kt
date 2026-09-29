@@ -5,12 +5,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.michaelbull.result.Result
-import com.github.michaelbull.result.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +24,7 @@ class ReadingHomeViewModel @Inject constructor(
     private val readingBooksUserData =
         userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
 
-    var recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>> by mutableStateOf(
+    var recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>> by mutableStateOf(
         emptyList()
     )
         private set
@@ -46,13 +43,11 @@ class ReadingHomeViewModel @Inject constructor(
                         val userReadingDataFlow = bookRepository.getUserReadingDataFlow(id)
                         id to bookInformationFlow
                             .combine(userReadingDataFlow) { bookInformationResult, userReadingData ->
-                                bookInformationResult.map {
-                                    RecentReadingBook(
-                                        id = id,
-                                        bookInformation = it,
-                                        userReadingData = userReadingData
-                                    )
-                                }
+                                RecentReadingBook(
+                                    id = id,
+                                    bookInformationResult = bookInformationResult,
+                                    userReadingData = userReadingData
+                                )
                             }
                     }
             }

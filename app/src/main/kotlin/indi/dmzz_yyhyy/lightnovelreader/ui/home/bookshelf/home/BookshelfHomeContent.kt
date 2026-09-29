@@ -68,6 +68,7 @@ import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationUnavailableCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.BookshelfBookItem
@@ -462,8 +463,20 @@ private fun BookshelfBookCard(
                 latestChapterTitle = it.lastUpdatedChapterTitle,
                 titleHeight = titleHeight
             )
-        }?.onErr {
-            //TODO 错误显示
+        }?.onErr { error ->
+            BookInformationUnavailableCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(vertical = 6.dp),
+                webRequestError = error,
+                onClick = {
+                    if (!selectMode) onBookClick(id)
+                    else onBookSelect(id)
+                },
+                onLongPress = { onLongPress(id) },
+                titleHeight = titleHeight
+            )
         } ?: BookCardContentSkeleton(
             modifier = Modifier
                 .fillMaxWidth()

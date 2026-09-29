@@ -280,7 +280,10 @@ private fun DailyStatsBlock(
                                 bookInformation?.onOk {
                                     DataItem(it.title, formattedTime)
                                 }?.onErr {
-                                    //TODO 错误显示
+                                    DataItem(
+                                        stringResource(R.string.error_book_title),
+                                        formattedTime
+                                    )
                                 } ?: StatsOverviewRecordSkeleton()
                             }
                         }

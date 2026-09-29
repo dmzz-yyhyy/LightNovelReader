@@ -9,6 +9,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
+import com.github.michaelbull.result.getErrorOr
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.navigateToBookDetailDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ChapterSelectionBottomSheet
@@ -46,6 +48,7 @@ fun NavEntryScope.readingHomeDestination(sharedTransitionScope: SharedTransition
                 sheetState = chapterSheetState,
                 selectedVolumeId = chapterSheetUi.selectedVolumeId,
                 bookVolumes = result?.get(),
+                error = result?.getError(),
                 readingChapterId = chapterSheetUi.readingChapterId,
                 onDismissRequest = viewModel::closeContents,
                 onClickChapter = { chapterId ->

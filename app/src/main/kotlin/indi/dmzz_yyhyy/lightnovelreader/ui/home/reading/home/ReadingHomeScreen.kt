@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -71,12 +72,12 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.ShimmerBounds
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ElasticPressContainer
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
@@ -102,7 +103,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ReadingScreen(
-    recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
+    recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>>,
     onClickBook: (String) -> Unit,
     onClickContinueReading: (String, String) -> Unit,
     onClickDownloadManager: () -> Unit,
@@ -164,11 +165,11 @@ private fun ReadingHomeCardSkeleton() {
     ) {
         Box(Modifier.size(width = 118.dp, height = 172.dp).background(baseColor, cornerShapeLarge))
         Column(
-            modifier = Modifier.padding(start = 14.dp, top = 4.dp).fillMaxHeight().weight(1f),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.padding(start = 14.dp, top = 4.dp).heightIn(172.dp).weight(1f),
+            verticalArrangement = Arrangement.SpaceAround,
         ) {
-            Box(Modifier.size(128.dp, 28.dp).background(baseColor, cornerShape))
-            Box(Modifier.fillMaxWidth(0.9f).height(58.dp).background(baseColor, cornerShape))
+            Box(Modifier.size(128.dp, 38.dp).background(baseColor, cornerShape))
+            Box(Modifier.fillMaxWidth(0.9f).height(48.dp).background(baseColor, cornerShape))
             Box(Modifier.fillMaxWidth(0.65f).height(20.dp).background(baseColor, cornerShape))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -189,7 +190,7 @@ private fun ReadingContent(
     onClickContinueReading: (String, String) -> Unit,
     onAddBook: (String) -> Unit,
     onRemoveBook: (String) -> Unit,
-    recentReadingBooks: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
+    recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>>,
     onClickOpenChapters: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -280,26 +281,34 @@ private fun ReadingContent(
             key = { it.first },
             contentType = { "ReadingBookCard" }
         ) { pair ->
+            val result by pair.second.collectAsStateWithLifecycle(null)
+            val cardHeight = if (result?.bookInformationResult?.isErr == true) 80.dp else 146.dp
             Box(
                 modifier = Modifier
                     .animateItem()
                     .padding(horizontal = 12.dp)
-                    .height(146.dp)
+                    .height(cardHeight)
             ) {
-                val result by pair.second.collectAsStateWithLifecycle(null)
-                result?.onOk {
-                    ReadingBookCard(
-                        bookInformation = it.bookInformation,
-                        userReadingData = it.userReadingData,
-                        onClick = { onClickBook(it.id) },
-                        swipeToLeftActions = remember(it.id, it.bookInformation.title) {
-                            listOf(deleteAction(it.id, it.bookInformation.title))
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                        titleHeight = titleHeight
-                    )
-                }?.onErr {
-                    print("")
+                result?.let { recentReadingBook ->
+                    recentReadingBook.bookInformationResult.onOk { bookInformation ->
+                        ReadingBookCard(
+                            bookInformation = bookInformation,
+                            userReadingData = recentReadingBook.userReadingData,
+                            onClick = { onClickBook(recentReadingBook.id) },
+                            swipeToLeftActions = remember(recentReadingBook.id, bookInformation.title) {
+                                listOf(deleteAction(recentReadingBook.id, bookInformation.title))
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                            titleHeight = titleHeight
+                        )
+                    }.onErr { error ->
+                        ReadingBookErrCard(
+                            userReadingData = recentReadingBook.userReadingData,
+                            error = error,
+                            onClick = { onClickBook(recentReadingBook.id) },
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
                 } ?: ReadingBookCardSkeleton(
                     modifier = Modifier
                         .fillMaxSize()
@@ -309,6 +318,180 @@ private fun ReadingContent(
         }
         navigationBarSpacer()
         bottomBarSpacer()
+    }
+}
+
+@Composable
+private fun ReadingBookErrCard(
+    userReadingData: UserReadingData,
+    error: WebRequestError,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .combinedClickable(onClick = onClick)
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val neverRead = stringResource(R.string.never_read)
+        val lastRead = remember(userReadingData.lastReadTime) {
+            userReadingData.lastReadTime?.let(::formTime) ?: neverRead
+        }
+        val minutes = remember(userReadingData.totalReadTime) {
+            formReadingDuration(userReadingData.totalReadTime)
+        }
+        val progress = remember(userReadingData.readingProgress) {
+            "${(userReadingData.readingProgress * 100).toInt()}%"
+        }
+
+        BookInformationErrorCover(
+            width = 80.dp,
+            height = 80.dp,
+            errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) },
+            onClick = onClick
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(R.string.error_book_title),
+                style = typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = stringResource(R.string.error_book_info),
+                style = typography.bodyMedium,
+                color = colorScheme.secondary,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.outline_schedule_24px),
+                    contentDescription = null,
+                    modifier = Modifier.size(12.dp),
+                    tint = colorScheme.secondary,
+                )
+                Text(
+                    text = "$lastRead • $minutes • $progress",
+                    style = typography.labelMedium.copy(color = colorScheme.secondary),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            LinearProgressIndicator(
+                modifier = Modifier.fillMaxWidth(),
+                progress = { userReadingData.readingProgress },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ReadingHeaderErrCard(
+    bookId: String,
+    data: UserReadingData,
+    error: WebRequestError,
+    onClickContinueReading: (String, String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd") }
+    val timeFormatter = remember { DateTimeFormatter.ofPattern("HH:mm") }
+    val dateText = data.lastReadTime?.format(dateFormatter)
+    val timeText = data.lastReadTime?.format(timeFormatter)
+
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(colorScheme.surfaceVariant.copy(alpha = 0.14f))
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        BookInformationErrorCover(
+            width = 118.dp,
+            height = 172.dp,
+            errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) }
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                modifier = Modifier.padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (dateText != null && timeText != null) {
+                    InfoChip(
+                        text = dateText,
+                        leadingPainter = painterResource(R.drawable.calendar_today_24px)
+                    )
+                    InfoChip(
+                        text = timeText,
+                        leadingPainter = painterResource(R.drawable.schedule_90dp)
+                    )
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(R.string.error_book_title),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.W700,
+                    style = typography.displayMedium
+                )
+                Text(
+                    text = stringResource(R.string.error_book_info),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = typography.bodyMedium,
+                    color = colorScheme.secondary
+                )
+                Text(
+                    text = data.lastReadChapterTitle ?: stringResource(R.string.never_read),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.W600,
+                    style = typography.labelLarge,
+                    color = colorScheme.tertiary
+                )
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                enabled = data.lastReadChapterId != null,
+                onClick = {
+                    data.lastReadChapterId?.let { chapterId ->
+                        onClickContinueReading(bookId, chapterId)
+                    }
+                },
+                shape = RoundedCornerShape(10.dp),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.resume_last_reading),
+                    fontWeight = FontWeight.W600,
+                    style = typography.labelLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
     }
 }
 
@@ -483,12 +666,14 @@ private fun ReadingBookCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReadingHeaderCardPager(
-    items: List<Pair<String, Flow<Result<RecentReadingBook, WebRequestError>>>>,
+    items: List<Pair<String, Flow<RecentReadingBook>>>,
     modifier: Modifier = Modifier,
     onClickContinueReading: (String, String) -> Unit,
     onClickOpenChapters: (String) -> Unit,
     titleHeight: Dp?
 ) {
+    if (items.isEmpty()) return
+
     val pageCount = items.size.coerceIn(1, 3)
     val pagerState = rememberPagerState(initialPage = 0) { pageCount }
 
@@ -527,34 +712,39 @@ fun ReadingHeaderCardPager(
         VerticalPager(
             state = pagerState,
             pageSpacing = 12.dp,
-            flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
+        flingBehavior = PagerDefaults.flingBehavior(state = pagerState)
         ) { page ->
             val recentReadingBookFlow = items[page].second
-
-            ElasticPressContainer(
-                pagerState = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colorScheme.surfaceVariant.copy(alpha = 0.14f))
-                    .padding(8.dp)
-            ) {
-                val recentReadingBookResult by recentReadingBookFlow.collectAsStateWithLifecycle(
-                    null
-                )
-                recentReadingBookResult?.onOk {
-                    ReadingHeaderCardPage(
-                        info = it.bookInformation,
-                        data = it.userReadingData,
+            val recentReadingBook = recentReadingBookFlow.collectAsStateWithLifecycle(null).value
+            recentReadingBook?.let { readingBook ->
+                readingBook.bookInformationResult.onOk { bookInformation ->
+                    ElasticPressContainer(
+                        pagerState = pagerState,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(colorScheme.surfaceVariant.copy(alpha = 0.14f))
+                            .padding(8.dp)
+                    ) {
+                        ReadingHeaderCard(
+                            info = bookInformation,
+                            data = readingBook.userReadingData,
+                            onClickContinueReading = onClickContinueReading,
+                            onClickOpenDetail = onClickOpenChapters,
+                            modifier = Modifier.matchParentSize(),
+                            titleHeight = titleHeight
+                        )
+                    }
+                }.onErr { error ->
+                    ReadingHeaderErrCard(
+                        bookId = readingBook.id,
+                        data = readingBook.userReadingData,
+                        error = error,
                         onClickContinueReading = onClickContinueReading,
-                        onClickOpenDetail = onClickOpenChapters,
-                        modifier = Modifier.matchParentSize(),
-                        titleHeight = titleHeight
+                        modifier = Modifier.fillMaxSize(),
                     )
-                }?.onErr {
-                    //TODO 错误显示
-                } ?: ReadingHomeCardSkeleton()
-            }
+                }
+            } ?: ReadingHomeCardSkeleton()
         }
 
         AnimatedVisibility(
@@ -603,7 +793,7 @@ private fun VerticalDotsIndicator(
 }
 
 @Composable
-private fun ReadingHeaderCardPage(
+private fun ReadingHeaderCard(
     info: BookInformation,
     data: UserReadingData,
     onClickContinueReading: (String, String) -> Unit,
