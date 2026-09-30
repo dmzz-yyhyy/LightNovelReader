@@ -172,6 +172,10 @@
     <string name="settings_reader_left_margin">Левое поле</string>
     <string name="settings_reader_right_margin">Правое поле</string>
     <string name="display_settings">Отображение</string>
+    <string name="settings_theme">App Theme</string>
+    <string name="settings_theme_desc">Adjust the appearance of the app</string>
+    <string name="settings_reader_style">Reader Style</string>
+    <string name="settings_reader_style_desc">Adjust the appearance of the reading page</string>
     <string name="settings_text_formatting">Форматирование текста</string>
     <string name="settings_text_formatting_desc">Форматирование текстового содержимого на основе правил</string>
     <string name="settings_theme_light_theme">Светлая тема</string>
@@ -669,4 +673,7 @@
     <string name="restart">Restart</string>
     <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
     <string name="never_read">Never read</string>
+    <string name="settings_paragraph_spacing">Paragraph Spacing</string>
+    <string name="settings_text_indent">Text Indent</string>
+    <string name="settings_line_height">Line Height</string>
 </resources>
