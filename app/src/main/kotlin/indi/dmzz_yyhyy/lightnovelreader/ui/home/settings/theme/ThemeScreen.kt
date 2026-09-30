@@ -35,6 +35,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -43,10 +45,10 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalDarkColorScheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalLightColorScheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 
 @Composable
@@ -74,6 +76,9 @@ fun ThemeScreen(
 fun DarkModeSettings(
     settingState: ThemeSettingState
 ) {
+    val disabledLabel = stringResource(R.string.key_dark_mode_disabled)
+    val enabledLabel = stringResource(R.string.key_dark_mode_enabled)
+    val followSystemLabel = stringResource(R.string.key_dark_mode_follow_system)
     SectionHeader(
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 10.dp),
         text = stringResource(R.string.settings_theme_dark_theme)
@@ -99,12 +104,14 @@ fun DarkModeSettings(
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .semantics { contentDescription = disabledLabel },
                         selected = settingState.darkMode == "Disabled",
                         onClick = { settingState.darkModeUserData.asynchronousSet("Disabled") }
                     )
                     Text(
-                        stringResource(R.string.key_dark_mode_disabled),
+                        disabledLabel,
                         style = typography.labelLarge
                     )
                 }
@@ -118,12 +125,14 @@ fun DarkModeSettings(
                 Spacer(Modifier.height(12.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .semantics { contentDescription = enabledLabel },
                         selected = settingState.darkMode == "Enabled",
                         onClick = { settingState.darkModeUserData.asynchronousSet("Enabled") }
                     )
                     Text(
-                        stringResource(R.string.key_dark_mode_enabled),
+                        enabledLabel,
                         style = typography.labelLarge
                     )
                 }
@@ -176,12 +185,14 @@ fun DarkModeSettings(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .semantics { contentDescription = followSystemLabel },
                         selected = settingState.darkMode == "FollowSystem",
                         onClick = { settingState.darkModeUserData.asynchronousSet("FollowSystem") }
                     )
                     Text(
-                        stringResource(R.string.key_dark_mode_follow_system),
+                        followSystemLabel,
                         style = typography.labelLarge
                     )
                 }

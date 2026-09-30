@@ -3,7 +3,6 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager
 import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -255,7 +254,8 @@ private fun TopBar(
                 onClick = onClickPluginApps
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.deployed_code_24px), null
+                    painter = painterResource(R.drawable.deployed_code_24px),
+                    contentDescription = "plugin apps",
                 )
             }
         },
