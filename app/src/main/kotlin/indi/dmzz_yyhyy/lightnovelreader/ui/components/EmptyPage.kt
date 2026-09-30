@@ -34,7 +34,7 @@ fun EmptyPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Icon(
-                modifier = Modifier.size(76.dp),
+                modifier = Modifier.size(64.dp),
                 painter = icon,
                 tint = MaterialTheme.colorScheme.secondary,
                 contentDescription = null

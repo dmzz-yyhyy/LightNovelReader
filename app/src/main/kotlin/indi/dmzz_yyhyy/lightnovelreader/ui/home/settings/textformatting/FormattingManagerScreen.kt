@@ -45,6 +45,7 @@ import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
@@ -192,13 +193,39 @@ private fun Group(
                     color = colorScheme.primary
                 )
                 Text(
-                    text = "${formattingGroup.size} 个规则", // FIXME: ADD L10N !
+                    text = stringResource(R.string.n_rules, formattingGroup.size),
                     style = typography.bodyMedium,
                     color = colorScheme.secondary
                 )
             }
-        }?.onErr {
-            //TODO 错误显示
+        }?.onErr { error ->
+            BookInformationErrorCover(
+                width = 60.dp,
+                height = 87.dp,
+                errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) }
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f, fill = true),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.error_book_title),
+                    style = typography.titleMedium,
+                    fontWeight = FontWeight.W600,
+                    color = colorScheme.secondary
+                )
+                Text(
+                    text = stringResource(R.string.error_book_info),
+                    style = typography.bodyMedium,
+                    color = colorScheme.primary
+                )
+                Text(
+                    text = stringResource(R.string.n_rules, formattingGroup.size),
+                    style = typography.bodyMedium,
+                    color = colorScheme.secondary
+                )
+            }
         } ?: FormattingBookSkeleton()
         IconButton(
             onClick = { onClickGroup(formattingGroup.id) }

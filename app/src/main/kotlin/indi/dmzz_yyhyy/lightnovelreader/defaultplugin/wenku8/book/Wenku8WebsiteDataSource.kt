@@ -56,8 +56,8 @@ class Wenku8WebsiteDataSource(
                 ?: Err(WebRequestError("解析错误", "无法解析该书本的信息(id=$id)")).bind()
             if (soup.text().contains("因版权问题")) Err(
                 WebRequestError(
-                    "版权错误",
-                    "由于「$title」为Wenku8上具有版权文件的书籍的章节, 我们无法提供其数据"
+                    "版权受限",
+                    "由于数据源方面的版权原因，无法加载书本「$title」的信息。"
                 )
             ).bind()
             return@coroutineBinding BookInformation(
@@ -189,8 +189,8 @@ class Wenku8WebsiteDataSource(
         ).bind()
         if (soup.text().contains("因版权问题")) Err(
             WebRequestError(
-                "版权错误",
-                "由于「$title」为Wenku8上具有版权文件的书籍的章节, 我们无法提供其数据"
+                "版权受限",
+                "由于数据源方面的版权原因，无法加载书本「$title」的章节内容。"
             )
         ).bind()
         val content = soup.selectFirstXpath("//*[@id=\"content\"]") ?: Err(

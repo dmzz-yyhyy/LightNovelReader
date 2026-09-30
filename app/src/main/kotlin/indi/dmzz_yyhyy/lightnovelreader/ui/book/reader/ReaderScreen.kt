@@ -79,6 +79,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImagePainter
 import com.github.michaelbull.result.get
+import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onOk
@@ -270,6 +271,7 @@ fun ReaderScreen(
                         sheetState = chaptersBottomSheetState,
                         selectedVolumeId = selectedVolumeId,
                         bookVolumes = readingScreenUiState.bookVolumes?.get(),
+                        error = readingScreenUiState.bookVolumes?.getError(),
                         readingChapterId = readingChapterId,
                         onDismissRequest = {
                             coroutineScope.launch { chaptersBottomSheetState.hide() }

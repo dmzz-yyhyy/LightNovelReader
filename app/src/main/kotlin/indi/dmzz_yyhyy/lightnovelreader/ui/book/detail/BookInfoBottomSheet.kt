@@ -6,7 +6,10 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,7 +42,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookInfoBottomSheet(
     bookInformation: BookInformation,
-    bookVolumes: BookVolumes,
+    bookVolumes: BookVolumes? = null,
     sheetState: SheetState,
     onDismissRequest: () -> Unit,
 ) {
@@ -118,6 +121,7 @@ fun BookInfoBottomSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 18.dp, vertical = 8.dp)
+                .navigationBarsPadding()
         ) {
             InfoItem(
                 title = stringResource(R.string.detail_info_title),
@@ -177,20 +181,23 @@ fun BookInfoBottomSheet(
                 icon = painterResource(R.drawable.tag_24px)
             )
 
+
             InfoItem(
                 title = stringResource(R.string.detail_info_stats),
-                content = stringResource(
+                content = if(bookVolumes != null) stringResource(
                     R.string.detail_info_word_count_content,
                     bookInformation.wordCount.get()
                 ) + "\n" + stringResource(
                     R.string.detail_info_stats_count_content,
                     bookVolumes.volumes.count(),
                     bookVolumes.volumes.sumOf { it.chapters.size }
-                ),
+                ) else stringResource(R.string.error_book_volumes_unavailable_generic),
                 titleStyle = titleStyle,
                 contentStyle = contentStyle,
                 icon = painterResource(R.drawable.text_fields_24px)
             )
+
+            Spacer(Modifier.height(18.dp))
         }
     }
 }

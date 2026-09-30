@@ -64,6 +64,7 @@ import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
@@ -512,8 +513,80 @@ private fun Card(
                 }
             Box(Modifier.width(7.dp))
         }
-    }?.onErr {
-        //TODO 错误显示
+    }?.onErr { error ->
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BookInformationErrorCover(
+                width = 64.dp,
+                height = 93.dp,
+                errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) }
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.error_book_title),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.W600,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = stringResource(R.string.error_book_info),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp),
+                        painter = if (downloadItem.progress >= 1) painterResource(R.drawable.done_outline_24px)
+                        else if (downloadItem.progress >= 0) painterResource(downloadItem.type.icon)
+                        else painterResource(R.drawable.error_24px),
+                        contentDescription = null
+                    )
+                    Box(Modifier.width(10.dp))
+                    Text(
+                        text = if (downloadItem.progress < 1) stringResource(
+                            R.string.download_item_progress,
+                            formTime(downloadItem.startTime),
+                            (downloadItem.progress * 100).toInt()
+                        ) else if (downloadItem.progress > 0) stringResource(
+                            R.string.download_item_finished,
+                            downloadItem.type.typeName
+                        ) else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.W500,
+                        letterSpacing = 0.15.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+                if (downloadItem.progress < 1) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        progress = { progressAnim }
+                    )
+                }
+            }
+            if (downloadItem.progress < 1) {
+                IconButton(onClickCancel) {
+                    Icon(
+                        painter = painterResource(R.drawable.cancel_24px),
+                        contentDescription = "cancel"
+                    )
+                }
+            }
+            Box(Modifier.width(7.dp))
+        }
     } ?: DownloadItemSkeleton()
 }
 

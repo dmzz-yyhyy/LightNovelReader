@@ -57,6 +57,7 @@ import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ActivityStatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.MonthlyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ReadingDetailStatsCard
@@ -311,8 +312,13 @@ fun BookStack(
                         title = it.title,
                         rounded = 6.dp
                     )
-                }?.onErr {
-                    //TODO 错误显示
+                }?.onErr { error ->
+                    BookInformationErrorCover(
+                        width = 63.dp * scale,
+                        height = 90.dp * scale,
+                        errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) },
+                        rounded = 6.dp
+                    )
                 } ?: StatsDetailedBookCoverSkeleton()
             }
         }

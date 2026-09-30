@@ -79,6 +79,7 @@ import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.TagChip
@@ -576,8 +577,47 @@ private fun LocalBookRow(
                         )
                     }
                 }
-            }?.onErr {
-                //TODO 错误显示
+            }?.onErr { error ->
+                BookInformationErrorCover(
+                    width = 60.dp,
+                    height = 87.dp,
+                    errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) }
+                )
+                Spacer(Modifier.width(16.dp))
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.error_book_title),
+                        style = typography.titleMedium,
+                        fontWeight = FontWeight.W600,
+                        color = colorScheme.onBackground
+                    )
+                    Text(
+                        text = stringResource(R.string.error_book_info),
+                        style = typography.bodyMedium,
+                        color = colorScheme.secondary
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = formatSize(item.size),
+                            style = typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
+                        TagChip(painterResource(R.drawable.update_24px))
+                        Text(
+                            text = if (item.lastReadTime != null) formTime(item.lastReadTime)
+                            else stringResource(R.string.book_manager_no_local_reading_record),
+                            style = typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
+                    }
+                }
             } ?: LocalBookListItemSkeleton()
         }
 
@@ -712,8 +752,26 @@ private fun LocalBookInfoCard(
                             color = colorScheme.secondary
                         )
                     }
-                }?.onErr {
-                    //TODO 错误显示
+                }?.onErr { error ->
+                    BookInformationErrorCover(
+                        width = 64.dp,
+                        height = 93.dp,
+                        errorMessage = error.message.ifEmpty { stringResource(R.string.error_data_source_generic) }
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.error_book_title),
+                            style = typography.titleMedium,
+                            fontWeight = FontWeight.W600,
+                            color = colorScheme.onBackground
+                        )
+                        Text(
+                            text = stringResource(R.string.error_book_info),
+                            style = typography.bodyMedium,
+                            color = colorScheme.secondary
+                        )
+                    }
                 } ?: LocalBookDetailSkeleton()
             }
             AnimatedContent(
