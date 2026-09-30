@@ -7,6 +7,7 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="indi.dmzz_yyhyy.lightnovelreader.benchmark.SEED" />
+                <action android:name="indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_USER_DATA" />
             </intent-filter>
         </receiver>
     </application>

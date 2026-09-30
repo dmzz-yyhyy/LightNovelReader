@@ -26,6 +26,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import org.dom4j.DocumentHelper
 import org.dom4j.Element
 
 @Serializable
@@ -78,7 +79,11 @@ data class ParagraphComponentData(
     override fun toJsonElement(): JsonElement = jsonSerializer.toJsonElement(this)
 
     override fun toHtmlElement(context: Context): Element {
-        TODO("Not yet implemented")
+        return DocumentHelper.createElement("p").apply {
+            paragraph.textNodes.forEach { textNode ->
+                addElement("span").addText(textNode.text)
+            }
+        }
     }
 
     override suspend fun split(

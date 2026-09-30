@@ -38,6 +38,14 @@ import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.builder.buildContent
 import io.nightfish.lightnovelreader.api.content.builder.image
 import io.nightfish.lightnovelreader.api.content.builder.paragraph
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.put
 
 @Database(
     entities = [
@@ -942,8 +950,75 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                     )
                 }
 
-                db.execSQL("DELETE FROM chapter_content")
+                db.query("SELECT id, content FROM chapter_content").use { cursor ->
+                    val idIndex = cursor.getColumnIndexOrThrow("id")
+                    val contentIndex = cursor.getColumnIndexOrThrow("content")
+                    while (cursor.moveToNext()) {
+                        val id = cursor.getString(idIndex)
+                        val oldContent = cursor.getString(contentIndex)
+                        val newContent = migrateLegacyContentComponents(oldContent)
+                        if (oldContent != newContent) {
+                            db.execSQL(
+                                "UPDATE chapter_content SET content = ? WHERE id = ?",
+                                arrayOf(newContent, id)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
+
+internal fun migrateLegacyContentComponents(content: String): String = try {
+    val root = Json.parseToJsonElement(content) as? JsonObject
+        ?: return content
+    val components = root["components"] as? JsonArray
+        ?: return content
+    var changed = false
+    val migratedComponents = buildJsonArray {
+        components.forEach { element ->
+            val component = element as? JsonObject
+            val id = (component?.get("id") as? JsonPrimitive)?.contentOrNull
+            val data = component?.get("data") as? JsonObject
+            val text = (data?.get("text") as? JsonPrimitive)
+                ?.takeIf(JsonPrimitive::isString)
+                ?.content
+
+            if (id !in LEGACY_TEXT_COMPONENT_IDS || text == null) {
+                add(element)
+                return@forEach
+            }
+
+            changed = true
+            text.lineSequence()
+                .filterNot(String::isBlank)
+                .forEach { paragraphText ->
+                    add(buildJsonObject {
+                        component.forEach { (key, value) -> put(key, value) }
+                        put("id", PARAGRAPH_COMPONENT_ID)
+                        put("data", buildJsonObject {
+                            put("paragraph", buildJsonObject {
+                                put("textNodes", buildJsonArray {
+                                    add(buildJsonObject { put("text", paragraphText.trim()) })
+                                })
+                            })
+                        })
+                    })
+                }
+        }
+    }
+
+    if (!changed) content
+    else JsonObject(root.toMutableMap().apply {
+        put("components", migratedComponents)
+    }).toString()
+} catch (_: Exception) {
+    content
+}
+
+private val LEGACY_TEXT_COMPONENT_IDS = setOf(
+    "simple_text",
+    "lightnovelreader:simple_text"
+)
+private const val PARAGRAPH_COMPONENT_ID = "lightnovelreader:paragraph"

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -63,7 +64,7 @@ class BookshelfHomeViewModel @Inject constructor(
         userDataRepository.intListUserData(UserDataPath.BookshelfOrder.path)
 
     fun load() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val bookshelfIdsFlow = bookshelfRepository.getAllBookshelvesFlow()
             val savedOrderFlow = bookshelfOrderUserData.getFlowWithDefault(emptyList())
             combine(bookshelfIdsFlow, savedOrderFlow) { bookshelves, savedOrder ->
@@ -90,21 +91,31 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     fun changeSortType(sortType: BookshelfSortType) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
                 it.copy(
                     sortType = sortType
                 )
             }
+            _uiState.bookshelfList = _uiState.bookshelfList.map { bookshelf ->
+                if (bookshelf.id == _uiState.selectedBookshelfId) {
+                    bookshelf.copy(sortType = sortType)
+                } else bookshelf
+            }
         }
     }
 
     fun changeSortReversed(sortReversed: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
                 it.copy(
                     sortReversed = sortReversed
                 )
+            }
+            _uiState.bookshelfList = _uiState.bookshelfList.map { bookshelf ->
+                if (bookshelf.id == _uiState.selectedBookshelfId) {
+                    bookshelf.copy(sortReversed = sortReversed)
+                } else bookshelf
             }
         }
     }
@@ -199,14 +210,18 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     fun pinSelectedBooks() {
-        viewModelScope.launch(Dispatchers.IO) {
+        val selectedBookIds = _uiState.selectedBookIds.toList()
+        val selectedBookshelfId = _uiState.selectedBookshelfId
+        if (selectedBookIds.isEmpty()) return
+
+        viewModelScope.launch {
             val pinnedBookIds = _uiState.selectedBookshelf?.pinnedBookFlows?.map {
                 it.first
             } ?: return@launch
-            val newPinnedBooksIds = _uiState.selectedBookIds
+            val newPinnedBooksIds = selectedBookIds
                 .filter { pinnedBookIds.contains(it) }
                 .let { removeList ->
-                    (pinnedBookIds + (_uiState.selectedBookIds))
+                    (pinnedBookIds + selectedBookIds)
                         .toMutableList()
                         .apply {
                             removeAll { removeList.contains(it) }
@@ -214,10 +229,12 @@ class BookshelfHomeViewModel @Inject constructor(
                 }
                 .distinct()
 
-            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
-                it.copy(
-                    pinnedBookIds = newPinnedBooksIds
-                )
+            withContext(Dispatchers.IO) {
+                bookshelfRepository.updateBookshelf(selectedBookshelfId) {
+                    it.copy(
+                        pinnedBookIds = newPinnedBooksIds
+                    )
+                }
             }
             disableSelectMode()
         }

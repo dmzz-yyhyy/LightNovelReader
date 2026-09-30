@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.StateFactoryMarker
 import io.nightfish.lightnovelreader.api.userdata.UserData
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 abstract class AbstractSettingState(
@@ -15,7 +14,7 @@ abstract class AbstractSettingState(
     @StateFactoryMarker
     protected fun <T> UserData<T>.asState(initial: T): State<T> {
         val state = mutableStateOf(initial)
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             getFlowWithDefault(initial).collect {
                 state.value = it
             }
@@ -26,7 +25,7 @@ abstract class AbstractSettingState(
     @StateFactoryMarker
     protected fun <T> UserData<T>.safeAsState(initial: T): State<T> {
         val state = mutableStateOf(initial)
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch {
             getFlowWithDefault(initial).collect {
                 state.value = it
             }

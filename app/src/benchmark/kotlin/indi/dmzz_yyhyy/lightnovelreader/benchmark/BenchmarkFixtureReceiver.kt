@@ -59,6 +59,57 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                         "progress=${progress ?: -1f}"
                     }
 
+                    ACTION_REPORT_USER_DATA -> {
+                        val path = intent.getStringExtra(EXTRA_USER_DATA_PATH).orEmpty()
+                        val value = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context)
+                                .userDataDao()
+                                .get(path)
+                        }
+                        "user-data-path=$path;value=${value ?: "<null>"}"
+                    }
+
+                    ACTION_REPORT_BOOKSHELF -> {
+                        val id = intent.getIntExtra(EXTRA_BOOKSHELF_ID, -1)
+                        val shelf = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context)
+                                .bookshelfDao()
+                                .getBookshelf(id)
+                        }
+                        if (shelf == null) {
+                            "bookshelf=$id;value=<null>"
+                        } else {
+                            "bookshelf=$id;name=${shelf.name};sort=${shelf.sortType};" +
+                                "reversed=${shelf.sortReversed};auto-cache=${shelf.autoCache};" +
+                                "reminder=${shelf.systemUpdateReminder};" +
+                                "all=${shelf.allBookIds.joinToString(",")};" +
+                                "pinned=${shelf.pinnedBookIds.joinToString(",")}"
+                        }
+                    }
+
+                    ACTION_REPORT_BOOK_METADATA -> {
+                        val id = intent.getStringExtra(EXTRA_BOOK_ID).orEmpty()
+                        val metadata = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context)
+                                .bookshelfDao()
+                                .getBookshelfBookMetadataEntity(id)
+                        }
+                        "book=$id;shelves=${metadata?.bookShelfIds?.joinToString(",") ?: "<null>"}"
+                    }
+
+                    ACTION_REPORT_FORMATTING_RULES -> {
+                        val rules = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context)
+                                .formattingRuleDao()
+                                .getAllBookRuleEntity()
+                        }
+                        "formatting-rules=" + rules.joinToString("|") {
+                            "book=${it.bookId};name=${it.name};regex=${it.isRegex};" +
+                                "match=${it.match};replacement=${it.replacement};" +
+                                "enabled=${it.isEnabled}"
+                        }
+                    }
+
                     ACTION_EXTEND_RAPID_CHAPTER_CHAIN -> {
                         runBlocking {
                             extendRapidChapterChain(LightNovelReaderDatabase.getInstance(context))
@@ -298,7 +349,8 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             paragraph {
                 text(
                     "$prefix ${index + 1}. This deterministic component exercises layout, " +
-                        "scrolling, pagination, progress restoration, and formatting."
+                        "scrolling, pagination, progress restoration, and formatting. " +
+                        "汉语阅读测试。"
                 )
             }
         }
@@ -352,6 +404,17 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_PROGRESS"
         const val ACTION_EXTEND_RAPID_CHAPTER_CHAIN =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
+        const val ACTION_REPORT_USER_DATA =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_USER_DATA"
+        const val ACTION_REPORT_BOOKSHELF =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_BOOKSHELF"
+        const val ACTION_REPORT_BOOK_METADATA =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_BOOK_METADATA"
+        const val ACTION_REPORT_FORMATTING_RULES =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_FORMATTING_RULES"
+        const val EXTRA_USER_DATA_PATH = "path"
+        const val EXTRA_BOOKSHELF_ID = "bookshelf-id"
+        const val EXTRA_BOOK_ID = "book-id"
 
         const val BOOK_ID = "9999999"
         const val SECOND_BOOK_ID = "9999998"
