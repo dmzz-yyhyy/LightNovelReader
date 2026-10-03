@@ -242,7 +242,7 @@
     <string name="settings_app_logs">App Logs</string>
     <string name="settings_app_logs_desc">View and share application logs for debug purpose</string>
     <string name="settings_app_log_level">Log Level</string>
-    <string name="settings_app_log_level_desc">Set log filtering level (requires app restart)</string>
+    <string name="settings_app_log_level_desc">Set the log filtering level</string>
     <string name="settings_auto_proxy">Auto Proxy</string>
     <string name="settings_auto_proxy_desc">Automatically fetch proxy IPs from the internet, <b>but this may allow the books you browse to be intercepted</b></string>
     <string name="book_manager_title">Book Manager</string>
@@ -398,6 +398,10 @@
     <string name="translators">Translate Contributors</string>
     <string name="select_chapter">Select Chapter</string>
     <string name="logs_title">Logs</string>
+    <string name="log_tab_live">Live logs</string>
+    <string name="log_tab_files">Saved logs</string>
+    <string name="log_select_file">Select a log file</string>
+    <string name="log_no_log_files">No log files</string>
     <string name="log_source">Log Source</string>
     <string name="log_clear">Clear Temporary Logs</string>
     <string name="log_clear_desc">These logs will also be removed when clearing app cache</string>

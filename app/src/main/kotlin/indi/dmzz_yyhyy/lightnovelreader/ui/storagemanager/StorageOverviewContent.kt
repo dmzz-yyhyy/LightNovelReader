@@ -68,12 +68,12 @@ fun StorageOverviewContent(
         return
     }
     LazyColumn(
-        modifier = modifier.padding(horizontal = 12.dp),
+        modifier = modifier.padding(horizontal = 18.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
             SectionHeader(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 text = stringResource(R.string.overview)
             )
             Surface(
