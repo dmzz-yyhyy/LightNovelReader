@@ -616,7 +616,6 @@
     <!-- Update Channel -->
     <string name="key_update_channel_release">Релизные сборки</string>
     <string name="key_update_channel_development">Разработческие сборки</string>
-    <string name="key_update_channel_ci">CI</string>
     <!-- Distribution Platform -->
     <!-- Dark Mode -->
     <string name="key_dark_mode_follow_system">Следовать системным настройкам</string>

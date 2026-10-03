@@ -610,7 +610,6 @@
     <!-- Update Channel -->
     <string name="key_update_channel_release">無</string>
     <string name="key_update_channel_development">Beta 測試版</string>
-    <string name="key_update_channel_ci">Alpha 測試版 (不穩定)</string>
     <!-- Distribution Platform -->
     <!-- Dark Mode -->
     <string name="key_dark_mode_follow_system">跟隨系統</string>

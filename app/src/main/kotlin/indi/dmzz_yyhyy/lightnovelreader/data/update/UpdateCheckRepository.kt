@@ -113,6 +113,8 @@ class UpdateCheckRepository @Inject constructor(
                     Log.i("UpdateChecker", "App is up to date (${release!!.versionName})")
                     _updatePhase.emit("${formattedNow()} | 已是最新 (远程: ${release!!.versionName})")
                 }
+            } else {
+                _updatePhase.emit("${formattedNow()} | 失败: 未指定的错误")
             }
             mutableAvailable.emit(release != null && release!!.version > BuildConfig.VERSION_CODE)
         }

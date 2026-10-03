@@ -634,7 +634,6 @@
     <!-- Update Channel -->
     <string name="key_update_channel_release">None (Stable)</string>
     <string name="key_update_channel_development">Beta Version</string>
-    <string name="key_update_channel_ci">Alpha Version (Unstable)</string>
     <!-- Distribution Platform -->
     <string name="key_platform_github" translatable="false">GitHub</string>
     <string name="key_platform_appcenter" translatable="false">AppCenter</string>
