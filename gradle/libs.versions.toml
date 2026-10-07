@@ -9,7 +9,7 @@ kotlinComposeCompilerPlugin = "2.1.20"
 kotlinMetadataJvm = "2.4.10"
 kotlinResult = "2.3.1"
 ksp = "2.3.7"
-ktor = "3.5.1"
+ktor = "3.6.0"
 loggingInterceptor = "5.4.0"
 materialIconsCore = "1.7.8"
 matomoSdkAndroid = "4.4"
@@ -77,6 +77,7 @@ kotlin-result-coroutines = { module = "com.michael-bull.kotlin-result:kotlin-res
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-encoding = { module = "io.ktor:ktor-client-encoding", version.ref = "ktor" }
 matomo-sdk-android = { module = "com.github.matomo-org:matomo-sdk-android", version.ref = "matomoSdkAndroid" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp3-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
