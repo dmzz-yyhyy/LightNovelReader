@@ -83,9 +83,12 @@ class UpdateCheckRepository @Inject constructor(
     fun check() {
         if (checkJob != null && checkJob!!.isActive) return
         checkJob = coroutineScope.launch {
-            val updateChannelKey =
+            var updateChannelKey =
                 userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
                     .get() ?: MenuOptions.UpdateChannelOptions.DEVELOPMENT
+            updateChannelKey = if (updateChannelKey == "CI") {
+                MenuOptions.UpdateChannelOptions.DEVELOPMENT
+            } else updateChannelKey
             val distributionPlatform =
                 userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
                     .get() ?: MenuOptions.UpdatePlatformOptions.LnrAPI
@@ -113,6 +116,8 @@ class UpdateCheckRepository @Inject constructor(
                     Log.i("UpdateChecker", "App is up to date (${release!!.versionName})")
                     _updatePhase.emit("${formattedNow()} | 已是最新 (远程: ${release!!.versionName})")
                 }
+            } else {
+                _updatePhase.emit("${formattedNow()} | 失败: 未指定的错误")
             }
             mutableAvailable.emit(release != null && release!!.version > BuildConfig.VERSION_CODE)
         }

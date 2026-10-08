@@ -20,6 +20,8 @@ import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
+import io.ktor.client.plugins.api.createClientPlugin
+import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.cookies.ConstantCookiesStorage
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.ANDROID
@@ -70,7 +72,7 @@ import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 
 /** wenku8 页面使用的字符集。声明为 gbk，实际输出 GB18030，详见 [Wenku8Api.getWithWenku8Cookie] */
@@ -93,7 +95,18 @@ class Wenku8Api : WebBookDataSource {
         "大小姐", "性转", "伪娘", "人外",
         "后宫", "百合", "耽美", "NTR", "女性视角"
     )
+    @Suppress("PropertyName")
+    val StripConnectionHeader = createClientPlugin("StripConnectionHeader") {
+        onRequest { request, _ ->
+            request.headers.remove(HttpHeaders.Connection)
+        }
+    }
     val ktorClient = HttpClient(OkHttp) {
+        install(ContentEncoding) {
+            gzip()
+            deflate()
+        }
+        install(StripConnectionHeader)
         install(UserAgent) {
             agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
                     "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -160,7 +173,7 @@ class Wenku8Api : WebBookDataSource {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay((if (offLine) 3000 else 100000).milliseconds)
+                delay(10.seconds)
             }
         }
     }
@@ -221,7 +234,7 @@ class Wenku8Api : WebBookDataSource {
 
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
-            ktorClient.get(hosts[index]) {
+            ktorClient.get(hosts[index] + "/login.php") {
                 userAgent(UserAgentGenerator.generate())
                 wenku8Cookies().forEach { (name, value) ->
                     cookie(name, value)

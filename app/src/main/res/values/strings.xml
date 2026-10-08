@@ -56,6 +56,7 @@
     <string name="next_chapter">Next Chapter</string>
     <string name="save_rule">Save rule</string>
     <string name="delete_rule">Delete rule</string>
+    <string name="local_books">Local books</string>
     <string name="data_import_success">Import successful</string>
     <string name="data_import_failed">Import failed. Please check the file format or if the file is corrupted.</string>
     <string name="import_data_dialog_title">Import Data</string>
@@ -112,7 +113,8 @@
     <string name="local_book_clear_index">Clear volume and chapter index</string>
     <string name="local_book_clear_content">Clear chapter content</string>
     <string name="local_book_clear_reading">Clear reading record</string>
-    <string name="local_book_clear_confirm_title">Confirm deletion</string>
+    <string name="delete_confirm_title">Confirm deletion?</string>
+    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
     <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <string name="confirm_exit">Confirm Exit?</string>
     <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
@@ -242,7 +244,7 @@
     <string name="settings_app_logs">App Logs</string>
     <string name="settings_app_logs_desc">View and share application logs for debug purpose</string>
     <string name="settings_app_log_level">Log Level</string>
-    <string name="settings_app_log_level_desc">Set log filtering level (requires app restart)</string>
+    <string name="settings_app_log_level_desc">Set the log filtering level</string>
     <string name="settings_auto_proxy">Auto Proxy</string>
     <string name="settings_auto_proxy_desc">Automatically fetch proxy IPs from the internet, <b>but this may allow the books you browse to be intercepted</b></string>
     <string name="book_manager_title">Book Manager</string>
@@ -398,6 +400,10 @@
     <string name="translators">Translate Contributors</string>
     <string name="select_chapter">Select Chapter</string>
     <string name="logs_title">Logs</string>
+    <string name="log_tab_live">Live logs</string>
+    <string name="log_tab_files">Saved logs</string>
+    <string name="log_select_file">Select a log file</string>
+    <string name="log_no_log_files">No log files</string>
     <string name="log_source">Log Source</string>
     <string name="log_clear">Clear Temporary Logs</string>
     <string name="log_clear_desc">These logs will also be removed when clearing app cache</string>
@@ -456,12 +462,17 @@
     <string name="completed">Completed</string>
     <string name="clear_all">Clear All</string>
     <string name="global_formatting_rules">Global Rules</string>
+    <string name="text_formatting_no_rules">No Rules</string>
+    <string name="text_formatting_no_book_rules">No Book Rules</string>
+    <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
     <string name="n_rules">%d rules</string>
     <string name="rule_name">Name</string>
+    <string name="text_formatting_unnamed_title">Unnamed</string>
     <string name="rule_match">Match content</string>
     <string name="rule_replacement">Replace with</string>
     <string name="rule_is_regex">Use regex matching</string>
     <string name="edit_rule">Edit Rule</string>
+    <string name="text_field_required">This field is required.</string>
     <string name="load_failed">Failed to load</string>
     <string name="error_book_title">Unknown Content</string>
     <string name="error_book_info">Failed to load information</string>
@@ -634,7 +645,6 @@
     <!-- Update Channel -->
     <string name="key_update_channel_release">None (Stable)</string>
     <string name="key_update_channel_development">Beta Version</string>
-    <string name="key_update_channel_ci">Alpha Version (Unstable)</string>
     <!-- Distribution Platform -->
     <string name="key_platform_github" translatable="false">GitHub</string>
     <string name="key_platform_appcenter" translatable="false">AppCenter</string>

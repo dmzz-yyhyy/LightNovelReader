@@ -33,12 +33,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.RegexText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormattingRulesScreen(
     rules: List<FormattingRule>,
+    isGlobal: Boolean,
     onToggle: (rule: Int) -> Unit,
     onClickBack: () -> Unit,
     onClickAddRule: () -> Unit,
@@ -50,23 +52,32 @@ fun FormattingRulesScreen(
         topBar = {
             TopBar(
                 scrollBehavior = enterAlwaysScrollBehavior,
+                isGlobal = isGlobal,
                 onClickBack = onClickBack,
                 onClickAddRule = onClickAddRule
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-        ) {
-            items(rules) { rule ->
-                RuleListItem(
-                    rule = rule,
-                    ruleId = rule.id!!,
-                    onEdit = onClickEditRule,
-                    onToggle = onToggle
-                )
+        if (rules.isEmpty()) {
+            EmptyPage(
+                modifier = Modifier.padding(paddingValues),
+                icon = painterResource(R.drawable.empty_90dp),
+                title = stringResource(R.string.text_formatting_no_rules)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                items(rules) { rule ->
+                    RuleListItem(
+                        rule = rule,
+                        ruleId = rule.id!!,
+                        onEdit = onClickEditRule,
+                        onToggle = onToggle
+                    )
+                }
             }
         }
     }
@@ -79,6 +90,11 @@ private fun RuleListItem(
     onEdit: (ruleId: Int) -> Unit,
     onToggle: (ruleId: Int) -> Unit
 ) {
+    val ruleTitle = if (rule.name.isBlank()) {
+        stringResource(R.string.text_formatting_unnamed_title)
+    } else {
+        rule.name
+    }
 
     Row(
         modifier = Modifier
@@ -109,7 +125,7 @@ private fun RuleListItem(
                     )
                 }
                 Text(
-                    text = rule.name,
+                    text = ruleTitle,
                     style = typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -181,13 +197,16 @@ private fun RuleListItem(
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
+    isGlobal: Boolean,
     onClickBack: () -> Unit,
     onClickAddRule: () -> Unit,
 ) {
     TopAppBar(
         title = {
             Text(
-                text = stringResource(id = R.string.book_rules),
+                text = stringResource(
+                    id = if (isGlobal) R.string.global_formatting_rules else R.string.book_rules
+                ),
                 style = typography.displayLarge,
                 color = colorScheme.onSurface,
                 maxLines = 1,

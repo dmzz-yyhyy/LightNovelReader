@@ -23,7 +23,7 @@ fun EmptyPage(
     modifier: Modifier = Modifier,
     icon: Painter,
     title: String,
-    description: String,
+    description: String? = null,
     content: @Composable (() -> Unit)? = null
 ) {
     Box(
@@ -45,16 +45,18 @@ fun EmptyPage(
                 style = MaterialTheme.typography.displayMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.height(12.dp))
-            Text(
-                modifier = Modifier.padding(horizontal = 24.dp),
-                text = description,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    lineBreak = LineBreak.Paragraph.copy(strategy = LineBreak.Strategy.Balanced)
-                ),
-                color = MaterialTheme.colorScheme.secondary,
-            )
+            if (!description.isNullOrEmpty()) {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                    text = description,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        lineBreak = LineBreak.Paragraph.copy(strategy = LineBreak.Strategy.Balanced)
+                    ),
+                    color = MaterialTheme.colorScheme.secondary,
+                )
+            }
             content?.let {
                 Spacer(Modifier.height(12.dp))
                 it()

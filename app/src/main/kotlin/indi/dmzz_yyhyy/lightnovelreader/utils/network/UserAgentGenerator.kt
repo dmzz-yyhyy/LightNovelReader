@@ -1,24 +1,29 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils.network
 
 import android.os.Build
-import kotlin.random.Random
 
 object UserAgentGenerator {
-    private val cachedUserAgent by lazy {
-        val androidVersion = Build.VERSION.RELEASE ?: Random.nextInt(10, 17)
-        val model = Build.MODEL ?: "Chromium"
-        val appleWebKitVersion = versionOf(537..605, 0..99)
-        val chromeVersion = versionOf(100..154, 0..9, 0..9999, 0..299)
-        val safariVersion = versionOf(537..605, 0..99)
+    private const val APPLE_WEBKIT_VERSION = "537.36"
+    private const val SAFARI_VERSION = "537.36"
+    private const val CHROME_MAJOR_VERSION = 153
 
-        "Mozilla/5.0 (Linux; Android $androidVersion; $model) " +
-                "AppleWebKit/$appleWebKitVersion (KHTML, like Gecko) " +
-                "Chrome/$chromeVersion Mobile Safari/$safariVersion"
+    private val cachedUserAgent by lazy {
+        buildUserAgent(
+            androidVersion = Build.VERSION.RELEASE.orEmpty().ifBlank { "10" },
+            model = Build.MODEL.orEmpty().ifBlank { "K" },
+            chromeMajorVersion = CHROME_MAJOR_VERSION,
+        )
     }
 
     fun generate(): String = cachedUserAgent
 
-    private fun versionOf(vararg parts: IntRange): String =
-        parts.joinToString(".") { it.random().toString() }
+    internal fun buildUserAgent(
+        androidVersion: String,
+        model: String,
+        chromeMajorVersion: Int,
+    ): String =
+        "Mozilla/5.0 (Linux; Android $androidVersion; $model) " +
+                "AppleWebKit/$APPLE_WEBKIT_VERSION (KHTML, like Gecko) " +
+                "Chrome/$chromeMajorVersion.0.0.0 Mobile Safari/$SAFARI_VERSION"
 
 }
