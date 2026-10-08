@@ -55,6 +55,7 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存規則</string>
     <string name="delete_rule">刪除規則</string>
+    <string name="local_books">Local books</string>
     <string name="data_import_success">導入成功</string>
     <string name="data_import_failed">導入失敗，請檢查檔案格式或檔案已損壞。</string>
     <string name="import_data_dialog_title">匯入資料</string>
@@ -109,6 +110,8 @@
     <string name="local_book_clear_index">刪除卷和章節目錄</string>
     <string name="local_book_clear_content">清除章節內容</string>
     <string name="local_book_clear_reading">刪除閱讀紀錄</string>
+    <string name="delete_confirm_title">Confirm deletion?</string>
+    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
     <string name="local_book_clear_confirm_content">如果您繼續操作，選擇的內容將會刪除並且 %1$s 儲存空間將被釋放。\n你之後可以重新匯入或下載內容。\n此動作無法撤回。</string>
     <string name="confirm_exit">確認退出？</string>
     <string name="hint_unsaved_changes_will_be_lost">若您現在退出，未儲存的變更將會遺失。</string>
@@ -231,7 +234,7 @@
     <string name="settings_app_logs">應用程式日誌</string>
     <string name="settings_app_logs_desc">檢視與分享應用程式日誌（除錯用途）</string>
     <string name="settings_app_log_level">日誌等級</string>
-    <string name="settings_app_log_level_desc">設定日誌過濾等級，重新啟動應用程式後生效</string>
+    <string name="settings_app_log_level_desc">Set the log filtering level</string>
     <string name="settings_auto_proxy">自動代理</string>
     <string name="settings_auto_proxy_desc">自動從網路上取得代理 IP，<b>但這將導致您所瀏覽的書本資料可能會被攔截</b></string>
     <string name="book_manager_title">書本管理</string>
@@ -385,6 +388,10 @@
     <string name="translators">翻譯貢獻者</string>
     <string name="select_chapter">章節選擇</string>
     <string name="logs_title">日誌</string>
+    <string name="log_tab_live">Live logs</string>
+    <string name="log_tab_files">Saved logs</string>
+    <string name="log_select_file">Select a log file</string>
+    <string name="log_no_log_files">No log files</string>
     <string name="log_source">日誌來源</string>
     <string name="log_clear">刪除所有暫存日誌 Logs</string>
     <string name="log_clear_desc">清除應用程式快取時，這些暫存日誌也將被刪除</string>
@@ -442,12 +449,17 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局規則</string>
+    <string name="text_formatting_no_rules">No Rules</string>
+    <string name="text_formatting_no_book_rules">No Book Rules</string>
+    <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
     <string name="n_rules">%d 個規則</string>
     <string name="rule_name">名稱</string>
+    <string name="text_formatting_unnamed_title">Unnamed</string>
     <string name="rule_match">匹配內容</string>
     <string name="rule_replacement">替換為</string>
     <string name="rule_is_regex">使用正則匹配</string>
     <string name="edit_rule">編輯規則</string>
+    <string name="text_field_required">This field is required.</string>
     <string name="load_failed">載入失敗</string>
     <string name="error_book_title">未知內容</string>
     <string name="error_book_info">書本訊息載入失敗</string>
