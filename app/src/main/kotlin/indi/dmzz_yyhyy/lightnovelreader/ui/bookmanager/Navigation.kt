@@ -1,12 +1,12 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager
 
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import io.nightfish.lightnovelreader.api.Route
 
@@ -16,11 +16,15 @@ fun NavEntryScope.bookManagerDestination() {
         val snackbarHostState = LocalSnackbarHost.current
         val viewModel = hiltViewModel<BookManagerViewModel>()
         val uiState = viewModel.localBookManagerUiState
-        val clearedItemsText = stringResource(R.string.book_manager_cleared_items)
+        val resources = LocalResources.current
         LaunchedEffect(viewModel.clearedItemsFlow) {
             viewModel.clearedItemsFlow.collect { count ->
                 snackbarHostState.showSnackbar(
-                    clearedItemsText.format(count),
+                    resources.getQuantityString(
+                        R.plurals.book_manager_cleared_items,
+                        count,
+                        count
+                    ),
                     withDismissAction = true
                 )
             }

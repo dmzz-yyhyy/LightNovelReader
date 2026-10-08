@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.book
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import indi.dmzz_yyhyy.lightnovelreader.R
 import io.nightfish.lightnovelreader.api.book.WordCount
@@ -32,3 +33,14 @@ fun WordCount.get(): String =
             else "$count $it"
         }
     else stringResource(R.string.book_info_word_count_kilo, count.numberTransform())
+
+@Composable
+fun volumeChapterCountText(volumeCount: Int, chapterCount: Int): String {
+    val volumeText = pluralStringResource(R.plurals.n_volumes, volumeCount, volumeCount)
+    return pluralStringResource(
+        R.plurals.detail_info_stats_count_content,
+        chapterCount,
+        volumeText,
+        chapterCount
+    )
+}

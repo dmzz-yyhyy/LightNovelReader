@@ -40,6 +40,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -256,7 +257,11 @@ fun BookshelfReorderContent(
             ) {
                 Text(
                     modifier = Modifier.padding(vertical = 18.dp),
-                    text = stringResource(R.string.n_books, reorderBooks.size),
+                    text = pluralStringResource(
+                        R.plurals.n_books,
+                        reorderBooks.size,
+                        reorderBooks.size
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.W600,
                     color = MaterialTheme.colorScheme.outline
@@ -332,8 +337,9 @@ fun BookshelfListReorderContent(
                                 fontWeight = FontWeight.W600
                             )
                             Text(
-                                text = stringResource(
-                                    R.string.n_books,
+                                text = pluralStringResource(
+                                    R.plurals.n_books,
+                                    bookshelf.allBookFlows.size,
                                     bookshelf.allBookFlows.size
                                 ),
                                 style = MaterialTheme.typography.labelLarge,

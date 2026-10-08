@@ -12,6 +12,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -95,8 +96,9 @@ fun AddBookToBookshelfDialog(
                         .sizeIn(minWidth = 325.dp)
                         .padding(horizontal = 10.dp),
                     title = bookshelf.name,
-                    supportingText = stringResource(
-                        R.string.bookshelf_book_count,
+                    supportingText = pluralStringResource(
+                        R.plurals.bookshelf_book_count,
+                        bookshelf.allBookIds.size,
                         bookshelf.allBookIds.size
                     ),
                     checked = selectedBookshelfIds.contains(bookshelf.id),

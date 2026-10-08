@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -831,9 +832,13 @@ fun PluginSignatureDialog(
                     color = colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
-                if (!list.isEmpty()) {
+                if (list.isNotEmpty()) {
                     Text(
-                        text = stringResource(R.string.plugin_signature_count, list.size),
+                        text = pluralStringResource(
+                            R.plurals.plugin_signature_count,
+                            list.size,
+                            list.size
+                        ),
                         style = typography.bodyMedium,
                         color = colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

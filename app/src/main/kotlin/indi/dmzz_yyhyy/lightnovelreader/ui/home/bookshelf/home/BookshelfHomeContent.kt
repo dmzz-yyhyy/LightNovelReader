@@ -50,6 +50,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,7 +65,6 @@ import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import com.valentinilk.shimmer.Shimmer
 import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -418,7 +418,11 @@ private fun LazyListScope.bookshelfContent(
                 ) {
                     Text(
                         modifier = Modifier.padding(vertical = 18.dp),
-                        text = stringResource(R.string.n_books, allBooks.size),
+                        text = pluralStringResource(
+                            R.plurals.n_books,
+                            allBooks.size,
+                            allBooks.size
+                        ),
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.W600,
                         color = MaterialTheme.colorScheme.outline
