@@ -2,11 +2,13 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,6 +29,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +47,7 @@ import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
@@ -51,7 +55,6 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import kotlinx.coroutines.flow.Flow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TextFormattingScreen(
     onClickGroup: (String) -> Unit,
@@ -69,64 +72,33 @@ fun TextFormattingScreen(
         }
     ) { paddingValues ->
         val rules = groups.filter { it.id.isNotBlank() }
-        LazyColumn(
-            modifier = Modifier.padding(paddingValues)
-        ) {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(onClick = { onClickGroup("") })
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(colorScheme.primaryContainer),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(R.drawable.language_24px),
-                            tint = colorScheme.secondary,
-                            contentDescription = ""
-                        )
-                    }
-                    Spacer(Modifier.width(10.dp))
-                    Column(
-                        modifier = Modifier.weight(1f, fill = true),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.global_formatting_rules),
-                            style = typography.bodyLarge,
-                            maxLines = 1
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.n_rules,
-                                groups.firstOrNull { it.id.isEmpty() }?.size ?: 0
-                            ),
-                            style = typography.labelMedium,
-                            color = colorScheme.secondary
-                        )
-                    }
-                    IconButton(
-                        onClick = { onClickGroup("") }
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(18.dp),
-                            painter = painterResource(R.drawable.arrow_forward_ios_24px),
-                            tint = colorScheme.secondary,
-                            contentDescription = ""
-                        )
-                    }
-                }
+        if (rules.isEmpty()) {
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+            ) {
+                GlobalRulesGroup(
+                    ruleCount = groups.firstOrNull { it.id.isEmpty() }?.size ?: 0,
+                    onClick = { onClickGroup("") }
+                )
+                EmptyPage(
+                    modifier = Modifier.weight(1f),
+                    icon = painterResource(R.drawable.text_snippet_24px),
+                    title = stringResource(R.string.text_formatting_no_book_rules),
+                    description = stringResource(R.string.text_formatting_no_book_rules_desc)
+                )
             }
-            if (rules.isNotEmpty()) {
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(paddingValues)
+            ) {
+                item {
+                    GlobalRulesGroup(
+                        ruleCount = groups.firstOrNull { it.id.isEmpty() }?.size ?: 0,
+                        onClick = { onClickGroup("") }
+                    )
+                }
                 item {
                     Text(
                         modifier = Modifier
@@ -138,16 +110,77 @@ fun TextFormattingScreen(
                         color = colorScheme.onSurfaceVariant
                     )
                 }
-            }
 
-            items(rules) { group ->
-                Group(
-                    onClickGroup = { onClickGroup(group.id) },
-                    formattingGroup = group,
-                    bookInformationFlow = group.bookInformationFlow
-                )
+                items(rules) { group ->
+                    Group(
+                        onClickGroup = { onClickGroup(group.id) },
+                        formattingGroup = group,
+                        bookInformationFlow = group.bookInformationFlow
+                    )
+                }
+                navigationBarSpacer()
             }
-            navigationBarSpacer()
+        }
+    }
+}
+
+@Composable
+private fun GlobalRulesGroup(
+    ruleCount: Int,
+    onClick: () -> Unit
+) {
+    val source = remember { MutableInteractionSource() }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = onClick,
+                interactionSource = source
+            )
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .clip(RoundedCornerShape(6.dp))
+                .background(colorScheme.primaryContainer),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(R.drawable.language_24px),
+                tint = colorScheme.secondary,
+                contentDescription = ""
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(
+            modifier = Modifier.weight(1f, fill = true),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.global_formatting_rules),
+                style = typography.titleMedium,
+                maxLines = 1
+            )
+            Text(
+                text = stringResource(R.string.n_rules, ruleCount),
+                style = typography.bodyMedium,
+                color = colorScheme.secondary
+            )
+        }
+        IconButton(
+            onClick = onClick,
+            interactionSource = source
+        ) {
+            Icon(
+                modifier = Modifier.size(14.dp),
+                painter = painterResource(R.drawable.arrow_forward_ios_24px),
+                tint = colorScheme.secondary,
+                contentDescription = ""
+            )
         }
     }
 }
@@ -158,11 +191,15 @@ private fun Group(
     formattingGroup: FormattingGroup,
     bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>
 ) {
+    val source = remember { MutableInteractionSource() }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = { onClickGroup(formattingGroup.id) })
-            .padding(horizontal = 14.dp, vertical = 6.dp),
+            .clickable(
+                onClick = { onClickGroup(formattingGroup.id) },
+                interactionSource = source
+            )
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -175,7 +212,7 @@ private fun Group(
                 title = it.title,
                 rounded = 8.dp
             )
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.width(12.dp))
             Column(
                 modifier = Modifier.weight(1f, fill = true),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -228,10 +265,11 @@ private fun Group(
             }
         } ?: FormattingBookSkeleton()
         IconButton(
-            onClick = { onClickGroup(formattingGroup.id) }
+            onClick = { onClickGroup(formattingGroup.id) },
+            interactionSource = source
         ) {
             Icon(
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(14.dp),
                 painter = painterResource(R.drawable.arrow_forward_ios_24px),
                 tint = colorScheme.secondary,
                 contentDescription = "enter"
@@ -240,7 +278,6 @@ private fun Group(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
@@ -279,7 +316,7 @@ private fun FormattingBookSkeleton() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(Modifier.size(width = 60.dp, height = 87.dp).background(baseColor, RoundedCornerShape(8.dp)))
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(12.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp)

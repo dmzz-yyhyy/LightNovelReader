@@ -185,7 +185,7 @@ fun LocalBookManagerContent(
         if (confirmClear) {
             AlertDialog(
                 onDismissRequest = { confirmClear = false },
-                title = { Text(stringResource(R.string.local_book_clear_confirm_title)) },
+                title = { Text(stringResource(R.string.delete_confirm_title)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(

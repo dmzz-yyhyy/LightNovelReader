@@ -112,7 +112,8 @@
     <string name="local_book_clear_index">Clear volume and chapter index</string>
     <string name="local_book_clear_content">Clear chapter content</string>
     <string name="local_book_clear_reading">Clear reading record</string>
-    <string name="local_book_clear_confirm_title">Confirm deletion</string>
+    <string name="delete_confirm_title">Confirm deletion?</string>
+    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
     <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <string name="confirm_exit">Confirm Exit?</string>
     <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
@@ -460,12 +461,17 @@
     <string name="completed">Completed</string>
     <string name="clear_all">Clear All</string>
     <string name="global_formatting_rules">Global Rules</string>
+    <string name="text_formatting_no_rules">No Rules</string>
+    <string name="text_formatting_no_book_rules">No Book Rules</string>
+    <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
     <string name="n_rules">%d rules</string>
     <string name="rule_name">Name</string>
+    <string name="text_formatting_unnamed_title">Unnamed</string>
     <string name="rule_match">Match content</string>
     <string name="rule_replacement">Replace with</string>
     <string name="rule_is_regex">Use regex matching</string>
     <string name="edit_rule">Edit Rule</string>
+    <string name="text_field_required">This field is required.</string>
     <string name="load_failed">Failed to load</string>
     <string name="error_book_title">Unknown Content</string>
     <string name="error_book_info">Failed to load information</string>

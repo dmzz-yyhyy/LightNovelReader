@@ -6,7 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
-import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.EditTextFormattingRuleDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.EditTextFormattingRuleBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.navigateToSettingsTextFormattingRulesDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.settingsTextFormattingRulesDestination
 import io.nightfish.lightnovelreader.api.Route
@@ -19,17 +19,16 @@ fun NavEntryScope.editTextFormattingRuleDialog() {
             viewModel.load(it.bookId, it.ruleId)
         }
         viewModel.formattingRule?.let { rule ->
-            EditTextFormattingRuleDialog(
+            EditTextFormattingRuleBottomSheet(
                 rule = rule,
                 matchTextFieldValue = viewModel.matchTextFieldValue,
+                hasUnsavedChanges = viewModel.hasUnsavedChanges,
                 onDismissRequest = { navigator.popBackStack() },
                 onConfirmation = {
                     viewModel.onConfirmation()
-                    navigator.popBackStack()
                 },
                 onDelete = {
                     viewModel.onDelete()
-                    navigator.popBackStack()
                 },
                 onNameChange = viewModel::updateName,
                 onMatchChange = viewModel::updateMatch,
@@ -52,7 +51,7 @@ fun NavEntryScope.settingsTextFormattingNavigation() {
 fun NavEntryScope.settingsTextFormattingManagerDestination() {
     entry<Route.Main.Settings.TextFormatting.Manager> {
         val navigator = LocalNavigator.current
-        val viewModel = hiltViewModel<FormattingViewModel>()
+        val viewModel = hiltViewModel<TextFormattingViewModel>()
         TextFormattingScreen(
             onClickBack = navigator::popBackStack,
             onClickGroup = navigator::navigateToSettingsTextFormattingRulesDestination,
