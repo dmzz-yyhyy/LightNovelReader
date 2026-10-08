@@ -55,6 +55,7 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存规则</string>
     <string name="delete_rule">删除规则</string>
+    <string name="local_books">本地书本</string>
     <string name="data_import_success">导入成功</string>
     <string name="data_import_failed">导入失败，请检查文件格式或文件已损坏。</string>
     <string name="import_data_dialog_title">导入数据</string>

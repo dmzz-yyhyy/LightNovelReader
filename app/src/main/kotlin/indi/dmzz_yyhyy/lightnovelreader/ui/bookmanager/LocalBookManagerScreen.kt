@@ -45,7 +45,8 @@ import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -217,9 +218,7 @@ fun LocalBookManagerContent(
     }
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = 4.dp,
                 bottom = when {
@@ -227,9 +226,18 @@ fun LocalBookManagerContent(
                     shownInfoItem != null -> 320.dp
                     else -> 0.dp
                 }
-            ),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            )
         ) {
+            if (contentList.isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                        text = stringResource(R.string.local_books),
+                        style = typography.bodyLarge,
+                        fontWeight = FontWeight.W600
+                    )
+                }
+            }
             items(
                 items = contentList,
                 key = { "book_${it.id}" }
@@ -395,7 +403,7 @@ private fun CollapseHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
+            .background(colorScheme.background)
             .padding(horizontal = 6.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onToggleExpand)
@@ -406,13 +414,13 @@ private fun CollapseHeader(
             modifier = Modifier.width(20.dp),
             painter = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.width(10.dp))
         Text(
             text = title,
             modifier = Modifier.weight(1f),
-            style = MaterialTheme.typography.titleSmall,
+            style = typography.titleSmall,
             fontWeight = FontWeight.W600
         )
         val rotation by animateFloatAsState(if (expanded) 0f else 180f, label = "rotation")
@@ -420,10 +428,11 @@ private fun CollapseHeader(
             modifier = Modifier.graphicsLayer { rotationZ = rotation },
             painter = painterResource(R.drawable.keyboard_arrow_up_24px),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = colorScheme.onSurfaceVariant
         )
     }
 }
+
 
 @Composable
 private fun LocalBookRow(
@@ -449,6 +458,7 @@ private fun LocalBookRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 12.dp)
             .clip(roundedCorner)
             .combinedClickable(
                 onClick = {
@@ -492,13 +502,13 @@ private fun LocalBookRow(
                     text = item.bookInformation.title,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = typography.titleMedium,
                     fontWeight = FontWeight.W600
                 )
                 Text(
                     text = formatSize(item.size),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary
+                    style = typography.bodyMedium,
+                    color = colorScheme.secondary
                 )
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -508,8 +518,8 @@ private fun LocalBookRow(
                     Text(
                         text = if (item.lastReadTime != null) formTime(item.lastReadTime)
                         else stringResource(R.string.book_manager_no_local_reading_record),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        style = typography.bodyMedium,
+                        color = colorScheme.secondary
                     )
                 }
             }
@@ -556,7 +566,7 @@ private fun LocalBookRow(
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.info_24px),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = colorScheme.onSurfaceVariant,
                         contentDescription = "info"
                     )
                 }
@@ -582,7 +592,7 @@ private fun LocalBookInfoCard(
             .fillMaxWidth()
             .widthIn(max = 640.dp),
         shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh
+        color = colorScheme.surfaceContainerHigh
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
@@ -603,8 +613,8 @@ private fun LocalBookInfoCard(
                 }
                 Text(
                     text = stringResource(R.string.local_book_info_title),
-                    style = MaterialTheme.typography.displayMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = typography.displayMedium,
+                    color = colorScheme.onSurface
                 )
                 Spacer(Modifier.weight(1f))
             }
@@ -615,23 +625,23 @@ private fun LocalBookInfoCard(
                     uri = item.bookInformation.coverUri
                 )
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(16.dp))
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
                         text = item.bookInformation.title,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = typography.titleMedium,
                         fontWeight = FontWeight.W600
                     )
                     Text(
                         text = item.bookInformation.author,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = colorScheme.primary
                     )
                     Text(
                         text = stringResource(
@@ -639,8 +649,8 @@ private fun LocalBookInfoCard(
                             item.volumeCount,
                             item.chapterCount
                         ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
+                        style = typography.bodyMedium,
+                        color = colorScheme.secondary
                     )
                 }
             }
@@ -716,12 +726,12 @@ private fun LocalBookInfoCard(
                                     ) {
                                     Text(
                                         text = stringResource(target.label),
-                                        style = MaterialTheme.typography.bodyLarge,
+                                        style = typography.bodyLarge,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
                                         text = formatSize(item.bytesOf(target)),
-                                        style = MaterialTheme.typography.bodyMedium
+                                        style = typography.bodyMedium
                                     )
                                 }
                                 Checkbox(
@@ -756,8 +766,8 @@ private fun LocalBookInfoCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error,
-                            contentColor = MaterialTheme.colorScheme.onError
+                            containerColor = colorScheme.error,
+                            contentColor = colorScheme.onError
                         )
                     ) {
                         Text(stringResource(R.string.local_book_clear))
@@ -776,8 +786,8 @@ private fun LocalBookInfoCard(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = colorScheme.primary,
+                            contentColor = colorScheme.onPrimary
                         )
                     ) {
                         Text(stringResource(R.string.detail_title))
@@ -801,12 +811,12 @@ private fun LocalBookInfoRow(
         Text(
             text = label,
             modifier = Modifier.weight(1f),
-            style = if (emphasized) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+            style = if (emphasized) typography.titleSmall else typography.bodyMedium,
             fontWeight = if (emphasized) FontWeight.W600 else null
         )
         Text(
             text = value,
-            style = if (emphasized) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+            style = if (emphasized) typography.titleSmall else typography.bodyMedium,
             fontWeight = if (emphasized) FontWeight.W600 else null
         )
     }
