@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -359,14 +360,13 @@ private fun DownloadManagerContent(
     }
     LazyColumn(
         modifier = Modifier.padding(horizontal = 18.dp),
+        contentPadding = PaddingValues(top = 4.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         if (itemList.any { it.progress < 1f })
             item {
                 Text(
-                    modifier = Modifier
-                        .height(34.dp)
-                        .animateItem(),
+                    modifier = Modifier.padding(vertical = 12.dp),
                     text = stringResource(R.string.download_in_progress),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W600

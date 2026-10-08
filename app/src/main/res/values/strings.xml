@@ -56,6 +56,7 @@
     <string name="next_chapter">Next Chapter</string>
     <string name="save_rule">Save rule</string>
     <string name="delete_rule">Delete rule</string>
+    <string name="local_books">Local books</string>
     <string name="data_import_success">Import successful</string>
     <string name="data_import_failed">Import failed. Please check the file format or if the file is corrupted.</string>
     <string name="import_data_dialog_title">Import Data</string>
