@@ -248,7 +248,9 @@
     <string name="book_manager_clear_orphaned_title">刪除無用資料</string>
     <string name="book_manager_clear_orphaned_content">要刪除已無法連結到本地書本的章節資料嗎？</string>
     <string name="book_manager_group_index_only">未快取內容的書本（%1$d）</string>
-    <string name="book_manager_cleared_items">刪除了 %1$d 個內容</string>
+    <plurals name="book_manager_cleared_items">
+        <item quantity="other">刪除了 %1$d 個內容</item>
+    </plurals>
     <string name="storage_manager_title">儲存空間統計</string>
     <string name="storage_manager_empty_description">無可分析的快取。</string>
     <string name="storage_manager_used">已使用</string>
@@ -315,7 +317,12 @@
     <string name="detail_contents">目錄</string>
     <string name="detail_title">詳情</string>
     <string name="detail_info_word_count_content">%1$s 字</string>
-    <string name="detail_info_stats_count_content">共 %1$d卷，%2$d章</string>
+    <plurals name="n_volumes">
+        <item quantity="other">%d 卷</item>
+    </plurals>
+    <plurals name="detail_info_stats_count_content">
+        <item quantity="other">共 %1$s，%2$d 章</item>
+    </plurals>
     <string name="local_book_info_title">書本快取詳情</string>
     <string name="local_book_info_book_information">書本資料</string>
     <string name="local_book_info_volume_index">卷目錄</string>
@@ -362,7 +369,9 @@
     <string name="bookshelf_adjust_order">調整排序</string>
     <string name="bookshelf_adjust_bookshelf_order">調整書架排序</string>
     <string name="bookshelf_adjust_order_locked">因當前排序類型鎖定</string>
-    <string name="bookshelf_book_count">共 %d 本</string>
+    <plurals name="bookshelf_book_count">
+        <item quantity="other">共 %d 本</item>
+    </plurals>
     <string name="share_bookshelf">分享書架</string>
     <string name="import_and_export">匯入和匯出……</string>
     <string name="export_to_lnr_file">匯出為 .lnr 檔案</string>
@@ -375,7 +384,9 @@
     <string name="collapse">收起</string>
     <string name="info_reading_finished">已讀完</string>
     <string name="info_reading_progress">已讀 %1$d/%2$d</string>
-    <string name="info_volume_chapters_count">共 %d 章</string>
+    <plurals name="info_volume_chapters_count">
+        <item quantity="other">共 %d 章</item>
+    </plurals>
     <string name="bookshelf_group_title_updated">已更新 (%s)</string>
     <string name="bookshelf_group_title_pinned">已釘選 (%s)</string>
     <string name="bookshelf_group_title_all">全部 (%s)</string>
@@ -412,7 +423,9 @@
     <string name="activity_etc"> 等 %d 本書</string>
     <string name="activity_reading_time">閱讀時長</string>
     <string name="activity_read">讀過</string>
-    <string name="n_books">%d 本書</string>
+    <plurals name="n_books">
+        <item quantity="other">%d 本書</item>
+    </plurals>
     <string name="time_distribution">時間分佈</string>
     <string name="reading_details">閱讀詳情</string>
     <string name="to">至</string>
@@ -442,7 +455,9 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局規則</string>
-    <string name="n_rules">%d 個規則</string>
+    <plurals name="n_rules">
+        <item quantity="other">%d 條規則</item>
+    </plurals>
     <string name="rule_name">名稱</string>
     <string name="rule_match">匹配內容</string>
     <string name="rule_replacement">替換為</string>
@@ -558,7 +573,9 @@
     <string name="plugin_unknown_name">未知</string>
     <string name="plugin_disabled_title">外掛已停用</string>
     <string name="plugin_disabled_body">在載入此外掛時發生錯誤，導致應用程式異常終止。\n\n為了穩定性，此外掛已自動停用。您可以在外掛管理介面手動重新啟用。</string>
-    <string name="plugin_signature_count">包含 %1$d 個簽名</string>
+    <plurals name="plugin_signature_count">
+        <item quantity="other">包含 %1$d 個簽名</item>
+    </plurals>
     <string name="plugin_signature_validity">有效期間 %1$s - %2$s</string>
     <string name="plugin_signature_subject">主題</string>
     <string name="plugin_signature_issuer">簽發者</string>

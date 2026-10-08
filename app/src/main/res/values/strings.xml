@@ -261,7 +261,10 @@
     <string name="book_manager_clear_orphaned_title">Clear orphaned data</string>
     <string name="book_manager_clear_orphaned_content">Remove chapter data that is no longer linked to any local book?</string>
     <string name="book_manager_group_index_only">Books without cached content (%1$d)</string>
-    <string name="book_manager_cleared_items">Cleared %1$d items</string>
+    <plurals name="book_manager_cleared_items">
+        <item quantity="one">Cleared %1$d item</item>
+        <item quantity="other">Cleared %1$d items</item>
+    </plurals>
     <string name="storage_manager_title">Storage Manager</string>
     <string name="storage_manager_empty_description">There is no local cache available to analyze.</string>
     <string name="storage_manager_used">used</string>
@@ -330,7 +333,14 @@
     <string name="detail_contents">Contents</string>
     <string name="detail_title">Detail</string>
     <string name="detail_info_word_count_content">%1$s words</string>
-    <string name="detail_info_stats_count_content">Total %1$d volumes, %2$d chapters</string>
+    <plurals name="n_volumes">
+        <item quantity="one">%d volume</item>
+        <item quantity="other">%d volumes</item>
+    </plurals>
+    <plurals name="detail_info_stats_count_content">
+        <item quantity="one">Total %1$s, %2$d chapter</item>
+        <item quantity="other">Total %1$s, %2$d chapters</item>
+    </plurals>
     <string name="local_book_info_title">Book Cache Details</string>
     <string name="local_book_info_book_information">Book information</string>
     <string name="local_book_info_volume_index">Volume index</string>
@@ -377,7 +387,10 @@
     <string name="bookshelf_adjust_order">Adjust Order</string>
     <string name="bookshelf_adjust_bookshelf_order">Adjust Bookshelf Order</string>
     <string name="bookshelf_adjust_order_locked">Locked by current sort</string>
-    <string name="bookshelf_book_count">Total: %d Books</string>
+    <plurals name="bookshelf_book_count">
+        <item quantity="one">Total: %d book</item>
+        <item quantity="other">Total: %d books</item>
+    </plurals>
     <string name="share_bookshelf">Share Bookshelf</string>
     <string name="import_and_export">Import &amp; Export…</string>
     <string name="export_to_lnr_file">Export to .lnr File</string>
@@ -390,7 +403,10 @@
     <string name="collapse">Collapse</string>
     <string name="info_reading_finished">Finished Reading</string>
     <string name="info_reading_progress">Read %1$d of %2$d</string>
-    <string name="info_volume_chapters_count">%d Chapters</string>
+    <plurals name="info_volume_chapters_count">
+        <item quantity="one">%d chapter</item>
+        <item quantity="other">%d chapters</item>
+    </plurals>
     <string name="bookshelf_group_title_updated">Updated (%s)</string>
     <string name="bookshelf_group_title_pinned">Pinned (%s)</string>
     <string name="bookshelf_group_title_all">All (%s)</string>
@@ -431,7 +447,10 @@
     <string name="activity_etc"> and %d more</string>
     <string name="activity_reading_time">Reading Time</string>
     <string name="activity_read">Read</string>
-    <string name="n_books">%d Books</string>
+    <plurals name="n_books">
+        <item quantity="one">%d book</item>
+        <item quantity="other">%d books</item>
+    </plurals>
     <string name="time_distribution">Time Distribution</string>
     <string name="reading_details">Reading Details</string>
     <string name="to">to</string>
@@ -594,7 +613,10 @@
     <string name="plugin_unknown_name">Unknown</string>
     <string name="plugin_disabled_title">Plugin disabled</string>
     <string name="plugin_disabled_body">An error occurred while loading this plugin, causing the app to terminate.\n\nFor stability, the plugin has been disabled automatically. You can re-enable it in the plugin manager.</string>
-    <string name="plugin_signature_count">Contains %1$d signatures</string>
+    <plurals name="plugin_signature_count">
+        <item quantity="one">Contains %1$d signature</item>
+        <item quantity="other">Contains %1$d signatures</item>
+    </plurals>
     <string name="plugin_signature_validity">Valid from %1$s to %2$s</string>
     <string name="plugin_signature_subject">Subject</string>
     <string name="plugin_signature_issuer">Issuer</string>

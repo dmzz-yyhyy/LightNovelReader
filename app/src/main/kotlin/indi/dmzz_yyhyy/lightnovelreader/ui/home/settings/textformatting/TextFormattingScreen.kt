@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -34,22 +33,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.valentinilk.shimmer.shimmer
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
+import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
@@ -166,7 +166,7 @@ private fun GlobalRulesGroup(
                 maxLines = 1
             )
             Text(
-                text = stringResource(R.string.n_rules, ruleCount),
+                text = pluralStringResource(R.plurals.n_rules, ruleCount, ruleCount),
                 style = typography.bodyMedium,
                 color = colorScheme.secondary
             )
@@ -230,7 +230,11 @@ private fun Group(
                     color = colorScheme.primary
                 )
                 Text(
-                    text = stringResource(R.string.n_rules, formattingGroup.size),
+                    text = pluralStringResource(
+                        R.plurals.n_rules,
+                        formattingGroup.size,
+                        formattingGroup.size
+                    ),
                     style = typography.bodyMedium,
                     color = colorScheme.secondary
                 )
@@ -258,7 +262,11 @@ private fun Group(
                     color = colorScheme.primary
                 )
                 Text(
-                    text = stringResource(R.string.n_rules, formattingGroup.size),
+                    text = pluralStringResource(
+                        R.plurals.n_rules,
+                        formattingGroup.size,
+                        formattingGroup.size
+                    ),
                     style = typography.bodyMedium,
                     color = colorScheme.secondary
                 )

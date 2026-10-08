@@ -78,6 +78,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.data.book.volumeChapterCountText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
@@ -89,7 +90,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import indi.dmzz_yyhyy.lightnovelreader.utils.formatSize
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LocalBookManagerContent(
     uiState: LocalBookManagerUiState
@@ -751,11 +751,7 @@ private fun LocalBookInfoCard(
                             color = colorScheme.primary
                         )
                         Text(
-                            text = stringResource(
-                                R.string.detail_info_stats_count_content,
-                                item.volumeCount,
-                                item.chapterCount
-                            ),
+                            text = volumeChapterCountText(item.volumeCount, item.chapterCount),
                             style = typography.bodyMedium,
                             color = colorScheme.secondary
                         )

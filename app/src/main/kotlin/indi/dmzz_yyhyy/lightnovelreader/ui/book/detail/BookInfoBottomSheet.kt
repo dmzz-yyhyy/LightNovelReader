@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.get
+import indi.dmzz_yyhyy.lightnovelreader.data.book.volumeChapterCountText
 import indi.dmzz_yyhyy.lightnovelreader.utils.dateFormatter
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -184,14 +185,13 @@ fun BookInfoBottomSheet(
 
             InfoItem(
                 title = stringResource(R.string.detail_info_stats),
-                content = if(bookVolumes != null) stringResource(
-                    R.string.detail_info_word_count_content,
-                    bookInformation.wordCount.get()
-                ) + "\n" + stringResource(
-                    R.string.detail_info_stats_count_content,
-                    bookVolumes.volumes.count(),
-                    bookVolumes.volumes.sumOf { it.chapters.size }
-                ) else stringResource(R.string.error_book_volumes_unavailable_generic),
+                content = if (bookVolumes != null) {
+                    val chapterCount = bookVolumes.volumes.sumOf { it.chapters.size }
+                    "${bookInformation.wordCount.get()}\n" +
+                        volumeChapterCountText(bookVolumes.volumes.size, chapterCount)
+                } else {
+                    stringResource(R.string.error_book_volumes_unavailable_generic)
+                },
                 titleStyle = titleStyle,
                 contentStyle = contentStyle,
                 icon = painterResource(R.drawable.text_fields_24px)

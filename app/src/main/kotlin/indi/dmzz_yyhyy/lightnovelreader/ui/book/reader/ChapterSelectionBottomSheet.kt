@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -198,8 +199,9 @@ fun ChapterSelectionBottomSheet(
                                                 color = colorScheme.onSurface
                                             )
                                             Text(
-                                                text = stringResource(
-                                                    R.string.info_volume_chapters_count,
+                                                text = pluralStringResource(
+                                                    R.plurals.info_volume_chapters_count,
+                                                    volume.chapters.size,
                                                     volume.chapters.size
                                                 ),
                                                 color = colorScheme.secondary,
