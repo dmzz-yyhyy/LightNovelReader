@@ -83,9 +83,12 @@ class UpdateCheckRepository @Inject constructor(
     fun check() {
         if (checkJob != null && checkJob!!.isActive) return
         checkJob = coroutineScope.launch {
-            val updateChannelKey =
+            var updateChannelKey =
                 userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
                     .get() ?: MenuOptions.UpdateChannelOptions.DEVELOPMENT
+            updateChannelKey = if (updateChannelKey == "CI") {
+                MenuOptions.UpdateChannelOptions.DEVELOPMENT
+            } else updateChannelKey
             val distributionPlatform =
                 userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
                     .get() ?: MenuOptions.UpdatePlatformOptions.LnrAPI
