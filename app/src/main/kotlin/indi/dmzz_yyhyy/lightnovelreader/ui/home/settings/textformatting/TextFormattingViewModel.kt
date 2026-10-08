@@ -4,7 +4,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,11 +13,12 @@ import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class FormattingViewModel @Inject constructor(
+class TextFormattingViewModel @Inject constructor(
     private val formattingRepository: FormatRepository,
     bookRepository: BookRepository
 ) : ViewModel() {
@@ -28,17 +28,21 @@ class FormattingViewModel @Inject constructor(
     var rules by mutableStateOf(emptyList<FormattingRule>())
         private set
     private val _bookInformationMap = mutableStateMapOf<String, BookInformation>()
-    val bookInformationMap: Map<String, BookInformation> = _bookInformationMap.toMap()
+    val bookInformationMap: Map<String, BookInformation> = _bookInformationMap
+    private var rulesJob: Job? = null
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            snapshotFlow { formattingRepository.getFormattingMap() }.collect { map ->
-                formattingGroups = map.map {
-                    FormattingGroup(it.key, it.value.size)
+            formattingRepository.getFormattingMapFlow().collect { map ->
+                formattingGroups = map.map { (bookId, rules) ->
+                    FormattingGroup(bookId, rules.size)
                 }
                 for (group in formattingGroups) {
                     if (group.id.isBlank()) continue
-                    _bookInformationMap[group.id] = bookRepository.getStateBookInformation(group.id, viewModelScope)
+                    if (group.id !in _bookInformationMap) {
+                        _bookInformationMap[group.id] =
+                            bookRepository.getStateBookInformation(group.id, viewModelScope)
+                    }
                 }
             }
         }
@@ -46,7 +50,13 @@ class FormattingViewModel @Inject constructor(
 
     fun loadBookFormattingRules(bookId: String) {
         this.bookId = bookId
-        rules = formattingRepository.getStateBookFormattingRules(bookId)
+        rules = emptyList()
+        rulesJob?.cancel()
+        rulesJob = viewModelScope.launch(Dispatchers.IO) {
+            formattingRepository.getFormattingRulesFlow(bookId).collect { bookRules ->
+                rules = bookRules
+            }
+        }
     }
     fun onToggle(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {

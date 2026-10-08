@@ -13,6 +13,8 @@ import io.nightfish.lightnovelreader.api.text.ComponentProcessor
 import io.nightfish.lightnovelreader.api.text.TextProcessor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.regex.PatternSyntaxException
 import javax.inject.Inject
@@ -112,17 +114,30 @@ class FormatRepository @Inject constructor(
         return result
     }
 
+    private fun FormattingRuleEntity.toFormattingRule() = FormattingRule(
+        id = this.id,
+        name = this.name,
+        isRegex = this.isRegex,
+        match = this.match,
+        replacement = this.replacement,
+        isEnabled = this.isEnabled
+    )
+
     suspend fun getFormattingRules(id: Int): FormattingRule? {
-        val formattingRule = formattingRuleDao.getBookRuleEntity(id) ?: return null
-        return FormattingRule(
-            id = formattingRule.id,
-            name = formattingRule.name,
-            isRegex = formattingRule.isRegex,
-            match = formattingRule.match,
-            replacement = formattingRule.replacement,
-            isEnabled = formattingRule.isEnabled
-        )
+        return formattingRuleDao.getBookRuleEntity(id)?.toFormattingRule()
     }
+
+    fun getFormattingMapFlow(): Flow<Map<String, List<FormattingRule>>> =
+        formattingRuleDao.getAllBookRuleEntityFlow().map { entities ->
+            entities.groupBy { it.bookId }.mapValues { (_, rules) ->
+                rules.map { it.toFormattingRule() }
+            }
+        }
+
+    fun getFormattingRulesFlow(bookId: String): Flow<List<FormattingRule>> =
+        formattingRuleDao.getBookRuleEntityFlow(bookId).map { entities ->
+            entities.map { it.toFormattingRule() }
+        }
 
     suspend fun insertRule(bookId: String, formattingRule: FormattingRule) {
         formattingRuleDao.insertRuleEntity(

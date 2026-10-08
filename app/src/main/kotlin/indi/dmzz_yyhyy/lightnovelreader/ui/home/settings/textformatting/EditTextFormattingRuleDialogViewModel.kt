@@ -9,10 +9,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.regexAnnotatedString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -20,15 +20,22 @@ class EditTextFormattingRuleDialogViewModel @Inject constructor(
     private val formattingRepository: FormatRepository,
 ) : ViewModel() {
     private var bookId: String? = null
+    private var initialRuleHash: Int? by mutableStateOf(null)
     var formattingRule: FormattingRule? by mutableStateOf(null)
         private set
     var matchTextFieldValue by mutableStateOf(TextFieldValue())
         private set
 
+    val hasUnsavedChanges: Boolean
+        get() = formattingRule?.hashCode() != initialRuleHash
+
     fun load(bookId: String, ruleId: Int) {
         this.bookId = bookId
+        formattingRule = null
+        initialRuleHash = null
+        matchTextFieldValue = TextFieldValue()
         if (ruleId == -1) {
-            formattingRule = FormattingRule(
+            val newRule = FormattingRule(
                 id = -1,
                 name = "",
                 match = "",
@@ -36,11 +43,17 @@ class EditTextFormattingRuleDialogViewModel @Inject constructor(
                 isRegex = false,
                 isEnabled = true
             )
+            initialRuleHash = newRule.hashCode()
+            formattingRule = newRule
             return
         }
-        viewModelScope.launch(Dispatchers.IO) {
-            formattingRule = formattingRepository.getFormattingRules(ruleId)
-            formattingRule?.match?.let {
+        viewModelScope.launch {
+            val rule = withContext(Dispatchers.IO) {
+                formattingRepository.getFormattingRules(ruleId)
+            }
+            initialRuleHash = rule?.hashCode()
+            formattingRule = rule
+            rule?.match?.let {
                 updateMatch(TextFieldValue(it))
             }
         }
@@ -53,18 +66,10 @@ class EditTextFormattingRuleDialogViewModel @Inject constructor(
     }
 
     fun updateMatch(match: TextFieldValue) {
-        formattingRule = formattingRule?.copy(
-            match = match.text
-        )
-        matchTextFieldValue =
-            if (formattingRule?.isRegex == true)
-                match.copy(
-                    annotatedString = regexAnnotatedString(match.text)
-                )
-            else
-                match.copy(
-                    text = match.text
-                )
+        if (formattingRule?.match != match.text) {
+            formattingRule = formattingRule?.copy(match = match.text)
+        }
+        matchTextFieldValue = match
     }
 
     fun updateReplacement(replacement: String) {
@@ -80,20 +85,21 @@ class EditTextFormattingRuleDialogViewModel @Inject constructor(
     }
 
     fun onConfirmation() {
-        formattingRule ?: return
-        bookId ?: return
+        val rule = formattingRule ?: return
+        val currentBookId = bookId ?: return
+        if (rule.match.isBlank()) return
         CoroutineScope(Dispatchers.IO).launch {
-            if (formattingRule!!.id == -1)
-                formattingRepository.insertRule(bookId!!, formattingRule!!)
+            if (rule.id == -1)
+                formattingRepository.insertRule(currentBookId, rule)
             else
-                formattingRepository.updateRule(bookId!!, formattingRule!!)
+                formattingRepository.updateRule(currentBookId, rule)
         }
     }
 
     fun onDelete() {
-        if (formattingRule?.id != null && formattingRule?.id == -1) return
+        val ruleId = formattingRule?.id?.takeIf { it != -1 } ?: return
         CoroutineScope(Dispatchers.IO).launch {
-            formattingRepository.deleteRule(ruleId = formattingRule?.id!!)
+            formattingRepository.deleteRule(ruleId = ruleId)
         }
     }
 }

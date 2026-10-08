@@ -109,7 +109,8 @@
     <string name="local_book_clear_index">删除 卷和章节目录</string>
     <string name="local_book_clear_content">删除 章节内容</string>
     <string name="local_book_clear_reading">删除 阅读记录</string>
-    <string name="local_book_clear_confirm_title">确认删除</string>
+    <string name="delete_confirm_title">确认删除？</string>
+    <string name="delete_confirm_desc">您确定要删除吗？此操作无法撤销。</string>
     <string name="local_book_clear_confirm_content">如果你继续，选中的内容将会被删除且会释放 %1$s 的存储空间。\n你可以之后重新导入或者下载内容。\n操作不可撤回。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">开始缓存：%1$s</string>
@@ -443,12 +444,17 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局规则</string>
+    <string name="text_formatting_no_rules">暂无规则</string>
+    <string name="text_formatting_no_book_rules">暂无书本规则</string>
+    <string name="text_formatting_no_book_rules_desc">没有任何一本书受到不公平待遇。</string>
     <string name="n_rules">%d 个规则</string>
     <string name="rule_name">名称</string>
+    <string name="text_formatting_unnamed_title">未命名</string>
     <string name="rule_match">匹配内容</string>
     <string name="rule_replacement">替换为</string>
     <string name="rule_is_regex">使用正则匹配</string>
     <string name="edit_rule">编辑规则</string>
+    <string name="text_field_required">此字段是必填项。</string>
     <!-- Dialogs -->
     <string name="dialog_about_version">版本</string>
     <string name="dialog_delete_bookshelf">删除书架</string>

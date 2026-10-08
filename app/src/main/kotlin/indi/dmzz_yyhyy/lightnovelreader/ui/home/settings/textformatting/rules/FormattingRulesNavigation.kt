@@ -8,7 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import io.nightfish.lightnovelreader.api.ui.LocalNavController
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.FormattingViewModel
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.TextFormattingViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.navigateToEditTextFormattingRuleDialog
 import io.nightfish.lightnovelreader.api.Route
 import indi.dmzz_yyhyy.lightnovelreader.utils.isResumed
@@ -18,12 +18,13 @@ fun NavGraphBuilder.settingsTextFormattingRulesDestination() {
     composable<Route.Main.Settings.TextFormatting.Rules> { navBackStackEntry ->
         val navController = LocalNavController.current
         val bookId = navBackStackEntry.toRoute<Route.Main.Settings.TextFormatting.Rules>().bookId
-        val viewModel = hiltViewModel<FormattingViewModel>()
+        val viewModel = hiltViewModel<TextFormattingViewModel>()
         LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
             viewModel.loadBookFormattingRules(bookId)
         }
         FormattingRulesScreen(
             rules = viewModel.rules,
+            isGlobal = bookId.isEmpty(),
             onToggle = viewModel::onToggle,
             onClickBack = navController::popBackStackIfResumed,
             onClickAddRule = { navController.navigateToEditTextFormattingRuleDialog(bookId, -1) },
