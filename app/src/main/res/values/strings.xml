@@ -71,7 +71,7 @@
     <string name="import_in_progress_title">Importing…</string>
     <string name="import_in_progress_desc">Please wait…</string>
     <string name="download_in_progress">In Progress</string>
-    <string name="download_item_progress">%1$s downloaded %2$d%%</string>
+    <string name="download_item_progress">Started at %1$s - %2$d%% complete</string>
     <string name="download_item_finished">%s completed</string>
     <string name="download_item_failed">%s failed, please check your network or seek developer assistance</string>
     <string name="book_updated_to_title">Updated to:</string>
@@ -100,7 +100,7 @@
     <string name="reader_reached_bottom">You have reached the bottom</string>
     <string name="reader_reached_start">This is the beginning.</string>
     <string name="reader_reached_end">You\'ve reached the end…</string>
-    <string name="font_file_error">Font file is incorrect or corrupted, please check and import again</string>
+    <string name="font_file_error">The font file is invalid. Check it and try importing it again.</string>
     <string name="settings_data_source_pending_title">Switch to %s</string>
     <string name="settings_data_source_pending_desc">
         The operation will clear cached data and restart the app. Your current data can be restored when switching back to "%s".
@@ -114,7 +114,7 @@
     <string name="local_book_clear_content">Clear chapter content</string>
     <string name="local_book_clear_reading">Clear reading record</string>
     <string name="delete_confirm_title">Confirm deletion?</string>
-    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
+    <string name="delete_confirm_desc">Are you sure you want to delete? This action cannot be undone.</string>
     <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <string name="confirm_exit">Confirm Exit?</string>
     <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
@@ -166,7 +166,7 @@
     <string name="settings_reader_volume_key_control_desc">Use the volume + key to move to the previous page and the volume - key to move to the next page</string>
     <string name="settings_reader_volume_key_interval">Key Continuous Flip Interval</string>
     <string name="settings_reader_t2tp">Tap to Turn Pages</string>
-    <string name="settings_reader_t2tp_desc">Enable tap-to-turn. Tap left/right side to flip pages, tap center to open the menu</string>
+    <string name="settings_reader_t2tp_desc">Tap the left or right side to turn pages, or tap the center to open the menu</string>
     <string name="settings_reader_page_turn_anim">Page Turn Animation</string>
     <string name="settings_reader_page_turn_anim_desc">Configure the page turn animation. When set to "None," fast page turning is enabled</string>
     <string name="settings_reader_quick_chapter_switch">Quick Chapter Switch</string>
@@ -220,7 +220,7 @@
     <string name="settings_theme_bg_image_built_in_desc">Kraft Paper</string>
     <string name="settings_theme_bg_image_custom">Custom</string>
     <string name="settings_theme_bg_display_mode">Background Display Mode</string>
-    <string name="settings_theme_bg_display_mode_desc">Set how custom background images are displayed (effective in scroll mode only)</string>
+    <string name="settings_theme_bg_display_mode_desc">This setting applies only in scrolling mode</string>
     <string name="settings_theme_bg_color">Background Color</string>
     <string name="settings_theme_bg_color_desc">Customize reader background color</string>
     <string name="text_settings">Text</string>
@@ -242,7 +242,7 @@
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_desc">Install and manage Plugins</string>
     <string name="settings_app_logs">App Logs</string>
-    <string name="settings_app_logs_desc">View and share application logs for debug purpose</string>
+    <string name="settings_app_logs_desc">View and share application logs for debugging.</string>
     <string name="settings_app_log_level">Log Level</string>
     <string name="settings_app_log_level_desc">Set the log filtering level</string>
     <string name="settings_auto_proxy">Auto Proxy</string>
@@ -312,7 +312,7 @@
     <string name="settings_auto_cache">Auto Cache</string>
     <string name="settings_auto_cache_desc">Automatically cache content of newly added books</string>
     <string name="settings_book_update_reminder">Update Notification</string>
-    <string name="settings_book_update_reminder_desc">Check for book updates and notify in the background</string>
+    <string name="settings_book_update_reminder_desc">Check for book updates in the background and notify you when updates are available</string>
     <string name="settings_delete_bookshelf">Delete Bookshelf</string>
     <string name="settings_delete_bookshelf_desc">Permanently delete this bookshelf</string>
     <string name="appearance_settings">Appearance</string>
@@ -344,7 +344,7 @@
     <string name="changelog">Changelog</string>
     <string name="recent_reads">Recent Reads (%d)</string>
     <string name="search_no_results">No Results Found</string>
-    <string name="search_no_results_desc">Check your spelling or try a different keyword in Chinese.</string>
+    <string name="search_no_results_desc">Check your spelling or try a different keyword.</string>
     <string name="search_results_title">Search Results for "%1$s" (%2$d%3$s)</string>
     <string name="search_history">Search History</string>
     <string name="start_reading">Start Reading</string>
@@ -465,7 +465,10 @@
     <string name="text_formatting_no_rules">No Rules</string>
     <string name="text_formatting_no_book_rules">No Book Rules</string>
     <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
-    <string name="n_rules">%d rules</string>
+    <plurals name="n_rules">
+        <item quantity="one">%d rule</item>
+        <item quantity="other">%d rules</item>
+    </plurals>
     <string name="rule_name">Name</string>
     <string name="text_formatting_unnamed_title">Unnamed</string>
     <string name="rule_match">Match content</string>
@@ -555,7 +558,7 @@
     <string name="plugin_install_failed_with_reason">Installation failed: %1$s</string>
     <string name="plugin_error_unsupported_api">Unsupported API version %1$d, current version is %2$d</string>
     <string name="plugin_error_version_too_high">The installed plugin version is higher than the version being installed</string>
-    <string name="plugin_error_app_plugin_exist">There is already a app plugin which has the same package name with the installing plugin</string>
+    <string name="plugin_error_app_plugin_exist">An app plugin with the same package name is already installed</string>
     <string name="plugin_error_signature_mismatch">Plugin signature does not match the installed version</string>
     <string name="plugin_error_unknown">Unknown error: %1$s</string>
     <string name="plugin_install_conflict_app_plugin">Installation failed: a plugin app with the same ID is installed. Please uninstall the app plugin first.</string>
@@ -592,7 +595,7 @@
     <string name="plugin_disabled_title">Plugin disabled</string>
     <string name="plugin_disabled_body">An error occurred while loading this plugin, causing the app to terminate.\n\nFor stability, the plugin has been disabled automatically. You can re-enable it in the plugin manager.</string>
     <string name="plugin_signature_count">Contains %1$d signatures</string>
-    <string name="plugin_signature_validity">Valid %1$s - %2$s</string>
+    <string name="plugin_signature_validity">Valid from %1$s to %2$s</string>
     <string name="plugin_signature_subject">Subject</string>
     <string name="plugin_signature_issuer">Issuer</string>
     <string name="plugin_signature_public_key_label">Public key</string>
@@ -641,7 +644,7 @@
     <string name="key_customize_image">Customize Image</string>
     <string name="key_default_image">Default Image</string>
     <string name="key_default_text">Default Font</string>
-    <string name="key_customize_text">Customize Image</string>
+    <string name="key_customize_text">Customize Text</string>
     <!-- Update Channel -->
     <string name="key_update_channel_release">None (Stable)</string>
     <string name="key_update_channel_development">Beta Version</string>
@@ -714,7 +717,7 @@
     <string name="key_local_book_sort_last_read">Sort by last read</string>
     <string name="key_local_book_sort_chapter_count">Sort by chapter count</string>
     <string name="restart">Restart</string>
-    <string name="current_web_data_source_not_founded">Did not found the current web data source, please check you plugin and data source settings</string>
+    <string name="current_web_data_source_not_founded">The current web data source is unavailable. Check your plugin and data source settings.</string>
     <string name="never_read">Never read</string>
     <string name="settings_paragraph_spacing">Paragraph Spacing</string>
     <string name="settings_text_indent">Text Indent</string>
