@@ -70,7 +70,7 @@
     <string name="import_in_progress_title">正在匯入…</string>
     <string name="import_in_progress_desc">請稍候…</string>
     <string name="download_in_progress">進行中</string>
-    <string name="download_item_progress">%1$s 已下載 %2$d%%</string>
+    <string name="download_item_progress">從 %1$s 開始，已完成 %2$d %</string>
     <string name="download_item_finished">%s完成</string>
     <string name="download_item_failed">%s失敗, 請檢查您的網絡環境或尋求開發者幫助</string>
     <string name="book_updated_to_title">更新至:</string>
@@ -97,7 +97,7 @@
     <string name="reader_reached_bottom">已經到底了</string>
     <string name="reader_reached_start">故事才剛剛開始</string>
     <string name="reader_reached_end">已經結束了…</string>
-    <string name="font_file_error">字體文件錯誤或已損壞, 請您檢查後導入</string>
+    <string name="font_file_error">字體檔案格式錯誤。請檢查後再匯入。</string>
     <string name="settings_data_source_pending_title">切換到 %s</string>
     <string name="settings_data_source_pending_desc">
         系統將清除快取並重新啟動。當下次切換回「%s」時，您目前的資料將可再次使用。
@@ -110,8 +110,8 @@
     <string name="local_book_clear_index">刪除卷和章節目錄</string>
     <string name="local_book_clear_content">清除章節內容</string>
     <string name="local_book_clear_reading">刪除閱讀紀錄</string>
-    <string name="delete_confirm_title">Confirm deletion?</string>
-    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
+    <string name="delete_confirm_title">確定要刪除？</string>
+    <string name="delete_confirm_desc">你確定你要刪除？此動作不可取消。</string>
     <string name="local_book_clear_confirm_content">如果您繼續操作，選擇的內容將會刪除並且 %1$s 儲存空間將被釋放。\n你之後可以重新匯入或下載內容。\n此動作無法撤回。</string>
     <string name="confirm_exit">確認退出？</string>
     <string name="hint_unsaved_changes_will_be_lost">若您現在退出，未儲存的變更將會遺失。</string>
@@ -160,7 +160,7 @@
     <string name="settings_reader_volume_key_control_desc">使用音量+鍵翻到上一頁，音量-鍵翻到下一頁</string>
     <string name="settings_reader_volume_key_interval">按鍵持續翻頁間隔</string>
     <string name="settings_reader_t2tp">點擊翻頁</string>
-    <string name="settings_reader_t2tp_desc">啟用點擊翻頁。點擊螢幕左側/右側以翻頁，點擊中間展開選單</string>
+    <string name="settings_reader_t2tp_desc">點擊左右兩側翻頁，點中間開啟菜單</string>
     <string name="settings_reader_page_turn_anim">翻頁動畫</string>
     <string name="settings_reader_page_turn_anim_desc">設定翻頁動畫，選擇「無」時啟用快速翻頁</string>
     <string name="settings_reader_quick_chapter_switch">快速章節切換</string>
@@ -211,7 +211,7 @@
     <string name="settings_theme_bg_image_built_in_desc">牛皮紙</string>
     <string name="settings_theme_bg_image_custom">自訂</string>
     <string name="settings_theme_bg_display_mode">背景顯示模式</string>
-    <string name="settings_theme_bg_display_mode_desc">指定自訂背景圖片顯示模式（僅在滾動模式生效）</string>
+    <string name="settings_theme_bg_display_mode_desc">僅在滾動模式時有效</string>
     <string name="settings_theme_bg_color">背景顏色</string>
     <string name="settings_theme_bg_color_desc">自訂閱讀器背景色</string>
     <string name="text_settings">文字</string>
@@ -232,9 +232,9 @@
     <string name="settings_plugins">擴充外掛</string>
     <string name="settings_plugins_desc">安裝與管理擴充外掛</string>
     <string name="settings_app_logs">應用程式日誌</string>
-    <string name="settings_app_logs_desc">檢視與分享應用程式日誌（除錯用途）</string>
+    <string name="settings_app_logs_desc">查看或分享應用程式日誌用於除錯。</string>
     <string name="settings_app_log_level">日誌等級</string>
-    <string name="settings_app_log_level_desc">Set the log filtering level</string>
+    <string name="settings_app_log_level_desc">設定日誌過濾等級</string>
     <string name="settings_auto_proxy">自動代理</string>
     <string name="settings_auto_proxy_desc">自動從網路上取得代理 IP，<b>但這將導致您所瀏覽的書本資料可能會被攔截</b></string>
     <string name="book_manager_title">書本管理</string>
@@ -251,7 +251,9 @@
     <string name="book_manager_clear_orphaned_title">刪除無用資料</string>
     <string name="book_manager_clear_orphaned_content">要刪除已無法連結到本地書本的章節資料嗎？</string>
     <string name="book_manager_group_index_only">未快取內容的書本（%1$d）</string>
-    <string name="book_manager_cleared_items">刪除了 %1$d 個內容</string>
+    <plurals name="book_manager_cleared_items">
+        <item quantity="other">刪除了 %1$d 個內容</item>
+    </plurals>
     <string name="storage_manager_title">儲存空間統計</string>
     <string name="storage_manager_empty_description">無可分析的快取。</string>
     <string name="storage_manager_used">已使用</string>
@@ -301,7 +303,7 @@
     <string name="settings_auto_cache">自動快取</string>
     <string name="settings_auto_cache_desc">自動快取新加入的書本內容</string>
     <string name="settings_book_update_reminder">更新提醒</string>
-    <string name="settings_book_update_reminder_desc">應用程式在背景時，檢查並通知書本更新</string>
+    <string name="settings_book_update_reminder_desc">在背景檢查書本更新，並在更新時通知你</string>
     <string name="settings_delete_bookshelf">刪除書架</string>
     <string name="settings_delete_bookshelf_desc">永久移除該書架</string>
     <string name="appearance_settings">外觀</string>
@@ -318,7 +320,12 @@
     <string name="detail_contents">目錄</string>
     <string name="detail_title">詳情</string>
     <string name="detail_info_word_count_content">%1$s 字</string>
-    <string name="detail_info_stats_count_content">共 %1$d卷，%2$d章</string>
+    <plurals name="n_volumes">
+        <item quantity="other">%d卷</item>
+    </plurals>
+    <plurals name="detail_info_stats_count_content">
+        <item quantity="other">Total %1$s, %2$d chapters</item>
+    </plurals>
     <string name="local_book_info_title">書本快取詳情</string>
     <string name="local_book_info_book_information">書本資料</string>
     <string name="local_book_info_volume_index">卷目錄</string>
@@ -332,7 +339,7 @@
     <string name="changelog">新版變化</string>
     <string name="recent_reads">最近閱讀 (%d)</string>
     <string name="search_no_results">找不到內容</string>
-    <string name="search_no_results_desc">檢查拼字，或換個關鍵字再試</string>
+    <string name="search_no_results_desc">檢查你的拼字或是換一個關鍵字。</string>
     <string name="search_results_title">\"%1$s\" 的搜尋結果 (%2$d%3$s)</string>
     <string name="search_history">搜尋歷史</string>
     <string name="start_reading">開始閱讀</string>
@@ -365,7 +372,9 @@
     <string name="bookshelf_adjust_order">調整排序</string>
     <string name="bookshelf_adjust_bookshelf_order">調整書架排序</string>
     <string name="bookshelf_adjust_order_locked">因當前排序類型鎖定</string>
-    <string name="bookshelf_book_count">共 %d 本</string>
+    <plurals name="bookshelf_book_count">
+        <item quantity="other">共 %d 本書</item>
+    </plurals>
     <string name="share_bookshelf">分享書架</string>
     <string name="import_and_export">匯入和匯出……</string>
     <string name="export_to_lnr_file">匯出為 .lnr 檔案</string>
@@ -378,7 +387,9 @@
     <string name="collapse">收起</string>
     <string name="info_reading_finished">已讀完</string>
     <string name="info_reading_progress">已讀 %1$d/%2$d</string>
-    <string name="info_volume_chapters_count">共 %d 章</string>
+    <plurals name="info_volume_chapters_count">
+        <item quantity="other">%d 個章節</item>
+    </plurals>
     <string name="bookshelf_group_title_updated">已更新 (%s)</string>
     <string name="bookshelf_group_title_pinned">已釘選 (%s)</string>
     <string name="bookshelf_group_title_all">全部 (%s)</string>
@@ -388,10 +399,10 @@
     <string name="translators">翻譯貢獻者</string>
     <string name="select_chapter">章節選擇</string>
     <string name="logs_title">日誌</string>
-    <string name="log_tab_live">Live logs</string>
-    <string name="log_tab_files">Saved logs</string>
-    <string name="log_select_file">Select a log file</string>
-    <string name="log_no_log_files">No log files</string>
+    <string name="log_tab_live">現在的日誌</string>
+    <string name="log_tab_files">儲存的日誌</string>
+    <string name="log_select_file">選擇一個日誌檔案</string>
+    <string name="log_no_log_files">沒有日誌檔案</string>
     <string name="log_source">日誌來源</string>
     <string name="log_clear">刪除所有暫存日誌 Logs</string>
     <string name="log_clear_desc">清除應用程式快取時，這些暫存日誌也將被刪除</string>
@@ -419,7 +430,9 @@
     <string name="activity_etc"> 等 %d 本書</string>
     <string name="activity_reading_time">閱讀時長</string>
     <string name="activity_read">讀過</string>
-    <string name="n_books">%d 本書</string>
+    <plurals name="n_books">
+        <item quantity="other">%d 本書</item>
+    </plurals>
     <string name="time_distribution">時間分佈</string>
     <string name="reading_details">閱讀詳情</string>
     <string name="to">至</string>
@@ -449,17 +462,19 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局規則</string>
-    <string name="text_formatting_no_rules">No Rules</string>
-    <string name="text_formatting_no_book_rules">No Book Rules</string>
+    <string name="text_formatting_no_rules">沒有規則</string>
+    <string name="text_formatting_no_book_rules">沒有書本規則</string>
     <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
-    <string name="n_rules">%d 個規則</string>
+    <plurals name="n_rules">
+        <item quantity="other">%d 個規則</item>
+    </plurals>
     <string name="rule_name">名稱</string>
-    <string name="text_formatting_unnamed_title">Unnamed</string>
+    <string name="text_formatting_unnamed_title">未命名</string>
     <string name="rule_match">匹配內容</string>
     <string name="rule_replacement">替換為</string>
     <string name="rule_is_regex">使用正則匹配</string>
     <string name="edit_rule">編輯規則</string>
-    <string name="text_field_required">This field is required.</string>
+    <string name="text_field_required">此欄位必填</string>
     <string name="load_failed">載入失敗</string>
     <string name="error_book_title">未知內容</string>
     <string name="error_book_info">書本訊息載入失敗</string>
@@ -534,7 +549,7 @@
     <string name="plugin_install_failed_with_reason">安裝失敗：%1$s</string>
     <string name="plugin_error_unsupported_api">不支援的 API 版本 %1$d，目前版本為 %2$d</string>
     <string name="plugin_error_version_too_high">已安裝的外掛版本高於待安裝版本</string>
-    <string name="plugin_error_app_plugin_exist">正在安裝的外掛與已安裝的外掛有相同名稱</string>
+    <string name="plugin_error_app_plugin_exist">已安裝同名的外掛</string>
     <string name="plugin_error_signature_mismatch">外掛簽名與已安裝版本不匹配</string>
     <string name="plugin_error_unknown">未知錯誤：%1$s</string>
     <string name="plugin_install_conflict_app_plugin">安裝失敗：已存在相同 ID 的外掛應用程式，請先解除安裝該應用外掛。</string>
@@ -570,8 +585,10 @@
     <string name="plugin_unknown_name">未知</string>
     <string name="plugin_disabled_title">外掛已停用</string>
     <string name="plugin_disabled_body">在載入此外掛時發生錯誤，導致應用程式異常終止。\n\n為了穩定性，此外掛已自動停用。您可以在外掛管理介面手動重新啟用。</string>
-    <string name="plugin_signature_count">包含 %1$d 個簽名</string>
-    <string name="plugin_signature_validity">有效期間 %1$s - %2$s</string>
+    <plurals name="plugin_signature_count">
+        <item quantity="other">包含 %1$d 個簽名</item>
+    </plurals>
+    <string name="plugin_signature_validity">Valid from %1$s to %2$s</string>
     <string name="plugin_signature_subject">主題</string>
     <string name="plugin_signature_issuer">簽發者</string>
     <string name="plugin_signature_public_key_label">公鑰</string>
@@ -617,7 +634,7 @@
     <string name="key_customize_image">自訂圖片</string>
     <string name="key_default_image">預設圖片</string>
     <string name="key_default_text">預設字型</string>
-    <string name="key_customize_text">自訂字型</string>
+    <string name="key_customize_text">自定義字體</string>
     <!-- Update Channel -->
     <string name="key_update_channel_release">無</string>
     <string name="key_update_channel_development">Beta 測試版</string>
@@ -681,7 +698,7 @@
     <string name="key_local_book_sort_last_read">以最後閱讀時間排序</string>
     <string name="key_local_book_sort_chapter_count">以章節數量排序</string>
     <string name="restart">重新啟動</string>
-    <string name="current_web_data_source_not_founded">找不到目前資料源，請確認您的外掛和資料源設定</string>
+    <string name="current_web_data_source_not_founded">目前的資料源不可用。檢查你的外掛與資料源設定。</string>
     <string name="never_read">從未閱讀</string>
     <string name="settings_paragraph_spacing">段間距</string>
     <string name="settings_text_indent">文字縮排</string>
