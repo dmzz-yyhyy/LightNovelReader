@@ -55,9 +55,9 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存规则</string>
     <string name="delete_rule">删除规则</string>
-    <string name="local_books">Local books</string>
+    <string name="local_books">本地书本</string>
     <string name="data_import_success">导入成功</string>
-    <string name="data_import_failed">导入失败，请检查文件格式或文件已损坏。</string>
+    <string name="data_import_failed">导入失败，请检查文件格式或文件是否损坏。</string>
     <string name="import_data_dialog_title">导入数据</string>
     <string name="import_data_dialog_description">要合并还是覆盖导入这份数据？</string>
     <string name="import_merge">合并</string>
@@ -70,7 +70,7 @@
     <string name="import_in_progress_title">正在导入…</string>
     <string name="import_in_progress_desc">请稍候…</string>
     <string name="download_in_progress">进行中</string>
-    <string name="download_item_progress">%1$s 已下载 %2$d%%</string>
+    <string name="download_item_progress">%1$s 开始 - 已完成 %2$d%%</string>
     <string name="download_item_finished">%s完成</string>
     <string name="download_item_failed">%s 失败, 请检查您的网络环境或寻求开发者帮助</string>
     <string name="book_updated_to_title">更新至:</string>
@@ -97,7 +97,7 @@
     <string name="reader_reached_bottom">已经到底了</string>
     <string name="reader_reached_start">故事才刚刚开始</string>
     <string name="reader_reached_end">已经结束了…</string>
-    <string name="font_file_error">字体文件错误或已损坏, 请您检查后导入</string>
+    <string name="font_file_error">字体文件无效，请检查并再次尝试导入。</string>
     <string name="settings_data_source_pending_title">切换到 %s</string>
     <string name="settings_data_source_pending_desc">
         应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
@@ -110,8 +110,8 @@
     <string name="local_book_clear_index">删除 卷和章节目录</string>
     <string name="local_book_clear_content">删除 章节内容</string>
     <string name="local_book_clear_reading">删除 阅读记录</string>
-    <string name="delete_confirm_title">Confirm deletion?</string>
-    <string name="delete_confirm_desc">Are you sure you want to delete this rule? This action cannot be undone.</string>
+    <string name="delete_confirm_title">确认删除？</string>
+    <string name="delete_confirm_desc">您确定要删除吗？此操作无法撤销。</string>
     <string name="local_book_clear_confirm_content">如果你继续，选中的内容将会被删除且会释放 %1$s 的存储空间。\n你可以之后重新导入或者下载内容。\n操作不可撤回。</string>
     <string name="confirm_exit">确认退出？</string>
     <string name="hint_unsaved_changes_will_be_lost">如果现在退出，您未保存的更改将会丢失。</string>
@@ -160,7 +160,7 @@
     <string name="settings_reader_volume_key_control_desc">使用音量+键翻到上一页，音量-键翻到下一页</string>
     <string name="settings_reader_volume_key_interval">按键持续翻页间隔</string>
     <string name="settings_reader_t2tp">点击翻页</string>
-    <string name="settings_reader_t2tp_desc">启用点击翻页。点击屏幕左侧/右侧以翻页，点击中间展开菜单</string>
+    <string name="settings_reader_t2tp_desc">点击左/右侧区域翻页；点击中心区域打开菜单</string>
     <string name="settings_reader_page_turn_anim">翻页动画</string>
     <string name="settings_reader_page_turn_anim_desc">设置翻页动画，选择“无”时启用快速翻页</string>
     <string name="settings_reader_quick_chapter_switch">快速章节切换</string>
@@ -211,7 +211,7 @@
     <string name="settings_theme_bg_image_built_in_desc">牛皮纸</string>
     <string name="settings_theme_bg_image_custom">自定义</string>
     <string name="settings_theme_bg_display_mode">背景显示模式</string>
-    <string name="settings_theme_bg_display_mode_desc">指定自定义背景图片显示模式（仅在滚动模式生效）</string>
+    <string name="settings_theme_bg_display_mode_desc">仅在滚动模式下生效</string>
     <string name="settings_theme_bg_color">背景颜色</string>
     <string name="settings_theme_bg_color_desc">自定义阅读器背景色</string>
     <string name="text_settings">文本</string>
@@ -234,7 +234,7 @@
     <string name="settings_app_logs">应用日志</string>
     <string name="settings_app_logs_desc">查看与分享应用日志（调试用途）</string>
     <string name="settings_app_log_level">日志等级</string>
-    <string name="settings_app_log_level_desc">Set the log filtering level</string>
+    <string name="settings_app_log_level_desc">设置日志筛选级别</string>
     <string name="settings_auto_proxy">自动代理</string>
     <string name="settings_auto_proxy_desc">自动从网络上获取代理 IP，<b>但这将导致您所浏览的书本数据可能会被截获</b></string>
     <string name="book_manager_title">书籍管理</string>
@@ -251,7 +251,9 @@
     <string name="book_manager_clear_orphaned_title">删除孤立数据</string>
     <string name="book_manager_clear_orphaned_content">删除未关联到任何本地书本的章节数据？</string>
     <string name="book_manager_group_index_only">书本内容未缓存（ %1$d ）</string>
-    <string name="book_manager_cleared_items">已删除 %1$d 个项目</string>
+    <plurals name="book_manager_cleared_items">
+        <item quantity="other">已清除 %1$d 项</item>
+    </plurals>
     <string name="storage_manager_title">存储管理</string>
     <string name="storage_manager_empty_description">没有可分析的本地缓存。</string>
     <string name="storage_manager_used">已使用</string>
@@ -301,7 +303,7 @@
     <string name="settings_auto_cache">自动缓存</string>
     <string name="settings_auto_cache_desc">自动缓存新加入的书本内容</string>
     <string name="settings_book_update_reminder">更新提醒</string>
-    <string name="settings_book_update_reminder_desc">应用在后台时，检查并通知书本更新</string>
+    <string name="settings_book_update_reminder_desc">应用处于后台运行时，检查并通知书本更新</string>
     <string name="settings_delete_bookshelf">删除书架</string>
     <string name="settings_delete_bookshelf_desc">永久移除该书架</string>
     <string name="appearance_settings">外观</string>
@@ -318,7 +320,12 @@
     <string name="detail_contents">目录</string>
     <string name="detail_title">详情</string>
     <string name="detail_info_word_count_content">%1$s 字</string>
-    <string name="detail_info_stats_count_content">共计 %1$d 卷，%2$d 章</string>
+    <plurals name="n_volumes">
+        <item quantity="other">%d 卷</item>
+    </plurals>
+    <plurals name="detail_info_stats_count_content">
+        <item quantity="other">共计 %1$s，%2$d 章</item>
+    </plurals>
     <string name="local_book_info_title">书籍缓存详情</string>
     <string name="local_book_info_book_information">书籍信息</string>
     <string name="local_book_info_volume_index">卷目录</string>
@@ -332,7 +339,7 @@
     <string name="changelog">新版变化</string>
     <string name="recent_reads">最近阅读 (%d)</string>
     <string name="search_no_results">未搜索到内容</string>
-    <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>
+    <string name="search_no_results_desc">检查拼写，或换一个关键词重试。</string>
     <string name="search_results_title">\"%1$s\" 的搜索结果 (%2$d%3$s)</string>
     <string name="search_history">搜索历史</string>
     <string name="start_reading">开始阅读</string>
@@ -365,7 +372,9 @@
     <string name="bookshelf_adjust_order">调整排序</string>
     <string name="bookshelf_adjust_bookshelf_order">调整书架排序</string>
     <string name="bookshelf_adjust_order_locked">被当前排序模式锁定</string>
-    <string name="bookshelf_book_count">共 %d 本</string>
+    <plurals name="bookshelf_book_count">
+        <item quantity="other">共 %d 本</item>
+    </plurals>
     <string name="share_bookshelf">分享书架</string>
     <string name="import_and_export">导入和导出……</string>
     <string name="export_to_lnr_file">导出为 .lnr 文件</string>
@@ -378,7 +387,9 @@
     <string name="collapse">收起</string>
     <string name="info_reading_finished">已读完</string>
     <string name="info_reading_progress">已读 %1$d/%2$d</string>
-    <string name="info_volume_chapters_count">共 %d 章</string>
+    <plurals name="info_volume_chapters_count">
+        <item quantity="other">%d 章</item>
+    </plurals>
     <string name="bookshelf_group_title_updated">已更新 (%s)</string>
     <string name="bookshelf_group_title_pinned">已固定 (%s)</string>
     <string name="bookshelf_group_title_all">全部 (%s)</string>
@@ -388,10 +399,10 @@
     <string name="translators">翻译贡献者</string>
     <string name="select_chapter">章节选择</string>
     <string name="logs_title">日志</string>
-    <string name="log_tab_live">Live logs</string>
-    <string name="log_tab_files">Saved logs</string>
-    <string name="log_select_file">Select a log file</string>
-    <string name="log_no_log_files">No log files</string>
+    <string name="log_tab_live">实时日志</string>
+    <string name="log_tab_files">已保存日志</string>
+    <string name="log_select_file">选择一个日志文件</string>
+    <string name="log_no_log_files">没有日志文件</string>
     <string name="log_source">日志来源</string>
     <string name="log_clear">删除所有临时日志</string>
     <string name="log_clear_desc">清除应用缓存时，这些临时日志也将被删除</string>
@@ -419,7 +430,9 @@
     <string name="activity_etc"> 等 %d 本书</string>
     <string name="activity_reading_time">阅读时长</string>
     <string name="activity_read">读过</string>
-    <string name="n_books">%d 本书</string>
+    <plurals name="n_books">
+        <item quantity="other">%d 本书</item>
+    </plurals>
     <string name="time_distribution">时间分布</string>
     <string name="reading_details">阅读详情</string>
     <string name="to">至</string>
@@ -449,17 +462,19 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局规则</string>
-    <string name="text_formatting_no_rules">No Rules</string>
-    <string name="text_formatting_no_book_rules">No Book Rules</string>
-    <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
-    <string name="n_rules">%d 个规则</string>
+    <string name="text_formatting_no_rules">暂无规则</string>
+    <string name="text_formatting_no_book_rules">暂无书本规则</string>
+    <string name="text_formatting_no_book_rules_desc">没有任何一本书受到不公平待遇。</string>
+    <plurals name="n_rules">
+        <item quantity="other">%d 条规则</item>
+    </plurals>
     <string name="rule_name">名称</string>
-    <string name="text_formatting_unnamed_title">Unnamed</string>
+    <string name="text_formatting_unnamed_title">未命名</string>
     <string name="rule_match">匹配内容</string>
     <string name="rule_replacement">替换为</string>
     <string name="rule_is_regex">使用正则匹配</string>
     <string name="edit_rule">编辑规则</string>
-    <string name="text_field_required">This field is required.</string>
+    <string name="text_field_required">此字段是必填项。</string>
     <string name="load_failed">加载失败</string>
     <string name="error_book_title">未知内容</string>
     <string name="error_book_info">载入信息失败</string>
@@ -540,7 +555,7 @@
     <string name="plugin_install_failed_with_reason">安装失败：%1$s</string>
     <string name="plugin_error_unsupported_api">不支持的 API 版本 %1$d，当前版本为 %2$d</string>
     <string name="plugin_error_version_too_high">已安装的插件版本高于待安装版本</string>
-    <string name="plugin_error_app_plugin_exist">已经存在package name相同的App插件</string>
+    <string name="plugin_error_app_plugin_exist">系统内已经安装了具有相同软件包名称的插件应用</string>
     <string name="plugin_error_signature_mismatch">插件签名与已安装版本不匹配</string>
     <string name="plugin_error_unknown">未知错误：%1$s</string>
     <string name="plugin_install_conflict_app_plugin">安装失败：已存在同 ID 的插件应用，请先卸载该应用插件。</string>
@@ -576,8 +591,10 @@
     <string name="plugin_unknown_name">未知</string>
     <string name="plugin_disabled_title">插件已被禁用</string>
     <string name="plugin_disabled_body">在加载该插件过程中发生错误，导致应用异常终止。\n\n出于稳定性考虑，该插件已被自动禁用。您可在插件管理界面手动重新启用。</string>
-    <string name="plugin_signature_count">包含 %1$d 个签名</string>
-    <string name="plugin_signature_validity">有效期 %1$s ～ %2$s</string>
+    <plurals name="plugin_signature_count">
+        <item quantity="other">包含 %1$d 个签名</item>
+    </plurals>
+    <string name="plugin_signature_validity">有效: %1$s 至 %2$s</string>
     <string name="plugin_signature_subject">主题</string>
     <string name="plugin_signature_issuer">颁发者</string>
     <string name="plugin_signature_public_key_label">公钥</string>
@@ -687,8 +704,8 @@
     <string name="key_local_book_sort_last_read">按 最后阅读时间 排序</string>
     <string name="key_local_book_sort_chapter_count">按 章节数量 排序</string>
     <string name="restart">重启</string>
-    <string name="current_web_data_source_not_founded">当前网络数据源不可用，请检查插件与数据源设置</string>
-    <string name="never_read">未读</string>
+    <string name="current_web_data_source_not_founded">当前网络数据源不可用。请检查您的插件和数据源设置。</string>
+    <string name="never_read">从未阅读</string>
     <string name="settings_paragraph_spacing">段间距</string>
     <string name="settings_text_indent">首行缩进</string>
     <string name="settings_line_height">行高度</string>
