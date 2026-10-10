@@ -55,7 +55,7 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存規則</string>
     <string name="delete_rule">刪除規則</string>
-    <string name="local_books">Local books</string>
+    <string name="local_books">本地書本</string>
     <string name="data_import_success">導入成功</string>
     <string name="data_import_failed">導入失敗，請檢查檔案格式或檔案已損壞。</string>
     <string name="import_data_dialog_title">匯入資料</string>
@@ -324,7 +324,7 @@
         <item quantity="other">%d卷</item>
     </plurals>
     <plurals name="detail_info_stats_count_content">
-        <item quantity="other">Total %1$s, %2$d chapters</item>
+        <item quantity="other">共 %1$s，%2$d 章</item>
     </plurals>
     <string name="local_book_info_title">書本快取詳情</string>
     <string name="local_book_info_book_information">書本資料</string>
@@ -399,7 +399,7 @@
     <string name="translators">翻譯貢獻者</string>
     <string name="select_chapter">章節選擇</string>
     <string name="logs_title">日誌</string>
-    <string name="log_tab_live">現在的日誌</string>
+    <string name="log_tab_live">實時日誌</string>
     <string name="log_tab_files">儲存的日誌</string>
     <string name="log_select_file">選擇一個日誌檔案</string>
     <string name="log_no_log_files">沒有日誌檔案</string>
@@ -464,7 +464,7 @@
     <string name="global_formatting_rules">全局規則</string>
     <string name="text_formatting_no_rules">沒有規則</string>
     <string name="text_formatting_no_book_rules">沒有書本規則</string>
-    <string name="text_formatting_no_book_rules_desc">Not a single book was treated unfairly.</string>
+    <string name="text_formatting_no_book_rules_desc">沒有任何一本書受到不公平的對待。</string>
     <plurals name="n_rules">
         <item quantity="other">%d 個規則</item>
     </plurals>
@@ -474,7 +474,7 @@
     <string name="rule_replacement">替換為</string>
     <string name="rule_is_regex">使用正則匹配</string>
     <string name="edit_rule">編輯規則</string>
-    <string name="text_field_required">此欄位必填</string>
+    <string name="text_field_required">此欄位必填。</string>
     <string name="load_failed">載入失敗</string>
     <string name="error_book_title">未知內容</string>
     <string name="error_book_info">書本訊息載入失敗</string>
@@ -588,7 +588,7 @@
     <plurals name="plugin_signature_count">
         <item quantity="other">包含 %1$d 個簽名</item>
     </plurals>
-    <string name="plugin_signature_validity">Valid from %1$s to %2$s</string>
+    <string name="plugin_signature_validity">從 %1$s 到 %2$s 有效</string>
     <string name="plugin_signature_subject">主題</string>
     <string name="plugin_signature_issuer">簽發者</string>
     <string name="plugin_signature_public_key_label">公鑰</string>
@@ -614,7 +614,7 @@
     <string name="plugin_info_id_label">包名</string>
     <string name="plugin_info_version_label">版本</string>
     <string name="plugin_info_author_label">作者</string>
-    <string name="plugin_app_conflict_message">與已安裝的擴充程式（plugin app）衝突，將優先使用外掛（app plugin）。</string>
+    <string name="plugin_app_conflict_message">與已安裝的外掛產生衝突，將優先使用應用程式的外掛。</string>
     <!-- Notifications -->
     <string name="epub_export_notification_channel_name">EPUB 匯出進度</string>
     <string name="epub_export_notification_preparing">準備中…</string>
@@ -636,7 +636,7 @@
     <string name="key_default_text">預設字型</string>
     <string name="key_customize_text">自定義字體</string>
     <!-- Update Channel -->
-    <string name="key_update_channel_release">無</string>
+    <string name="key_update_channel_release">無（穩定版）</string>
     <string name="key_update_channel_development">Beta 測試版</string>
     <!-- Distribution Platform -->
     <!-- Dark Mode -->
