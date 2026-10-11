@@ -12,13 +12,10 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDis
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.cookies.ConstantCookiesStorage
@@ -33,7 +30,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Cookie
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.CanBeEmpty
@@ -47,6 +43,8 @@ import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
+import io.nightfish.lightnovelreader.ktor.browser.BrowserRequest
+import io.nightfish.lightnovelreader.ktor.browser.browserResponseDecoders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -72,6 +70,7 @@ import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -99,43 +98,28 @@ class Wenku8Api : WebBookDataSource {
         }
     }
     val ktorClient = HttpClient(OkHttp) {
+        install(BrowserRequest) {
+            secFetchSite = "same-origin"
+        }
         install(ContentEncoding) {
             gzip()
             deflate()
+            browserResponseDecoders()
         }
         install(StripConnectionHeader)
-        install(UserAgent) {
-            agent = UserAgentGenerator.generate()
-        }
-
         install(HttpCookies) {
             storage = ConstantCookiesStorage(
                 *(
                         createCookies("www.wenku8.net") +
-                                createCookies("www.wenku8.cc") +
-                                createCookies("www.wenku8.com")
-                        ).toTypedArray()
+                        createCookies("www.wenku8.cc") +
+                        createCookies("www.wenku8.com")
+                ).toTypedArray()
             )
         }
 
-        install(DefaultRequest) {
-            headers {
-                append(HttpHeaders.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8")
-                append(HttpHeaders.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8")
-                append(HttpHeaders.CacheControl, "max-age=0")
-                append("Upgrade-Insecure-Requests", "1")
-                append("Sec-Fetch-Dest", "document")
-                append("Sec-Fetch-Mode", "navigate")
-                append("Sec-Fetch-Site", "none")
-                append("Sec-Fetch-User", "?1")
-            }
-        }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 3)
             exponentialDelay()
-            retryIf { _, response ->
-                !response.status.isSuccess()
-            }
             retryOnExceptionIf { _, cause ->
                 cause is EOFException || cause is ConnectException
             }
@@ -144,6 +128,11 @@ class Wenku8Api : WebBookDataSource {
         install(Logging) {
             logger = Logger.ANDROID
             level = LogLevel.HEADERS
+            sanitizeHeader { header ->
+                header.equals("Cookie", ignoreCase = true) ||
+                        header.equals("Set-Cookie", ignoreCase = true) ||
+                        header.equals("Authorization", ignoreCase = true)
+            }
         }
     }
     private val hosts =
@@ -167,7 +156,8 @@ class Wenku8Api : WebBookDataSource {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay(10.seconds)
+                if (offLine) delay(20.seconds)
+                else delay(5.minutes)
             }
         }
     }
@@ -239,7 +229,6 @@ class Wenku8Api : WebBookDataSource {
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
             ktorClient.get(hosts[index] + "/login.php") {
-                userAgent(UserAgentGenerator.generate())
                 wenku8Cookies().forEach { (name, value) ->
                     cookie(name, value)
                 }
@@ -373,8 +362,11 @@ class Wenku8Api : WebBookDataSource {
     suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
         requestLimiter.withPermit {
             runCatching {
-                 val res = ktorClient.get(url)
-                     .bodyAsText(Charset.forName("GBK"))
+                val response = ktorClient.get(url)
+                check(response.status.isSuccess()) {
+                    "Wenku8 returned HTTP ${response.status.value} for $url"
+                }
+                val res = response.bodyAsText(Charset.forName("GBK"))
                 Jsoup.parse(res).outputSettings(
                     Document.OutputSettings()
                         .prettyPrint(false)
