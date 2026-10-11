@@ -12,15 +12,11 @@ import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.RequestFrequencyLimit
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.compression.ContentEncoding
 import io.ktor.client.plugins.cookies.ConstantCookiesStorage
@@ -31,11 +27,10 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.cookie
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsBytes
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Cookie
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
@@ -48,6 +43,8 @@ import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
+import io.nightfish.lightnovelreader.ktor.browser.BrowserRequest
+import io.nightfish.lightnovelreader.ktor.browser.browserResponseDecoders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -73,13 +70,8 @@ import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-
-
-/** wenku8 页面使用的字符集。声明为 gbk，实际输出 GB18030，详见 [Wenku8Api.getWithWenku8Cookie] */
-private val WENKU8_CHARSET: Charset = Charset.forName("GB18030")
 
 @WebDataSource(
     "Wenku8",
@@ -105,20 +97,15 @@ class Wenku8Api : WebBookDataSource {
         }
     }
     val ktorClient = HttpClient(OkHttp) {
+        install(BrowserRequest) {
+            secFetchSite = "same-origin"
+        }
         install(ContentEncoding) {
             gzip()
             deflate()
+            browserResponseDecoders()
         }
         install(StripConnectionHeader)
-        install(RequestFrequencyLimit) {
-            minimumInterval = 500.milliseconds
-        }
-        install(UserAgent) {
-            agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/125.0.0.0 Safari/537.36"
-        }
-
         install(HttpCookies) {
             storage = ConstantCookiesStorage(
                 *(
@@ -129,27 +116,9 @@ class Wenku8Api : WebBookDataSource {
             )
         }
 
-        install(DefaultRequest) {
-            headers {
-                append(
-                    HttpHeaders.Accept,
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-                )
-                append(HttpHeaders.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8")
-                append(HttpHeaders.CacheControl, "max-age=0")
-                append("Upgrade-Insecure-Requests", "1")
-                append("Sec-Fetch-Dest", "document")
-                append("Sec-Fetch-Mode", "navigate")
-                append("Sec-Fetch-Site", "none")
-                append("Sec-Fetch-User", "?1")
-            }
-        }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 3)
             exponentialDelay()
-            retryIf { _, response ->
-                !response.status.isSuccess()
-            }
             retryOnExceptionIf { _, cause ->
                 cause is EOFException || cause is ConnectException
             }
@@ -158,6 +127,11 @@ class Wenku8Api : WebBookDataSource {
         install(Logging) {
             logger = Logger.ANDROID
             level = LogLevel.HEADERS
+            sanitizeHeader { header ->
+                header.equals("Cookie", ignoreCase = true) ||
+                        header.equals("Set-Cookie", ignoreCase = true) ||
+                        header.equals("Authorization", ignoreCase = true)
+            }
         }
     }
     private val hosts =
@@ -242,7 +216,6 @@ class Wenku8Api : WebBookDataSource {
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
             ktorClient.get(hosts[index] + "/login.php") {
-                userAgent(UserAgentGenerator.generate())
                 wenku8Cookies().forEach { (name, value) ->
                     cookie(name, value)
                 }
@@ -363,13 +336,11 @@ class Wenku8Api : WebBookDataSource {
     suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
         requestLimiter.withPermit {
             runCatching {
-                // wenku8 实际以 GB18030 输出：• ・ 〜 等字符不在 GBK 字符集内，
-                // 会以 GB18030 独有的 4 字节序列传输，按 GBK 解码后碎成乱码（issue #485）。
-                // GB18030 是 GBK 的严格超集，原本能正确解出的内容不受影响。
-                //
-                // 这里读原始字节自行解码，而不是把字符集交给 bodyAsText：
-                // 后者的参数只是 fallback，响应头声明了 charset 时并不生效。
-                val res = String(ktorClient.get(url).bodyAsBytes(), WENKU8_CHARSET)
+                val response = ktorClient.get(url)
+                check(response.status.isSuccess()) {
+                    "Wenku8 returned HTTP ${response.status.value} for $url"
+                }
+                val res = response.bodyAsText(Charset.forName("GBK"))
                 Jsoup.parse(res).outputSettings(
                     Document.OutputSettings()
                         .prettyPrint(false)

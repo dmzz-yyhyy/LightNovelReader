@@ -202,6 +202,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     // LNR API
     implementation(project(":api"))
+    implementation(project(":ktor-browser"))
     implementation(libs.dom4j)
     implementation(libs.kotlin.result)
     implementation(libs.kotlin.result.coroutines)
