@@ -12,6 +12,7 @@ import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDis
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.navigateToExploreExpandDestination
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
+import indi.dmzz_yyhyy.lightnovelreader.utils.network.RequestFrequencyLimit
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -72,6 +73,8 @@ import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -104,6 +107,9 @@ class Wenku8Api : WebBookDataSource {
             deflate()
         }
         install(StripConnectionHeader)
+        install(RequestFrequencyLimit) {
+            minimumInterval = 500.milliseconds
+        }
         install(UserAgent) {
             agent = UserAgentGenerator.generate()
         }
@@ -112,9 +118,9 @@ class Wenku8Api : WebBookDataSource {
             storage = ConstantCookiesStorage(
                 *(
                         createCookies("www.wenku8.net") +
-                                createCookies("www.wenku8.cc") +
-                                createCookies("www.wenku8.com")
-                        ).toTypedArray()
+                        createCookies("www.wenku8.cc") +
+                        createCookies("www.wenku8.com")
+                ).toTypedArray()
             )
         }
 
@@ -167,7 +173,8 @@ class Wenku8Api : WebBookDataSource {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay(10.seconds)
+                if (offLine) delay(20.seconds)
+                else delay(5.minutes)
             }
         }
     }

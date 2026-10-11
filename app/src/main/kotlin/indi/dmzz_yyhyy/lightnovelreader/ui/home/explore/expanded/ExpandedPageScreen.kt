@@ -36,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -60,7 +59,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.addToBookshelfAction
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
-import kotlinx.coroutines.launch
 
 @Suppress("AssignedValueIsNeverRead")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,7 +77,6 @@ fun ExpandedPageScreen(
     refresh: () -> Unit,
 ) {
     val rememberPullToRefreshState = rememberPullToRefreshState()
-    val scope = rememberCoroutineScope()
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var isRefreshing by remember{ mutableStateOf(false) }
     LifecycleEventEffect(Lifecycle.Event.ON_START) {
@@ -116,12 +113,7 @@ fun ExpandedPageScreen(
                 isRefreshing = isRefreshing,
                 state = rememberPullToRefreshState,
                 onRefresh = {
-                    isRefreshing = true
                     refresh()
-                    isRefreshing = false
-                    scope.launch {
-                        rememberPullToRefreshState.animateToHidden()
-                    }
                 }
             ) {
                 LazyColumn(
