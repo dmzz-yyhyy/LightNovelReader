@@ -61,7 +61,7 @@ android {
             applicationIdSuffix = ".snapshot"
             isShrinkResources = true
             isMinifyEnabled = true
-            vcsInfo.include = true
+            vcsInfo.include = rootProject.file(".git/HEAD").isFile
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

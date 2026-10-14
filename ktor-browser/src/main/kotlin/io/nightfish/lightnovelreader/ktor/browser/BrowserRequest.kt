@@ -7,6 +7,9 @@ import io.ktor.http.Url
 
 /** Adds configurable headers for a top-level browser page navigation. */
 class BrowserRequestConfig {
+    /** When set, these are the headers observed on the WebView's main-frame request. */
+    var headersProvider: ((Url) -> Map<String, String>)? = null
+    var cookieProvider: ((Url) -> String?)? = null
     var userAgent: String =
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -35,6 +38,21 @@ val BrowserRequest = createClientPlugin("BrowserRequest", ::BrowserRequestConfig
     val config = pluginConfig
 
     onRequest { request, _ ->
+        val observedHeaders = config.headersProvider?.invoke(request.url.build()).orEmpty()
+        if (observedHeaders.isNotEmpty()) {
+            observedHeaders.forEach { (name, value) ->
+                if (!name.equals(HttpHeaders.Cookie, ignoreCase = true) &&
+                    !name.equals(HttpHeaders.Host, ignoreCase = true) &&
+                    !name.equals(HttpHeaders.Connection, ignoreCase = true) &&
+                    !name.startsWith(":")) {
+                    request.headers[name] = value
+                }
+            }
+            config.cookieProvider?.invoke(request.url.build())?.let {
+                request.headers[HttpHeaders.Cookie] = it
+            }
+            return@onRequest
+        }
         request.headers.setIfMissing(HttpHeaders.UserAgent, config.userAgent)
         request.headers.setIfMissing(HttpHeaders.Accept, config.accept)
         request.headers.setIfMissing(HttpHeaders.AcceptLanguage, config.acceptLanguage)
@@ -48,6 +66,9 @@ val BrowserRequest = createClientPlugin("BrowserRequest", ::BrowserRequestConfig
         request.headers.setIfMissing("Sec-Fetch-User", config.secFetchUser)
         request.headers.setIfMissing("Priority", config.priority)
         request.headers.setIfMissing("Upgrade-Insecure-Requests", config.upgradeInsecureRequests)
+        config.cookieProvider?.invoke(request.url.build())?.let {
+            request.headers[HttpHeaders.Cookie] = it
+        }
     }
 }
 
