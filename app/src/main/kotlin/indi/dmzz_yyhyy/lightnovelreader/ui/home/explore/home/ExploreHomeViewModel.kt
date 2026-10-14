@@ -55,6 +55,7 @@ class ExploreHomeViewModel @Inject constructor(
         workingExplorePageJob?.cancel()
         workingExploreBooksRowsJob?.cancel()
         _uiState.selectedPage = page
+        _uiState.explorePageBooksRawList = emptyList()
         workingExplorePageJob = viewModelScope.launch {
             val selectedId = explorePageProvider.explorePageIdList[page]
             val explorePageMap = explorePageProvider.exploreTapPageDataSourceMap

@@ -18,17 +18,15 @@ import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.client.plugins.cookies.ConstantCookiesStorage
-import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.cookie
 import io.ktor.client.request.get
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Cookie
 import io.ktor.http.HttpHeaders
+import io.ktor.http.Url
 import io.ktor.http.isSuccess
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
@@ -44,6 +42,7 @@ import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
 import io.nightfish.lightnovelreader.ktor.browser.BrowserRequest
+import io.nightfish.lightnovelreader.ktor.browser.WebViewBrowserSession
 import io.nightfish.lightnovelreader.ktor.browser.browserResponseDecoders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -78,7 +77,7 @@ import kotlin.time.Duration.Companion.seconds
     "Wenku8",
     "LightNovelReader from wenku8.net"
 )
-class Wenku8Api : WebBookDataSource {
+class Wenku8Api(private val context: Context) : WebBookDataSource {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -97,9 +96,15 @@ class Wenku8Api : WebBookDataSource {
             request.headers.remove(HttpHeaders.Connection)
         }
     }
+    private val browserSession = WebViewBrowserSession(context) { domain ->
+        if (domain in setOf("www.wenku8.net", "www.wenku8.cc", "www.wenku8.com")) wenku8Cookies()
+        else emptyMap()
+    }
     val ktorClient = HttpClient(OkHttp) {
         install(BrowserRequest) {
             secFetchSite = "same-origin"
+            headersProvider = { url -> browserSession.headersFor(url) }
+            cookieProvider = { url -> browserSession.cookieHeaderFor(url) }
         }
         install(ContentEncoding) {
             gzip()
@@ -107,16 +112,6 @@ class Wenku8Api : WebBookDataSource {
             browserResponseDecoders()
         }
         install(StripConnectionHeader)
-        install(HttpCookies) {
-            storage = ConstantCookiesStorage(
-                *(
-                        createCookies("www.wenku8.net") +
-                        createCookies("www.wenku8.cc") +
-                        createCookies("www.wenku8.com")
-                ).toTypedArray()
-            )
-        }
-
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 3)
             exponentialDelay()
@@ -182,16 +177,15 @@ class Wenku8Api : WebBookDataSource {
         "jieqiVisitInfo" to "jieqiUserLogin=1739294499,jieqiUserId=1125456",
     )
 
-    fun createCookies(domain: String): List<Cookie> {
-        return wenku8Cookies().map {
-            Cookie(
-                name = it.key,
-                value = it.value,
-                domain = domain,
-            )
-        }
+    private suspend fun getPage(url: String): HttpResponse {
+        if (Url(url).host != "www.wenku8.net") return ktorClient.get(url)
+        browserSession.establish("https://www.wenku8.net/login.php")
+        val response = ktorClient.get(url)
+        if (response.status.value != 403) return response
+        response.bodyAsText()
+        browserSession.establish("https://www.wenku8.net/login.php", force = true)
+        return ktorClient.get(url)
     }
-
 
     suspend fun anyTrue(
         tasks: List<suspend () -> Boolean>
@@ -228,11 +222,7 @@ class Wenku8Api : WebBookDataSource {
 
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
-            ktorClient.get(hosts[index] + "/login.php") {
-                wenku8Cookies().forEach { (name, value) ->
-                    cookie(name, value)
-                }
-            }.status.isSuccess()
+            getPage(hosts[index] + "/login.php").status.isSuccess()
         }.getOrElse { false }
         return@withContext !anyTrue(listOf(
             { webSite(0) },
@@ -362,7 +352,7 @@ class Wenku8Api : WebBookDataSource {
     suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
         requestLimiter.withPermit {
             runCatching {
-                val response = ktorClient.get(url)
+                val response = getPage(url)
                 check(response.status.isSuccess()) {
                     "Wenku8 returned HTTP ${response.status.value} for $url"
                 }

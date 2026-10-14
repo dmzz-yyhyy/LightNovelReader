@@ -24,8 +24,8 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_02_03_004
-        versionName = "1.2.3c"
+        versionCode = 1_02_03_005
+        versionName = "1.2.3d"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -59,7 +59,7 @@ android {
             applicationIdSuffix = ".snapshot"
             isShrinkResources = true
             isMinifyEnabled = true
-            vcsInfo.include = true
+            vcsInfo.include = rootProject.file(".git/HEAD").isFile
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
