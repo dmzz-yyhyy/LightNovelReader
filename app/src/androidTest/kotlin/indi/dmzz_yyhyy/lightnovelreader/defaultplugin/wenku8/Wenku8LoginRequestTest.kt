@@ -1,6 +1,9 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.github.michaelbull.result.getOrElse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.compression.ContentEncoding
@@ -9,10 +12,12 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
 import io.nightfish.lightnovelreader.ktor.browser.BrowserRequest
+import io.nightfish.lightnovelreader.ktor.browser.WebViewBrowserSession
 import io.nightfish.lightnovelreader.ktor.browser.browserResponseDecoders
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jsoup.Jsoup
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,20 +28,36 @@ import kotlin.time.Duration.Companion.seconds
 @RunWith(AndroidJUnit4::class)
 class Wenku8LoginRequestTest {
     @Test
-    fun loginPageReturnsHtml() = runBlocking {
-        val api = Wenku8Api()
+    fun productionClientReturnsLoginPage() = runBlocking {
+        val api = Wenku8Api(ApplicationProvider.getApplicationContext())
         try {
-            assertLoginPage(api.ktorClient)
+            val page = withTimeout(60.seconds) {
+                api.getWithWenku8Cookie(LOGIN_URL).getOrElse { throw it }
+            }
+            assertTrue("Expected Wenku8 login HTML, title=${page.title()}",
+                page.title().isNotBlank() &&
+                    !page.title().contains("Just a moment", ignoreCase = true) &&
+                    page.selectFirst("html") != null)
         } finally {
             api.ktorClient.close()
         }
     }
 
     @Test
-    fun loginPageWithoutAppCookiesReturnsHtml() = runBlocking {
+    fun hiddenWebViewSessionIsUsedByKtor() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val session = WebViewBrowserSession(context)
+        val browser = withTimeout(45.seconds) { session.establish(LOGIN_URL) }
+        assertTrue(browser.headers["User-Agent"].orEmpty().contains("Chrome/"))
+        assertEquals(browser.headers, session.headersFor(io.ktor.http.Url(LOGIN_URL)))
+        if (browser.cookies.contains("cf_clearance=")) {
+            assertTrue(session.cookieHeaderFor(io.ktor.http.Url(LOGIN_URL)).orEmpty()
+                .contains("cf_clearance="))
+        }
         val client = HttpClient(OkHttp) {
             install(BrowserRequest) {
-                secFetchSite = "same-origin"
+                headersProvider = { url -> session.headersFor(url) }
+                cookieProvider = { url -> session.cookieHeaderFor(url) }
             }
             install(ContentEncoding) {
                 gzip()
