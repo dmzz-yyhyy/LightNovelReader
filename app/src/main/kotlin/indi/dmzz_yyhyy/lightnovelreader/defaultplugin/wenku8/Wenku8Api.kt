@@ -178,12 +178,13 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
     )
 
     private suspend fun getPage(url: String): HttpResponse {
-        if (Url(url).host != "www.wenku8.net") return ktorClient.get(url)
-        browserSession.establish("https://www.wenku8.net/login.php")
+        val host = this.host.replace("https://", "")
+        if (Url(url).host != host) return ktorClient.get(url)
+        browserSession.establish("https://$host/login.php")
         val response = ktorClient.get(url)
         if (response.status.value != 403) return response
         response.bodyAsText()
-        browserSession.establish("https://www.wenku8.net/login.php", force = true)
+        browserSession.establish("https://$host/login.php", force = true)
         return ktorClient.get(url)
     }
 
