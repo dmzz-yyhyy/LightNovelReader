@@ -520,7 +520,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         title(it.title)
         content {
             contentComponentRepository.getDataFromJsonObject(bookContentMap[it.id]!!.content) {
-                bodyElement.add(
+                contentElement.add(
                     it.toHtmlElement(applicationContext).also { element ->
                         element.parseSrc(tempDir, tasks, epubBuilder, includeImages)
                     }
