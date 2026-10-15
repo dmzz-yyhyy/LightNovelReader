@@ -187,9 +187,22 @@ class Wenku8WebsiteDataSource(
             if (it.attr("href") == "index.htm" || it.attr("href").contains("article")) ""
             else it.attr("href").split(".").firstOrNull() ?: ""
         }
+        val volumeTitle = getBookVolumes(bookId).volumes.find { volume ->
+            volume.chapters.any {
+                it.id == chapterId
+            }
+        }?.volumeTitle
+        val title = soup.selectFirstXpath("//*[@id=\"title\"]")
+            ?.text()
+            ?.let { text ->
+                volumeTitle?.let {
+                    text.replace(it, "").trim()
+                }
+            }
+            ?: return@ifCache ChapterContent.empty(chapterId)
         return@ifCache MutableChapterContent(
             id = chapterId,
-            title = soup.selectFirstXpath("//*[@id=\"title\"]")?.text() ?: return@ifCache ChapterContent.empty(chapterId),
+            title = title,
             content = jsonObject,
             lastChapter = lastChapter,
             nextChapter = nextChapter
