@@ -55,8 +55,9 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存规则</string>
     <string name="delete_rule">删除规则</string>
+    <string name="local_books">本地书本</string>
     <string name="data_import_success">导入成功</string>
-    <string name="data_import_failed">导入失败，请检查文件格式或文件已损坏。</string>
+    <string name="data_import_failed">导入失败，请检查文件格式或文件是否损坏。</string>
     <string name="import_data_dialog_title">导入数据</string>
     <string name="import_data_dialog_description">要合并还是覆盖导入这份数据？</string>
     <string name="import_merge">合并</string>
@@ -109,6 +110,8 @@
     <string name="local_book_clear_index">删除 卷和章节目录</string>
     <string name="local_book_clear_content">删除 章节内容</string>
     <string name="local_book_clear_reading">删除 阅读记录</string>
+    <string name="delete_confirm_title">确认删除？</string>
+    <string name="delete_confirm_desc">您确定要删除吗？此操作无法撤销。</string>
     <string name="local_book_clear_confirm_content">如果你继续，选中的内容将会被删除且会释放 %1$s 的存储空间。\n你可以之后重新导入或者下载内容。\n操作不可撤回。</string>
     <string name="confirm_exit">确认退出？</string>
     <string name="hint_unsaved_changes_will_be_lost">如果现在退出，您未保存的更改将会丢失。</string>
@@ -396,6 +399,10 @@
     <string name="translators">翻译贡献者</string>
     <string name="select_chapter">章节选择</string>
     <string name="logs_title">日志</string>
+    <string name="log_tab_live">实时日志</string>
+    <string name="log_tab_files">已保存日志</string>
+    <string name="log_select_file">选择一个日志文件</string>
+    <string name="log_no_log_files">没有日志文件</string>
     <string name="log_source">日志来源</string>
     <string name="log_clear">删除所有临时日志</string>
     <string name="log_clear_desc">清除应用缓存时，这些临时日志也将被删除</string>
@@ -455,14 +462,19 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局规则</string>
+    <string name="text_formatting_no_rules">暂无规则</string>
+    <string name="text_formatting_no_book_rules">暂无书本规则</string>
+    <string name="text_formatting_no_book_rules_desc">没有任何一本书受到不公平待遇。</string>
     <plurals name="n_rules">
         <item quantity="other">%d 条规则</item>
     </plurals>
     <string name="rule_name">名称</string>
+    <string name="text_formatting_unnamed_title">未命名</string>
     <string name="rule_match">匹配内容</string>
     <string name="rule_replacement">替换为</string>
     <string name="rule_is_regex">使用正则匹配</string>
     <string name="edit_rule">编辑规则</string>
+    <string name="text_field_required">此字段是必填项。</string>
     <string name="load_failed">加载失败</string>
     <string name="error_book_title">未知内容</string>
     <string name="error_book_info">载入信息失败</string>
@@ -693,7 +705,7 @@
     <string name="key_local_book_sort_chapter_count">按 章节数量 排序</string>
     <string name="restart">重启</string>
     <string name="current_web_data_source_not_founded">当前网络数据源不可用，请检查插件与数据源设置</string>
-    <string name="never_read">未读</string>
+    <string name="never_read">从未阅读</string>
     <string name="settings_paragraph_spacing">段间距</string>
     <string name="settings_text_indent">首行缩进</string>
     <string name="settings_line_height">行高度</string>
