@@ -14,6 +14,7 @@
             <option value="$PROJECT_DIR$/benchmark" />
             <option value="$PROJECT_DIR$/compiler" />
             <option value="$PROJECT_DIR$/epub" />
+            <option value="$PROJECT_DIR$/ktor-browser" />
             <option value="$PROJECT_DIR$/plugin" />
             <option value="$PROJECT_DIR$/plugin/js" />
             <option value="$PROJECT_DIR$/proxy" />

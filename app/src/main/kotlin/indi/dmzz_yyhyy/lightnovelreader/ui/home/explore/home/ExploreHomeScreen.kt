@@ -3,6 +3,8 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.home
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -257,7 +259,9 @@ fun TopBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalAnimationApi::class
+)
 @Composable
 fun ExplorePage(
     explorePageBooksRawList: List<ExploreBooksRow>,
@@ -290,16 +294,24 @@ fun ExplorePage(
             refresh()
         },
     ) {
-        ExploreRowsList(
-            modifier = Modifier
-                .fillMaxWidth()
-                .nestedScroll(nestedScrollConnection),
-            listState = listState,
-            rows = explorePageBooksRawList,
-            titleHeight = titleHeight,
-            onClickExpand = onClickExpand,
-            onClickBook = onClickBook
-        )
+        Crossfade(
+            targetState = explorePageBooksRawList.isEmpty()
+        ) { isEmpty ->
+            if (isEmpty) {
+                Loading()
+            } else {
+                ExploreRowsList(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .nestedScroll(nestedScrollConnection),
+                    listState = listState,
+                    rows = explorePageBooksRawList,
+                    titleHeight = titleHeight,
+                    onClickExpand = onClickExpand,
+                    onClickBook = onClickBook
+                )
+            }
+        }
     }
 }
 

@@ -25,7 +25,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
-import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,9 +51,6 @@ fun ExploreScreen(
             state = rememberPullToRefreshState,
             onRefresh = {
                 refresh.invoke()
-                scope.launch {
-                    rememberPullToRefreshState.animateToHidden()
-                }
             }
         ) {
             LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {

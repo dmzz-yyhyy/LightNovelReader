@@ -12,29 +12,23 @@ import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.book.BookRequestDispatcher
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.Wenku8ExplorePageProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
 import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.UserAgent
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.compression.ContentEncoding
-import io.ktor.client.plugins.cookies.ConstantCookiesStorage
-import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.cookie
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsBytes
-import io.ktor.http.Cookie
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
+import io.ktor.http.Url
 import io.ktor.http.isSuccess
-import io.ktor.http.userAgent
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
@@ -47,6 +41,9 @@ import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchProvider
+import io.nightfish.lightnovelreader.ktor.browser.BrowserRequest
+import io.nightfish.lightnovelreader.ktor.browser.WebViewBrowserSession
+import io.nightfish.lightnovelreader.ktor.browser.browserResponseDecoders
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -72,17 +69,14 @@ import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
-
-
-/** wenku8 页面使用的字符集。声明为 gbk，实际输出 GB18030，详见 [Wenku8Api.getWithWenku8Cookie] */
-private val WENKU8_CHARSET: Charset = Charset.forName("GB18030")
 
 @WebDataSource(
     "Wenku8",
     "LightNovelReader from wenku8.net"
 )
-class Wenku8Api : WebBookDataSource {
+class Wenku8Api(private val context: Context) : WebBookDataSource {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -101,49 +95,25 @@ class Wenku8Api : WebBookDataSource {
             request.headers.remove(HttpHeaders.Connection)
         }
     }
+    private val browserSession = WebViewBrowserSession(context) { domain ->
+        if (domain in setOf("www.wenku8.net", "www.wenku8.cc", "www.wenku8.com")) wenku8Cookies()
+        else emptyMap()
+    }
     val ktorClient = HttpClient(OkHttp) {
+        install(BrowserRequest) {
+            secFetchSite = "same-origin"
+            headersProvider = { url -> browserSession.headersFor(url) }
+            cookieProvider = { url -> browserSession.cookieHeaderFor(url) }
+        }
         install(ContentEncoding) {
             gzip()
             deflate()
+            browserResponseDecoders()
         }
         install(StripConnectionHeader)
-        install(UserAgent) {
-            agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                    "Chrome/125.0.0.0 Safari/537.36"
-        }
-
-        install(HttpCookies) {
-            storage = ConstantCookiesStorage(
-                *(
-                        createCookies("www.wenku8.net") +
-                                createCookies("www.wenku8.cc") +
-                                createCookies("www.wenku8.com")
-                        ).toTypedArray()
-            )
-        }
-
-        install(DefaultRequest) {
-            headers {
-                append(
-                    HttpHeaders.Accept,
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-                )
-                append(HttpHeaders.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8")
-                append(HttpHeaders.CacheControl, "max-age=0")
-                append("Upgrade-Insecure-Requests", "1")
-                append("Sec-Fetch-Dest", "document")
-                append("Sec-Fetch-Mode", "navigate")
-                append("Sec-Fetch-Site", "none")
-                append("Sec-Fetch-User", "?1")
-            }
-        }
         install(HttpRequestRetry) {
             retryOnServerErrors(maxRetries = 3)
             exponentialDelay()
-            retryIf { _, response ->
-                !response.status.isSuccess()
-            }
             retryOnExceptionIf { _, cause ->
                 cause is EOFException || cause is ConnectException
             }
@@ -152,6 +122,11 @@ class Wenku8Api : WebBookDataSource {
         install(Logging) {
             logger = Logger.ANDROID
             level = LogLevel.HEADERS
+            sanitizeHeader { header ->
+                header.equals("Cookie", ignoreCase = true) ||
+                        header.equals("Set-Cookie", ignoreCase = true) ||
+                        header.equals("Authorization", ignoreCase = true)
+            }
         }
     }
     private val hosts =
@@ -173,7 +148,8 @@ class Wenku8Api : WebBookDataSource {
             while (currentCoroutineContext().isActive) {
                 offLine = isOffLine()
                 isOffLineStateFlow.emit(offLine)
-                delay(10.seconds)
+                if (offLine) delay(20.seconds)
+                else delay(5.minutes)
             }
         }
     }
@@ -185,19 +161,17 @@ class Wenku8Api : WebBookDataSource {
     fun wenku8Cookies(): Map<String, String> = mapOf(
         "jieqiUserInfo" to "jieqiUserId=1125456,jieqiUserName=yyhyy,jieqiUserGroup=3,jieqiUserVip=0,jieqiUserPassword=eb62861281462fd923fb99218735fef0,jieqiUserName_un=yyhyy,jieqiUserHonor_un=&#x4E2D;&#x7EA7;&#x4F1A;&#x5458;,jieqiUserGroupName_un=&#x666E;&#x901A;&#x4F1A;&#x5458;,jieqiUserLogin=1739294499",
         "jieqiVisitInfo" to "jieqiUserLogin=1739294499,jieqiUserId=1125456",
-        "HMACCOUNT" to "E7837B0FF79F0590",
     )
 
-    fun createCookies(domain: String): List<Cookie> {
-        return wenku8Cookies().map {
-            Cookie(
-                name = it.key,
-                value = it.value,
-                domain = domain,
-            )
-        }
+    private suspend fun getPage(url: String): HttpResponse {
+        if (Url(url).host != "www.wenku8.net") return ktorClient.get(url)
+        browserSession.establish("https://www.wenku8.net/login.php")
+        val response = ktorClient.get(url)
+        if (response.status.value != 403) return response
+        response.bodyAsText()
+        browserSession.establish("https://www.wenku8.net/login.php", force = true)
+        return ktorClient.get(url)
     }
-
 
     suspend fun anyTrue(
         tasks: List<suspend () -> Boolean>
@@ -234,12 +208,7 @@ class Wenku8Api : WebBookDataSource {
 
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
-            ktorClient.get(hosts[index] + "/login.php") {
-                userAgent(UserAgentGenerator.generate())
-                wenku8Cookies().forEach { (name, value) ->
-                    cookie(name, value)
-                }
-            }.status.isSuccess()
+            getPage(hosts[index] + "/login.php").status.isSuccess()
         }.getOrElse { false }
         return@withContext !anyTrue(
             listOf(
@@ -356,13 +325,11 @@ class Wenku8Api : WebBookDataSource {
     suspend fun getWithWenku8Cookie(url: String): Result<Document, Throwable> = withContext(Dispatchers.IO) {
         requestLimiter.withPermit {
             runCatching {
-                // wenku8 实际以 GB18030 输出：• ・ 〜 等字符不在 GBK 字符集内，
-                // 会以 GB18030 独有的 4 字节序列传输，按 GBK 解码后碎成乱码（issue #485）。
-                // GB18030 是 GBK 的严格超集，原本能正确解出的内容不受影响。
-                //
-                // 这里读原始字节自行解码，而不是把字符集交给 bodyAsText：
-                // 后者的参数只是 fallback，响应头声明了 charset 时并不生效。
-                val res = String(ktorClient.get(url).bodyAsBytes(), WENKU8_CHARSET)
+                val response = getPage(url)
+                check(response.status.isSuccess()) {
+                    "Wenku8 returned HTTP ${response.status.value} for $url"
+                }
+                val res = response.bodyAsText(Charset.forName("GBK"))
                 Jsoup.parse(res).outputSettings(
                     Document.OutputSettings()
                         .prettyPrint(false)

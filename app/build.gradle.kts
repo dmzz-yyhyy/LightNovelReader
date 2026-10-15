@@ -25,7 +25,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_03_00_013
+        versionCode = 1_03_00_014
         versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -61,7 +61,7 @@ android {
             applicationIdSuffix = ".snapshot"
             isShrinkResources = true
             isMinifyEnabled = true
-            vcsInfo.include = true
+            vcsInfo.include = rootProject.file(".git/HEAD").isFile
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -202,6 +202,7 @@ dependencies {
     implementation(libs.aboutlibraries.compose.m3)
     // LNR API
     implementation(project(":api"))
+    implementation(project(":ktor-browser"))
     implementation(libs.dom4j)
     implementation(libs.kotlin.result)
     implementation(libs.kotlin.result.coroutines)
