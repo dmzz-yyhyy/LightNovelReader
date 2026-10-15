@@ -30,7 +30,7 @@ class ImageDownloader(
 
     suspend fun run(): ListenableWorker.Result = withContext(Dispatchers.IO) {
         Log.i("ImageDownloader", "total tasks: ${tasks.size}")
-        tasks.forEach { task ->
+        tasks.distinct().forEach { task ->
             val result = downloadWithRetry(task, maxRetry = 3)
             result
                 .onOk { bitmap ->

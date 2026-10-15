@@ -336,23 +336,20 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 creator = bookInformation.author
                 description = bookInformation.description
                 publisher = bookInformation.publishingHouse
-                if (currentVolumeIndex == 0) cover(cover)
-                else {
-                    val url = runCatching {
-                        webBookDataSourceProvider.lowPriority.getCoverUriInVolume(
-                            bookId,
-                            volume,
-                            bookContentMap,
-                            applicationContext
-                        )
-                    }.getOrNull()
-                    if (url == null) {
-                        cover(cover)
-                    } else {
-                        val image = tempDir.resolve(url.hashCode().toString() + ".jpg")
-                        tasks.add(ImageDownloader.Task(image, url))
-                        cover(image)
-                    }
+                val url = runCatching {
+                    webBookDataSourceProvider.lowPriority.getCoverUriInVolume(
+                        bookId,
+                        volume,
+                        bookContentMap,
+                        applicationContext
+                    )
+                }.getOrNull()
+                if (url == null) {
+                    cover(cover)
+                } else {
+                    val image = tempDir.resolve(url.hashCode().toString() + ".jpg")
+                    tasks.add(ImageDownloader.Task(image, url))
+                    cover(image)
                 }
                 val progressForVolume = (30 * currentVolumeIndex) / volumesCount
                 downloadItem.progress = (20f + progressForVolume) / 100f
@@ -452,8 +449,21 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 val progressForVolume = (30 * currentVolumeIndex) / volumesCount
                 downloadItem.progress = (20f + progressForVolume) / 100f
             }
-            tasks.add(ImageDownloader.Task(cover, bookInformation.coverUri))
-            cover(cover)
+            val url = runCatching {
+                webBookDataSourceProvider.lowPriority.getCoverUriInVolume(
+                    bookId,
+                    bookVolumes.volumes.first(),
+                    bookContentMap,
+                    applicationContext
+                )
+            }.getOrNull()
+            if (url == null) {
+                cover(cover)
+            } else {
+                val image = tempDir.resolve(url.hashCode().toString() + ".jpg")
+                tasks.add(ImageDownloader.Task(image, url))
+                cover(image)
+            }
         }
 
         Log.d(TAG, "image tasks size=${tasks.size}")
