@@ -17,7 +17,7 @@ class ExploreViewModel @Inject constructor(
 
     init {
         _uiState.isOffLine = webBookDataSourceProvider.default.offLine
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Main) {
             webBookDataSourceProvider.default.isOffLineFlow.collect {
                 _uiState.isOffLine = it
             }
