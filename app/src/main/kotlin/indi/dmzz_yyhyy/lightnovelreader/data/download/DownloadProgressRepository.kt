@@ -62,7 +62,9 @@ class DownloadProgressRepository @Inject constructor(
     init {
         coroutineScope.launch {
             val completedBookList = completedBookListUserData.getOrDefault(emptyList())
-            _downloadItemList.addAll(completedBookList.map { it })
+            _downloadItemList.addAll(completedBookList.filter {
+                !(it.type == DownloadType.CACHE && it.progress != 1f)
+            })
         }
     }
 

@@ -616,6 +616,11 @@
     <string name="epub_export_notification_stage_chapters">Chapters %1$d/%2$d -</string>
     <string name="epub_export_notification_stage_images">Images %1$d/%2$d -</string>
     <string name="epub_export_notification_stage_save">Saving EPUB</string>
+    <string name="book_cache_notification_channel_name">Book cache progress</string>
+    <string name="book_cache_notification_preparing">Preparing…</string>
+    <string name="book_cache_notification_failed">Export failed</string>
+    <string name="ebook_cache_notification_success">Successfully completed</string>
+    <string name="book_cache_notification_stage_chapters">Chapters %1$d/%2$d -</string>
 
     <!-- KEY STRINGS -->
     <!-- Publishing House Filter -->
