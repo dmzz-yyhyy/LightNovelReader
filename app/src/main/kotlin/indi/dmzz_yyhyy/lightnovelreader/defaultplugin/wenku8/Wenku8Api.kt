@@ -161,7 +161,6 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
     fun wenku8Cookies(): Map<String, String> = mapOf(
         "jieqiUserInfo" to "jieqiUserId=1125456,jieqiUserName=yyhyy,jieqiUserGroup=3,jieqiUserVip=0,jieqiUserPassword=eb62861281462fd923fb99218735fef0,jieqiUserName_un=yyhyy,jieqiUserHonor_un=&#x4E2D;&#x7EA7;&#x4F1A;&#x5458;,jieqiUserGroupName_un=&#x666E;&#x901A;&#x4F1A;&#x5458;,jieqiUserLogin=1739294499",
         "jieqiVisitInfo" to "jieqiUserLogin=1739294499,jieqiUserId=1125456",
-        "HMACCOUNT" to "E7837B0FF79F0590",
     )
 
     private suspend fun getPage(url: String): HttpResponse {
