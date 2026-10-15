@@ -16,11 +16,12 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.ConnectException
 import java.net.SocketTimeoutException
+import kotlin.time.Duration.Companion.milliseconds
 
 class ImageDownloader(
     private val context: Context,
     private val tasks: List<Task>,
-    val onProgress: (Int, Int) -> Unit,
+    val onProgress: suspend (Int, Int) -> Unit,
 ) {
     var count = 0
         private set
@@ -90,7 +91,7 @@ class ImageDownloader(
                     }
                 }
             if (shouldRetry) {
-                delay(500L * (attempt + 1))
+                delay((500L * (attempt + 1)).milliseconds)
             }
         }
         return Err(lastError ?: RuntimeException("unknown error"))

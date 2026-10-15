@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -34,11 +36,13 @@ import io.nightfish.potatoepub.builder.ChapterBuilder
 import io.nightfish.potatoepub.builder.EpubBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.dom4j.Element
 import java.io.File
 import java.io.FileInputStream
 import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.seconds
 
 @HiltWorker
 class ExportBookToEPUBWork @AssistedInject constructor(
@@ -63,6 +67,23 @@ class ExportBookToEPUBWork @AssistedInject constructor(
     private var currentVolumeTitle = ""
     private var currentChapterTitle = ""
 
+    private fun buildForegroundInfo(
+        id: Int,
+        notification: Notification
+    ) =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                id,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(
+                id,
+                notification
+            )
+        }
+
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -74,7 +95,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         }
     }
 
-    private fun showProgressNotification(bookId: String) {
+    private suspend fun showProgressNotification(bookId: String) {
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
             .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
             .setContentText(applicationContext.getString(R.string.epub_export_notification_preparing))
@@ -82,10 +103,13 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             .setProgress(100, 0, true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
-        notificationManager.notify(bookId.hashCode(), notification)
+
+        notification?.let {
+            setForeground(buildForegroundInfo(bookId.hashCode(), it))
+        }
     }
 
-    private fun updateFailureNotification(bookId: String) {
+    private suspend fun updateFailureNotification(bookId: String) {
 
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
             .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
@@ -96,10 +120,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(bookId.hashCode(), notification)
+        notification?.let {
+            setForeground(buildForegroundInfo(bookId.hashCode(), it))
+        }
     }
 
-    private fun updateCompletionNotification(bookId: String) {
+    private suspend fun updateCompletionNotification(bookId: String) {
         notification = NotificationCompat.Builder(applicationContext, "BookEpubExport")
             .setContentTitle(applicationContext.getString(R.string.export_book_started, inputData.getString("title") ?: ""))
             .setContentText(applicationContext.getString(R.string.epub_export_notification_success))
@@ -109,10 +135,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(bookId.hashCode(), notification)
+        notification?.let {
+            setForeground(buildForegroundInfo(bookId.hashCode(), it))
+        }
     }
 
-    private fun buildProgressNotification(
+    private suspend fun buildProgressNotification(
         bookId: String,
         progress: Int,
         stage: String
@@ -137,7 +165,9 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
-        notificationManager.notify(bookId.hashCode(), notification)
+        notification?.let {
+            setForeground(buildForegroundInfo(bookId.hashCode(), it))
+        }
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
@@ -163,38 +193,43 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             return@withContext Result.failure()
         }
         val tasks = mutableListOf<ImageDownloader.Task>()
-        var bookInformation = webBookDataSourceProvider.lowPriority.getBookInformation(bookId)
-        if (bookInformation.isEmpty()) {
-            val localData = localBookDataSource.getBookInformation(bookId)
+        var bookInformation = localBookDataSource.getBookInformation(bookId)
+        if (bookInformation.isNullOrEmpty()) {
+            val localData = webBookDataSourceProvider.lowPriority.getBookInformation(bookId)
             if (localData.isNullOrEmpty()) {
                 downloadItem.progress = -1f
                 updateFailureNotification(bookId)
                 return@withContext Result.failure()
+            } else {
+                bookInformation = localData
+                localBookDataSource.updateBookInformation(localData)
             }
-            else bookInformation = localBookDataSource.getBookInformation(bookId)!!
         }
-        var bookVolumes = webBookDataSourceProvider.lowPriority.getBookVolumes(bookId)
-        if (bookVolumes.isEmpty()) {
-            val localData = localBookDataSource.getBookVolumes(bookId)
+        var bookVolumes = localBookDataSource.getBookVolumes(bookId)
+        if (bookVolumes.isNullOrEmpty()) {
+            val localData = webBookDataSourceProvider.lowPriority.getBookVolumes(bookId)
             if (localData.isNullOrEmpty()) {
                 downloadItem.progress = -1f
                 updateFailureNotification(bookId)
                 return@withContext Result.failure()
             }
-            else bookVolumes = localData!!
+            else {
+                bookVolumes = localData
+                localBookDataSource.updateBookVolumes(localData)
+            }
         }
         val bookContentMap = mutableMapOf<String, ChapterContent>()
         downloadItem.progress = 0f
 
         val volumesToProcess = when (exportType) {
-            ExportType.BOOK -> bookVolumes.volumes
+            ExportType.BOOK -> bookVolumes!!.volumes
             ExportType.VOLUMES -> {
                 if (selectedVolumes.isNullOrEmpty()) {
                     updateFailureNotification(bookId)
                     downloadItem.progress = -1f
                     return@withContext Result.failure()
                 }
-                bookVolumes.volumes.filter { selectedVolumes.contains(it.volumeId) }
+                bookVolumes!!.volumes.filter { selectedVolumes.contains(it.volumeId) }
             }
         }
 
@@ -203,19 +238,31 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         volumesToProcess.forEach { volume ->
             currentVolumeTitle = volume.volumeTitle
 
+            var retry = 8
+            var delay = 1.5.seconds
+
             volume.chapters.forEach {
                 currentChapterTitle = it.title
                 Log.d(TAG, " - load chapter=${it.title} id=${it.id}")
-
-                var chapterContent = webBookDataSourceProvider.lowPriority.getChapterContent(it.id, bookId)
-                if (chapterContent.isEmpty()) {
-                    val localData = localBookDataSource.getChapterContent(it.id)
-                    if (localData.isNullOrEmpty()) {
+                var chapterContent = localBookDataSource.getChapterContent(it.id)
+                if (chapterContent?.isEmpty() ?: true) {
+                    while (retry > 0 && chapterContent.isNullOrEmpty()) {
+                        delay(delay)
+                        chapterContent = webBookDataSourceProvider.lowPriority.getChapterContent(it.id, bookId).toMutable()
+                        if (chapterContent.isNullOrEmpty()) {
+                            retry--
+                            delay *= 2
+                        } else if (delay > 2.seconds) {
+                            delay /=2
+                        }
+                    }
+                    if (chapterContent.isNullOrEmpty()) {
                         downloadItem.progress = -1f
                         updateFailureNotification(bookId)
                         return@withContext Result.failure()
+                    } else {
+                        localBookDataSource.updateChapterContent(chapterContent!!)
                     }
-                    else chapterContent = localData!!
                 }
                 bookContentMap[it.id] = chapterContent
 
@@ -236,7 +283,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
 
         return@withContext when (exportType) {
             ExportType.BOOK -> bookToEPUB(
-                bookInformation,
+                bookInformation!!,
                 bookVolumes,
                 bookContentMap,
                 tempDir,
@@ -249,7 +296,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             )
             ExportType.VOLUMES -> volumesToEPUB(
                 selectedVolumes!!,
-                bookInformation,
+                bookInformation!!,
                 bookVolumes,
                 bookContentMap,
                 tempDir,
@@ -505,7 +552,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         }
     }
 
-    private fun saveEpub(
+    private suspend fun saveEpub(
         bookId: String,
         downloadItem: MutableDownloadItem,
         tempDir: File,
