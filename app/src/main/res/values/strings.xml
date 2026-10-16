@@ -254,7 +254,7 @@
     <string name="book_manager_tab_local_books">Local books</string>
     <string name="book_manager_sort_reverse">Reverse order</string>
     <string name="book_manager_selected_count">%1$d selected</string>
-    <string name="book_manager_empty_title">Nothing here</string>
+    <string name="book_manager_empty_title">Nothing Here</string>
     <string name="book_manager_empty_description">There is no local book cache available to manage.</string>
     <string name="book_manager_delete_cache_title">Clear book cache</string>
     <string name="book_manager_delete_cache_content">Are you sure you want to clear all cached chapter content for the selected books? You can fetch the online content again later if needed.\nThis action cannot be undone.</string>

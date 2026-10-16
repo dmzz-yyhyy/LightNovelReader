@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class ImageDownloader(
     private val context: Context,
     private val tasks: List<Task>,
-    val onProgress: suspend (Int, Int) -> Unit,
+    val onProgress: suspend (current: Int, total: Int, task: Task) -> Unit,
 ) {
     var count = 0
         private set
@@ -29,8 +29,11 @@ class ImageDownloader(
     data class Task(val file: File, val uri: Uri)
 
     suspend fun run(): ListenableWorker.Result = withContext(Dispatchers.IO) {
-        Log.i("ImageDownloader", "total tasks: ${tasks.size}")
-        tasks.distinct().forEach { task ->
+        val distinctTasks = tasks.distinct()
+        Log.i("ImageDownloader", "total tasks: ${distinctTasks.size}")
+        distinctTasks.forEachIndexed { index, task ->
+            count = index + 1
+            onProgress(count, distinctTasks.size, task)
             val result = downloadWithRetry(task, maxRetry = 3)
             result
                 .onOk { bitmap ->
@@ -56,9 +59,7 @@ class ImageDownloader(
                     )
                     return@withContext ListenableWorker.Result.failure()
                 }
-            count++
-            onProgress(count, tasks.size)
-            Log.i("ImageDownloader", "tasks: $count/${tasks.size}")
+            Log.i("ImageDownloader", "tasks: $count/${distinctTasks.size}")
         }
         return@withContext ListenableWorker.Result.success()
     }

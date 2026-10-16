@@ -218,7 +218,9 @@ fun LocalBookManagerContent(
     }
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 18.dp),
             contentPadding = PaddingValues(
                 top = 4.dp,
                 bottom = when {
@@ -226,12 +228,13 @@ fun LocalBookManagerContent(
                     shownInfoItem != null -> 320.dp
                     else -> 0.dp
                 }
-            )
+            ),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             if (contentList.isNotEmpty()) {
                 item {
                     Text(
-                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
+                        modifier = Modifier.padding(vertical = 12.dp),
                         text = stringResource(R.string.local_books),
                         style = typography.bodyLarge,
                         fontWeight = FontWeight.W600
@@ -403,7 +406,7 @@ private fun CollapseHeader(
         modifier = Modifier
             .fillMaxWidth()
             .background(colorScheme.background)
-            .padding(horizontal = 6.dp, vertical = 4.dp)
+            .padding(vertical = 4.dp)
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onToggleExpand)
             .padding(horizontal = 12.dp, vertical = 10.dp),
@@ -457,7 +460,6 @@ private fun LocalBookRow(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp)
             .clip(roundedCorner)
             .combinedClickable(
                 onClick = {
@@ -471,12 +473,11 @@ private fun LocalBookRow(
                     uiState.enterSelection(item.id)
                 }
             )
-            .padding(vertical = 6.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 6.dp, end = sideSlotWidth)
+                .padding(end = sideSlotWidth)
                 .offset {
                     IntOffset(
                         x = (sideSlotPx * progress).roundToInt(),
@@ -491,7 +492,7 @@ private fun LocalBookRow(
                 uri = item.bookInformation.coverUri
             )
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(16.dp))
 
             Column(
                 modifier = Modifier.weight(1f),
