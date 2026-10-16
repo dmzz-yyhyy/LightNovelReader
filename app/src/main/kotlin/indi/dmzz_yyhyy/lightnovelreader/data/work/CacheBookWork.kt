@@ -185,6 +185,9 @@ class CacheBookWork @AssistedInject constructor(
                     updateFailureNotification()
                 } else {
                     penaltyDelay /= 2
+                    if (retry < 8) {
+                        retry++
+                    }
                 }
                 localBookDataSource.updateChapterContent(chapterContent)
                 count ++

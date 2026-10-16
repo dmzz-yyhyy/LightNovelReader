@@ -223,7 +223,11 @@ class Wenku8Api(context: Context) : WebBookDataSource {
 
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
-            getPage(hosts[index] + "/login.php").status.isSuccess()
+            getPage(hosts[index] + "/login.php").status.isSuccess().also {
+                if (it) {
+                    this@Wenku8Api.host = hosts[index]
+                }
+            }
         }.getOrElse { false }
         return@withContext !anyTrue(listOf(
             { webSite(0) },
