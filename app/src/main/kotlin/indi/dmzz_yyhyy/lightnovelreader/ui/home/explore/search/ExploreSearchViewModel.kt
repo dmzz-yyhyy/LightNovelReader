@@ -27,7 +27,6 @@ class ExploreSearchViewModel @Inject constructor(
     val uiState: ExploreSearchUiState = _uiState
 
     override fun onCleared() {
-        super.onCleared()
         searchJob?.cancel()
     }
 
