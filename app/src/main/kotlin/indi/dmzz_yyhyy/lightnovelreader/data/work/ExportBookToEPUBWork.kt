@@ -255,8 +255,6 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                         if (chapterContent.isNullOrEmpty()) {
                             retry--
                             delay *= 2
-                        } else if (delay > 2.seconds) {
-                            delay /=2
                         }
                     }
                     if (chapterContent.isNullOrEmpty()) {
@@ -267,6 +265,12 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                         return@withContext Result.failure()
                     } else {
                         localBookDataSource.updateChapterContent(chapterContent!!)
+                        if (delay > 2.seconds) {
+                            delay /=2
+                        }
+                        if (retry < 8) {
+                            retry++
+                        }
                     }
                 }
                 bookContentMap[it.id] = chapterContent

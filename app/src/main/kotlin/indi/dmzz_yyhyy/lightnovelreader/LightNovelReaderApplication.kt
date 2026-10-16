@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
 import indi.dmzz_yyhyy.lightnovelreader.data.logging.LogLevel
 import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
@@ -60,6 +59,5 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
         coroutineScope.launch(Dispatchers.IO) {
             ProxyPool.enable = userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path).getOrDefault(false)
         }
-        WorkManager.getInstance(this).cancelAllWork()
     }
 }
