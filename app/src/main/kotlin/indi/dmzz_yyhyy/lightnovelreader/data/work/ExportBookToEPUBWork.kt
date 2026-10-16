@@ -338,7 +338,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 modifier = LocalDateTime.now()
                 creator = bookInformation.author
                 description = bookInformation.description
-                publisher = bookInformation.publishingHouse
+                publisher = bookInformation.publishingHouse.ifBlank { null }
                 val url = runCatching {
                     webBookDataSourceProvider.lowPriority.getCoverUriInVolume(
                         bookId,
@@ -450,7 +450,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             modifier = LocalDateTime.now()
             creator = bookInformation.author
             description = bookInformation.description
-            publisher = bookInformation.publishingHouse
+            publisher = bookInformation.publishingHouse.ifBlank { null }
 
             bookVolumes.volumes.forEach { volume ->
                 Log.d(TAG, "pack volume=${volume.volumeTitle}")
@@ -548,6 +548,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         Log.d(TAG, "render chapter=${it.title}")
         title(it.title)
         content {
+            title(it.title.ifBlank { "Chapter" })
             contentComponentRepository.getDataFromJsonObject(bookContentMap[it.id]!!.content) {
                 if (!includeImages && it is ImageComponentData) return@getDataFromJsonObject
                 contentElement.add(
@@ -587,7 +588,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
             src.value = "image/image_$id.jpg"
             epubBuilder.imgRes(
                 href = src.value,
-                id = id.toString(),
+                id = "img_${id.toUInt()}",
                 file = image
             )
         }

@@ -46,7 +46,7 @@ data class Metadata(
                 )
                 creator?.let { "dc:creator" { creator } }
                 description?.let { "dc:description" { description } }
-                publisher?.let { "dc:publisher" { publisher } }
+                publisher?.takeIf { it.isNotBlank() }?.let { "dc:publisher" { it } }
                 //This is to adapt to the meta element added by adding cover in opf-201
                 if (coverId != null)
                     "meta"(
