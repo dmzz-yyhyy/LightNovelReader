@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -58,6 +59,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadItem
+import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadStage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedTextLine
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
@@ -65,7 +69,6 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.book.BookInformation
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookManagerScreen(
     onClickBack: () -> Unit,
@@ -357,12 +360,13 @@ private fun DownloadManagerContent(
     }
     LazyColumn(
         modifier = Modifier.padding(horizontal = 18.dp),
+        contentPadding = PaddingValues(top = 4.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         if (itemList.any { it.progress < 1f })
             item {
                 Text(
-                    modifier = Modifier.height(34.dp).animateItem(),
+                    modifier = Modifier.padding(vertical = 12.dp),
                     text = stringResource(R.string.download_in_progress),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.W600
@@ -425,6 +429,14 @@ private fun DownloadManagerContent(
 }
 
 @Composable
+private fun DownloadStage.displayText(): String = when (this) {
+    is DownloadStage.Chapters -> stringResource(R.string.epub_export_notification_stage_chapters, current, total).trim().removeSuffix("-").trim()
+    is DownloadStage.Images -> stringResource(R.string.epub_export_notification_stage_images, current, total).trim().removeSuffix("-").trim()
+    DownloadStage.Saving -> stringResource(R.string.epub_export_notification_stage_save)
+    DownloadStage.Idle -> ""
+}
+
+@Composable
 private fun Card(
     modifier: Modifier = Modifier,
     bookInformation: BookInformation,
@@ -436,6 +448,9 @@ private fun Card(
         animationSpec = tween(durationMillis = 500, easing = FastOutSlowInEasing),
         label = "",
     )
+    val isInProgress = downloadItem.progress in 0f..<1f
+    val stageText = downloadItem.stage.displayText()
+
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
@@ -457,15 +472,25 @@ private fun Card(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.W600
             )
-            Text(
-                text = bookInformation.author,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.W500,
-                letterSpacing = 0.15.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (isInProgress && stageText.isNotBlank()) {
+                AnimatedText(
+                    text = stageText,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Text(
+                    text = bookInformation.author,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.W500,
+                    letterSpacing = 0.15.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     tint = MaterialTheme.colorScheme.secondary,
@@ -477,23 +502,34 @@ private fun Card(
                     contentDescription = null
                 )
                 Box(Modifier.width(10.dp))
-                Text(
-                    text =
-                        if (downloadItem.progress < 1)
-                            stringResource(R.string.download_item_progress,
-                                formTime(downloadItem.startTime),
-                                (downloadItem.progress*100).toInt()
-                            )
-                        else if (downloadItem.progress > 0)
-                            stringResource(R.string.download_item_finished, downloadItem.type.typeName)
-                        else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.W500,
-                    letterSpacing = 0.15.sp,
-                    color = MaterialTheme.colorScheme.secondary
-                )
+                if (isInProgress && downloadItem.detail.isNotBlank()) {
+                    AnimatedTextLine(
+                        text = downloadItem.detail,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                } else {
+                    Text(
+                        text =
+                            if (downloadItem.progress < 1)
+                                stringResource(
+                                    R.string.download_item_progress,
+                                    formTime(downloadItem.startTime),
+                                    (downloadItem.progress * 100).toInt().coerceIn(0, 100)
+                                )
+                            else if (downloadItem.progress > 0)
+                                stringResource(R.string.download_item_finished, downloadItem.type.typeName)
+                            else stringResource(R.string.download_item_failed, downloadItem.type.typeName),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.W500,
+                        letterSpacing = 0.15.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
             if (downloadItem.progress < 1)
                 LinearProgressIndicator(

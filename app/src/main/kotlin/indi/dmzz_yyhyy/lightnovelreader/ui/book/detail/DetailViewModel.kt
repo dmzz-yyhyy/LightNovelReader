@@ -103,18 +103,20 @@ class DetailViewModel @Inject constructor(
 
 
     fun exportToEpub(uri: Uri, bookId: String, title: String): Flow<WorkInfo?> {
+        val inputData = workDataOf(
+            "bookId" to bookId,
+            "uri" to uri.toString(),
+            "title" to title,
+            "includeImages" to exportSettings.includeImages,
+            "exportType" to exportSettings.exportType.name,
+            "selectedVolume" to exportSettings.selectedVolumeIds.joinToString(",")
+        )
+
         val workRequest = OneTimeWorkRequestBuilder<ExportBookToEPUBWork>()
-            .setInputData(
-                workDataOf(
-                    "bookId" to bookId,
-                    "uri" to uri.toString(),
-                    "title" to title,
-                    "includeImages" to exportSettings.includeImages,
-                    "exportType" to exportSettings.exportType.name,
-                    "selectedVolume" to exportSettings.selectedVolumeIds.joinToString(",")
-                )
-            )
+            .setInputData(inputData)
             .build()
+
+        Log.i("DetailViewModel", "Enqueued export EPUB work\nid=${workRequest.id}, inputData=$inputData")
         workManager.enqueueUniqueWork(
             ExportBookToEPUBWork.ofId(bookId),
             ExistingWorkPolicy.KEEP,

@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
+import android.graphics.Typeface
 import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.Composable
@@ -14,15 +15,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.isUnspecified
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import coil3.compose.AsyncImagePainter
 import coil3.compose.rememberAsyncImagePainter
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.size.Scale
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
@@ -34,15 +31,13 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileNotFoundException
 
-private const val KRAFT_PAPER_URL = "https://portal.curiousers.org/static/lnr/paper.webp"
-private const val KRAFT_PAPER_CACHE_KEY = "default_kraft_paper"
-
 fun loadReaderFontFamilySafe(uri: Uri): FontFamily? {
     return try {
-        if (uri == Uri.EMPTY) return null
+        if (uri == Uri.EMPTY || uri.toString().isBlank()) return null
         val fontFile = File(uri.path ?: return null)
         if (!fontFile.exists()) throw FileNotFoundException()
-        FontFamily(Font(fontFile))
+        val typeface = Typeface.createFromFile(fontFile) ?: throw IllegalArgumentException("Invalid font file")
+        FontFamily(typeface)
     } catch (e: Exception) {
         Log.e("FontLoad", "Failed to load custom font", e)
         null
@@ -59,7 +54,7 @@ fun rememberReaderFontFamily(
 
     val snackbarHostState = LocalSnackbarHost.current
     val message = stringResource(R.string.reader_custom_font_load_failed)
-    if (fontFamily == null && uri != Uri.EMPTY) {
+    if (fontFamily == null && uri != Uri.EMPTY && uri.toString().isNotBlank()) {
         LaunchedEffect(uri) {
             withContext(Dispatchers.IO) { fontFamilyUriUserData.set(Uri.EMPTY) }
             snackbarScope.launch {
@@ -72,43 +67,12 @@ fun rememberReaderFontFamily(
 }
 
 @Composable
-private fun rememberPaperPainter(): Painter {
-    val context = LocalContext.current
-    val theme = LocalAppTheme.current
-    val fallback = remember(theme.isDark, theme.colorScheme.background) {
-        ColorPainter(theme.colorScheme.background)
-    }
-
-    val request = remember {
-        ImageRequest.Builder(context)
-            .data(KRAFT_PAPER_URL)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .diskCachePolicy(CachePolicy.ENABLED)
-            .networkCachePolicy(CachePolicy.ENABLED)
-            .memoryCacheKey(KRAFT_PAPER_CACHE_KEY)
-            .diskCacheKey(KRAFT_PAPER_CACHE_KEY)
-            .interceptorCoroutineContext(Dispatchers.Default)
-            .scale(Scale.FILL)
-            .build()
-    }
-
-    // 内置牛皮纸是联网资源，加载失败时静默回退到背景色即可，不弹提示打扰用户。
-    return rememberAsyncImagePainter(
-        model = request,
-        placeholder = fallback,
-        error = fallback
-    )
-}
-
-@Composable
 private fun rememberCustomBackgroundPainter(
     uri: Uri,
+    backgroundUriUserData: UriUserData,
+    fallback: Painter,
     snackbarScope: CoroutineScope,
 ): Painter {
-    val theme = LocalAppTheme.current
-    val fallback = remember(theme.isDark, theme.colorScheme.background) {
-        ColorPainter(theme.colorScheme.background)
-    }
     val snackbarHostState = LocalSnackbarHost.current
     val message = stringResource(R.string.reader_custom_background_load_failed)
 
@@ -123,8 +87,17 @@ private fun rememberCustomBackgroundPainter(
         painter.state.collect { state ->
             when (state) {
                 is AsyncImagePainter.State.Error -> {
+                    Log.e(
+                        "CustomBackground",
+                        "Failed to load background image: $uri",
+                        state.result.throwable
+                    )
+
                     if (!errorNotified) {
                         errorNotified = true
+                        withContext(Dispatchers.IO) {
+                            backgroundUriUserData.set(Uri.EMPTY)
+                        }
                         snackbarScope.launch {
                             snackbarHostState.showSnackbar(message)
                         }
@@ -156,11 +129,19 @@ fun rememberReaderBackgroundPainter(
         if (isDark) settingState.backgroundDarkImageUri else settingState.backgroundImageUri
     }
 
+    val fallback = remember { ColorPainter(Color.Transparent) }
+
     if (backgroundUri == Uri.EMPTY || backgroundUri.toString().isBlank()) {
-        return rememberPaperPainter()
+        return fallback
     }
 
-    return rememberCustomBackgroundPainter(backgroundUri, snackbarScope)
+    val backgroundUriUserData = if (isDark) {
+        settingState.backgroundDarkImageUriUserData
+    } else {
+        settingState.backgroundImageUriUserData
+    }
+
+    return rememberCustomBackgroundPainter(backgroundUri, backgroundUriUserData, fallback, snackbarScope)
 }
 
 @Composable

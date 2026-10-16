@@ -15,6 +15,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadStage
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
@@ -142,8 +143,9 @@ class CacheBookWork @AssistedInject constructor(
         downloadProgressRepository.addExportItem(downloadItem)
         var count = 0
         val bookVolumes = webBookDataSourceProvider.default.getBookVolumes(bookId)
-        val total = bookVolumes.volumes.sumOf { it.chapters.size } + 1
-        if (bookVolumes.volumes.isEmpty()) return Result.failure().also {
+        val totalChapters = bookVolumes.volumes.sumOf { it.chapters.size }
+        if (bookVolumes.volumes.isEmpty() || totalChapters == 0) return Result.failure().also {
+            downloadItem.progress = -1f
             downloadProgressRepository.removeExportItem(downloadItem)
             updateFailureNotification()
         }
@@ -152,14 +154,22 @@ class CacheBookWork @AssistedInject constructor(
         localBookDataSource.updateBookVolumes(bookVolumes)
         bookVolumes.volumes.forEach { volume ->
             volume.chapters.forEach { chapter ->
-                var chapter = ChapterContent.empty(chapter.id)
-                while (retry > 0 && chapter.isEmpty()) {
+                val detailText = if (volume.volumeTitle.isNotBlank()) {
+                    "${volume.volumeTitle} / ${chapter.title}"
+                } else {
+                    chapter.title
+                }
+                downloadItem.stage = DownloadStage.Chapters(count + 1, totalChapters)
+                downloadItem.detail = detailText
+
+                var chapterContent = ChapterContent.empty(chapter.id)
+                while (retry > 0 && chapterContent.isEmpty()) {
                     delay(1.5.seconds + penaltyDelay.seconds)
-                    chapter = webBookDataSourceProvider.default.getChapterContent(
+                    chapterContent = webBookDataSourceProvider.default.getChapterContent(
                         chapterId = chapter.id,
                         bookId = bookId
                     )
-                    if (chapter.isEmpty()) {
+                    if (chapterContent.isEmpty()) {
                         if (penaltyDelay == 0) {
                             penaltyDelay = 2
                         }
@@ -167,17 +177,23 @@ class CacheBookWork @AssistedInject constructor(
                         retry--
                     }
                 }
-                if (chapter.isEmpty()) return Result.failure().also {
+                if (chapterContent.isEmpty()) return Result.failure().also {
+                    downloadItem.progress = -1f
+                    downloadItem.stage = DownloadStage.Idle
+                    downloadItem.detail = ""
                     downloadProgressRepository.removeExportItem(downloadItem)
                     updateFailureNotification()
                 } else {
                     penaltyDelay /= 2
                 }
-                localBookDataSource.updateChapterContent(chapter)
+                localBookDataSource.updateChapterContent(chapterContent)
                 count ++
-                downloadItem.progress = count.toFloat() / total
+                val progress = (count.toFloat() / totalChapters) * 0.95f
+                downloadItem.progress = progress
+                downloadItem.stage = DownloadStage.Chapters(count, totalChapters)
+                downloadItem.detail = detailText
                 buildProgressNotification(
-                    progress = (downloadItem.progress * 100).toInt(),
+                    progress = (progress * 100).toInt(),
                     currentChapterTitle = chapter.title,
                     currentVolumeTitle = volume.volumeTitle
                 )
@@ -186,12 +202,17 @@ class CacheBookWork @AssistedInject constructor(
         webBookDataSourceProvider.default.getBookInformation(bookId)
             .let {
                 if (it.isEmpty()) return Result.failure().also {
+                    downloadItem.progress = -1f
+                    downloadItem.stage = DownloadStage.Idle
+                    downloadItem.detail = ""
                     downloadProgressRepository.removeExportItem(downloadItem)
                     updateFailureNotification()
                 }
                 localBookDataSource.updateBookInformation(it)
             }
         downloadItem.progress = 1f
+        downloadItem.stage = DownloadStage.Idle
+        downloadItem.detail = ""
         updateCompletionNotification()
         return Result.success()
     }

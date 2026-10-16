@@ -55,6 +55,7 @@
     <string name="next_chapter">下一章</string>
     <string name="save_rule">保存規則</string>
     <string name="delete_rule">刪除規則</string>
+    <string name="local_books">本地書本</string>
     <string name="data_import_success">導入成功</string>
     <string name="data_import_failed">導入失敗，請檢查檔案格式或檔案已損壞。</string>
     <string name="import_data_dialog_title">匯入資料</string>
@@ -108,7 +109,6 @@
     <string name="local_book_clear_index">刪除卷和章節目錄</string>
     <string name="local_book_clear_content">清除章節內容</string>
     <string name="local_book_clear_reading">刪除閱讀紀錄</string>
-    <string name="local_book_clear_confirm_title">確認刪除</string>
     <string name="local_book_clear_confirm_content">如果您繼續操作，選擇的內容將會刪除並且 %1$s 儲存空間將被釋放。\n你之後可以重新匯入或下載內容。\n此動作無法撤回。</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">開始快取：%1$s</string>
@@ -202,10 +202,9 @@
     <string name="paper_settings">紙張</string>
     <string name="settings_theme_bg_image">背景圖片</string>
     <string name="settings_theme_bg_image_desc">自訂閱讀器背景圖片</string>
-    <string name="settings_theme_bg_image_built_in">應用內建</string>
-    <string name="settings_theme_bg_image_built_in_desc">牛皮紙</string>
     <string name="settings_theme_bg_image_custom">自訂</string>
     <string name="settings_theme_bg_display_mode">背景顯示模式</string>
+    <string name="settings_theme_bg_image_not_set">未設定</string>
     <string name="settings_theme_bg_display_mode_desc">指定自訂背景圖片顯示模式（僅在滾動模式生效）</string>
     <string name="settings_theme_bg_color">背景顏色</string>
     <string name="settings_theme_bg_color_desc">自訂閱讀器背景色</string>
@@ -441,12 +440,17 @@
     <string name="completed">已完成</string>
     <string name="clear_all">全部清除</string>
     <string name="global_formatting_rules">全局規則</string>
+    <string name="text_formatting_no_rules">沒有規則</string>
+    <string name="text_formatting_no_book_rules">沒有書本規則</string>
+    <string name="text_formatting_no_book_rules_desc">沒有任何一本書受到不公平的對待。</string>
     <string name="n_rules">%d 個規則</string>
     <string name="rule_name">名稱</string>
+    <string name="text_formatting_unnamed_title">未命名</string>
     <string name="rule_match">匹配內容</string>
     <string name="rule_replacement">替換為</string>
     <string name="rule_is_regex">使用正則匹配</string>
     <string name="edit_rule">編輯規則</string>
+    <string name="text_field_required">此欄位必填。</string>
     <!-- Dialogs -->
     <string name="dialog_about_version">版本</string>
     <string name="dialog_delete_bookshelf">刪除書架</string>

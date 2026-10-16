@@ -108,7 +108,6 @@
     <string name="local_book_clear_index">Clear volume and chapter index</string>
     <string name="local_book_clear_content">Clear chapter content</string>
     <string name="local_book_clear_reading">Clear reading record</string>
-    <string name="local_book_clear_confirm_title">Confirm deletion</string>
     <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <!-- Snackbar Hints -->
     <string name="cache_book_started">Началось кэширование: %1$s</string>
@@ -203,8 +202,6 @@
     <string name="paper_settings">Бумага</string>
     <string name="settings_theme_bg_image">Фоновое изображение</string>
     <string name="settings_theme_bg_image_desc">Настройте фон для чтения</string>
-    <string name="settings_theme_bg_image_built_in">Встроенный фон</string>
-    <string name="settings_theme_bg_image_built_in_desc">Крафтовая бумага</string>
     <string name="settings_theme_bg_image_custom">Пользовательский</string>
     <string name="settings_theme_bg_display_mode">Режим отображения фона</string>
     <string name="settings_theme_bg_display_mode_desc">Настройте способ отображения фоновых изображений</string>
