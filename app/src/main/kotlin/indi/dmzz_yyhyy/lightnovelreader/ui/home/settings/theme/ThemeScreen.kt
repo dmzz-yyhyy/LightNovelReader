@@ -1,11 +1,16 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.theme
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -49,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -63,12 +69,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
-import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.rememberAsyncImagePainter
-import coil3.imageLoader
-import coil3.memory.MemoryCache
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.theme.AppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
@@ -92,7 +93,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileInputStream
 
 @Composable
 fun ThemeScreen(
@@ -115,9 +115,6 @@ fun ThemeScreen(
             }
             item {
                 ReaderThemeSettingsList(themeSettingState, onClickChangeBackgroundColor)
-            }
-            item {
-                BackgroundSettings(themeSettingState, context)
             }
             item {
                 ReaderTextSettings(themeSettingState, context, onClickChangeTextColor)
@@ -287,47 +284,83 @@ fun ThemeSettingsList(
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ReaderThemeSettingsList(
     settingState: SettingState,
     onClickChangeBackgroundColor: () -> Unit
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isDarkSelection by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri ?: return@rememberLauncherForActivityResult
+
+        scope.launch(Dispatchers.IO) {
+            val fileName = if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
+            val file = context.filesDir.resolve(fileName).apply {
+                if (exists()) delete()
+                createNewFile()
+            }
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                file.outputStream().use { output -> input.copyTo(output) }
+            }
+            val fileUri = file.toUri()
+            println("URI IS $fileUri")
+            if (isDarkSelection)
+                settingState.backgroundDarkImageUriUserData.asynchronousSet(fileUri)
+            else
+                settingState.backgroundImageUriUserData.asynchronousSet(fileUri)
+        }
+    }
+
+    fun clearBackgroundImage(isDark: Boolean) {
+        scope.launch(Dispatchers.IO) {
+            val fileName = if (isDark) "readerDarkBackgroundImage" else "readerBackgroundImage"
+            val file = context.filesDir.resolve(fileName)
+            if (file.exists()) file.delete()
+            if (isDark) {
+                settingState.backgroundDarkImageUriUserData.set(Uri.EMPTY)
+            } else {
+                settingState.backgroundImageUriUserData.set(Uri.EMPTY)
+            }
+        }
+    }
+
     SettingsCategory(
         title = stringResource(R.string.paper_settings),
     ) {
-        val context = LocalContext.current
-        val snackbarHostState = LocalSnackbarHost.current
+        val onSecondaryContainer = colorScheme.onSecondaryContainer
+        val background = colorScheme.background
+        val currentBgColor = readerBackgroundColor(settingState)
 
-        var lastEnabled by remember { mutableStateOf(settingState.enableBackgroundImage) }
-
-        LaunchedEffect(settingState.enableBackgroundImage) {
-            val now = settingState.enableBackgroundImage
-            if (!lastEnabled && now) {
-                val loader = context.imageLoader
-
-                val key = "default_kraft_paper"
-
-                val memHit = loader.memoryCache?.get(MemoryCache.Key(key)) != null
-                val diskHit = loader.diskCache?.openSnapshot(key)?.use { true } ?: false
-
-                if (!memHit && !diskHit) {
-                    snackbarHostState.showSnackbar("正在下载纸张背景…")
-
-                    loader.enqueue(
-                        ImageRequest.Builder(context)
-                            .data(key)
-                            .memoryCachePolicy(CachePolicy.ENABLED)
-                            .diskCachePolicy(CachePolicy.ENABLED)
-                            .networkCachePolicy(CachePolicy.ENABLED)
-                            .memoryCacheKey(key)
-                            .build()
+        SettingsClickableEntry(
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+            painter = painterResource(R.drawable.colorize_24px),
+            title = stringResource(R.string.settings_theme_bg_color),
+            description = stringResource(R.string.settings_theme_bg_color_desc),
+            onClick = onClickChangeBackgroundColor,
+            trailingContent = {
+                Canvas(
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    drawCircle(
+                        color = onSecondaryContainer,
+                        radius = 20.dp.toPx(),
+                    )
+                    drawCircle(
+                        color = background,
+                        radius = 17.5.dp.toPx(),
+                    )
+                    drawCircle(
+                        color = currentBgColor,
+                        radius = 17.5.dp.toPx(),
                     )
                 }
             }
-            lastEnabled = now
-        }
-
+        )
 
         SettingsSwitchEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
@@ -337,6 +370,7 @@ fun ReaderThemeSettingsList(
             checked = settingState.enableBackgroundImage,
             booleanUserData = settingState.enableBackgroundImageUserData
         )
+
         if (settingState.enableBackgroundImage) {
             SettingsMenuEntry(
                 modifier = Modifier.background(colorScheme.surfaceContainer),
@@ -347,33 +381,30 @@ fun ReaderThemeSettingsList(
                 selectedOptionKey = settingState.backgroundImageDisplayMode,
                 stringUserData = settingState.backgroundImageDisplayModeUserData
             )
-        } else {
-            val onSecondaryContainer = colorScheme.onSecondaryContainer
-            val background = colorScheme.background
-            val currentBgColor = readerBackgroundColor(settingState)
-            SettingsClickableEntry(
-                modifier = Modifier.background(colorScheme.surfaceContainer),
-                painter = painterResource(R.drawable.colorize_24px),
-                title = stringResource(R.string.settings_theme_bg_color),
-                description = stringResource(R.string.settings_theme_bg_color_desc),
-                onClick = onClickChangeBackgroundColor,
-                trailingContent = {
-                    Canvas(
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        drawCircle(
-                            color = onSecondaryContainer,
-                            radius = 20.dp.toPx(),
-                        )
-                        drawCircle(
-                            color = background,
-                            radius = 17.5.dp.toPx(),
-                        )
-                        drawCircle(
-                            color = currentBgColor,
-                            radius = 17.5.dp.toPx(),
-                        )
-                    }
+
+            BackgroundSelectRow(
+                label = stringResource(R.string.choose_light_bg),
+                painter = painterResource(R.drawable.light_mode_24px),
+                uri = settingState.backgroundImageUri,
+                onClick = {
+                    isDarkSelection = false
+                    launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                onClear = {
+                    clearBackgroundImage(isDark = false)
+                }
+            )
+
+            BackgroundSelectRow(
+                label = stringResource(R.string.choose_dark_bg),
+                painter = painterResource(R.drawable.dark_mode_24px),
+                uri = settingState.backgroundDarkImageUri,
+                onClick = {
+                    isDarkSelection = true
+                    launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                },
+                onClear = {
+                    clearBackgroundImage(isDark = true)
                 }
             )
         }
@@ -418,7 +449,7 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
         )
 
         val fontPicker = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
+            contract = OpenDocumentContract()
         ) { uri ->
             uri ?: return@rememberLauncherForActivityResult
             coroutineScope.launch(Dispatchers.IO) {
@@ -434,12 +465,18 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                 }
 
                 try {
-                    textMeasurer.measure(
-                        text = "",
-                        style = TextStyle(fontFamily = FontFamily(Font(fontFile)))
-                    )
+                    val typeface = Typeface.createFromFile(fontFile)
+                        ?: throw IllegalArgumentException("Invalid font file")
+                    withContext(Dispatchers.Main) {
+                        textMeasurer.measure(
+                            text = "Aa",
+                            style = TextStyle(fontFamily = FontFamily(typeface))
+                        )
+                    }
                     settingState.fontFamilyUriUserData.set(fontFile.toUri())
-                } catch (_: Exception) {
+                } catch (e: Exception) {
+                    Log.e("ReaderTextFont", "Invalid font selected", e)
+                    if (fontFile.exists()) fontFile.delete()
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             context,
@@ -462,7 +499,7 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
             onOptionChange = {
                 when (it) {
                     MenuOptions.SelectText.Default -> settingState.fontFamilyUriUserData.asynchronousSet(Uri.EMPTY)
-                    MenuOptions.SelectText.Customize -> fontPicker.launch("*/*")
+                    MenuOptions.SelectText.Customize -> fontPicker.launch(arrayOf("*/*"))
                 }
             }
         )
@@ -480,6 +517,7 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            Box(modifier = Modifier.fillMaxSize().background(readerBackgroundColor(settingState)))
             if (settingState.enableBackgroundImage) {
                 Image(
                     modifier = Modifier.fillMaxSize(),
@@ -487,8 +525,6 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
                     contentDescription = null,
                     contentScale = ContentScale.Crop
                 )
-            } else {
-                Box(modifier = Modifier.fillMaxSize().background(readerBackgroundColor(settingState)))
             }
 
             Text(
@@ -537,170 +573,112 @@ fun ReaderTextSettings(settingState: SettingState, context: Context, onClickChan
     }
 }
 
+private class OpenDocumentContract : ActivityResultContract<Array<String>, Uri?>() {
+    override fun createIntent(context: Context, input: Array<String>): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            putExtra(Intent.EXTRA_MIME_TYPES, input)
+            type = "*/*"
+        }
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Uri? {
+        if (resultCode != Activity.RESULT_OK || intent == null) return null
+        return intent.data ?: intent.clipData?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.uri
+    }
+}
+
 private suspend fun saveFontToLocal(context: Context, uri: Uri): File? = withContext(Dispatchers.IO) {
     val fontFile = context.filesDir.resolve("readerTextFont").apply {
         if (exists()) delete()
         createNewFile()
     }
     try {
-        context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-            FileInputStream(fd.fileDescriptor).use { input ->
-                fontFile.outputStream().use { output -> input.copyTo(output) }
-            }
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            fontFile.outputStream().use { output -> input.copyTo(output) }
         }
         fontFile
     } catch (e: Exception) {
         Log.e("ReaderTextFont", "Failed to import font", e)
+        if (fontFile.exists()) fontFile.delete()
         null
-    }
-}
-
-@Composable
-fun BackgroundSettings(settingState: SettingState, context: Context) {
-    val scope = rememberCoroutineScope()
-
-    val isCustomSelected = settingState.backgroundImageUri.toString().isNotBlank() ||
-            settingState.backgroundDarkImageUri.toString().isNotBlank()
-    var isDarkSelection by remember { mutableStateOf(false) }
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        scope.launch(Dispatchers.IO) {
-            val fileName = if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
-            val file = context.filesDir.resolve(fileName).apply {
-                if (exists()) delete()
-                createNewFile()
-            }
-            context.contentResolver.openFileDescriptor(uri, "r")?.use { fd ->
-                FileInputStream(fd.fileDescriptor).use { input ->
-                    file.outputStream().use { output -> input.copyTo(output) }
-                }
-            }
-            val fileUri = file.toUri()
-            if (isDarkSelection)
-                settingState.backgroundDarkImageUriUserData.set(fileUri)
-            else
-                settingState.backgroundImageUriUserData.set(fileUri)
-        }
-    }
-
-    if (!settingState.enableBackgroundImage) return
-
-    SettingsCategory(title = "自定义纸张") {
-        BackgroundCard(
-            title = stringResource(R.string.settings_theme_bg_image_built_in),
-            desc = stringResource(R.string.settings_theme_bg_image_built_in_desc),
-            selected = !isCustomSelected,
-            onClick = {
-                settingState.enableBackgroundImageUserData.asynchronousSet(true)
-                settingState.backgroundImageUriUserData.asynchronousSet(Uri.EMPTY)
-                settingState.backgroundDarkImageUriUserData.asynchronousSet(Uri.EMPTY)
-            }
-        )
-
-        BackgroundCard(
-            title = stringResource(R.string.settings_theme_bg_image_custom),
-            selected = isCustomSelected,
-            enabled = isCustomSelected,
-            onClick = { },
-            contentBelow = {
-                Column {
-                    Spacer(Modifier.height(6.dp))
-                    BackgroundSelectRow(
-                        label = stringResource(R.string.choose_light_bg),
-                        uri = settingState.backgroundImageUri,
-                        previewSize = 52.dp,
-                        onClick = {
-                            settingState.backgroundImageUriUserData.asynchronousSet(Uri.EMPTY)
-                            isDarkSelection = false
-                            launcher.launch("image/*")
-                        }
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    BackgroundSelectRow(
-                        label = stringResource(R.string.choose_dark_bg),
-                        uri = settingState.backgroundDarkImageUri,
-                        previewSize = 52.dp,
-                        onClick = {
-                            settingState.backgroundDarkImageUriUserData.asynchronousSet(Uri.EMPTY)
-                            isDarkSelection = true
-                            launcher.launch("image/*")
-                        }
-                    )
-                }
-            }
-        )
     }
 }
 
 @Composable
 private fun BackgroundSelectRow(
     label: String,
+    painter: Painter? = null,
     uri: Uri,
-    previewSize: Dp = 32.dp,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onClear: () -> Unit
 ) {
+    val hasImage = uri.toString().isNotBlank()
     Row(
         modifier = Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .background(colorScheme.surfaceContainer)
             .fillMaxWidth()
-            .background(colorScheme.background, RoundedCornerShape(8.dp))
             .clickable { onClick() }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 22.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, style = typography.headlineSmall)
-        Spacer(Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .size(previewSize)
-                .clip(RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            if (uri.toString().isNotBlank()) {
+        painter?.let {
+            Icon(
+                modifier = Modifier
+                    .padding(end = 22.dp)
+                    .size(24.dp),
+                painter = it,
+                tint = colorScheme.onSurfaceVariant,
+                contentDescription = null
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = label,
+                color = colorScheme.onSurface,
+                style = typography.headlineSmall
+            )
+            Text(
+                text = if (hasImage) stringResource(R.string.settings_theme_bg_image_custom)
+                else stringResource(R.string.settings_theme_bg_image_not_set),
+                color = if (hasImage) colorScheme.primary else colorScheme.onSurfaceVariant,
+                style = typography.bodyMedium
+            )
+        }
+        if (hasImage) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
                 Image(
                     painter = rememberAsyncImagePainter(uri),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-            } else {
+            }
+            Spacer(Modifier.width(8.dp))
+            IconButton(
+                onClick = onClear,
+                modifier = Modifier.size(36.dp)
+            ) {
                 Icon(
-                    painter = painterResource(R.drawable.arrow_forward_24px),
-                    contentDescription = null,
+                    painter = painterResource(R.drawable.close_24px),
+                    contentDescription = stringResource(R.string.local_book_clear),
+                    tint = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
+        } else {
+            Icon(
+                painter = painterResource(R.drawable.arrow_forward_24px),
+                contentDescription = null,
+                tint = colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(24.dp)
+            )
         }
-    }
-}
-
-@Composable
-private fun BackgroundCard(
-    title: String,
-    desc: String? = null,
-    selected: Boolean,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
-    contentBelow: (@Composable ColumnScope.() -> Unit)? = null
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .background(colorScheme.surfaceContainer)
-            .clip(RoundedCornerShape(8.dp))
-            .padding(12.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(title, style = typography.headlineSmall)
-                desc?.let { Text(it, style = typography.bodyMedium, color = colorScheme.secondary) }
-            }
-            Spacer(Modifier.weight(1f))
-            RadioButton(selected = selected, onClick = onClick, enabled = enabled)
-        }
-        contentBelow?.let { it() }
     }
 }
 

@@ -203,8 +203,6 @@
     <string name="paper_settings">Бумага</string>
     <string name="settings_theme_bg_image">Фоновое изображение</string>
     <string name="settings_theme_bg_image_desc">Настройте фон для чтения</string>
-    <string name="settings_theme_bg_image_built_in">Встроенный фон</string>
-    <string name="settings_theme_bg_image_built_in_desc">Крафтовая бумага</string>
     <string name="settings_theme_bg_image_custom">Пользовательский</string>
     <string name="settings_theme_bg_display_mode">Режим отображения фона</string>
     <string name="settings_theme_bg_display_mode_desc">Настройте способ отображения фоновых изображений</string>

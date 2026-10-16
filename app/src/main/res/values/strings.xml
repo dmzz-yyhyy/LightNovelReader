@@ -217,9 +217,8 @@
     <string name="paper_settings">Paper</string>
     <string name="settings_theme_bg_image">Background Image</string>
     <string name="settings_theme_bg_image_desc">Customize reader background image</string>
-    <string name="settings_theme_bg_image_built_in">Built-in</string>
-    <string name="settings_theme_bg_image_built_in_desc">Kraft Paper</string>
     <string name="settings_theme_bg_image_custom">Custom</string>
+    <string name="settings_theme_bg_image_not_set">Not set</string>
     <string name="settings_theme_bg_display_mode">Background Display Mode</string>
     <string name="settings_theme_bg_display_mode_desc">Set how custom background images are displayed (effective in scroll mode only)</string>
     <string name="settings_theme_bg_color">Background Color</string>

@@ -204,9 +204,8 @@
     <string name="paper_settings">纸张</string>
     <string name="settings_theme_bg_image">背景图片</string>
     <string name="settings_theme_bg_image_desc">自定义阅读器背景图片</string>
-    <string name="settings_theme_bg_image_built_in">应用内置</string>
-    <string name="settings_theme_bg_image_built_in_desc">牛皮纸</string>
     <string name="settings_theme_bg_image_custom">自定义</string>
+    <string name="settings_theme_bg_image_not_set">未设置</string>
     <string name="settings_theme_bg_display_mode">背景显示模式</string>
     <string name="settings_theme_bg_display_mode_desc">指定自定义背景图片显示模式（仅在滚动模式生效）</string>
     <string name="settings_theme_bg_color">背景颜色</string>
