@@ -240,7 +240,10 @@ fun ReaderScreen(
                 showSettingsBottomSheet = false
             },
             settingState = settingState,
-            onClickThemeSettings = onClickThemeSettings
+            onClickThemeSettings = {
+                showSettingsBottomSheet = false
+                onClickThemeSettings()
+            }
         )
     }
 

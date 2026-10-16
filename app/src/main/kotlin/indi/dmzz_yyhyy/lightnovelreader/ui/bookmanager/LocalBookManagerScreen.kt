@@ -290,20 +290,19 @@ fun LocalBookManagerContent(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 14.dp),
+                .padding(horizontal = 12.dp),
             targetState = shownInfoItem,
             transitionSpec = {
                 (
-                    slideInVertically(
-                        initialOffsetY = { it / 3 },
+                    (slideInVertically(
+                        initialOffsetY = { it / 4 },
                         animationSpec = tween(250, easing = FastOutSlowInEasing)
-                    ) + fadeIn(tween(200, easing = FastOutSlowInEasing))
-                    ) togetherWith (
-                    slideOutVertically(
-                        targetOffsetY = { it / 3 },
-                        animationSpec = tween(180, easing = FastOutSlowInEasing)
-                    ) + fadeOut(tween(150, easing = FastOutSlowInEasing))
-                    )
+                    ) + fadeIn(tween(200, easing = FastOutSlowInEasing))) togetherWith
+                        (slideOutVertically(
+                            targetOffsetY = { it / 4 },
+                            animationSpec = tween(180, easing = FastOutSlowInEasing)
+                        ) + fadeOut(tween(150, easing = FastOutSlowInEasing)))
+                ).using(null)
             },
             label = "infoBar"
         ) { item ->

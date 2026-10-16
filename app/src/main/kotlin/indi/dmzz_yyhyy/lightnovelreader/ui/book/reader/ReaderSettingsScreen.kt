@@ -32,7 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +51,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +69,18 @@ fun SettingsBottomSheet(
         tonalElevation = 16.dp
     ) {
         var selectedTabIndex by remember { mutableIntStateOf(0) }
+        var isNavigating by remember { mutableStateOf(false) }
+        val coroutineScope = rememberCoroutineScope()
+
+        val navigateToThemeSettings: () -> Unit = {
+            if (!isNavigating) {
+                isNavigating = true
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onClickThemeSettings()
+                }
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -82,7 +97,7 @@ fun SettingsBottomSheet(
                 settingState = settingState,
                 selectedTabIndex = selectedTabIndex,
                 onTabSelected = { index -> selectedTabIndex = index },
-                onClickThemeSettings = onClickThemeSettings
+                onClickThemeSettings = navigateToThemeSettings
             )
         }
     }
