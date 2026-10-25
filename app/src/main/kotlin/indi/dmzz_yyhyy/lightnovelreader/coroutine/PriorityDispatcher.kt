@@ -4,7 +4,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -14,7 +14,7 @@ import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
 
-@OptIn(InternalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class PriorityDispatcher(
     private val maxConcurrency: Int,
     private val defaultPriority: Int = 0,
@@ -54,13 +54,16 @@ class PriorityDispatcher(
     private suspend fun runCoordinator(startPaused: Boolean) {
         val readyTasks = TaskHeap()
         val pendingStarts = TaskHeap()
-        val knownJobs = mutableSetOf<Job>()
         val activeJobs = mutableSetOf<Job>()
         var paused = startPaused
         var acceptingTasks = true
         var nextSequence = 0L
 
-        fun enqueue(priority: Int, block: Runnable, job: Job?) {
+        fun enqueue(priority: Int, block: Runnable, dispatchedJob: Job?) {
+            // A request can create child Jobs via coroutineScope, async or withContext.
+            // They share its slot, since the request must wait for them to complete.
+            val job = generateSequence(dispatchedJob) { it.parent }
+                .firstOrNull { it in activeJobs } ?: dispatchedJob
             val task = ScheduledTask(
                 priority = priority,
                 sequence = nextSequence++,
@@ -68,21 +71,7 @@ class PriorityDispatcher(
                 job = job,
             )
 
-            if (job == null) {
-                readyTasks.add(task)
-                return
-            }
-
-            if (job !in knownJobs) {
-                knownJobs += job
-                job.invokeOnCompletion {
-                    commands.trySend(Command.JobCompleted(job))
-                }
-                pendingStarts.add(task)
-                return
-            }
-
-            if (job in activeJobs) {
+            if (job == null || job in activeJobs || job.isCompleted) {
                 readyTasks.add(task)
             } else {
                 pendingStarts.add(task)
@@ -91,8 +80,11 @@ class PriorityDispatcher(
 
         fun launchTask(task: ScheduledTask) {
             val taskJob = task.job
-            if (taskJob != null) {
-                activeJobs += taskJob
+            if (taskJob != null && activeJobs.add(taskJob)) {
+                // Register on admission: a queued Job may already have completed.
+                taskJob.invokeOnCompletion {
+                    commands.trySend(Command.JobCompleted(taskJob))
+                }
             }
 
             workerScope.launch {
@@ -128,7 +120,6 @@ class PriorityDispatcher(
 
                 is Command.JobCompleted -> {
                     activeJobs -= command.job
-                    knownJobs -= command.job
                 }
 
                 Command.Pause -> paused = true
