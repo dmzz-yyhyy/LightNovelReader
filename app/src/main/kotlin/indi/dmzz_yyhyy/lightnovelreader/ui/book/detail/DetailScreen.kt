@@ -113,7 +113,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.na
 import indi.dmzz_yyhyy.lightnovelreader.utils.DefaultBookCoverRenderer
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
-import indi.dmzz_yyhyy.lightnovelreader.utils.dateFormatter
+import indi.dmzz_yyhyy.lightnovelreader.utils.formatDate
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadeInOnce
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.isScrollingUp
@@ -809,7 +809,7 @@ private fun BookCardBlock(
     } else {
         stringResource(
             R.string.book_info_update_date,
-            bookInformation.lastUpdated.format(dateFormatter())
+            formatDate(bookInformation.lastUpdated.toLocalDate())
         )
     }
     val wordCountText = bookInformation.wordCount.get()

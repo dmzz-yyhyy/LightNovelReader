@@ -26,7 +26,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.DateFormat
 import indi.dmzz_yyhyy.lightnovelreader.utils.DateOrder
-import indi.dmzz_yyhyy.lightnovelreader.utils.dateFormatter
+import indi.dmzz_yyhyy.lightnovelreader.utils.formatDate
 import indi.dmzz_yyhyy.lightnovelreader.utils.formTime
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -50,7 +50,7 @@ fun SettingsList(settingState: SettingState) {
     val dateOrder = DateOrder.fromString(settingState.dateOrder)
 
     val dateDescription =
-        exampleDate.format(dateFormatter(dateFormat, settingState.dateShowYear, dateOrder))
+        formatDate(exampleDate, dateFormat, settingState.dateShowYear, dateOrder)
     val relativeDescription = formTime(
         exampleRelativeTime,
         dateFormat,
