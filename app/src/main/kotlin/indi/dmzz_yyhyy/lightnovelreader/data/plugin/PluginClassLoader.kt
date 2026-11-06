@@ -41,6 +41,9 @@ class PluginClassLoader(
             "androidx.",
             "j$.",
             "io.nightfish.lightnovelreader.api.",
+            // Result 由 API 直接暴露, 必须与宿主共用同一份类,
+            // 否则插件返回的 Result 会在宿主侧转换时触发 ClassCastException
+            "com.github.michaelbull.result.",
         )
     }
 }
