@@ -25,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Switch
@@ -75,9 +74,7 @@ fun PluginManagerScreen(
     onClickShowSignatures: (String) -> Unit,
     dataSourceItems: List<WebDataSourceItem>,
     enabledDataSourceIds: Set<Identifier>,
-    primaryDataSourceId: Identifier,
-    onDataSourceEnabledChange: (Identifier, Boolean) -> Unit,
-    onPrimaryDataSourceChange: (Identifier) -> Unit
+    onDataSourceEnabledChange: (Identifier, Boolean) -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val claim = LocalClaimSnackbarHost.current
@@ -122,9 +119,7 @@ fun PluginManagerScreen(
             DataSourceSection(
                 items = dataSourceItems,
                 enabledIds = enabledDataSourceIds,
-                primaryId = primaryDataSourceId,
-                onEnabledChange = onDataSourceEnabledChange,
-                onPrimaryChange = onPrimaryDataSourceChange
+                onEnabledChange = onDataSourceEnabledChange
             )
             if (pluginInfoList.isEmpty()) {
                 Column(
@@ -285,9 +280,7 @@ private fun TopBar(
 private fun DataSourceSection(
     items: List<WebDataSourceItem>,
     enabledIds: Set<Identifier>,
-    primaryId: Identifier,
-    onEnabledChange: (Identifier, Boolean) -> Unit,
-    onPrimaryChange: (Identifier) -> Unit
+    onEnabledChange: (Identifier, Boolean) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
         SectionHeader(
@@ -321,11 +314,6 @@ private fun DataSourceSection(
                 Switch(
                     checked = enabled,
                     onCheckedChange = { onEnabledChange(item.id, it) }
-                )
-                RadioButton(
-                    selected = item.id == primaryId,
-                    enabled = enabled,
-                    onClick = { onPrimaryChange(item.id) }
                 )
             }
         }

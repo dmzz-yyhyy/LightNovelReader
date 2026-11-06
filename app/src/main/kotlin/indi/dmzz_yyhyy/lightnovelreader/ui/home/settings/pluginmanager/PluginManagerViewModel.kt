@@ -42,27 +42,14 @@ class PluginManagerViewModel @Inject constructor(
         webBookDataSourceManager.enabledDataSourceIds
     )
         private set
-    var primaryDataSourceId: Identifier by mutableStateOf(
-        webBookDataSourceManager.primaryDataSourceId
-    )
-        private set
-
     fun refreshDataSources() {
         dataSourceItems = webBookDataSourceManager.webDataSourceItems
         enabledDataSourceIds = webBookDataSourceManager.enabledDataSourceIds
-        primaryDataSourceId = webBookDataSourceManager.primaryDataSourceId
     }
 
     fun setDataSourceEnabled(sourceId: Identifier, enabled: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             webBookDataSourceManager.setWebDataSourceEnabled(sourceId, enabled)
-            refreshDataSources()
-        }
-    }
-
-    fun setPrimaryDataSource(sourceId: Identifier) {
-        viewModelScope.launch(Dispatchers.IO) {
-            webBookDataSourceManager.setPrimaryWebDataSource(sourceId)
             refreshDataSources()
         }
     }

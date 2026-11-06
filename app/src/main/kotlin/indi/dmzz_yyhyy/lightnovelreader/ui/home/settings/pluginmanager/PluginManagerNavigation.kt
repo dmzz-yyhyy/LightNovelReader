@@ -190,9 +190,7 @@ fun NavEntryScope.settingsPluginManagerHomeDestination() {
             },
             dataSourceItems = viewModel.dataSourceItems,
             enabledDataSourceIds = viewModel.enabledDataSourceIds,
-            primaryDataSourceId = viewModel.primaryDataSourceId,
-            onDataSourceEnabledChange = viewModel::setDataSourceEnabled,
-            onPrimaryDataSourceChange = viewModel::setPrimaryDataSource
+            onDataSourceEnabledChange = viewModel::setDataSourceEnabled
         )
 
         if (pendingInstallUri != null) {
