@@ -7,6 +7,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.qualifyBookId
+import indi.dmzz_yyhyy.lightnovelreader.utils.convertOldId
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
@@ -26,15 +29,21 @@ class ExpandedPageViewModel @Inject constructor(
     private var expandedPageDataSource: ExploreExpandedPageDataSource? = null
     private var exploreExpandedPageBookListCollectJob: Job? = null
     private var lastExpandedPageDataSourceId: String = ""
+    private var sourceId: Identifier? = null
     private val _uiState = MutableExpandedPageUiState()
     val uiState: ExpandedPageUiState = _uiState
 
-    fun init(expandedPageDataSourceId: String) {
-        if (exploreRepository.explorePageProvider !is ExplorePageProvider.DefaultExplorePageProvider) return
-        val explorePageProvider =
-            exploreRepository.explorePageProvider as ExplorePageProvider.DefaultExplorePageProvider
-        if (expandedPageDataSourceId == lastExpandedPageDataSourceId) return
-        lastExpandedPageDataSourceId = expandedPageDataSourceId
+    fun init(expandedPageDataSourceId: String, sourceIdString: String = "") {
+        val newSourceId = if (sourceIdString.isBlank()) null else sourceIdString.convertOldId()
+        sourceId = newSourceId
+        val provider = newSourceId
+            ?.let { exploreRepository.getExplorePageProvider(it) }
+            ?: exploreRepository.explorePageProvider
+        if (provider !is ExplorePageProvider.DefaultExplorePageProvider) return
+        val explorePageProvider = provider
+        val cacheKey = "${sourceIdString}|$expandedPageDataSourceId"
+        if (cacheKey == lastExpandedPageDataSourceId) return
+        lastExpandedPageDataSourceId = cacheKey
 
         expandedPageDataSource =
             explorePageProvider.exploreExpandedPageDataSourceMap[expandedPageDataSourceId]
@@ -67,17 +76,19 @@ class ExpandedPageViewModel @Inject constructor(
             expandedPageDataSource?.let { dataSource ->
                 dataSource.getResultFlow().collect { rawResult ->
                     when (rawResult) {
-                        is SearchResult.SingleBook -> _uiState.bookList.add(
-                            rawResult.bookId to bookRepository.getBookInformationFlow(
-                                rawResult.bookId
+                        is SearchResult.SingleBook -> {
+                            val localBookId = bookId(rawResult.bookId)
+                            _uiState.bookList.add(
+                                localBookId to bookRepository.getBookInformationFlow(localBookId)
                             )
-                        )
+                        }
 
-                        is SearchResult.MultipleBook -> _uiState.bookList.add(
-                            rawResult.bookId to bookRepository.getBookInformationFlow(
-                                rawResult.bookId
+                        is SearchResult.MultipleBook -> {
+                            val localBookId = bookId(rawResult.bookId)
+                            _uiState.bookList.add(
+                                localBookId to bookRepository.getBookInformationFlow(localBookId)
                             )
-                        )
+                        }
 
                         else -> {}
                     }
@@ -95,6 +106,9 @@ class ExpandedPageViewModel @Inject constructor(
     }
 
     fun refresh() {
-        init(lastExpandedPageDataSourceId)
+        init(lastExpandedPageDataSourceId.substringAfter('|'), sourceId?.toString() ?: "")
     }
+
+    private fun bookId(remoteBookId: String): String =
+        sourceId?.let { qualifyBookId(it.toString(), remoteBookId) } ?: remoteBookId
 }

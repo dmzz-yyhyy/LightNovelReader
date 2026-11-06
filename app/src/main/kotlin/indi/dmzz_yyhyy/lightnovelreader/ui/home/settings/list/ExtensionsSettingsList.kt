@@ -17,16 +17,8 @@ fun ExtensionsSettingsList(
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),
         painter = painterResource(R.drawable.public_24px),
-        title = stringResource(R.string.settings_select_data_source),
-        description = stringResource(R.string.settings_select_data_source_desc),
-        onClick = onClickChangeSource
-    )
-    SettingsClickableEntry(
-        modifier = Modifier.background(colorScheme.surfaceContainer),
-        painter = painterResource(R.drawable.extension_24px),
-        title = stringResource(id = R.string.settings_plugins),
-        description = stringResource(id = R.string.settings_plugins_desc),
-        onClick = onClickPluginManager,
-        option = stringResource(R.string.item_view_details)
+        title = stringResource(R.string.settings_sources_and_plugins),
+        description = stringResource(R.string.settings_sources_and_plugins_desc),
+        onClick = onClickPluginManager
     )
 }

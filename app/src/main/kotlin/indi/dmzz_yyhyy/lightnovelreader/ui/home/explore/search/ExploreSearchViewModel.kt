@@ -90,10 +90,11 @@ class ExploreSearchViewModel @Inject constructor(
         _uiState.errorMessage = ""
         _uiState.searchResult.clear()
         searchJob?.cancel()
-        val searchType =
-            exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
         searchJob = viewModelScope.launch(Dispatchers.IO) {
-            val flow = exploreRepository.search(searchType, keyword)
+            val flow = exploreRepository.searchAll(
+                keyword,
+                _uiState.searchType.takeIf { it.isNotBlank() }
+            )
             _uiState.isLoading = false
             flow.collect {
                 when (it) {

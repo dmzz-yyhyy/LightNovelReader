@@ -38,24 +38,24 @@ class CacheBookWork @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val bookId = inputData.getString("bookId") ?: return Result.failure()
         if (bookId.isBlank()) return Result.failure()
-        val webBookDataSource = bookSourceResolver.resolve(bookId)
+        val ref = bookSourceResolver.resolveBook(bookId)
         val downloadItem = MutableDownloadItem(
             DownloadType.CACHE,
             bookId,
             bookRepository.getBookInformationFlow(bookId)
         )
         downloadProgressRepository.addExportItem(downloadItem)
-        webBookDataSource.getBookVolumes(bookId)
+        ref.source.getBookVolumes(ref.remoteBookId)
             .andThen { bookVolumes ->
                 coroutineBinding {
                     var count = 0
                     val total = bookVolumes.volumes.sumOf { it.chapters.size } + 1
-                    localBookDataSource.updateBookVolumes(bookVolumes)
+                    localBookDataSource.updateBookVolumes(bookVolumes.copy(bookId = bookId))
                     bookVolumes.volumes.forEach { volume ->
                         volume.chapters.map { it.id }.forEach { chapterId ->
-                            val chapter = webBookDataSource.getChapterContent(
+                            val chapter = ref.source.getChapterContent(
                                 chapterId = chapterId,
-                                bookId = bookId
+                                bookId = ref.remoteBookId
                             ).bind()
                             localBookDataSource.updateChapterContent(chapter)
                             count++
@@ -67,8 +67,11 @@ class CacheBookWork @AssistedInject constructor(
             .andThen {
                 coroutineBinding {
                     val bookInformation =
-                        webBookDataSource.getBookInformation(bookId).bind()
-                    localBookDataSource.updateBookInformation(bookInformation, webBookDataSource.id.toString())
+                        ref.source.getBookInformation(ref.remoteBookId).bind()
+                    localBookDataSource.updateBookInformation(
+                        bookInformation.copy(id = bookId),
+                        ref.sourceId.toString()
+                    )
                 }
             }
             .onOk {

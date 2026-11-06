@@ -52,24 +52,25 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookInformation, WebRequestError>> = flow {
-        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(id)
+        val ref = bookSourceResolver.resolveBook(id)
         localBookDataSource.getBookInformation(id)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
-        webBookDataSource.getBookInformation(id, priority)
+        ref.source.getBookInformation(ref.remoteBookId, priority)
             .onOk { remote ->
+                val local = remote.copy(id = id)
                 localBookDataSource.updateBookInformation(
-                    remote,
-                    webBookDataSource.id.toString()
+                    local,
+                    ref.sourceId.toString()
                 )
                 val bookshelfBookMetadata =
-                    bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
-                if (bookshelfBookMetadata.lastUpdate.isBefore(remote.lastUpdated))
+                    bookshelfRepository.getBookshelfBookMetadata(id) ?: return@onOk
+                if (bookshelfBookMetadata.lastUpdate.isBefore(local.lastUpdated))
                     bookshelfBookMetadata.bookShelfIds.forEach {
                         bookshelfRepository.updateBookshelfBookMetadataLastUpdateTime(
-                            remote.id,
-                            remote.lastUpdated
+                            id,
+                            local.lastUpdated
                         )
                         bookshelfRepository.addUpdatedBooksIntoBookShelf(it, id)
                     }
@@ -77,8 +78,8 @@ class BookRepository @Inject constructor(
                 Log.e(TAG, "Failed to request web data (title=${it.title}, message=${it.message})")
                 it.throwable?.printStackTrace()
             }
-            .also {
-                emit(it)
+            .also { result ->
+                emit(result.map { it.copy(id = id) })
             }
     }.map { result ->
         result.map {
@@ -90,20 +91,20 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookVolumes, WebRequestError>> = flow {
-        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(id)
+        val ref = bookSourceResolver.resolveBook(id)
         localBookDataSource.getBookVolumes(id)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
-        webBookDataSource.getBookVolumes(id, priority)
+        ref.source.getBookVolumes(ref.remoteBookId, priority)
             .onOk { remote ->
-                localBookDataSource.updateBookVolumes(remote)
+                localBookDataSource.updateBookVolumes(remote.copy(bookId = id))
             }.onErr {
                 Log.e(TAG, "Failed to request web data (title=${it.title}, message=${it.message})")
                 it.throwable?.printStackTrace()
             }
-            .also {
-                emit(it)
+            .also { result ->
+                emit(result.map { it.copy(bookId = id) })
             }
     }.map { result ->
         result.map {
@@ -116,12 +117,12 @@ class BookRepository @Inject constructor(
         bookId: String,
         priority: WebDataSourcePriority
     ): Flow<Result<ChapterContent, WebRequestError>> = flow {
-        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(bookId)
+        val ref = bookSourceResolver.resolveBook(bookId)
         localBookDataSource.getChapterContent(chapterId)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
-        webBookDataSource.getChapterContent(chapterId, bookId, priority)
+        ref.source.getChapterContent(chapterId, ref.remoteBookId, priority)
             .onOk { remote ->
                 localBookDataSource.updateChapterContent(remote)
             }.onErr {
@@ -142,8 +143,8 @@ class BookRepository @Inject constructor(
         bookId: String,
         priority: WebDataSourcePriority
     ) {
-        val webBookDataSource = bookSourceResolver.resolve(bookId)
-        webBookDataSource.getChapterContent(chapterId, bookId, priority)
+        val ref = bookSourceResolver.resolveBook(bookId)
+        ref.source.getChapterContent(chapterId, ref.remoteBookId, priority)
             .onOk { remote ->
                 localBookDataSource.updateChapterContent(remote)
             }.onErr {

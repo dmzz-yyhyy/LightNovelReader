@@ -306,7 +306,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         fileUri: Uri
     ): Result = withContext(Dispatchers.IO) {
         Log.d(TAG, "export volumes=$selectedVolume")
-        val webBookDataSource = bookSourceResolver.resolve(bookId)
+        val bookRef = bookSourceResolver.resolveBook(bookId)
         val epubMap = mutableMapOf<String, EpubBuilder>()
         if (bookInformation.coverUri == Uri.EMPTY) {
             DefaultBookCoverRenderer.writeTo(
@@ -330,8 +330,8 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 if (currentVolumeIndex == 0) cover(cover)
                 else {
                     val url = runCatching {
-                        webBookDataSource.getCoverUriInVolume(
-                            bookId,
+                        bookRef.source.getCoverUriInVolume(
+                            bookRef.remoteBookId,
                             volume,
                             bookContentMap,
                             applicationContext

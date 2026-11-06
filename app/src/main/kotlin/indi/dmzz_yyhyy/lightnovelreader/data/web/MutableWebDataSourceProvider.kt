@@ -10,6 +10,7 @@ import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 class MutableWebDataSourceProvider : WebBookDataSourceProvider {
     private var _value: ProxyWebBookDataSource = wrap(EmptyWebDataSource)
     private val _sources = linkedMapOf<Identifier, ProxyWebBookDataSource>()
+    private var _enabledIds: Set<Identifier> = emptySet()
 
     override val value: ProxyWebBookDataSource
         get() = _value
@@ -17,6 +18,9 @@ class MutableWebDataSourceProvider : WebBookDataSourceProvider {
     override fun get(id: Identifier): ProxyWebBookDataSource? = _sources[id]
 
     override fun getAll(): List<ProxyWebBookDataSource> = _sources.values.toList()
+
+    override fun getEnabled(): List<ProxyWebBookDataSource> =
+        _sources.filterKeys { _enabledIds.contains(it) }.values.toList()
 
     override fun isWebDataSourceFounded(): Boolean = _value.origin !is NotFoundWebDataSource
 
@@ -26,12 +30,14 @@ class MutableWebDataSourceProvider : WebBookDataSourceProvider {
      */
     fun updateAll(
         webBookDataSources: Map<Identifier, WebBookDataSource>,
-        primaryId: Identifier
+        primaryId: Identifier,
+        enabledIds: Set<Identifier> = webBookDataSources.keys
     ) {
         _sources.clear()
         webBookDataSources.forEach { (id, dataSource) ->
             _sources[id] = wrap(dataSource)
         }
+        _enabledIds = enabledIds.filter { _sources.containsKey(it) }.toSet()
         _value = _sources[primaryId] ?: wrap(NotFoundWebDataSource(primaryId))
     }
 

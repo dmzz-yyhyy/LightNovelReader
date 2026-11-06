@@ -47,10 +47,12 @@ class CheckUpdateWork @AssistedInject constructor(
             delay(3000.milliseconds)
             if (!needRemindBookIdSet.contains(bookshelfBookMetadata.id)) return@forEach
             Log.d("CheckUpdateWork", "Updating book id=${bookshelfBookMetadata.id}")
-            bookSourceResolver.resolve(bookshelfBookMetadata.id).getBookInformation(
-                bookshelfBookMetadata.id,
+            val ref = bookSourceResolver.resolveBook(bookshelfBookMetadata.id)
+            ref.source.getBookInformation(
+                ref.remoteBookId,
                 WebDataSourcePriority.Low
-            ).onOk { bookInformation ->
+            ).onOk { remote ->
+                val bookInformation = remote.copy(id = bookshelfBookMetadata.id)
                 val webBookLastUpdate = bookInformation.lastUpdated
                 if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
                     bookshelfBookMetadata.bookShelfIds.forEach {

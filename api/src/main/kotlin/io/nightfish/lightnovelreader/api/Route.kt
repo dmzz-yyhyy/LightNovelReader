@@ -114,7 +114,8 @@ sealed interface Route : NavKey {
              */
             @Serializable
             data class Expanded(
-                val expandedPageDataSourceId: String
+                val expandedPageDataSourceId: String,
+                val sourceId: String = ""
             ) : Route
         }
 

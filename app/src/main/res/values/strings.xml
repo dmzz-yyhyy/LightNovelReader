@@ -240,6 +240,8 @@
     <string name="settings_storage_manager_desc">Review how storage is used by the app, cache, plugins, and local files.</string>
     <string name="settings_select_data_source">Data Source</string>
     <string name="settings_select_data_source_desc">Switch the app\'s data source</string>
+    <string name="settings_sources_and_plugins">Sources and Plugins</string>
+    <string name="settings_sources_and_plugins_desc">Choose and enable data sources, install and manage plugins</string>
     <string name="settings_plugins">Plugins</string>
     <string name="settings_plugins_desc">Install and manage Plugins</string>
     <string name="settings_app_logs">App Logs</string>

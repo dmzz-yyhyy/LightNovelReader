@@ -25,4 +25,9 @@ interface WebBookDataSourceProvider {
      * 获取所有已注册且可用的数据源
      */
     fun getAll(): List<ProxyWebBookDataSource>
+
+    /**
+     * 获取所有已启用(用户允许参与搜索/探索)的数据源
+     */
+    fun getEnabled(): List<ProxyWebBookDataSource>
 }

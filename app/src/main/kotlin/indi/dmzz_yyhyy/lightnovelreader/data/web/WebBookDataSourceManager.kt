@@ -27,6 +27,10 @@ class WebBookDataSourceManager @Inject constructor(
     private val mutableWebDataSourceProvider = MutableWebDataSourceProvider()
     private val webBookDataSources = mutableListOf<WebBookDataSource>()
     private val loadedWebDataSourceIds = mutableSetOf<Identifier>()
+    private var _enabledDataSourceIds: Set<Identifier> = emptySet()
+
+    /** 用户启用、允许参与搜索/探索的数据源 */
+    val enabledDataSourceIds: Set<Identifier> get() = _enabledDataSourceIds
 
     override fun registerWebDataSource(
         webBookDataSource: WebBookDataSource,
@@ -101,18 +105,65 @@ class WebBookDataSourceManager @Inject constructor(
         return mutableWebDataSourceProvider
     }
 
+    val primaryDataSourceId: Identifier get() = mutableWebDataSourceProvider.value.id
+
+    fun setPrimaryWebDataSource(sourceId: Identifier) = runBlocking {
+        userDataRepository
+            .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+            .set(sourceId.toString())
+        onWebDataSourceListChange()
+    }
+
     fun onWebDataSourceListChange() = runBlocking {
-        val webDataSourcesId = userDataRepository
+        val configuredPrimaryId = userDataRepository
             .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
             .get()
             ?.convertOldId() ?: "Wenku8".ofId()
+
+        // 未设置过启用列表时默认启用全部数据源
+        val storedEnabled = userDataRepository
+            .stringListUserData(UserDataPath.Settings.Data.EnabledWebDataSourceIds.path)
+            .get()
+        val enabledIds = storedEnabled
+            ?.mapNotNull { runCatching { it.convertOldId() }.getOrNull() }
+            ?.filter { id -> webBookDataSources.any { it.id == id } }
+            ?.toSet()
+            ?: webBookDataSources.map { it.id }.toSet()
+        _enabledDataSourceIds = enabledIds
+
+        // 主数据源必须处于启用状态
+        val primaryId = if (configuredPrimaryId in enabledIds || enabledIds.isEmpty()) {
+            configuredPrimaryId
+        } else {
+            enabledIds.first().also { fallback ->
+                userDataRepository
+                    .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+                    .set(fallback.toString())
+            }
+        }
+
         // 多活动数据源: 每个已注册的数据源都要初始化一次, 且只初始化一次
         webBookDataSources.forEach { dataSource ->
             if (loadedWebDataSourceIds.add(dataSource.id)) dataSource.onLoad()
         }
         mutableWebDataSourceProvider.updateAll(
             webBookDataSources.associateBy { it.id },
-            webDataSourcesId
+            primaryId,
+            enabledIds
         )
+    }
+
+    /**
+     * 启用/停用某个数据源。停用当前主数据源时会自动切换到另一个已启用数据源。
+     */
+    fun setWebDataSourceEnabled(sourceId: Identifier, enabled: Boolean) {
+        val current = _enabledDataSourceIds.toMutableSet()
+        if (enabled) current.add(sourceId) else current.remove(sourceId)
+        runBlocking {
+            userDataRepository
+                .stringListUserData(UserDataPath.Settings.Data.EnabledWebDataSourceIds.path)
+                .set(current.map { it.toString() })
+            onWebDataSourceListChange()
+        }
     }
 }

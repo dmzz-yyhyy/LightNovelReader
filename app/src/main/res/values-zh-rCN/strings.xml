@@ -230,6 +230,8 @@
     <string name="settings_storage_manager_desc">查看软件缓存, 插件存储使用情况</string>
     <string name="settings_select_data_source">数据源</string>
     <string name="settings_select_data_source_desc">切换软件数据源</string>
+    <string name="settings_sources_and_plugins">数据源与插件</string>
+    <string name="settings_sources_and_plugins_desc">选择并启用数据源，安装和管理插件</string>
     <string name="settings_plugins">扩展插件</string>
     <string name="settings_plugins_desc">安装和管理扩展插件</string>
     <string name="settings_app_logs">应用日志</string>

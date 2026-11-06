@@ -22,10 +22,16 @@ fun NavEntryScope.exploreHomeDestination() {
             ExploreHomeScreen(
                 exploreUiState = exploreViewModel.uiState,
                 exploreHomeUiState = exploreHomeViewModel.uiState,
-                onClickExpand = navigator::navigateToExploreExpandDestination,
+                onClickExpand = { expandedPageId ->
+                    navigator.navigateToExploreExpandDestination(
+                        expandedPageId,
+                        exploreHomeViewModel.uiState.selectedSourceId?.toString() ?: ""
+                    )
+                },
                 onClickBook = navigator::navigateToBookDetailDestination,
                 init = exploreHomeViewModel::init,
                 changePage = exploreHomeViewModel::changePage,
+                changeSource = exploreHomeViewModel::changeSource,
                 onClickSearch = navigator::navigateToSearchDestination,
                 refresh = exploreHomeViewModel::refresh
             )
@@ -33,6 +39,8 @@ fun NavEntryScope.exploreHomeDestination() {
             CustomExploreHomeScreen(
                 init = exploreHomeViewModel::init,
                 onClickSearch = navigator::navigateToSearchDestination,
+                exploreHomeUiState = exploreHomeViewModel.uiState,
+                changeSource = exploreHomeViewModel::changeSource,
                 customExplorePageProvider = exploreHomeViewModel.customExplorePageProvider!!
             )
         }

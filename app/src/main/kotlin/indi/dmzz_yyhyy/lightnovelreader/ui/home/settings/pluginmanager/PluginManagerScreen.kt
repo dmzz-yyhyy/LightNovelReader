@@ -20,12 +20,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -44,8 +47,11 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.PluginCard
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,7 +72,12 @@ fun PluginManagerScreen(
     onClickIncompatibleAlert: () -> Unit,
     onClickCheckUpdate: (String) -> Unit,
     pluginInfoList: List<PluginMetadata>,
-    onClickShowSignatures: (String) -> Unit
+    onClickShowSignatures: (String) -> Unit,
+    dataSourceItems: List<WebDataSourceItem>,
+    enabledDataSourceIds: Set<Identifier>,
+    primaryDataSourceId: Identifier,
+    onDataSourceEnabledChange: (Identifier, Boolean) -> Unit,
+    onPrimaryDataSourceChange: (Identifier) -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val claim = LocalClaimSnackbarHost.current
@@ -108,6 +119,13 @@ fun PluginManagerScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
+            DataSourceSection(
+                items = dataSourceItems,
+                enabledIds = enabledDataSourceIds,
+                primaryId = primaryDataSourceId,
+                onEnabledChange = onDataSourceEnabledChange,
+                onPrimaryChange = onPrimaryDataSourceChange
+            )
             if (pluginInfoList.isEmpty()) {
                 Column(
                     modifier = Modifier.fillMaxSize()
@@ -234,7 +252,7 @@ private fun TopBar(
     TopAppBar(
         title = {
             Text(
-                text = stringResource(id = R.string.settings_plugins),
+                text = stringResource(id = R.string.settings_sources_and_plugins),
                 style = typography.displayLarge,
                 color = colorScheme.onSurface,
                 maxLines = 1,
@@ -261,4 +279,62 @@ private fun TopBar(
         },
         scrollBehavior = scrollBehavior
     )
+}
+
+@Composable
+private fun DataSourceSection(
+    items: List<WebDataSourceItem>,
+    enabledIds: Set<Identifier>,
+    primaryId: Identifier,
+    onEnabledChange: (Identifier, Boolean) -> Unit,
+    onPrimaryChange: (Identifier) -> Unit
+) {
+    Column(Modifier.fillMaxWidth()) {
+        SectionHeader(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(top = 12.dp, bottom = 4.dp),
+            text = stringResource(R.string.settings_select_data_source)
+        )
+        items.forEach { item ->
+            val enabled = enabledIds.contains(item.id)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = item.name,
+                        style = typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = stringResource(R.string.data_source_provider, item.provider),
+                        style = typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Switch(
+                    checked = enabled,
+                    onCheckedChange = { onEnabledChange(item.id, it) }
+                )
+                RadioButton(
+                    selected = item.id == primaryId,
+                    enabled = enabled,
+                    onClick = { onPrimaryChange(item.id) }
+                )
+            }
+        }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp))
+        SectionHeader(
+            modifier = Modifier
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp, bottom = 4.dp),
+            text = stringResource(R.string.settings_plugins)
+        )
+    }
 }
