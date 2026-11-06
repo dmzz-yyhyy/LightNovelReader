@@ -15,7 +15,9 @@ import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.BookSourceResolver
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import indi.dmzz_yyhyy.lightnovelreader.data.web.proxy.ProxyWebBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookRepositoryApi
@@ -34,6 +36,7 @@ import javax.inject.Singleton
 @Singleton
 class BookRepository @Inject constructor(
     private val webBookDataSourceProvider: WebBookDataSourceProvider,
+    private val bookSourceResolver: BookSourceResolver,
     private val localBookDataSource: LocalBookDataSource,
     private val bookshelfRepository: BookshelfRepository,
     private val textProcessingRepository: TextProcessingRepository,
@@ -49,13 +52,17 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookInformation, WebRequestError>> = flow {
+        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(id)
         localBookDataSource.getBookInformation(id)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
         webBookDataSource.getBookInformation(id, priority)
             .onOk { remote ->
-                localBookDataSource.updateBookInformation(remote)
+                localBookDataSource.updateBookInformation(
+                    remote,
+                    webBookDataSource.id.toString()
+                )
                 val bookshelfBookMetadata =
                     bookshelfRepository.getBookshelfBookMetadata(remote.id) ?: return@onOk
                 if (bookshelfBookMetadata.lastUpdate.isBefore(remote.lastUpdated))
@@ -83,6 +90,7 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookVolumes, WebRequestError>> = flow {
+        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(id)
         localBookDataSource.getBookVolumes(id)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
@@ -108,6 +116,7 @@ class BookRepository @Inject constructor(
         bookId: String,
         priority: WebDataSourcePriority
     ): Flow<Result<ChapterContent, WebRequestError>> = flow {
+        val webBookDataSource: ProxyWebBookDataSource = bookSourceResolver.resolve(bookId)
         localBookDataSource.getChapterContent(chapterId)?.also {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
@@ -133,6 +142,7 @@ class BookRepository @Inject constructor(
         bookId: String,
         priority: WebDataSourcePriority
     ) {
+        val webBookDataSource = bookSourceResolver.resolve(bookId)
         webBookDataSource.getChapterContent(chapterId, bookId, priority)
             .onOk { remote ->
                 localBookDataSource.updateChapterContent(remote)

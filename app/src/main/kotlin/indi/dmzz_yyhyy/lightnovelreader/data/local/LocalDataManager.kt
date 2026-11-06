@@ -23,6 +23,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserReadingDataDao
 import indi.dmzz_yyhyy.lightnovelreader.data.storage.StorageUsageRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.utils.readAppLocalData
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.cbor.Cbor
@@ -155,10 +156,72 @@ class LocalDataManager @Inject constructor(
     }
 
     suspend fun importLocalData(localData: LocalData): Result<Unit, Throwable> {
-        val webDataSourceId = webDataSourceProvider.value.id
-        return if (localData.webBookDataSourceId == webDataSourceId) {
-            importLocalDataToDatabase(localData)
-        } else importLocalDataToFile(localData)
+        // 多数据源模式下所有数据源共享同一个数据库, 书籍通过 webBookDataSourceId 归属到各自的源
+        return importLocalDataToDatabase(localData)
+    }
+
+    /**
+     * 将某个数据源之前保存下来的本地数据合并进数据库(不清空已有数据)。
+     */
+    suspend fun importLocalDataFile(sourceId: Identifier): Result<Unit, Throwable> {
+        val file = localDataDir.resolve(sourceId.toString())
+        if (!file.exists()) return Ok(Unit)
+        return runCatching {
+            file.inputStream().use {
+                Cbor.decodeFromByteArray<LocalData>(it.readAppLocalData())
+            }
+        }.andThen {
+            importLocalDataToDatabase(it)
+        }
+    }
+
+    /**
+     * 从所有数据源的历史存档中合并书架相关数据(书架、书架元数据、书架书籍信息),
+     * 用于让不同数据源的书在一开始就能聚合显示。
+     */
+    suspend fun importShelfDataFromAllLocalDataFiles(): Result<Unit, Throwable> {
+        val files = localDataDir.listFiles()?.filter { it.isFile } ?: return Ok(Unit)
+        for (file in files) {
+            val localData = try {
+                file.inputStream().use {
+                    Cbor.decodeFromByteArray<LocalData>(it.readAppLocalData())
+                }
+            } catch (e: Exception) {
+                null
+            } ?: continue
+            val shelfBookIds = localData.bookshelfBookMetadataEntities
+                .map { it.id }
+                .plus(localData.bookshelfEntities.flatMap { it.allBookIds })
+                .toSet()
+            importLocalDataToDatabase(
+                localData.copy(
+                    bookInformationEntities = localData.bookInformationEntities
+                        .filter { shelfBookIds.contains(it.id) },
+                    bookRecordEntities = emptyList(),
+                    dailyCountEntities = emptyList(),
+                    chapterContentEntities = emptyList(),
+                    chapterInformationEntities = emptyList(),
+                    formattingRuleEntities = emptyList(),
+                    userDataEntities = emptyList(),
+                    userReadingDataEntities = emptyList(),
+                    volumeEntities = emptyList(),
+                )
+            ).let {
+                it.component1() ?: return it.asErr()
+            }
+        }
+        return Ok(Unit)
+    }
+
+    /**
+     * 升级到多数据源模式后的首次迁移: 把所有数据源存档里的书架数据合并一次。
+     */
+    suspend fun migrateShelfDataFromLocalDataFilesOnce() {
+        val marker = context.filesDir.resolve("multi_source_shelf_merged")
+        if (marker.exists()) return
+        importShelfDataFromAllLocalDataFiles()
+        runCatching { marker.createNewFile() }
+        storageUsageRepository.invalidateSnapshot()
     }
 
     fun importLocalDataToFile(localData: LocalData): Result<Unit, Throwable> {
@@ -280,9 +343,13 @@ class LocalDataManager @Inject constructor(
     }
 
     suspend fun importLocalDataToDatabase(localData: LocalData): Result<Unit, Throwable> {
+        val dataSourceId = localData.webBookDataSourceId?.toString()
         for (entity in localData.bookInformationEntities) {
+            val merged = bookBookInformationDao.getEntity(entity.id)?.let(entity::merge) ?: entity
             bookBookInformationDao.insert(
-                bookBookInformationDao.getEntity(entity.id)?.let(entity::merge) ?: entity
+                merged.copy(
+                    webBookDataSourceId = merged.webBookDataSourceId ?: dataSourceId
+                )
             )
         }
         for (entity in localData.bookRecordEntities) {

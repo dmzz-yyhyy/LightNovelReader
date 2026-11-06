@@ -42,7 +42,12 @@ data class BookInformationEntity(
     @Serializable(LocalDateTimeSerializer::class)
     val lastUpdated: LocalDateTime,
     @ColumnInfo(name = "is_complete")
-    val isComplete: Boolean
+    val isComplete: Boolean,
+    /**
+     * 这本书来自哪个数据源。为 null 时表示旧数据, 运行时回退到当前主数据源。
+     */
+    @ColumnInfo(name = "web_book_data_source_id")
+    val webBookDataSourceId: String? = null
 ) : Mergeable<BookInformationEntity> {
     override fun merge(
         new: BookInformationEntity

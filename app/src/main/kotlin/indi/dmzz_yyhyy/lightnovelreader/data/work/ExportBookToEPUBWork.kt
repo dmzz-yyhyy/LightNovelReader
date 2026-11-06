@@ -25,7 +25,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
-import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import indi.dmzz_yyhyy.lightnovelreader.data.web.BookSourceResolver
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.detail.ExportType
 import indi.dmzz_yyhyy.lightnovelreader.utils.DefaultBookCoverRenderer
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.ImageDownloader
@@ -49,7 +49,7 @@ import java.time.LocalDateTime
 class ExportBookToEPUBWork @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val webBookDataSourceProvider: WebBookDataSourceProvider,
+    private val bookSourceResolver: BookSourceResolver,
     private val bookRepository: BookRepository,
     private val downloadProgressRepository: DownloadProgressRepository,
     private val contentComponentRepository: ContentComponentRepository
@@ -306,6 +306,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
         fileUri: Uri
     ): Result = withContext(Dispatchers.IO) {
         Log.d(TAG, "export volumes=$selectedVolume")
+        val webBookDataSource = bookSourceResolver.resolve(bookId)
         val epubMap = mutableMapOf<String, EpubBuilder>()
         if (bookInformation.coverUri == Uri.EMPTY) {
             DefaultBookCoverRenderer.writeTo(
@@ -329,7 +330,7 @@ class ExportBookToEPUBWork @AssistedInject constructor(
                 if (currentVolumeIndex == 0) cover(cover)
                 else {
                     val url = runCatching {
-                        webBookDataSourceProvider.value.getCoverUriInVolume(
+                        webBookDataSource.getCoverUriInVolume(
                             bookId,
                             volume,
                             bookContentMap,

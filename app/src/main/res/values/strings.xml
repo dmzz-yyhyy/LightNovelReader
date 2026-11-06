@@ -103,8 +103,9 @@
     <string name="font_file_error">The font file is invalid. Check it and try importing it again.</string>
     <string name="settings_data_source_pending_title">Switch to %s</string>
     <string name="settings_data_source_pending_desc">
-        The operation will clear cached data and restart the app. Your current data can be restored when switching back to "%s".
+        The switch takes effect immediately and merges the bookshelf and book data of "%s" into the local database. Existing data will be kept.
     </string>
+    <string name="settings_data_source_switched">Data source switched</string>
     <string name="plugin_invalid_title">Invalid plugin</string>
     <string name="plugin_invalid_desc">Unable to get plugin info; the plugin may be invalid or corrupted.</string>
     <string name="plugin_disabled">Unavailable</string>

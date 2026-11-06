@@ -27,6 +27,15 @@ class LocalBookDataSource @Inject constructor(
     override suspend fun updateBookInformation(info: BookInformation) =
         bookInformationDao.insert(info)
 
+    /**
+     * 更新书籍信息并记录它来自哪个数据源, 供多数据源模式下按书解析数据源。
+     */
+    suspend fun updateBookInformation(info: BookInformation, webBookDataSourceId: String) =
+        bookInformationDao.insert(info, webBookDataSourceId)
+
+    suspend fun getBookDataSourceId(id: String): String? =
+        bookInformationDao.getWebBookDataSourceId(id)
+
     override suspend fun getBookVolumes(id: String): BookVolumes? =
         bookVolumesDao.getBookVolumes(id)
 

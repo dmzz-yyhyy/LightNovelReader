@@ -100,8 +100,9 @@
     <string name="font_file_error">字体文件错误或已损坏, 请您检查后导入</string>
     <string name="settings_data_source_pending_title">切换到 %s</string>
     <string name="settings_data_source_pending_desc">
-        应用将清除缓存并重启。当前数据将在下次切换回「%s」时可用。
+        切换后将立即生效，并把「%s」的书架与书籍数据合并进来，不会清除已有数据。
     </string>
+    <string name="settings_data_source_switched">已切换数据源</string>
     <string name="plugin_invalid_title">无效插件</string>
     <string name="plugin_invalid_desc">无法获取插件信息，插件可能无效或损坏</string>
     <string name="plugin_disabled">不可用</string>

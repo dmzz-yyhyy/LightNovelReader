@@ -26,6 +26,7 @@ class WebBookDataSourceManager @Inject constructor(
 
     private val mutableWebDataSourceProvider = MutableWebDataSourceProvider()
     private val webBookDataSources = mutableListOf<WebBookDataSource>()
+    private val loadedWebDataSourceIds = mutableSetOf<Identifier>()
 
     override fun registerWebDataSource(
         webBookDataSource: WebBookDataSource,
@@ -40,6 +41,7 @@ class WebBookDataSourceManager @Inject constructor(
     override fun unregisterWebDataSource(webDataSourceId: Identifier) {
         _webDataSourceItems.removeAll { it.id == webDataSourceId }
         webBookDataSources.removeAll { it.id == webDataSourceId }
+        loadedWebDataSourceIds.remove(webDataSourceId)
         onWebDataSourceListChange()
     }
 
@@ -104,12 +106,13 @@ class WebBookDataSourceManager @Inject constructor(
             .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
             .get()
             ?.convertOldId() ?: "Wenku8".ofId()
-        mutableWebDataSourceProvider.update(
-            webBookDataSources
-                .find { it.id == webDataSourcesId }
-                .also {
-                    it?.onLoad()
-                } ?: NotFoundWebDataSource(webDataSourcesId)
+        // 多活动数据源: 每个已注册的数据源都要初始化一次, 且只初始化一次
+        webBookDataSources.forEach { dataSource ->
+            if (loadedWebDataSourceIds.add(dataSource.id)) dataSource.onLoad()
+        }
+        mutableWebDataSourceProvider.updateAll(
+            webBookDataSources.associateBy { it.id },
+            webDataSourcesId
         )
     }
 }

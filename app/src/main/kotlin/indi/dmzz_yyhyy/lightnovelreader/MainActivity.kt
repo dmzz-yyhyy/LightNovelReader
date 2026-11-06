@@ -29,6 +29,7 @@ import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.content.ContentComponentRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalDataManager
 import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateCheckRepository
@@ -79,6 +80,8 @@ class MainActivity : ComponentActivity() {
     lateinit var webBookDataSourceProvider: WebBookDataSourceProvider
     @Inject
     lateinit var contentComponentRepository: ContentComponentRepository
+    @Inject
+    lateinit var localDataManager: LocalDataManager
     private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 
     private var appLocale by mutableStateOf(
@@ -102,6 +105,9 @@ class MainActivity : ComponentActivity() {
                 .build()
         )
         initDefaultBookshelf()
+        coroutineScope.launch {
+            localDataManager.migrateShelfDataFromLocalDataFilesOnce()
+        }
         observeDisplaySettings()
         observeFormattingSettings()
         handleIntent(intent)

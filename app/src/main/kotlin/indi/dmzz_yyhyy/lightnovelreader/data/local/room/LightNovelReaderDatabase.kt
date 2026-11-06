@@ -61,7 +61,7 @@ import kotlinx.serialization.json.put
         DailyCountEntity::class,
         FormattingRuleEntity::class
     ],
-    version = 18,
+    version = 19,
     exportSchema = false
 )
 abstract class LightNovelReaderDatabase : RoomDatabase() {
@@ -102,6 +102,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                             MIGRATION_15_16,
                             MIGRATION_16_17,
                             MIGRATION_17_18,
+                            MIGRATION_18_19,
                         )
                         .allowMainThreadQueries()
                         .build()
@@ -965,6 +966,14 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         }
                     }
                 }
+            }
+        }
+
+        private val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "alter table book_information add column web_book_data_source_id TEXT"
+                )
             }
         }
     }
