@@ -222,6 +222,10 @@ sealed class UserDataPath(
             /** 网页数据源ID @since Api 2 */
             data object WebDataSourceId : UserDataPath("web_data_source_id", Data)
 
+            /** 已启用的网页数据源ID列表 @since Api 5 */
+            data object EnabledWebDataSourceIds :
+                UserDataPath("enabled_web_data_source_ids", Data)
+
             /** 日志级别设置 @since Api 2 */
             data object LogLevel : UserDataPath("log_level", Data)
 

@@ -14,7 +14,7 @@ interface BookInformationDao {
     suspend fun insert(information: BookInformationEntity)
 
     @Transaction
-    suspend fun insert(information: BookInformation) {
+    suspend fun insert(information: BookInformation, webBookDataSourceId: String? = null) {
         insert(
             BookInformationEntity(
                 id = information.id,
@@ -27,10 +27,15 @@ interface BookInformationDao {
                 publishingHouse = information.publishingHouse,
                 wordCount = information.wordCount,
                 lastUpdated = information.lastUpdated,
-                isComplete = information.isComplete
+                isComplete = information.isComplete,
+                webBookDataSourceId = webBookDataSourceId
+                    ?: getEntity(information.id)?.webBookDataSourceId
             )
         )
     }
+
+    @Query("select web_book_data_source_id from book_information where id=:id")
+    suspend fun getWebBookDataSourceId(id: String): String?
 
     @Query("select * from book_information where id=:id")
     suspend fun getEntity(id: String): BookInformationEntity?

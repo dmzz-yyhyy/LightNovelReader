@@ -2,6 +2,9 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.pluginmanager
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,6 +13,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginMetadata
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.PluginUpdateCheckRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceManager
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
 import indi.dmzz_yyhyy.lightnovelreader.utils.ApkSignatureInfo
 import indi.dmzz_yyhyy.lightnovelreader.utils.getApkSignatures
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -25,7 +31,28 @@ class PluginManagerViewModel @Inject constructor(
     val pluginManager: PluginManager,
     val userDataRepository: UserDataRepository,
     val pluginUpdateCheckRepository: PluginUpdateCheckRepository,
+    private val webBookDataSourceManager: WebBookDataSourceManager,
 ) : ViewModel() {
+
+    var dataSourceItems: List<WebDataSourceItem> by mutableStateOf(
+        webBookDataSourceManager.webDataSourceItems
+    )
+        private set
+    var enabledDataSourceIds: Set<Identifier> by mutableStateOf(
+        webBookDataSourceManager.enabledDataSourceIds
+    )
+        private set
+    fun refreshDataSources() {
+        dataSourceItems = webBookDataSourceManager.webDataSourceItems
+        enabledDataSourceIds = webBookDataSourceManager.enabledDataSourceIds
+    }
+
+    fun setDataSourceEnabled(sourceId: Identifier, enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            webBookDataSourceManager.setWebDataSourceEnabled(sourceId, enabled)
+            refreshDataSources()
+        }
+    }
 
     private val enabledPluginUserData =
         userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)

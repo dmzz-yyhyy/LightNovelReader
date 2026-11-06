@@ -187,7 +187,10 @@ fun NavEntryScope.settingsPluginManagerHomeDestination() {
             },
             onClickShowSignatures = { id ->
                 showPluginSignatureDialog = id
-            }
+            },
+            dataSourceItems = viewModel.dataSourceItems,
+            enabledDataSourceIds = viewModel.enabledDataSourceIds,
+            onDataSourceEnabledChange = viewModel::setDataSourceEnabled
         )
 
         if (pendingInstallUri != null) {

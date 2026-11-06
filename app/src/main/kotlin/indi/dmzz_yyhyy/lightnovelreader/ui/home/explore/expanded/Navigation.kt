@@ -27,7 +27,12 @@ fun NavEntryScope.exploreExpandDestination() {
             refresh = exploreViewModel::refresh,
             dialog = { newDialog -> dialog = newDialog },
             expandedPageDataSourceId = entry.expandedPageDataSourceId,
-            init = exploreExpandedPageHomeViewModel::init,
+            init = {
+                exploreExpandedPageHomeViewModel.init(
+                    entry.expandedPageDataSourceId,
+                    entry.sourceId
+                )
+            },
             loadMore = exploreExpandedPageHomeViewModel::loadMore,
             refreshResult = exploreExpandedPageHomeViewModel::loadBookResult,
             requestAddBookToBookshelf = {
@@ -45,6 +50,9 @@ fun NavEntryScope.exploreExpandDestination() {
     }
 }
 
-fun Navigator.navigateToExploreExpandDestination(expandedPageDataSourceId: String) {
-    navigate(Route.Main.Explore.Expanded(expandedPageDataSourceId))
+fun Navigator.navigateToExploreExpandDestination(
+    expandedPageDataSourceId: String,
+    sourceId: String = ""
+) {
+    navigate(Route.Main.Explore.Expanded(expandedPageDataSourceId, sourceId))
 }

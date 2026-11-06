@@ -19,7 +19,7 @@ import dagger.assisted.AssistedInject
 import indi.dmzz_yyhyy.lightnovelreader.LightNovelReaderApplication
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
-import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import indi.dmzz_yyhyy.lightnovelreader.data.web.BookSourceResolver
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.delay
@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 class CheckUpdateWork @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val webBookDataSourceProvider: WebBookDataSourceProvider,
+    private val bookSourceResolver: BookSourceResolver,
     private val bookshelfRepository: BookshelfRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
@@ -47,10 +47,12 @@ class CheckUpdateWork @AssistedInject constructor(
             delay(3000.milliseconds)
             if (!needRemindBookIdSet.contains(bookshelfBookMetadata.id)) return@forEach
             Log.d("CheckUpdateWork", "Updating book id=${bookshelfBookMetadata.id}")
-            webBookDataSourceProvider.value.getBookInformation(
-                bookshelfBookMetadata.id,
+            val ref = bookSourceResolver.resolveBook(bookshelfBookMetadata.id)
+            ref.source.getBookInformation(
+                ref.remoteBookId,
                 WebDataSourcePriority.Low
-            ).onOk { bookInformation ->
+            ).onOk { remote ->
+                val bookInformation = remote.copy(id = bookshelfBookMetadata.id)
                 val webBookLastUpdate = bookInformation.lastUpdated
                 if (webBookLastUpdate.isAfter(bookshelfBookMetadata.lastUpdate)) {
                     bookshelfBookMetadata.bookShelfIds.forEach {

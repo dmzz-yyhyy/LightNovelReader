@@ -32,6 +32,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +81,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -90,6 +92,8 @@ import kotlin.time.Duration.Companion.milliseconds
 fun CustomExploreHomeScreen(
     init: () -> Unit,
     onClickSearch: () -> Unit,
+    exploreHomeUiState: ExploreHomeUiState,
+    changeSource: (Identifier) -> Unit,
     customExplorePageProvider: ExplorePageProvider.CustomExplorePageProvider<*>
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -102,6 +106,7 @@ fun CustomExploreHomeScreen(
             scrollBehavior = enterAlwaysScrollBehavior,
             onClickSearch = onClickSearch
         )
+        ExploreSourceSelector(exploreHomeUiState, changeSource)
         customExplorePageProvider.Content(enterAlwaysScrollBehavior.nestedScrollConnection)
     }
 }
@@ -116,6 +121,7 @@ fun ExploreHomeScreen(
     onClickBook: (String) -> Unit,
     init: () -> Unit,
     changePage: (Int) -> Unit,
+    changeSource: (Identifier) -> Unit,
     onClickSearch: () -> Unit,
     refresh: () -> Unit
 ) {
@@ -129,6 +135,8 @@ fun ExploreHomeScreen(
         LifecycleEventEffect(Lifecycle.Event.ON_CREATE) {
             init()
         }
+
+        ExploreSourceSelector(exploreHomeUiState, changeSource)
 
         if (exploreHomeUiState.pageTitles.isNotEmpty()) {
             ExploreScreen(
@@ -494,6 +502,28 @@ private fun ExploreBookCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ExploreSourceSelector(
+    uiState: ExploreHomeUiState,
+    changeSource: (Identifier) -> Unit
+) {
+    if (uiState.sourceItems.size <= 1) return
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(uiState.sourceItems) { (sourceId, sourceName) ->
+            FilterChip(
+                selected = uiState.selectedSourceId == sourceId,
+                onClick = { changeSource(sourceId) },
+                label = { Text(sourceName, maxLines = 1) }
+            )
         }
     }
 }
