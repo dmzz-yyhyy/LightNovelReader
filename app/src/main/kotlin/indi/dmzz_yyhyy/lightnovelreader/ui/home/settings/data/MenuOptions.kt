@@ -6,6 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.update.GithubParser
 import indi.dmzz_yyhyy.lightnovelreader.data.update.UpdateParser
 import indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager.LocalBookSort
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.settings.SettingsMenuOption
 import io.nightfish.lightnovelreader.api.settings.SettingsMenuOptionGroup
 
@@ -138,6 +139,12 @@ sealed class MenuOptions : SettingsMenuOptionGroup {
         val Fixed = option("fixed", R.string.key_bg_image_display_mode_fixed)
         val Loop = option("loop", R.string.key_bg_image_display_mode_loop)
     }
+
+    data object ReaderWriteModeOptions : MenuOptions(
+        Option(WriteMode.Horizontal.name, R.string.reader_write_mode_horizontal),
+        Option(WriteMode.VerticalRTL.name, R.string.reader_write_mode_vertical_rtl),
+        Option(WriteMode.VerticalLTR.name, R.string.reader_write_mode_vertical_ltr),
+    )
 
     data object FlipAnimationOptions : MenuOptions() {
         val None = option("none", R.string.key_flip_animation_none)

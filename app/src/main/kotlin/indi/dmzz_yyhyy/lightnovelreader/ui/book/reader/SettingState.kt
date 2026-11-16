@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import indi.dmzz_yyhyy.lightnovelreader.data.setting.AbstractSettingState
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +16,8 @@ class SettingState(
     userDataRepository: UserDataRepository,
     coroutineScope: CoroutineScope
 ) : AbstractSettingState(coroutineScope) {
+    val writeModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.WriteMode.path)
+    val writeMode by writeModeUserData.safeAsState(WriteMode.Horizontal.name)
     val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
     val lineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.LineHeight.path)
     val fontWeighUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)

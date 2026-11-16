@@ -202,6 +202,14 @@ fun LazyListScope.AppearancePage(
         )
     }
     item {
+        ReaderWriteModeSetting(
+            settingState = settingState,
+            modifier = Modifier
+                .background(colorScheme.surfaceContainerHigh)
+                .animateItem(),
+        )
+    }
+    item {
         SettingsSwitchEntry(
             modifier = Modifier
                 .background(colorScheme.surfaceContainerHigh)
@@ -274,6 +282,21 @@ fun LazyListScope.AppearancePage(
             booleanUserData = settingState.enableReadingChapterProgressIndicatorUserData,
         )
     }
+}
+
+@Composable
+internal fun ReaderWriteModeSetting(
+    settingState: SettingState,
+    modifier: Modifier = Modifier,
+) {
+    SettingsMenuEntry(
+        modifier = modifier,
+        painter = painterResource(R.drawable.text_fields_24px),
+        title = stringResource(R.string.reader_write_mode),
+        options = MenuOptions.ReaderWriteModeOptions,
+        selectedOptionKey = settingState.writeMode,
+        stringUserData = settingState.writeModeUserData,
+    )
 }
 
 fun LazyListScope.ActionPage(settingState: SettingState) {

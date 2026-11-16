@@ -18,16 +18,19 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomAppBar
@@ -50,7 +53,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,8 +62,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -75,17 +84,17 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.AsyncImagePainter
 import com.github.michaelbull.result.get
 import com.github.michaelbull.result.getError
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ContentComponent
-import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.scroll.ScrollContentUiState
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContent
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.isVertical
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedTextLine
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.LnrSnackbar
@@ -96,6 +105,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
+import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalTime
@@ -114,6 +124,8 @@ fun ReaderScreen(
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
     onChangeChapter: (chapterId: String) -> Unit,
+    onReadingProgress: (String, Float, Boolean) -> Unit,
+    flushReadingProgress: () -> Unit,
     onClickReaderStyleSettings: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -177,7 +189,7 @@ fun ReaderScreen(
             ) {
                 TopBar(
                     onClickBackButton = onClickBackButton,
-                    title = readingScreenUiState.contentUiState?.readingChapterContent
+                    title = readingScreenUiState.currentChapterContent
                         ?.map { it.title }
                         ?.getOrElse { "Unknowing" }
                         ?: "Unknowing",
@@ -201,12 +213,12 @@ fun ReaderScreen(
                 exit = shrinkVertically()
             ) {
                 BottomBar(
-                    hasNextChapter = readingScreenUiState.contentUiState?.readingChapterContent
+                    hasNextChapter = readingScreenUiState.currentChapterContent
                         ?.get()
-                        ?.hasNextChapter() ?: false,
-                    hasPrevChapter = readingScreenUiState.contentUiState?.readingChapterContent
+                        ?.hasNextChapter(readingScreenUiState.bookVolumes?.get()) == true,
+                    hasPrevChapter = readingScreenUiState.currentChapterContent
                         ?.get()
-                        ?.hasPrevChapter() ?: false,
+                        ?.hasPrevChapter(readingScreenUiState.bookVolumes?.get()) == true,
                     onClickPrevChapter = onClickPrevChapter,
                     onClickNextChapter = onClickNextChapter,
                     onClickSettings = { showSettingsBottomSheet = true },
@@ -217,26 +229,6 @@ fun ReaderScreen(
         containerColor = readerBackgroundColor(settingState),
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { _ ->
-        val isScrollingLoopBackground =
-            readingScreenUiState.contentUiState is ScrollContentUiState &&
-                settingState.backgroundImageDisplayMode ==
-                MenuOptions.ReaderBgImageDisplayModeOptions.Loop
-        if (settingState.enableBackgroundImage && !isScrollingLoopBackground) {
-            val bgPainter = rememberReaderBackgroundPainter(settingState)
-            val bgState by remember(bgPainter) {
-                (bgPainter as? AsyncImagePainter)?.state
-            }?.collectAsStateWithLifecycle() ?: remember { mutableStateOf(null) }
-
-            key(bgState) {
-                Image(
-                    modifier = Modifier.fillMaxSize(),
-                    painter = bgPainter,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop
-                )
-            }
-        }
-
         Content(
             isImmersive = isImmersive,
             readingScreenUiState = readingScreenUiState,
@@ -245,7 +237,9 @@ fun ReaderScreen(
             updateTotalReadingTime = updateTotalReadingTime,
             onClickPrevChapter = onClickPrevChapter,
             onClickNextChapter = onClickNextChapter,
-            onChangeIsImmersive = { isImmersive = !isImmersive }
+            onChangeIsImmersive = { isImmersive = !isImmersive },
+            onReadingProgress = onReadingProgress,
+            flushReadingProgress = flushReadingProgress,
         )
     }
     AnimatedVisibility(visible = showSettingsBottomSheet) {
@@ -265,53 +259,50 @@ fun ReaderScreen(
     }
 
     AnimatedVisibility(visible = showChapterSelectionBottomSheet) {
-        readingScreenUiState.contentUiState?.let { contentUiState ->
-            contentUiState.readingChapterId?.let { readingChapterId ->
-                ChapterSelectionBottomSheet(
-                        sheetState = chaptersBottomSheetState,
-                        selectedVolumeId = selectedVolumeId,
-                        bookVolumes = readingScreenUiState.bookVolumes?.get(),
-                        error = readingScreenUiState.bookVolumes?.getError(),
-                        readingChapterId = readingChapterId,
-                        onDismissRequest = {
-                            coroutineScope.launch { chaptersBottomSheetState.hide() }
-                                .invokeOnCompletion {
-                                    if (!chaptersBottomSheetState.isVisible) {
-                                        showChapterSelectionBottomSheet = false
-                                    }
-                                }
-                            showChapterSelectionBottomSheet = false
-                            selectedVolumeId = readingScreenUiState.bookVolumes?.get()?.volumes
-                                ?.firstOrNull { volume ->
-                                    volume.chapters.any {
-                                        it.id == readingChapterId
-                                    }
-                                }?.volumeId.orEmpty()
-                        },
-                        onClickChapter = { chapterId ->
-                            onChangeChapter(chapterId)
-                            coroutineScope.launch { chaptersBottomSheetState.hide() }
-                                .invokeOnCompletion {
-                                    if (!chaptersBottomSheetState.isVisible) {
-                                        showChapterSelectionBottomSheet = false
-                                    }
-                                }
-                        },
-                        onChangeSelectedVolumeId = {
-                            selectedVolumeId = it
-                        }
-                )
-            }
-
-            LaunchedEffect(readingScreenUiState.bookVolumes) {
-                contentUiState.readingChapterId?.let { chapterId ->
-                    readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
-                        selectedVolumeId = bookVolumes.volumes.firstOrNull { volume ->
-                            volume.chapters.any {
-                                it.id == chapterId
+        readingScreenUiState.currentChapterContent?.onOk { currentChapter ->
+            ChapterSelectionBottomSheet(
+                sheetState = chaptersBottomSheetState,
+                selectedVolumeId = selectedVolumeId,
+                bookVolumes = readingScreenUiState.bookVolumes?.get(),
+                error = readingScreenUiState.bookVolumes?.getError(),
+                readingChapterId = currentChapter.id,
+                onDismissRequest = {
+                    coroutineScope.launch { chaptersBottomSheetState.hide() }
+                        .invokeOnCompletion {
+                            if (!chaptersBottomSheetState.isVisible) {
+                                showChapterSelectionBottomSheet = false
                             }
-                        }?.volumeId ?: ""
-                    }
+                        }
+                    showChapterSelectionBottomSheet = false
+                    selectedVolumeId = readingScreenUiState.bookVolumes?.get()?.volumes
+                        ?.firstOrNull { volume ->
+                            volume.chapters.any {
+                                it.id == currentChapter.id
+                            }
+                        }?.volumeId.orEmpty()
+                },
+                onClickChapter = { chapterId ->
+                    onChangeChapter(chapterId)
+                    coroutineScope.launch { chaptersBottomSheetState.hide() }
+                        .invokeOnCompletion {
+                            if (!chaptersBottomSheetState.isVisible) {
+                                showChapterSelectionBottomSheet = false
+                            }
+                        }
+                },
+                onChangeSelectedVolumeId = {
+                    selectedVolumeId = it
+                }
+            )
+        }
+        LaunchedEffect(readingScreenUiState.bookVolumes) {
+            readingScreenUiState.currentChapterContent?.onOk { currentChapter ->
+                readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
+                    selectedVolumeId = bookVolumes.volumes.firstOrNull { volume ->
+                        volume.chapters.any {
+                            it.id == currentChapter.id
+                        }
+                    }?.volumeId ?: ""
                 }
             }
         }
@@ -319,7 +310,7 @@ fun ReaderScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun Content(
     isImmersive: Boolean,
@@ -329,28 +320,23 @@ fun Content(
     accumulateReadingTime: (bookId: String, Int) -> Unit,
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
-    onChangeIsImmersive: () -> Unit
+    onChangeIsImmersive: () -> Unit,
+    onReadingProgress: (String, Float, Boolean) -> Unit,
+    flushReadingProgress: () -> Unit,
 ) {
     val context = LocalContext.current
     val activity = context as Activity
     val window = activity.window
     val density = LocalDensity.current
 
-    val stableSafeTopDp by remember {
-        mutableStateOf(
-            with(density) {
-                WindowInsetsCompat
-                    .toWindowInsetsCompat(activity.window.decorView.rootWindowInsets)
-                    .getInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars())
-                    .top
-                    .toDp()
-            }
-        )
-    }
+    val stableInsets = WindowInsets.systemBarsIgnoringVisibility.union(WindowInsets.displayCutout)
+    val stableSafeTopDp = with(density) { stableInsets.getTop(density).toDp() }
+    val stableSafeBottomDp = with(density) { stableInsets.getBottom(density).toDp() }
 
-    val originalUiFlags = remember {
-        @Suppress("DEPRECATION")
-        window.decorView.systemUiVisibility
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) { flushReadingProgress() }
+
+    val originalSystemBarsBehavior = remember(window) {
+        WindowCompat.getInsetsController(window, window.decorView).systemBarsBehavior
     }
 
     var isRunning by remember { mutableStateOf(false) }
@@ -368,19 +354,11 @@ fun Content(
         )
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(window) {
         onDispose {
             val controller = WindowCompat.getInsetsController(window, window.decorView)
             controller.show(WindowInsetsCompat.Type.systemBars())
-        }
-    }
-
-    DisposableEffect(Unit) {
-        @Suppress("deprecation")
-        onDispose {
-            val controller = WindowCompat.getInsetsController(window, window.decorView)
-            controller.show(WindowInsetsCompat.Type.systemBars())
-            window.decorView.systemUiVisibility = originalUiFlags
+            controller.systemBarsBehavior = originalSystemBarsBehavior
         }
     }
 
@@ -447,7 +425,41 @@ fun Content(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    val isVertical = LocalReaderStyle.current.writeMode.isVertical
+    val loopBackground = settingState.enableBackgroundImage && !settingState.isUsingFlipPage &&
+        settingState.backgroundImageDisplayMode == MenuOptions.ReaderBgImageDisplayModeOptions.Loop
+    var backgroundLength by remember { mutableIntStateOf(0) }
+    var phase by remember(loopBackground, isVertical) { mutableFloatStateOf(0f) }
+    val backgroundScroll = remember(loopBackground, isVertical) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                val distance = if (isVertical) consumed.x else consumed.y
+                if (loopBackground && backgroundLength > 0 && distance != 0f) {
+                    phase = ((phase + distance) % backgroundLength + backgroundLength) % backgroundLength
+                }
+                return Offset.Zero
+            }
+        }
+    }
+    Box(
+        modifier = Modifier.fillMaxSize().clipToBounds().nestedScroll(backgroundScroll)
+            .onSizeChanged { backgroundLength = if (isVertical) it.width else it.height }
+    ) {
+        if (settingState.enableBackgroundImage) {
+            val painter = rememberReaderBackgroundPainter(settingState)
+            val copies = if (loopBackground) 2 else 1
+            repeat(copies) { copy ->
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize().graphicsLayer {
+                        val offset = if (loopBackground) phase - copy * backgroundLength else 0f
+                        if (isVertical) translationX = offset else translationY = offset
+                    },
+                )
+            }
+        }
         val isEnableIndicator =
             settingState.batteryIndicatorDisplayMode == "classic" ||
                     settingState.enableTimeIndicator ||
@@ -455,40 +467,36 @@ fun Content(
                     settingState.enableChapterTitleIndicator
 
         Box(Modifier.fillMaxSize()) {
-            AnimatedContent(
-                readingScreenUiState.contentUiState,
-                label = "ContentAnimate"
-            ) { contentUiState ->
-                ContentComponent(
-                    uiState = contentUiState,
-                    settingState = settingState,
-                    paddingValues =
-                        if (settingState.autoPadding)
-                            PaddingValues(
-                                top = stableSafeTopDp,
-                                bottom = with(density) {
-                                    WindowInsets.safeContent.getBottom(density).toDp()
-                                } + if (isEnableIndicator) 40.dp else 0.dp,
-                                start = 16.dp,
-                                end = 16.dp
-                            )
-                        else PaddingValues(
-                            top = settingState.topPadding.dp,
-                            bottom = if (isEnableIndicator)
-                                (settingState.bottomPadding + 40).dp
-                            else settingState.bottomPadding.dp,
-                            start = settingState.leftPadding.dp,
-                            end = settingState.rightPadding.dp
-                        ),
-                    changeIsImmersive = onChangeIsImmersive,
-                    onClickPrevChapter = onClickPrevChapter,
-                    onClickNextChapter = onClickNextChapter
-                )
-            }
+            ChapterContent(
+                uiState = readingScreenUiState,
+                settingState = settingState,
+                paddingValues =
+                    if (settingState.autoPadding)
+                        PaddingValues(
+                            top = stableSafeTopDp,
+                            bottom = stableSafeBottomDp + if (isEnableIndicator) 40.dp else 0.dp,
+                            start = 16.dp,
+                            end = 16.dp
+                        )
+                    else PaddingValues(
+                        top = settingState.topPadding.dp,
+                        bottom = if (isEnableIndicator)
+                            (settingState.bottomPadding + 40).dp
+                        else settingState.bottomPadding.dp,
+                        start = settingState.leftPadding.dp,
+                        end = settingState.rightPadding.dp
+                    ),
+                changeIsImmersive = onChangeIsImmersive,
+                onClickPrevChapter = onClickPrevChapter,
+                onClickNextChapter = onClickNextChapter,
+                onReadingProgress = onReadingProgress,
+            )
 
             AnimatedVisibility(
                 modifier = Modifier.align(Alignment.BottomCenter),
-                visible = isEnableIndicator,
+                visible = isEnableIndicator &&
+                    readingScreenUiState.currentChapterContent?.isOk == true &&
+                    readingScreenUiState.readingProgress != null,
                 enter = expandVertically(),
                 exit = shrinkVertically()
             ) {
@@ -510,13 +518,12 @@ fun Content(
                     enableBatteryIndicator = settingState.batteryIndicatorDisplayMode == "classic",
                     enableTimeIndicator = settingState.enableTimeIndicator,
                     enableChapterTitle = settingState.enableChapterTitleIndicator,
-                    chapterTitle = readingScreenUiState.contentUiState?.readingChapterContent
+                    chapterTitle = readingScreenUiState.currentChapterContent
                         ?.map { it.title }
                         ?.getOrElse { "Unknowing" }
                         ?: "Unknowing",
                     enableReadingChapterProgressIndicator = settingState.enableReadingChapterProgressIndicator,
-                    readingChapterProgress = readingScreenUiState.contentUiState?.readingProgress
-                        ?: 0f,
+                    readingChapterProgress = readingScreenUiState.readingProgress ?: 0f,
                 )
             }
         }

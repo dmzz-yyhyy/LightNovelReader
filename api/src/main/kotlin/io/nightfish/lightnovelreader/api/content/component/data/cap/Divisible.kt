@@ -1,7 +1,8 @@
-package io.nightfish.lightnovelreader.api.content.component.data
+package io.nightfish.lightnovelreader.api.content.component.data.cap
 
 import android.content.Context
 import androidx.compose.ui.text.TextStyle
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 
 /**
@@ -13,7 +14,7 @@ import io.nightfish.lightnovelreader.api.ui.ReaderStyle
  *
  * @since Api 4
  */
-interface Divisible<Self>
+interface Divisible<Self>: ComponentDataCap<Self>
         where Self : AbstractContentComponentData,
               Self : Divisible<Self>
 {

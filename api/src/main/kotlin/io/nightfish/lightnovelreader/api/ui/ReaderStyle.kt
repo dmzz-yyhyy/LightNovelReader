@@ -7,10 +7,13 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import java.io.File
 
 /**
@@ -42,6 +45,7 @@ data class ReaderStyle(
         firstLine = 2.em,
     ),
     val fontUri: Uri? = null,
+    val writeMode: WriteMode = WriteMode.Horizontal
 ) {
     fun toParagraphStyle(): ParagraphStyle =
         ParagraphStyle(

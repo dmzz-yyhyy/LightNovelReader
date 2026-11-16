@@ -69,6 +69,7 @@ import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.runCatching
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
+import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ReaderWriteModeSetting
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSliderEntry
@@ -227,6 +228,10 @@ fun ReaderTextSettings(
     SettingsCategory(
         title = stringResource(R.string.text_settings),
     ) {
+        ReaderWriteModeSetting(
+            settingState = settingState,
+            modifier = Modifier.background(colorScheme.surfaceContainer),
+        )
         SettingsClickableEntry(
             modifier = Modifier.background(colorScheme.surfaceContainer),
             painter = painterResource(R.drawable.palette_24px),

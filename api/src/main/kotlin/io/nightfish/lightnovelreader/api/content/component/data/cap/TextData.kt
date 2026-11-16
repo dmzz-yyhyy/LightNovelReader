@@ -1,4 +1,6 @@
-package io.nightfish.lightnovelreader.api.content.component.data
+package io.nightfish.lightnovelreader.api.content.component.data.cap
+
+import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 
 /**
  * 文本控件数据原件
@@ -6,7 +8,7 @@ package io.nightfish.lightnovelreader.api.content.component.data
  *
  * @since Api 4
  */
-interface TextData<Self>
+interface TextData<Self>: ComponentDataCap<Self>
         where Self : AbstractContentComponentData,
               Self : TextData<Self>
 {

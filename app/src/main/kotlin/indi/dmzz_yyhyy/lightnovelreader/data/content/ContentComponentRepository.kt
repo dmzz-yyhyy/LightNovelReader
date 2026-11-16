@@ -3,12 +3,14 @@ package indi.dmzz_yyhyy.lightnovelreader.data.content
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ErrorContentComponentData
+import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ErrorContentComponentRender
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ImageComponentRender
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ParagraphComponentRender
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjectorProvider
 import io.nightfish.lightnovelreader.api.content.ContentComponentRepositoryApi
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentRender
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.content.component.ComponentRender
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
@@ -34,7 +36,7 @@ class ContentComponentRepository @Inject constructor(
         mutableMapOf<String, ComponentDataJsonElementSerializer<out AbstractContentComponentData>>()
     val serializeMap get() = serializeMutableMap.toMap()
     private val renderMutableMap =
-        mutableMapOf<String, AnyContentComponentRender>()
+        mutableMapOf<String, AbstractContentComponentRender<*, *>>()
     private val dataKClassMutableMap =
         mutableMapOf<String, KClass<out AbstractContentComponentData>>()
     val dataKClassMap get() = dataKClassMutableMap.toMap()
@@ -72,44 +74,24 @@ class ContentComponentRepository @Inject constructor(
             )
     }
 
-    @Suppress("UNCHECKED_CAST")
     class RegisterBuilder(
         private val pluginInjectorProvider: PluginInjectorProvider,
         private val serializerMap: MutableMap<String, ComponentDataJsonElementSerializer<out AbstractContentComponentData>>,
-        private val renderMap: MutableMap<String, AnyContentComponentRender>,
+        private val renderMap: MutableMap<String, AbstractContentComponentRender<*, *>>,
         private val dataKClassMap: MutableMap<String, KClass<out AbstractContentComponentData>>,
         val id: Identifier
     ) : ContentComponentRepositoryApi.RegisterBuilder {
-        var componentRender: (() -> AnyContentComponentRender?)? = null
+        var componentRender: (() -> AbstractContentComponentRender<*, *>?)? = null
         var componentDataKClass: KClass<out AbstractContentComponentData>? = null
         var serializer: ComponentDataJsonElementSerializer<out AbstractContentComponentData>? = null
-
-        fun <Render, Data> Render.erase(): AnyContentComponentRender
-                where Render : AbstractContentComponentRender<Data>,
-                      Data : AbstractContentComponentData {
-            return object : AnyContentComponentRender {
-
-                @Suppress("UNCHECKED_CAST")
-                @Composable
-                override fun Content(
-                    modifier: Modifier,
-                    data: AbstractContentComponentData
-                ) {
-                    this@erase.Content(
-                        modifier,
-                        data as Data
-                    )
-                }
-            }
-        }
 
         override fun <Render, Data> component(
             value: KClass<Render>
         ): ContentComponentRepositoryApi.RegisterBuilder
-                where Render : AbstractContentComponentRender<Data>,
+                where Render : AbstractContentComponentRender<Render, Data>,
                       Data : AbstractContentComponentData {
             this.componentRender = {
-                pluginInjectorProvider.value!!.provide<Render>(value.java)?.erase()
+                pluginInjectorProvider.value!!.provide<Render>(value.java)
             }
             return this
         }
@@ -149,26 +131,42 @@ class ContentComponentRepository @Inject constructor(
             }
     }
 
-    interface AnyContentComponentRender {
-        @Composable
-        fun Content(
-            modifier: Modifier,
-            data: AbstractContentComponentData
-        )
-    }
-
     @Composable
     override fun Component(
         modifier: Modifier,
+        orientation: WriteMode,
         componentData: AbstractContentComponentData
     ) {
-        renderMutableMap[componentData.id.toString()]?.Content(
+        if (componentData.id.toString() !in renderMutableMap) return
+        getRender(componentData).ContentAny(
             modifier,
+            orientation,
             componentData
         )
     }
 
+    override fun getRender(componentData: AbstractContentComponentData): AbstractContentComponentRender<*, *> {
+        val id = componentData.id.toString()
+        val render = checkNotNull(renderMutableMap[id]) {
+            "Component renderer not registered: $id"
+        }
+        val dataClass = checkNotNull(dataKClassMutableMap[id]) {
+            "Component data type not registered: $id"
+        }
+        require(dataClass.isInstance(componentData)) {
+            "Component $id expects ${dataClass.qualifiedName}, got ${componentData::class.qualifiedName}"
+        }
+        return render
+    }
+
     fun initRegister() {
+        registrar
+            .id(ErrorContentComponentData.id)
+            .component(ErrorContentComponentRender::class)
+            .data(ErrorContentComponentData::class)
+            .serializer(ErrorContentComponentData.serializer)
+            .register()
+
         registrar
             .id(ParagraphComponentData.id)
             .component(ParagraphComponentRender::class)

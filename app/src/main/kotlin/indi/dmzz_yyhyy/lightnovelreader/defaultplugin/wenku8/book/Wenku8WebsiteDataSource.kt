@@ -218,7 +218,7 @@ class Wenku8WebsiteDataSource(
                         }
                         blankLines = 0
                         paragraph {
-                            text(text)
+                            text(text.trim())
                         }
                     }
                     is Element if node.`is`("div.divimage") -> {
