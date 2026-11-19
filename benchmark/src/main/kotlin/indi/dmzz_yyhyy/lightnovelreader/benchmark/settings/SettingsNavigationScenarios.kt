@@ -85,7 +85,7 @@ class SettingsNavigationScenarios : BenchmarkTestCase() {
         pressBack()
 
         tapScrolledText("Import User Data")
-        assertForegroundPackage(DOCUMENTS_PACKAGE)
+        assertForegroundPackage(documentsPackage)
         pressBack()
         launchApp()
         openRoot("Settings")

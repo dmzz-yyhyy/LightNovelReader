@@ -4,15 +4,19 @@ import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.icu.text.BreakIterator
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import androidx.annotation.RestrictTo
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -194,21 +198,66 @@ class VerticalParagraphText internal constructor(
             height = Float.POSITIVE_INFINITY,
             orientation = TextOrientation.Mixed,
         )
-        return VerticalParagraphColumn(layout, columnWidth(layout.width), indent, layout.contentHeight, end, nextStart)
+        return VerticalParagraphColumn(
+            layout, columnWidth(layout.width), indent, layout.contentHeight, end, nextStart,
+            start, text, paint,
+        )
     }
 
     private fun columnWidth(glyphWidth: Float): Float =
         lineHeight.toPixels(density, glyphWidth).coerceAtLeast(glyphWidth)
 }
 
-internal data class VerticalParagraphColumn(
+@SuppressLint("RestrictedApi")
+internal class VerticalParagraphColumn(
     val layout: VerticalTextLayout?,
     val width: Float,
     val top: Float,
     val height: Float,
     val end: Int,
     val nextStart: Int,
-)
+    val start: Int = end,
+    private val text: Spanned? = null,
+    private val paint: TextPaint? = null,
+) {
+    private val boundaries by lazy {
+        val iterator = BreakIterator.getCharacterInstance().apply { setText(checkNotNull(text).toString()) }
+        buildList {
+            add(start)
+            var offset = iterator.following(start)
+            while (offset in (start + 1) until end) {
+                add(offset)
+                offset = iterator.next()
+            }
+            add(end)
+        }
+    }
+    private val advances = mutableMapOf<Int, Float>()
+
+    fun yAt(offset: Int): Float = top + when (offset) {
+        start -> 0f
+        end -> height
+        else -> advances.getOrPut(offset) {
+            VerticalTextLayout(
+                text = checkNotNull(text),
+                start = start,
+                end = offset,
+                paint = checkNotNull(paint),
+                height = Float.POSITIVE_INFINITY,
+                orientation = TextOrientation.Mixed,
+            ).contentHeight.coerceIn(0f, height)
+        }
+    }
+
+    fun offsetAt(y: Float, nearest: Boolean): Int {
+        val index = boundaries.binarySearch { offset -> yAt(offset).compareTo(y) }
+        if (index >= 0) return boundaries[index.coerceAtMost(boundaries.lastIndex - if (nearest) 0 else 1)]
+        val after = (-index - 1).coerceIn(1, boundaries.lastIndex)
+        val before = boundaries[after - 1]
+        val next = boundaries[after]
+        return if (nearest && y - yAt(before) > yAt(next) - y) next else before
+    }
+}
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 class VerticalParagraphLayout internal constructor(private val columns: List<VerticalParagraphColumn>) {
@@ -225,18 +274,59 @@ class VerticalParagraphLayout internal constructor(private val columns: List<Ver
         return lastFitting.end to lastFitting.nextStart
     }
 
-    fun draw(canvas: Canvas, availableWidth: Float, orientation: WriteMode) {
-        var offset = 0f
-        columns.forEach { column ->
-            val left = if (orientation == WriteMode.VerticalRTL) {
-                availableWidth - offset - column.width
-            } else {
-                offset
+    fun offsetAt(
+        position: Offset,
+        availableWidth: Float,
+        orientation: WriteMode,
+        nearest: Boolean,
+    ): Int? {
+        val x = if (orientation == WriteMode.VerticalRTL) availableWidth - position.x else position.x
+        var result: Int? = null
+        var bestDistance = Float.POSITIVE_INFINITY
+        forEachColumn { column, offset ->
+            if (column.layout != null) {
+                val right = offset + column.width
+                val distance = maxOf(offset - x, x - right, 0f)
+                if (distance < bestDistance && (nearest ||
+                        (distance == 0f && position.y >= column.top && position.y <= column.top + column.height))
+                ) {
+                    bestDistance = distance
+                    result = column.offsetAt(position.y, nearest)
+                }
             }
+        }
+        return result
+    }
+
+    fun selectionRects(range: TextRange, availableWidth: Float, orientation: WriteMode): List<Rect> =
+        buildList {
+            forEachColumn { column, offset ->
+                val start = maxOf(range.min, column.start)
+                val end = minOf(range.max, column.end)
+                if (start < end) {
+                    val left = columnLeft(offset, column.width, availableWidth, orientation)
+                    add(Rect(left, column.yAt(start), left + column.width, column.yAt(end)))
+                }
+            }
+        }
+
+    fun draw(canvas: Canvas, availableWidth: Float, orientation: WriteMode) {
+        forEachColumn { column, offset ->
+            val left = columnLeft(offset, column.width, availableWidth, orientation)
             column.layout?.let { layout ->
                 layout.draw(canvas, left + (column.width + layout.width) / 2f, column.top)
             }
+        }
+    }
+
+    private inline fun forEachColumn(block: (VerticalParagraphColumn, Float) -> Unit) {
+        var offset = 0f
+        columns.forEach { column ->
+            block(column, offset)
             offset += column.width
         }
     }
+
+    private fun columnLeft(offset: Float, width: Float, availableWidth: Float, orientation: WriteMode) =
+        if (orientation == WriteMode.VerticalRTL) availableWidth - offset - width else offset
 }

@@ -37,9 +37,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -107,9 +110,6 @@ fun ContentSettings(
     LaunchedEffect(selectedTabIndex) {
         pagerState.scrollToPage(selectedTabIndex)
     }
-    LaunchedEffect(pagerState.currentPage) {
-        onTabSelected(pagerState.currentPage)
-    }
 
     Column {
         TabsRow(
@@ -127,7 +127,10 @@ fun ContentSettings(
             userScrollEnabled = false
         ) { pageIndex ->
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("reader-settings-page-$pageIndex")
+                    .semantics { testTagsAsResourceId = true },
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 when (pageIndex) {

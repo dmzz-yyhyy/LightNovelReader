@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +29,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import indi.dmzz_yyhyy.lightnovelreader.data.content.component.LocalVerticalTextSelection
+import indi.dmzz_yyhyy.lightnovelreader.data.content.component.VerticalTextSelection
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterComponent
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterLayout
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterLayoutWindow
@@ -114,6 +117,10 @@ internal fun ScrollContent(
         scrollItems.position(window.current, entryProgress)
     }
     val listState = rememberLazyListState(initialIndex, initialOffset)
+    val selection = remember(window.current.chapterId) { VerticalTextSelection() }
+    LaunchedEffect(listState, selection) {
+        snapshotFlow { listState.isScrollInProgress }.collect { if (it) selection.clear() }
+    }
     var displayedItems by remember { mutableStateOf(scrollItems) }
     var currentChapterId by remember { mutableStateOf(window.current.chapterId) }
     var awaitingChapter by remember { mutableStateOf<String?>(window.current.chapterId) }
@@ -205,7 +212,7 @@ internal fun ScrollContent(
                 }
             }
         }
-        .pointerInput(Unit) { detectTapGestures { toggleImmersive() } }
+        .pointerInput(selection) { detectTapGestures { if (!selection.clear()) toggleImmersive() } }
     val content: LazyListScope.() -> Unit = {
         items(displayedItems.items, key = ScrollItem::key, contentType = { it.component?.data?.id }) { item ->
             val component = item.component
@@ -218,8 +225,8 @@ internal fun ScrollContent(
         }
     }
 
-    SelectionContainer {
-        if (mode.isVertical) {
+    if (mode.isVertical) {
+        CompositionLocalProvider(LocalVerticalTextSelection provides selection) {
             val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
             LazyRow(
                 modifier = modifier,
@@ -228,7 +235,9 @@ internal fun ScrollContent(
                 verticalAlignment = Alignment.CenterVertically,
                 content = content,
             )
-        } else {
+        }
+    } else {
+        SelectionContainer {
             LazyColumn(
                 modifier = modifier,
                 state = listState,

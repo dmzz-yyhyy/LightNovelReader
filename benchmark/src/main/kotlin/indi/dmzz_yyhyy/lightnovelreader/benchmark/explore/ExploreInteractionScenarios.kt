@@ -4,6 +4,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
+import androidx.test.uiautomator.waitForStable
 import indi.dmzz_yyhyy.lightnovelreader.benchmark.framework.BenchmarkTestCase
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -45,23 +46,29 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
         launchApp()
         openRoot("Explore")
         tapDescription("search")
-        replaceText(0, "automation-history")
-        device.pressEnter()
-        device.waitForIdle()
-        tap(device.findObject(By.clazz("android.widget.EditText")))
+        submitSearch("automation-history")
+        tapDescription("clear")
         visibleText("Search History")
         visibleText("automation-history")
-        tapDescription("delete")
-        tapDescription("clear")
-        assertTextNotVisible("automation-history")
+        val delete = visibleDescription("delete")
+        assertTrue(
+            "History delete action kept moving",
+            !delete.waitForStable(stableIntervalMs = 250, requireStableScreenshot = false).isTimeout,
+        )
+        delete.click()
+        assertTrue(
+            "Deleted history entry remained visible",
+            device.wait(Until.gone(By.text("automation-history")), UI_TIMEOUT),
+        )
 
-        replaceText(0, "clear-all-history")
-        device.pressEnter()
-        device.waitForIdle()
-        tap(device.findObject(By.clazz("android.widget.EditText")))
-        visibleText("Clear All")
-        tapText("Clear All")
+        submitSearch("clear-all-history")
         tapDescription("clear")
+        val clearAll = visibleText("Clear All")
+        assertTrue(
+            "Clear history action kept moving",
+            !clearAll.waitForStable(stableIntervalMs = 250, requireStableScreenshot = false).isTimeout,
+        )
+        tapClickable(clearAll)
         assertTrue(device.wait(Until.gone(By.text("clear-all-history")), UI_TIMEOUT))
     }
 }

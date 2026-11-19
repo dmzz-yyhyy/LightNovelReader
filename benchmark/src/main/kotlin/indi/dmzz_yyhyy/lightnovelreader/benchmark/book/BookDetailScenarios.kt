@@ -35,8 +35,9 @@ class BookDetailScenarios : ReaderTestCase() {
         visibleText("Select Chapter")
         expandBottomSheet("Select Chapter")
         visibleText("Benchmark Chapter One")
-        tap(scrollToText("Benchmark Bonus Volume"))
-        tap(scrollToText("Benchmark Chapter Two"))
+        tapScrolledText("Benchmark Bonus Volume")
+        visibleText("Benchmark Chapter Two")
+        tapScrolledText("Benchmark Chapter Two")
         assertForegroundPackage(TARGET_PACKAGE)
     }
 
@@ -54,7 +55,7 @@ class BookDetailScenarios : ReaderTestCase() {
             "Hide Status Bar",
             "Reader Style",
         ).forEach(::visibleText)
-        tapText("Controls")
+        selectReaderSettingsTab("Controls")
         visibleText("Page Turn Mode")
         visibleText("Back Prevention")
     }
@@ -182,14 +183,14 @@ class BookDetailScenarios : ReaderTestCase() {
         revealReaderChrome()
         tapDescription("setting")
         expandReaderSettingsSheet()
-        tapText("Controls")
+        selectReaderSettingsTab("Controls")
         visibleText("Switch between scrolling mode and page turn mode")
         tapText("Page Turn Mode")
         visibleText("Volume Key Navigation")
         scrollToText("Tap to Turn Pages")
         visibleText("Page Turn Animation")
 
-        tapText("Margins")
+        selectReaderSettingsTab("Margins")
         visibleText("Auto Margin Adjustment")
         tapText("Auto Margin Adjustment")
         visibleText("Top Margin")

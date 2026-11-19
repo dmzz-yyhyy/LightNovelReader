@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -23,6 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -41,6 +45,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.LayoutDirection
+import indi.dmzz_yyhyy.lightnovelreader.data.content.component.LocalVerticalTextSelection
+import indi.dmzz_yyhyy.lightnovelreader.data.content.component.VerticalTextSelection
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterComponent
@@ -76,37 +82,68 @@ internal fun FlipContent(
     onToggleImmersive: () -> Unit,
     onReadingProgress: (String, Float, Boolean) -> Unit,
 ) {
-    val pages = remember(window) {
-        window.chapters.flatMap { chapter ->
+    val chapters = window.chapters
+    val pages = remember(chapters) {
+        chapters.flatMap { chapter ->
             chapter.pages.mapIndexed { index, components ->
                 FlipPage(chapter.chapterId, index, chapter.pages.size, components)
             }
         }
     }
-    val pagesByKey = remember(pages) { pages.associateBy(FlipPage::key) }
+    var displayedPages by remember { mutableStateOf(pages) }
+    val pagesByKey = remember(displayedPages) { displayedPages.associateBy(FlipPage::key) }
     val active = window.current
     val firstPage = window.previous?.pages?.size ?: 0
     val target = firstPage + (entryProgress * active.pages.lastIndex).roundToInt()
-    val pager = rememberPagerState(initialPage = target) { pages.size }
+    val pager = rememberPagerState(initialPage = target) { displayedPages.size }
+    val snapDistance = remember(pager) {
+        object : PagerSnapDistance {
+            override fun calculateTargetPage(
+                startPage: Int,
+                suggestedTargetPage: Int,
+                velocity: Float,
+                pageSize: Int,
+                pageSpacing: Int,
+            ): Int {
+                // settledPage stays at the gesture's origin throughout the drag and fling.
+                return suggestedTargetPage.coerceIn(pager.settledPage - 1, pager.settledPage + 1)
+            }
+        }
+    }
+    val flingBehavior = PagerDefaults.flingBehavior(pager, pagerSnapDistance = snapDistance)
+    val selection = remember(active.chapterId) { VerticalTextSelection() }
+    LaunchedEffect(pager, selection) {
+        snapshotFlow { pager.isScrollInProgress to pager.currentPage }.collect { selection.clear() }
+    }
     var currentChapterId by remember { mutableStateOf(active.chapterId) }
     var awaitingChapter by remember { mutableStateOf<String?>(active.chapterId) }
     var requestedChapter by remember { mutableStateOf<String?>(null) }
-    var previousLayout by remember { mutableStateOf(window.previous) }
+    var edgeRequest by remember { mutableStateOf<Int?>(null) }
     val animated = settingState.flipAnime != MenuOptions.FlipAnimationOptions.None
     val localRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val rtl = if (mode.isVertical) mode == WriteMode.VerticalRTL else localRtl
 
     SideEffect {
-        val previousChanged = previousLayout !== window.previous
-        previousLayout = window.previous
         val changed = currentChapterId != active.chapterId
         if (changed) {
             currentChapterId = active.chapterId
             awaitingChapter = active.chapterId.takeUnless { it == requestedChapter }
             requestedChapter = null
+            edgeRequest = null
         }
-        if (awaitingChapter == active.chapterId && (changed || previousChanged)) {
-            pager.requestScrollToPage(target)
+        val pagesChanged = displayedPages !== pages
+        if (!changed && !pagesChanged) return@SideEffect
+        val visible = pager.layoutInfo.visiblePagesInfo.firstOrNull { it.index == pager.currentPage }
+        val anchorIndex = visible?.let { anchor -> pages.indexOfFirst { it.key == anchor.key } }
+        val position = when {
+            awaitingChapter == active.chapterId -> target to 0f
+            visible != null && anchorIndex != null && anchorIndex >= 0 && anchorIndex != visible.index ->
+                anchorIndex to pager.currentPageOffsetFraction
+            else -> null
+        }
+        Snapshot.withMutableSnapshot {
+            displayedPages = pages
+            position?.let { (index, fraction) -> pager.requestScrollToPage(index, fraction) }
         }
     }
 
@@ -116,7 +153,15 @@ internal fun FlipContent(
     val report by rememberUpdatedState(onReadingProgress)
     val toggleImmersive by rememberUpdatedState(onToggleImmersive)
     val currentPage = pager.layoutInfo.visiblePagesInfo.firstOrNull { it.index == pager.currentPage }
+        ?.takeIf { displayedPages.getOrNull(it.index)?.key == it.key }
         ?.let { pagesByKey[it.key] }
+
+    fun requestAdjacent(direction: Int) {
+        if (awaitingChapter != null || requestedChapter != null) return
+        val id = if (direction < 0) latestWindow.previousId else latestWindow.nextId
+        requestedChapter = id
+        adjacent(direction)
+    }
 
     LaunchedEffect(pager) {
         snapshotFlow {
@@ -124,17 +169,26 @@ internal fun FlipContent(
             val visible = pager.layoutInfo.visiblePagesInfo.firstOrNull { it.index == pager.settledPage }
                 ?: return@snapshotFlow null
             val page = latestPages[visible.key] ?: return@snapshotFlow null
+            if (displayedPages.getOrNull(visible.index)?.key != visible.key) return@snapshotFlow null
             val activeId = latestWindow.current.chapterId
             page.takeIf {
                 it.chapterId == activeId || (awaitingChapter == null &&
                     requestedChapter == null && currentChapterId == activeId)
-            }
-        }.collect { page ->
-            if (page == null) return@collect
+            }?.let { it to edgeRequest }
+        }.collect { position ->
+            if (position == null) return@collect
+            val (page, edge) = position
             val current = latestWindow.current.chapterId
+            edgeRequest = null
             if (page.chapterId == current) {
                 awaitingChapter = null
                 report(current, page.progress, true)
+                val atEdge = when (edge) {
+                    -1 -> pager.settledPage == 0
+                    1 -> pager.settledPage == displayedPages.lastIndex
+                    else -> false
+                }
+                if (atEdge && edge != null) requestAdjacent(edge)
             } else {
                 val direction = when (page.chapterId) {
                     latestWindow.previousId -> -1
@@ -153,7 +207,7 @@ internal fun FlipContent(
             if (awaitingChapter != null || requestedChapter != null || pager.isScrollInProgress) continue
             val destination = pager.settledPage + direction
             if (destination !in 0 until pager.pageCount) {
-                adjacent(direction)
+                requestAdjacent(direction)
             } else if (animated) {
                 pager.animateScrollToPage(destination)
             } else {
@@ -178,7 +232,14 @@ internal fun FlipContent(
     val tapToTurn = settingState.isUsingClickFlipPage
     val readingDirection = if (rtl) -1 else 1
     val pageInput = Modifier
-        .chapterOverscroll(mode, horizontal = true, active.chapterId, onAdjacent)
+        .chapterOverscroll(mode, horizontal = true, active.chapterId) { direction ->
+            if (awaitingChapter == null && requestedChapter == null &&
+                currentPage?.chapterId == active.chapterId
+            ) {
+                // Complete the drag and snap before moving the chapter window.
+                edgeRequest = direction
+            }
+        }
         .onPreviewKeyEvent { event ->
             if (!volumeKeys || (event.key != Key.VolumeUp && event.key != Key.VolumeDown)) {
                 return@onPreviewKeyEvent false
@@ -209,9 +270,10 @@ internal fun FlipContent(
         }
         .focusRequester(focusRequester)
         .focusable()
-        .pointerInput(tapToTurn, readingDirection, volumeKeys) {
+        .pointerInput(tapToTurn, readingDirection, volumeKeys, selection) {
             detectTapGestures(onPress = { if (volumeKeys) focusRequester.requestFocus() }) { point ->
                 when {
+                    selection.clear() -> Unit
                     tapToTurn && point.x < size.width / 3f -> requests.trySend(-readingDirection)
                     tapToTurn && point.x > size.width * 2f / 3f -> requests.trySend(readingDirection)
                     else -> toggleImmersive()
@@ -240,15 +302,22 @@ internal fun FlipContent(
             .testTag("flip-chapter-${active.chapterId}")
             .semantics {
                 testTagsAsResourceId = true
+                val restoring = awaitingChapter != null || currentPage?.chapterId != active.chapterId
+                val direction = when (requestedChapter) {
+                    null -> 0
+                    window.previousId -> -1
+                    else -> 1
+                }
                 contentDescription = "flip-state-page=${currentPage?.index ?: 0};" +
                     "count=${active.pages.size};end=true;" +
-                    "animating=${pager.isScrollInProgress};direction=0"
+                    "animating=${pager.isScrollInProgress || restoring};direction=$direction"
             },
+        flingBehavior = flingBehavior,
         reverseLayout = rtl != localRtl,
         userScrollEnabled = animated,
-        key = { pages[it].key },
+        key = { displayedPages[it].key },
     ) { index ->
-        val page = pages[index]
+        val page = displayedPages[index]
         val modifier = Modifier.fillMaxSize().then(
             if (currentPage?.key == page.key) {
                 Modifier.testTag("flip-page-${page.index}-${page.chapterId.hashCode()}")
@@ -263,8 +332,8 @@ internal fun FlipContent(
             }
             return@HorizontalPager
         }
-        SelectionContainer {
-            if (mode.isVertical) {
+        if (mode.isVertical) {
+            CompositionLocalProvider(LocalVerticalTextSelection provides selection) {
                 Row(
                     modifier = modifier,
                     horizontalArrangement = if (rtl != localRtl) Arrangement.End else Arrangement.Start,
@@ -273,7 +342,9 @@ internal fun FlipContent(
                     val components = if (rtl != localRtl) page.components.asReversed() else page.components
                     components.forEach { ChapterComponent(it, mode) }
                 }
-            } else {
+            }
+        } else {
+            SelectionContainer {
                 Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
                     page.components.forEach { ChapterComponent(it, mode) }
                 }

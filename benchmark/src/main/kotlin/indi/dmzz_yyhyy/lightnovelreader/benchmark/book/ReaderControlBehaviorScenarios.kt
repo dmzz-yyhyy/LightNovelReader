@@ -54,7 +54,7 @@ class ReaderControlBehaviorScenarios : ReaderTestCase() {
         revealReaderChrome()
         tapDescription("setting")
         expandReaderSettingsSheet()
-        tapText("Margins")
+        selectReaderSettingsTab("Margins")
         tapSwitchForText("Auto Margin Adjustment")
         awaitUserData(AUTO_MARGIN_PATH, "false")
         waitUntil("Manual margin controls did not appear after disabling automatic margins") {
@@ -83,7 +83,7 @@ class ReaderControlBehaviorScenarios : ReaderTestCase() {
         revealReaderChrome()
         tapDescription("setting")
         expandReaderSettingsSheet()
-        tapText("Margins")
+        selectReaderSettingsTab("Margins")
         settings.entries.drop(2).forEach { (path, setting) ->
             bringReaderSettingIntoView(setting.first)
             setSliderForText(setting.first, setting.second)
@@ -104,7 +104,7 @@ class ReaderControlBehaviorScenarios : ReaderTestCase() {
         revealReaderChrome()
         tapDescription("setting")
         visibleText("Reader Settings")
-        tapText("Controls")
+        selectReaderSettingsTab("Controls")
     }
 
     private fun closeReaderSettings() {
