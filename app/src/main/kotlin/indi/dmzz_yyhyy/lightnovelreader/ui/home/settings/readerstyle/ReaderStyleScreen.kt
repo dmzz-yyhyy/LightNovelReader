@@ -38,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -100,6 +101,7 @@ fun ReaderStyleScreen(
     onClickChangeBackgroundColor: () -> Unit
 ) {
     val context = LocalContext.current
+    val selectBackground = rememberBackgroundPicker(settingState, context)
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -109,7 +111,7 @@ fun ReaderStyleScreen(
                 ReaderThemeSettingsList(settingState, onClickChangeBackgroundColor)
             }
             item {
-                BackgroundSettings(settingState, context)
+                BackgroundSettings(settingState, selectBackground)
             }
             item {
                 ReaderTextSettings(settingState, context, onClickChangeTextColor)
@@ -559,27 +561,25 @@ private fun deleteReplacedBackground(context: Context, uri: Uri, fileName: Strin
 }
 
 @Composable
-fun BackgroundSettings(settingState: SettingState, context: Context) {
+private fun rememberBackgroundPicker(settingState: SettingState, context: Context): (Boolean) -> Unit {
     val scope = rememberCoroutineScope()
-
-    val isCustomSelected = settingState.backgroundImageUri.toString().isNotBlank() ||
-            settingState.backgroundDarkImageUri.toString().isNotBlank()
-    var isDarkSelection by remember { mutableStateOf(false) }
+    var isDarkSelection by rememberSaveable { mutableStateOf(false) }
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
         uri ?: return@rememberLauncherForActivityResult
+        val dark = isDarkSelection
         scope.launch {
             val fileName =
-                if (isDarkSelection) "readerDarkBackgroundImage" else "readerBackgroundImage"
+                if (dark) "readerDarkBackgroundImage" else "readerBackgroundImage"
             val replacedUri =
-                if (isDarkSelection) settingState.backgroundDarkImageUri
+                if (dark) settingState.backgroundDarkImageUri
                 else settingState.backgroundImageUri
             val file = saveBackgroundToLocal(context, uri, fileName) ?: return@launch
             val fileUri = file.toUri()
             withContext(Dispatchers.IO) {
-                if (isDarkSelection)
+                if (dark)
                     settingState.backgroundDarkImageUriUserData.set(fileUri)
                 else
                     settingState.backgroundImageUriUserData.set(fileUri)
@@ -587,6 +587,16 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
             }
         }
     }
+    return { dark ->
+        isDarkSelection = dark
+        launcher.launch(arrayOf("image/*"))
+    }
+}
+
+@Composable
+fun BackgroundSettings(settingState: SettingState, onSelectBackground: (isDark: Boolean) -> Unit) {
+    val isCustomSelected = settingState.backgroundImageUri.toString().isNotBlank() ||
+            settingState.backgroundDarkImageUri.toString().isNotBlank()
 
     if (!settingState.enableBackgroundImage) return
 
@@ -615,8 +625,7 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
                         uri = settingState.backgroundImageUri,
                         previewSize = 52.dp,
                         onClick = {
-                            isDarkSelection = false
-                            launcher.launch("image/*")
+                            onSelectBackground(false)
                         }
                     )
                     Spacer(Modifier.height(6.dp))
@@ -625,8 +634,7 @@ fun BackgroundSettings(settingState: SettingState, context: Context) {
                         uri = settingState.backgroundDarkImageUri,
                         previewSize = 52.dp,
                         onClick = {
-                            isDarkSelection = true
-                            launcher.launch("image/*")
+                            onSelectBackground(true)
                         }
                     )
                 }

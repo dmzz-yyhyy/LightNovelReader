@@ -4,7 +4,12 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.ContentValues
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
+import android.os.Environment
+import android.provider.MediaStore
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
@@ -115,6 +120,52 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                             extendRapidChapterChain(LightNovelReaderDatabase.getInstance(context))
                         }
                         "rapid-chapters=SUCCEEDED"
+                    }
+
+                    ACTION_PREPARE_BACKGROUND_IMAGES -> {
+                        prepareBackgroundImages(context)
+                        "background-images=SUCCEEDED"
+                    }
+
+                    ACTION_DELETE_BACKGROUND_IMAGES -> {
+                        context.contentResolver.delete(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            "${MediaStore.MediaColumns.RELATIVE_PATH} = ?",
+                            arrayOf("${Environment.DIRECTORY_PICTURES}/LnrBenchmark/"),
+                        )
+                        "background-images=DELETED"
+                    }
+
+                    ACTION_PREPARE_READER_LAYOUT -> {
+                        runBlocking {
+                            val database = LightNovelReaderDatabase.getInstance(context)
+                            extendRapidChapterChain(database)
+                            resetReaderProgress(database)
+                        }
+                        "reader-layout=SUCCEEDED"
+                    }
+
+                    ACTION_LONG_PARAGRAPH -> {
+                        runBlocking {
+                            val database = LightNovelReaderDatabase.getInstance(context)
+                            val chapter = checkNotNull(database.chapterContentDao().get(CHAPTER_ONE_ID))
+                            database.chapterContentDao().update(chapter.copy(
+                                content = ContentBuilder()
+                                    .paragraph { text(LONG_PARAGRAPH) }
+                                    .paragraph { }
+                                    .paragraph { }
+                                    .build(),
+                            ))
+                            resetReaderProgress(database)
+                        }
+                        "long-paragraph=SUCCEEDED"
+                    }
+
+                    ACTION_REPORT_READING_POSITION -> {
+                        val data = runBlocking {
+                            LightNovelReaderDatabase.getInstance(context).userReadingDataDao().getEntity(BOOK_ID)
+                        }
+                        "chapter=${data?.lastReadChapterId};progress=${data?.currentChapterReadingProgressMap?.get(data.lastReadChapterId)}"
                     }
 
                     else -> "unsupported-action=${intent.action}"
@@ -356,6 +407,44 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         }
     }
 
+    private suspend fun resetReaderProgress(database: LightNovelReaderDatabase) {
+        val data = checkNotNull(database.userReadingDataDao().getEntity(BOOK_ID))
+        database.userReadingDataDao().insert(data.copy(
+            readingProgress = 0f,
+            lastReadChapterId = CHAPTER_ONE_ID,
+            lastReadChapterTitle = "Benchmark Chapter One",
+            currentChapterReadingProgressMap = mapOf(CHAPTER_ONE_ID to 0f),
+            maxChapterReadingProgressMap = mapOf(CHAPTER_ONE_ID to 0f),
+        ))
+    }
+
+    private fun prepareBackgroundImages(context: Context) {
+        val collection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        listOf("lnr-background-light.png" to Color.rgb(24, 188, 104),
+            "lnr-background-dark.png" to Color.rgb(164, 48, 196)).forEach { (name, color) ->
+            context.contentResolver.delete(collection, "${MediaStore.MediaColumns.DISPLAY_NAME} = ?", arrayOf(name))
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/LnrBenchmark")
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = checkNotNull(context.contentResolver.insert(collection, values))
+            val bitmap = Bitmap.createBitmap(240, 400, Bitmap.Config.ARGB_8888)
+            try {
+                bitmap.eraseColor(color)
+                checkNotNull(context.contentResolver.openOutputStream(uri)).use {
+                    check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
+                }
+                values.clear()
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                context.contentResolver.update(uri, values, null, null)
+            } finally {
+                bitmap.recycle()
+            }
+        }
+    }
+
     private suspend fun extendRapidChapterChain(database: LightNovelReaderDatabase) {
         val extraChapterIds = (3..12).map { "benchmark-chapter-$it" }
         database.bookVolumesDao().insertVolume(
@@ -404,6 +493,16 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_PROGRESS"
         const val ACTION_EXTEND_RAPID_CHAPTER_CHAIN =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.EXTEND_RAPID_CHAPTER_CHAIN"
+        const val ACTION_PREPARE_BACKGROUND_IMAGES =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.PREPARE_BACKGROUND_IMAGES"
+        const val ACTION_DELETE_BACKGROUND_IMAGES =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.DELETE_BACKGROUND_IMAGES"
+        const val ACTION_PREPARE_READER_LAYOUT =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.PREPARE_READER_LAYOUT"
+        const val ACTION_LONG_PARAGRAPH =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.LONG_PARAGRAPH"
+        const val ACTION_REPORT_READING_POSITION =
+            "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_READING_POSITION"
         const val ACTION_REPORT_USER_DATA =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REPORT_USER_DATA"
         const val ACTION_REPORT_BOOKSHELF =
@@ -429,5 +528,8 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         const val CHAPTER_TWO_START_MARKER = "Benchmark chapter two start marker."
         const val BOOKSHELF_ID = 1_000_001
         const val PROGRESS_PARAGRAPH_COUNT = 30
+        val LONG_PARAGRAPH = (1..100).joinToString("") {
+            "跨页段落${it.toString().padStart(3, '0')}，测绘切分必须保持全部文字的顺序，不得遗漏或重复。"
+        }
     }
 }
