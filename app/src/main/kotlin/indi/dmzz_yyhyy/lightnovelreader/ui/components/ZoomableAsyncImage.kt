@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -37,17 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
-import coil3.network.NetworkHeaders
-import coil3.network.httpHeaders
-import coil3.request.CachePolicy
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import coil3.request.transformations
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.image.ImageTransPostProcessingViewModel
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.UserAgentGenerator
-import io.nightfish.lightnovelreader.api.image.ImagePostProcessingPipeline
-import kotlinx.coroutines.Dispatchers
+import indi.dmzz_yyhyy.lightnovelreader.data.image.imageComponentRequestBuilder
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -56,36 +52,32 @@ fun ZoomableImage(
     modifier: Modifier = Modifier,
     onViewImage: () -> Unit,
     placeholderHeight: Dp = 200.dp,
-    header: Map<String, String>
+    header: Map<String, String>,
+    orientation: WriteMode = WriteMode.Horizontal
 ) {
     val context = LocalContext.current
     var retryKey by remember { mutableIntStateOf(0) }
     var lastError by remember { mutableStateOf<String?>(null) }
     val imageTransPostProcessingViewModel = hiltViewModel<ImageTransPostProcessingViewModel>()
     val request = remember(imageUri, header) {
-        val transformations = imageTransPostProcessingViewModel
-            .imageTransPostProcessingManager
-            .getCoil3Transformations(ImagePostProcessingPipeline.imageComponent, imageUri)
-        ImageRequest.Builder(context)
-            .data(imageUri)
-            .transformations(transformations)
-            .crossfade(true)
-            .memoryCachePolicy(CachePolicy.ENABLED)
-            .networkCachePolicy(CachePolicy.ENABLED)
-            .interceptorCoroutineContext(Dispatchers.Default)
-            .httpHeaders(
-                NetworkHeaders.Builder().apply {
-                    header.forEach { (key, value) -> add(key, value) }
-                    if (header.keys.none { it.equals("User-Agent", ignoreCase = true) }) {
-                        add("User-Agent", UserAgentGenerator.generate())
-                    }
-                }.build()
-            ).listener(
-                onSuccess = { _, _ -> lastError = null },
-                onError = { _, result -> lastError = result.throwable.localizedMessage }
-            )
+        imageComponentRequestBuilder(
+            context,
+            imageUri,
+            header,
+            imageTransPostProcessingViewModel.imageTransPostProcessingManager
+        ).listener(
+            onSuccess = { _, _ -> lastError = null },
+            onError = { _, result -> lastError = result.throwable.localizedMessage }
+        )
             .build()
-
+    }
+    val imageModifier = when (orientation) {
+        WriteMode.Horizontal -> Modifier.fillMaxWidth().heightIn(min = placeholderHeight)
+        WriteMode.VerticalRTL, WriteMode.VerticalLTR -> Modifier.fillMaxHeight().widthIn(min = placeholderHeight)
+    }
+    val placeholderModifier = when (orientation) {
+        WriteMode.Horizontal -> Modifier.height(placeholderHeight).fillMaxWidth()
+        WriteMode.VerticalRTL, WriteMode.VerticalLTR -> Modifier.width(placeholderHeight).fillMaxHeight()
     }
     Box(
         modifier = modifier
@@ -95,16 +87,14 @@ fun ZoomableImage(
             SubcomposeAsyncImage(
                 model = request,
                 contentDescription = "",
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = placeholderHeight)
-                    .align(Alignment.Center),
+                contentScale = when (orientation) {
+                    WriteMode.Horizontal -> ContentScale.FillWidth
+                    WriteMode.VerticalRTL, WriteMode.VerticalLTR -> ContentScale.FillHeight
+                },
+                modifier = imageModifier.align(Alignment.Center),
                 loading = {
                     Box(
-                        modifier = Modifier
-                            .height(placeholderHeight)
-                            .fillMaxWidth(),
+                        modifier = placeholderModifier,
                         contentAlignment = Alignment.Center
                     ) {
                         Loading()
@@ -112,10 +102,7 @@ fun ZoomableImage(
                 },
                 error = {
                     Column(
-                        modifier = Modifier
-                            .height(placeholderHeight)
-                            .fillMaxWidth()
-                            .padding(12.dp),
+                        modifier = placeholderModifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {

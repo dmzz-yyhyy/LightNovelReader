@@ -95,11 +95,15 @@ class BookshelfBehaviorScenarios : BenchmarkTestCase() {
         var upper = emptyList<android.graphics.Rect>()
         var lower = emptyList<android.graphics.Rect>()
         repeat(40) {
+            val allBooksTop = device.findObject(androidx.test.uiautomator.By.textStartsWith("All ("))
+                ?.visibleBounds?.bottom ?: Int.MAX_VALUE
             upper = device.findObjects(androidx.test.uiautomator.By.text(upperTitle))
                 .map { it.visibleBounds }
+                .filter { it.top >= allBooksTop }
                 .sortedWith(compareBy<android.graphics.Rect> { it.top }.thenBy { it.left })
             lower = device.findObjects(androidx.test.uiautomator.By.text(lowerTitle))
                 .map { it.visibleBounds }
+                .filter { it.top >= allBooksTop }
                 .sortedWith(compareBy<android.graphics.Rect> { it.top }.thenBy { it.left })
             val firstUpper = upper.firstOrNull()
             val firstLower = lower.firstOrNull()

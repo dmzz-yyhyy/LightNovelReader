@@ -8,6 +8,7 @@ import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
 import io.nightfish.lightnovelreader.api.content.component.ComponentRender
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 
 /**
  * 返回当前 Navigation 3 页面。
@@ -36,7 +37,8 @@ val LocalReaderStyle = compositionLocalOf {
             firstLine = 30.sp,
         ),
         fontUri = null,
-        letterSpacing = 0.2.sp
+        letterSpacing = 0.2.sp,
+        writeMode = WriteMode.Horizontal,
     )
 }
 

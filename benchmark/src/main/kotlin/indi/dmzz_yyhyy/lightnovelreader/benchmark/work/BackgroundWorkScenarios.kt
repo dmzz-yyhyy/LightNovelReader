@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.benchmark.work
 
-import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.uiautomator.By
@@ -20,9 +19,7 @@ class BackgroundWorkScenarios : BenchmarkTestCase() {
         launchApp()
         openRoot("Explore")
         tapDescription("search")
-        replaceText(0, ExploreNetworkScenarios.LIVE_QUERY)
-        SystemClock.sleep(6_000)
-        device.pressEnter()
+        submitSearch(ExploreNetworkScenarios.LIVE_QUERY)
         visibleDescription("export", NETWORK_WORK_TIMEOUT)
         scrollToText("Not Cached")
 
