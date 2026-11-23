@@ -7,7 +7,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEnt
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
-import io.nightfish.lightnovelreader.api.content.component.data.TextData
+import io.nightfish.lightnovelreader.api.content.component.data.cap.TextData
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.text.ComponentProcessor
 import io.nightfish.lightnovelreader.api.text.TextProcessor

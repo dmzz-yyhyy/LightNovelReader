@@ -42,6 +42,9 @@ sealed class UserDataPath(
 
     /** 阅读界面相关用户数据路径组 @since Api 2 */
     data object Reader : UserDataPath("reader") {
+        /** 阅读器书写方向 @since Api 4 */
+        data object WriteMode : UserDataPath("write_mode", Reader)
+
         /** 阅读字体大小 @since Api 2 */
         data object FontSize : UserDataPath("font_size", Reader)
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import java.io.File
 
 /**
@@ -26,6 +27,7 @@ import java.io.File
  * @param spacingBeforeParagraph 段前间距
  * @param spacingAfterParagraph 段后间距
  * @param fontUri 自定义字体Uri
+ * @param writeMode 组件的书写方向
  *
  * @since Api 2
  */
@@ -42,13 +44,31 @@ data class ReaderStyle(
         firstLine = 2.em,
     ),
     val fontUri: Uri? = null,
+    val writeMode: WriteMode = WriteMode.Horizontal
 ) {
+    /**
+     * 转换为Compose段落样式
+     *
+     * @return 包含阅读器行高与缩进的段落样式
+     *
+     * @since Api 4
+     */
     fun toParagraphStyle(): ParagraphStyle =
         ParagraphStyle(
             lineHeight = lineHeight,
             textIndent = textIndent
         )
 
+    /**
+     * 转换为Compose文本样式
+     * 无法读取自定义字体时回退到无衬线字体
+     *
+     * @param darkMode 是否使用深色模式文本颜色
+     *
+     * @return 包含当前字体、颜色与字间距的文本样式
+     *
+     * @since Api 4
+     */
     fun toSpanStyle(
         darkMode: Boolean
     ): SpanStyle {

@@ -65,6 +65,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.net.ConnectException
+import java.net.UnknownHostException
 import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -209,7 +210,13 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
     override suspend fun isOffLine(): Boolean = withContext(Dispatchers.IO) {
         suspend fun webSite(index: Int): Boolean = runCatching {
             getPage(hosts[index] + "/login.php").status.isSuccess()
-        }.getOrElse { false }
+        }
+            .getOrElse { false }
+            .also {
+                if (it) {
+                    host = hosts[index]
+                }
+            }
         return@withContext !anyTrue(
             listOf(
                 { webSite(0) },

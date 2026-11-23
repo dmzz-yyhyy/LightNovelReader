@@ -23,6 +23,22 @@ import io.nightfish.lightnovelreader.api.text.font.VariationItem
 import kotlinx.serialization.Serializable
 import java.io.File
 
+/**
+ * 文本样式配置
+ * 未指定的属性由段落样式或阅读器样式决定
+ *
+ * @param fontSize 字体大小
+ * @param fontFamily 本地字体配置集合, 按顺序组成字体族
+ * @param fontWeight 字体粗细, null表示未指定
+ * @param color 文本颜色
+ * @param underline 是否绘制下划线, null表示未指定
+ * @param throughline 是否绘制删除线, null表示未指定
+ * @param italic 是否使用斜体, null表示未指定
+ * @param letterSpacing 字间距
+ * @param textAlign 文本对齐方式
+ *
+ * @since Api 4
+ */
 @Stable
 @Serializable
 data class TextStyle(
@@ -41,6 +57,14 @@ data class TextStyle(
     @Serializable(TextAlignSerializer::class)
     val textAlign: TextAlign = TextAlign.Unspecified
 ) {
+    /**
+     * 转换为Compose文本样式
+     * 无法读取的本地字体会被忽略, 文本对齐方式由段落样式处理
+     *
+     * @return 包含字体、颜色与文本修饰的Compose文本样式
+     *
+     * @since Api 4
+     */
     fun toSpanStyle() = SpanStyle(
         color = color,
         fontSize = fontSize,

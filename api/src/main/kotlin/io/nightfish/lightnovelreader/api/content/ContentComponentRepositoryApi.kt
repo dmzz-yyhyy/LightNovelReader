@@ -1,6 +1,6 @@
 package io.nightfish.lightnovelreader.api.content
 
-import io.nightfish.lightnovelreader.api.content.component.AbstractContentComponentRender
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.identifier.Identifier
@@ -32,7 +32,7 @@ interface ContentComponentRepositoryApi {
         fun <Render, Data> component(
             value: KClass<Render>
         ): RegisterBuilder
-                where Render : AbstractContentComponentRender<Data>,
+                where Render : AbstractContentComponentRender<Render, Data>,
                       Data : AbstractContentComponentData
 
         /**

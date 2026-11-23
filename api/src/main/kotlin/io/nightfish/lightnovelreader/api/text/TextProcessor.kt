@@ -3,7 +3,7 @@ package io.nightfish.lightnovelreader.api.text
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
-import io.nightfish.lightnovelreader.api.content.component.data.TextData
+import io.nightfish.lightnovelreader.api.content.component.data.cap.TextData
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 
 /**

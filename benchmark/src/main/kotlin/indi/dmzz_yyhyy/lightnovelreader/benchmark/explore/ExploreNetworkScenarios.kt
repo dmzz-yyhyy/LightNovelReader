@@ -1,6 +1,5 @@
 package indi.dmzz_yyhyy.lightnovelreader.benchmark.explore
 
-import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.uiautomator.By
@@ -32,11 +31,8 @@ class ExploreNetworkScenarios : BenchmarkTestCase() {
         launchApp()
         openRoot("Explore")
         tapDescription("search")
-        replaceText(0, LIVE_QUERY)
-        SystemClock.sleep(6_000)
         shell("logcat -c")
-        device.pressEnter()
-        device.waitForIdle()
+        submitSearch(LIVE_QUERY)
         visibleText(LIVE_QUERY)
         allDescriptions("export", NETWORK_TIMEOUT)
 
@@ -50,8 +46,7 @@ class ExploreNetworkScenarios : BenchmarkTestCase() {
     fun expandedPageLoadsFiltersRefreshesAndPages() {
         launchApp()
         openRoot("Explore")
-        device.click(device.displayWidth / 2, (device.displayHeight * 0.21f).toInt())
-        device.waitForIdle()
+        tapClickableText("全部")
         tap(allDescriptions("expand", NETWORK_TIMEOUT).first())
         visibleDescription("back")
         val filters = device.wait(Until.findObjects(By.checkable(true)), NETWORK_TIMEOUT).orEmpty()

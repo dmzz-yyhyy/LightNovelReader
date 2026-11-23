@@ -21,7 +21,7 @@ abstract class DocumentsTestCase : BenchmarkTestCase() {
         assertNotNull("DocumentsUI save button was not visible", save)
         save.click()
         device.waitForIdle()
-        if (device.hasObject(By.pkg(DOCUMENTS_PACKAGE))) {
+        if (device.hasObject(By.pkg(documentsPackage))) {
             device.findObject(By.res("android", "button1"))?.click()
         }
         assertTrue(
@@ -33,7 +33,7 @@ abstract class DocumentsTestCase : BenchmarkTestCase() {
     protected fun selectDocument(fileName: String) {
         waitForDocumentsUi()
         val displayName = fileName.substringBeforeLast('.')
-        val list = device.findObject(By.res(DOCUMENTS_PACKAGE, "dir_list"))
+        val list = device.findObject(By.res(documentsPackage, "dir_list"))
         repeat(20) {
             if (list?.scroll(Direction.DOWN, 0.8f) != true) return@repeat
             device.waitForIdle()
@@ -48,7 +48,7 @@ abstract class DocumentsTestCase : BenchmarkTestCase() {
         assertNotNull("Exported file was not visible: $fileName", file)
         file.click()
         device.waitForIdle()
-        if (device.hasObject(By.pkg(DOCUMENTS_PACKAGE))) {
+        if (device.hasObject(By.pkg(documentsPackage))) {
             device.findObject(By.res("android", "button1"))?.click()
         }
         assertTrue(
@@ -76,8 +76,8 @@ abstract class DocumentsTestCase : BenchmarkTestCase() {
     private fun waitForDocumentsUi() {
         assertTrue(
             "DocumentsUI did not become visible",
-            device.wait(Until.hasObject(By.pkg(DOCUMENTS_PACKAGE).depth(0)), UI_TIMEOUT),
+            device.wait(Until.hasObject(By.pkg(documentsPackage).depth(0)), UI_TIMEOUT),
         )
-        assertForegroundPackage(DOCUMENTS_PACKAGE)
+        assertForegroundPackage(documentsPackage)
     }
 }

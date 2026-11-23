@@ -97,6 +97,11 @@ class XmlBuilder {
         }
     }
 
+    /**
+     * 当前正在构建的XML文档
+     *
+     * @since Api 2
+     */
     val document: Document = DocumentHelper
         .createDocument()
 }

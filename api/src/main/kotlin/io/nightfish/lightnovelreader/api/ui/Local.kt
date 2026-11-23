@@ -8,6 +8,7 @@ import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.TextIndent
 import androidx.compose.ui.unit.sp
 import io.nightfish.lightnovelreader.api.content.component.ComponentRender
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 
 /**
  * 返回当前 Navigation 3 页面。
@@ -36,7 +37,8 @@ val LocalReaderStyle = compositionLocalOf {
             firstLine = 30.sp,
         ),
         fontUri = null,
-        letterSpacing = 0.2.sp
+        letterSpacing = 0.2.sp,
+        writeMode = WriteMode.Horizontal,
     )
 }
 
@@ -50,6 +52,12 @@ val LocalTextLocaleList = compositionLocalOf {
     LocaleList(Locale.current)
 }
 
+/**
+ * 当前内容组件的渲染入口
+ * 由宿主提供已注册的组件渲染器
+ *
+ * @since Api 4
+ */
 val LocalComponentRender = compositionLocalOf<ComponentRender> {
     error("CompositionLocal LocalComponentRender not present")
 }
