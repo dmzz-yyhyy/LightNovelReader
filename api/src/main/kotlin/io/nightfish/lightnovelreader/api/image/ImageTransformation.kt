@@ -16,6 +16,9 @@ interface ImageTransformation {
      * @param input 原图或前一个转换器输出的尺寸
      * @param size 图片被设置显示的大小，与[transform]的size含义相同
      * @param uri 输入图片来源Uri
+     *
+     * @return 后处理后的图片尺寸
+     *
      * @since Api 4
      */
     fun measure(input: ImageSize, size: ImageSize, uri: Uri): ImageSize = input

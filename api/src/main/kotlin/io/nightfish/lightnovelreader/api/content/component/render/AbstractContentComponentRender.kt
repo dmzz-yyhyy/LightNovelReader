@@ -12,6 +12,7 @@ import io.nightfish.lightnovelreader.api.identifier.Identifier
  * 所有自定义内容组件需继承此类
  * 此类是单例, 只负责处理组件渲染
  *
+ * @param Self 渲染器自身类型
  * @param Data 此组件对应的数据类型
  *
  * @since Api 2
@@ -48,6 +49,10 @@ abstract class AbstractContentComponentRender<Self, Data>: AxisMeasurable<Self, 
      * 供持有星投影 renderer 的渲染后端调用，仍由当前实例执行 [Content]。
      * 调用方须先通过组件注册信息确认 [data] 与此 renderer 匹配。
      * 具体 renderer 的调用方应使用保留 [Data] 类型检查的 [Content]。
+     *
+     * @param modifier 传入的Modifier修饰符
+     * @param orientation 组件渲染方向
+     * @param data 与当前渲染器注册类型匹配的组件数据
      *
      * @since Api 4
      */

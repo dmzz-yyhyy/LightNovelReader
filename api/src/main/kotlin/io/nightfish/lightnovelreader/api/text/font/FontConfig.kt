@@ -8,6 +8,16 @@ import io.nightfish.lightnovelreader.api.serializer.FontWeightSerializer
 import io.nightfish.lightnovelreader.api.serializer.UriSerializer
 import kotlinx.serialization.Serializable
 
+/**
+ * 本地字体配置
+ *
+ * @param uri 本地字体文件Uri
+ * @param weight 字体粗细
+ * @param style 字体样式
+ * @param variationSettings 可变字体轴配置, null表示使用默认配置
+ *
+ * @since Api 4
+ */
 @Serializable
 data class FontConfig(
     @Serializable(UriSerializer::class)

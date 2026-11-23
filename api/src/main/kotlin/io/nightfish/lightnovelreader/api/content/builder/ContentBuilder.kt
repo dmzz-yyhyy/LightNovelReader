@@ -54,6 +54,15 @@ class ContentBuilder {
         }
 }
 
+/**
+ * 通过构建器创建章节内容
+ *
+ * @param builder 内容组件的构建逻辑
+ *
+ * @return 包含组件列表的JSON对象
+ *
+ * @since Api 4
+ */
 fun buildContent(builder: ContentBuilder.() -> Unit) = ContentBuilder()
     .apply(builder)
     .build()

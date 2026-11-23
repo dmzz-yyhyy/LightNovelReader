@@ -117,15 +117,5 @@ dokka {
             setOf(VisibilityModifier.Public)
         )
 
-        perPackageOption {
-            matchingRegex.set("io\\.nightfish\\.lightnovelreader\\..*")
-            suppress.set(true)
-        }
-    }
-    dokkaSourceSets.create("main") {
-        perPackageOption {
-            matchingRegex.set(android.namespace)
-            suppress.set(false)
-        }
     }
 }

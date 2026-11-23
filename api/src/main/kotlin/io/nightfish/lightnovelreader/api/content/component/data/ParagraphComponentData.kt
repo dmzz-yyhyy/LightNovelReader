@@ -35,6 +35,16 @@ import kotlinx.serialization.json.encodeToJsonElement
 import org.dom4j.DocumentHelper
 import org.dom4j.Element
 
+/**
+ * 段落组件数据
+ * 支持文本后处理与根据可用空间进行段落切分
+ *
+ * @param paragraph 段落的文本节点与样式
+ * @param index 切分后的片段序号, 从1开始
+ * @param split 是否为切分后的段落片段
+ *
+ * @since Api 4
+ */
 @Serializable
 data class ParagraphComponentData(
     val paragraph: ParagraphNode,
@@ -48,6 +58,18 @@ data class ParagraphComponentData(
 {
     override val id: Identifier = Companion.id
 
+    /**
+     * 合并阅读器、段落与文本节点样式, 生成用于测绘和渲染的文本
+     *
+     * @param readerStyle 阅读器样式设置
+     * @param baseStyle 基底文本样式
+     * @param noIndent 是否取消首行的额外缩进, 为true时使用其余行的缩进
+     * @param isDarkMode 是否使用阅读器的深色模式文本颜色
+     *
+     * @return 保留段落样式与文本样式的富文本
+     *
+     * @since Api 4
+     */
     fun toAnnotatedString(
         readerStyle: ReaderStyle,
         baseStyle: TextStyle,

@@ -6,6 +6,8 @@ import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentC
  * 文本控件数据原件
  * 实现该接口会自动接入软件的文本后处理器
  *
+ * @param Self 组件数据自身类型
+ *
  * @since Api 4
  */
 interface TextData<Self>: ComponentDataCap<Self>

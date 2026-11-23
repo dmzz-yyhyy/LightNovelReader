@@ -52,6 +52,12 @@ val LocalTextLocaleList = compositionLocalOf {
     LocaleList(Locale.current)
 }
 
+/**
+ * 当前内容组件的渲染入口
+ * 由宿主提供已注册的组件渲染器
+ *
+ * @since Api 4
+ */
 val LocalComponentRender = compositionLocalOf<ComponentRender> {
     error("CompositionLocal LocalComponentRender not present")
 }

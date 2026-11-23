@@ -33,6 +33,17 @@ import androidx.text.vertical.VerticalTextLayout
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import kotlin.math.ceil
 
+/**
+ * 解析竖排文本使用的字体
+ *
+ * @param text 包含局部文本样式的富文本
+ * @param style 基底文本样式
+ * @param resolver Compose字体解析器
+ *
+ * @return 首项为基底字体, 其余项按文本样式区间顺序排列的字体列表
+ *
+ * @since Api 4
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 fun resolveVerticalTypefaces(
     text: AnnotatedString,
@@ -48,6 +59,19 @@ fun resolveVerticalTypefaces(
         ).value as Typeface
     }
 
+/**
+ * 创建用于测绘和绘制的竖排段落文本
+ * 合并基底样式与局部样式, 保留段落缩进和行高
+ *
+ * @param text 包含段落与局部文本样式的富文本
+ * @param style 基底文本样式
+ * @param density 屏幕密度与字体缩放信息
+ * @param typefaces 由[resolveVerticalTypefaces]按相同文本与基底样式解析的字体列表
+ *
+ * @return 支持按可用高度断列的竖排段落文本
+ *
+ * @since Api 4
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 fun verticalParagraphText(
     text: AnnotatedString,
@@ -120,6 +144,12 @@ private fun TextUnit.toPixels(density: Density, fontSize: Float, fallback: Float
 
 // beta03 exposes column boundaries as library-group APIs. They are needed to retain the
 // library's line breaking while applying paragraph indents, line spacing and LTR columns.
+/**
+ * 已解析样式与字体的竖排段落文本
+ * 通过[verticalParagraphText]创建, 供测绘、段落切分与渲染共用断列结果
+ *
+ * @since Api 4
+ */
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 class VerticalParagraphText internal constructor(
@@ -133,6 +163,16 @@ class VerticalParagraphText internal constructor(
     private var cachedHeight = -1
     private var cachedLayout: VerticalParagraphLayout? = null
 
+    /**
+     * 根据可用高度对段落断列
+     * 保留显式换行与空行, 缓存最近一次高度对应的排版结果
+     *
+     * @param height 每列可用高度, 单位为px, 支持[Constraints.Infinity]
+     *
+     * @return 当前高度下的排版结果, 高度为0时返回空排版
+     *
+     * @since Api 4
+     */
     fun layout(height: Int): VerticalParagraphLayout {
         if (height == 0) return VerticalParagraphLayout(emptyList())
         cachedLayout?.takeIf { cachedHeight == height }?.let { return it }
@@ -259,9 +299,25 @@ internal class VerticalParagraphColumn(
     }
 }
 
+/**
+ * 竖排段落的断列与测绘结果
+ * 提供绘制、文字命中查询和选区矩形计算
+ *
+ * @since Api 4
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 class VerticalParagraphLayout internal constructor(private val columns: List<VerticalParagraphColumn>) {
+    /**
+     * 所有文本列占用的总宽度, 单位为px
+     *
+     * @since Api 4
+     */
     val width: Int = ceil(columns.sumOf { it.width.toDouble() }).toInt()
+    /**
+     * 最高文本列占用的实际高度, 包含缩进, 单位为px
+     *
+     * @since Api 4
+     */
     val height: Int = ceil(columns.maxOfOrNull { it.top + it.height } ?: 0f).toInt()
 
     internal fun splitOffsets(availableWidth: Int): Pair<Int, Int>? {
@@ -274,6 +330,18 @@ class VerticalParagraphLayout internal constructor(private val columns: List<Ver
         return lastFitting.end to lastFitting.nextStart
     }
 
+    /**
+     * 查询段落内指定位置对应的文本偏移
+     *
+     * @param position 相对于段落左上角的位置, 单位为px
+     * @param availableWidth 段落的可用宽度, 用于从右至左书写时定位文本列, 单位为px
+     * @param orientation 竖排书写方向
+     * @param nearest 是否允许将列外位置映射到最近的字符边界
+     *
+     * @return 原文本中的UTF-16偏移, 未命中文本列时返回null
+     *
+     * @since Api 4
+     */
     fun offsetAt(
         position: Offset,
         availableWidth: Float,
@@ -298,6 +366,17 @@ class VerticalParagraphLayout internal constructor(private val columns: List<Ver
         return result
     }
 
+    /**
+     * 计算文本选区在各列中占用的矩形
+     *
+     * @param range 原文本中的UTF-16选区范围
+     * @param availableWidth 段落的可用宽度, 单位为px
+     * @param orientation 竖排书写方向
+     *
+     * @return 相对于段落左上角的选区矩形列表, 单位为px
+     *
+     * @since Api 4
+     */
     fun selectionRects(range: TextRange, availableWidth: Float, orientation: WriteMode): List<Rect> =
         buildList {
             forEachColumn { column, offset ->
@@ -310,6 +389,15 @@ class VerticalParagraphLayout internal constructor(private val columns: List<Ver
             }
         }
 
+    /**
+     * 在当前画布坐标系中绘制竖排段落
+     *
+     * @param canvas 用于绘制的Android画布
+     * @param availableWidth 段落的可用宽度, 单位为px
+     * @param orientation 竖排书写方向
+     *
+     * @since Api 4
+     */
     fun draw(canvas: Canvas, availableWidth: Float, orientation: WriteMode) {
         forEachColumn { column, offset ->
             val left = columnLeft(offset, column.width, availableWidth, orientation)
