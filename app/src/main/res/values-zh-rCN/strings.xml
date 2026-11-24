@@ -92,6 +92,10 @@
     <string name="reader_custom_font_load_failed">加载自定义字体失败, 以回退至默认字体</string>
     <string name="reader_custom_background_load_failed">加载自定义背景失败, 以回退至默认背景</string>
     <string name="reader_first_page">已经是第一页了</string>
+    <string name="reader_write_mode">Writing Direction</string>
+    <string name="reader_write_mode_horizontal">Horizontal</string>
+    <string name="reader_write_mode_vertical_rtl">Vertical, right to left</string>
+    <string name="reader_write_mode_vertical_ltr">Vertical, left to right</string>
     <string name="reader_reached_top">已经到顶了</string>
     <string name="reader_last_page">已经是最后一页了</string>
     <string name="reader_reached_bottom">已经到底了</string>
