@@ -92,7 +92,7 @@
     <string name="reader_custom_font_load_failed">自定義字體載入失敗，恢復為預設字體。</string>
     <string name="reader_custom_background_load_failed">自定義背景載入失敗，恢復為預設背景。</string>
     <string name="reader_first_page">已經是第一頁了</string>
-    <string name="reader_write_mode">Writing Direction</string>
+    <string name="reader_write_mode">文字方向</string>
     <string name="reader_write_mode_horizontal">水平</string>
     <string name="reader_write_mode_vertical_rtl">垂直，右到左</string>
     <string name="reader_write_mode_vertical_ltr">垂直，左到右</string>
