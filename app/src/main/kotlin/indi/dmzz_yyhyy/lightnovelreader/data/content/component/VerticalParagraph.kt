@@ -68,7 +68,7 @@ internal fun VerticalParagraph(
     var textLayout by remember(paragraph) { mutableStateOf<VerticalParagraphLayout?>(null) }
     val selection = LocalVerticalTextSelection.current
     val selectable = if (selection != null && text.text.isNotBlank()) {
-        verticalSelectionModifier(text.text, orientation, selection) { textLayout }
+        Modifier.verticalSelectionModifier(text.text, orientation, selection) { textLayout }
     } else Modifier
     Layout(
         content = {},
@@ -92,7 +92,7 @@ internal fun VerticalParagraph(
 }
 
 @Composable
-private fun verticalSelectionModifier(
+private fun Modifier.verticalSelectionModifier(
     text: String,
     orientation: WriteMode,
     selection: VerticalTextSelection,
@@ -139,7 +139,7 @@ private fun verticalSelectionModifier(
         }
     }
 
-    return Modifier
+    return this
         .onGloballyPositioned { coordinates = it }
         .semantics {
             onLongClick { selectWord(text.indexOfFirst { !it.isWhitespace() }); true }
@@ -234,8 +234,8 @@ private fun List<Rect>.handles(height: Float, radius: Float): Pair<Offset, Offse
 
 private fun LayoutCoordinates.selectionBoundsInWindow(rects: List<Rect>): Rect? {
     val visible = boundsInWindow()
-    val bounds = rects.mapNotNull {
-        val rect = Rect(localToWindow(it.topLeft), localToWindow(it.bottomRight)).intersect(visible)
+    val bounds = rects.mapNotNull { rect ->
+        val rect = Rect(localToWindow(rect.topLeft), localToWindow(rect.bottomRight)).intersect(visible)
         rect.takeUnless { it.isEmpty }
     }
     if (bounds.isEmpty()) return null

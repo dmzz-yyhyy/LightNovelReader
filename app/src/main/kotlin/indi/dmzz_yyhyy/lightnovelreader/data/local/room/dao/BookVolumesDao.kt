@@ -66,9 +66,11 @@ interface BookVolumesDao {
 
     @Transaction
     suspend fun getBookVolumes(bookId: Identifier.Book): BookVolumes? {
+        val volumes = getVolumeEntitiesByBookId(bookId)
+        if (volumes.isEmpty()) return null
         return BookVolumes(
             bookId,
-            getVolumeEntitiesByBookId(bookId)
+            volumes
                 .sortedBy { it.index }
                 .map { volumeEntity ->
                     Volume(
