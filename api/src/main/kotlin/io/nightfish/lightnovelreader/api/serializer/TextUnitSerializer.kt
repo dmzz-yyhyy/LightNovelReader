@@ -11,13 +11,32 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+/**
+ * 文本单位序列化器
+ * 保留sp、em与未指定状态
+ *
+ * @since Api 4
+ */
 object TextUnitSerializer : KSerializer<TextUnit> {
+    /**
+     * 文本单位的序列化结构描述符
+     *
+     * @since Api 4
+     */
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor(
             "TextUnit",
             PrimitiveKind.STRING
         )
 
+    /**
+     * 将文本单位写入编码器
+     *
+     * @param encoder 编码器
+     * @param value 待序列化的文本单位
+     *
+     * @since Api 4
+     */
     override fun serialize(
         encoder: Encoder,
         value: TextUnit
@@ -32,6 +51,15 @@ object TextUnitSerializer : KSerializer<TextUnit> {
         encoder.encodeString(text)
     }
 
+    /**
+     * 从解码器读取文本单位
+     *
+     * @param decoder 解码器
+     *
+     * @return 反序列化得到的文本单位
+     *
+     * @since Api 4
+     */
     override fun deserialize(
         decoder: Decoder
     ): TextUnit {

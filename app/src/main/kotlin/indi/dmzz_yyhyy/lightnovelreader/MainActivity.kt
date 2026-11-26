@@ -42,6 +42,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LogUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.combine
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -50,6 +51,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -123,6 +125,7 @@ class MainActivity : ComponentActivity() {
         val webBookDataSourceFoundedFlow = flow {
             emit(webBookDataSourceProvider.isWebDataSourceFounded())
         }
+        val writeModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.WriteMode.path)
         val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
         val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
         val lineHeightUserData =
@@ -177,6 +180,9 @@ class MainActivity : ComponentActivity() {
                         ),
                         fontUri = fontUri,
                     )
+                }.combine(writeModeUserData.getFlowWithDefault(WriteMode.Horizontal.name)) { style, key ->
+                    val mode = WriteMode.entries.firstOrNull { it.name == key } ?: WriteMode.Horizontal
+                    style.copy(writeMode = mode)
                 }
             }.collectAsStateWithLifecycle(initialValue = ReaderStyle())
             CompositionLocalProvider(

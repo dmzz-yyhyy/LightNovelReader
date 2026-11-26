@@ -49,7 +49,8 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookInformation, WebRequestError>> = flow {
-        localBookDataSource.getBookInformation(id)?.also {
+        val local = localBookDataSource.getBookInformation(id)
+        local?.let {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
@@ -71,7 +72,7 @@ class BookRepository @Inject constructor(
                 it.throwable?.printStackTrace()
             }
             .also {
-                emit(it)
+                if (local == null) emit(it)
             }
     }.map { result ->
         result.map {
@@ -83,7 +84,8 @@ class BookRepository @Inject constructor(
         id: String,
         priority: WebDataSourcePriority
     ): Flow<Result<BookVolumes, WebRequestError>> = flow {
-        localBookDataSource.getBookVolumes(id)?.also {
+        val local = localBookDataSource.getBookVolumes(id)
+        local?.let {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
@@ -95,7 +97,7 @@ class BookRepository @Inject constructor(
                 it.throwable?.printStackTrace()
             }
             .also {
-                emit(it)
+                if (local == null) emit(it)
             }
     }.map { result ->
         result.map {
@@ -108,7 +110,8 @@ class BookRepository @Inject constructor(
         bookId: String,
         priority: WebDataSourcePriority
     ): Flow<Result<ChapterContent, WebRequestError>> = flow {
-        localBookDataSource.getChapterContent(chapterId)?.also {
+        val local = localBookDataSource.getChapterContent(chapterId)
+        local?.let {
             emit(Ok(it))
             if (BuildConfig.BENCHMARK) return@flow
         }
@@ -120,7 +123,7 @@ class BookRepository @Inject constructor(
                 it.throwable?.printStackTrace()
             }
             .also {
-                emit(it)
+                if (local == null) emit(it)
             }
     }.map { result ->
         result.map {

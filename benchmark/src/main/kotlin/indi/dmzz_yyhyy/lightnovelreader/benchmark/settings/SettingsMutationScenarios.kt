@@ -76,6 +76,11 @@ class SettingsMutationScenarios : BenchmarkTestCase() {
         tapClickableText("Automation Rule")
         visibleText("Edit Rule")
         tapText("Delete rule")
+        tapText("Confirm")
+        waitUntil("Formatting rule was not deleted") {
+            val report = fixtureReport("REPORT_FORMATTING_RULES")
+            "formatting-rules=" in report && "name=Automation Rule;" !in report
+        }
         restartApp()
         openPrimaryChapter(PRIMARY_BOOK, "Benchmark Chapter One")
         visibleTextContaining("Benchmark progress paragraph")
@@ -89,7 +94,7 @@ class SettingsMutationScenarios : BenchmarkTestCase() {
             .forEach(::visibleText)
         scrollToText("Share")
         tapScrolledText("Export to File")
-        assertForegroundPackage(DOCUMENTS_PACKAGE)
+        assertForegroundPackage(documentsPackage)
     }
 
     @Test
@@ -101,10 +106,10 @@ class SettingsMutationScenarios : BenchmarkTestCase() {
         tapClickableText("GitHub")
         awaitUserData(UPDATE_PLATFORM_PATH, "GitHub")
         tapScrolledText("Test Update Channel")
-        listOf("None (Stable)", "Beta Version", "Alpha Version (Unstable)")
+        listOf("None (Stable)", "Beta Version")
             .forEach(::visibleText)
-        tapClickableText("Alpha Version (Unstable)")
-        awaitUserData(UPDATE_CHANNEL_PATH, "CI")
+        tapClickableText("Beta Version")
+        awaitUserData(UPDATE_CHANNEL_PATH, "Development")
         scrollToText("Auto Check for Updates")
         if (!isSwitchCheckedForText("Auto Check for Updates")) {
             tapSwitchForText("Auto Check for Updates")
@@ -115,7 +120,7 @@ class SettingsMutationScenarios : BenchmarkTestCase() {
 
         restartApp()
         assertEquals("GitHub", userData(UPDATE_PLATFORM_PATH))
-        assertEquals("CI", userData(UPDATE_CHANNEL_PATH))
+        assertEquals("Development", userData(UPDATE_CHANNEL_PATH))
         assertEquals("false", userData(AUTO_CHECK_PATH))
         openRoot("Settings")
         scrollToText("Auto Check for Updates")
@@ -132,7 +137,11 @@ class SettingsMutationScenarios : BenchmarkTestCase() {
         awaitUserData(LOG_LEVEL_PATH, "debug")
         tapScrolledText("App Logs")
         tapDescription("more")
-        listOf("Clear Temporary Logs", "Auto-scroll", "Word Wrap").forEach(::visibleText)
+        listOf("Auto-scroll", "Word Wrap").forEach(::visibleText)
+        pressBack()
+        tapClickableText("Saved logs")
+        tapDescription("more")
+        listOf("Clear Temporary Logs", "Word Wrap").forEach(::visibleText)
         pressBack()
         pressBack()
         tapScrolledText("Statistics")

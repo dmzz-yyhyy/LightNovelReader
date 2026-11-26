@@ -95,6 +95,10 @@
     <string name="reader_custom_font_load_failed">Failed to load custom font, reverted to default.</string>
     <string name="reader_custom_background_load_failed">Failed to load custom background, reverted to default.</string>
     <string name="reader_first_page">You are on the first page</string>
+    <string name="reader_write_mode">Writing Direction</string>
+    <string name="reader_write_mode_horizontal">Horizontal</string>
+    <string name="reader_write_mode_vertical_rtl">Vertical, right to left</string>
+    <string name="reader_write_mode_vertical_ltr">Vertical, left to right</string>
     <string name="reader_reached_top">You have reached the top</string>
     <string name="reader_last_page">You are on the last page</string>
     <string name="reader_reached_bottom">You have reached the bottom</string>

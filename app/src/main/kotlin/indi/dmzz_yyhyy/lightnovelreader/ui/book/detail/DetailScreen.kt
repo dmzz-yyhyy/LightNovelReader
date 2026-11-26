@@ -187,7 +187,7 @@ fun DetailScreen(
     }
 
 
-    val isStartReading = uiState.userReadingData?.lastReadChapterId != null
+    val isStartReading = uiState.userReadingData?.lastReadChapterId == null
     val fabTextRes = if (isStartReading) R.string.start_reading else R.string.continue_reading
 
     val fabContent = remember {

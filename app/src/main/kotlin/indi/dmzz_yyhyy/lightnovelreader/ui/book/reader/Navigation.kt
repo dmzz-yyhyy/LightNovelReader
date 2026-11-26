@@ -39,7 +39,7 @@ fun NavEntryScope.bookReaderDestination() {
         val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<ReaderViewModel>()
         LaunchedEffect(route) {
-            viewModel.bookId = route.bookId
+            viewModel.changeBookId(route.bookId)
             viewModel.changeChapter(route.chapterId)
         }
         ReaderScreen(
@@ -51,6 +51,8 @@ fun NavEntryScope.bookReaderDestination() {
             onClickPrevChapter = viewModel::prevChapter,
             onClickNextChapter = viewModel::nextChapter,
             onChangeChapter = viewModel::changeChapter,
+            onReadingProgress = viewModel::updateReadingProgress,
+            flushReadingProgress = viewModel::flushReadingProgress,
             onClickReaderStyleSettings = navigator::navigateToSettingsReaderStyleDestination
         )
     }

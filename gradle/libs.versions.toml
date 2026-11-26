@@ -30,6 +30,7 @@ lifecycle = "2.11.0"
 composeBom = "2026.09.00"
 composeMaterial3 = "1.5.0-rc01"
 composeUi = "1.12.1"
+textVertical = "1.0.0-beta03"
 coil = "3.6.3"
 jsoup = "1.22.2"
 markdown = "0.5.7"
@@ -100,6 +101,7 @@ lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel
 compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "composeMaterial3" }
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "composeUi" }
+androidx-text-vertical = { module = "androidx.text:text-vertical", version.ref = "textVertical" }
 compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "composeUi" }
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeUi" }
 compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUi" }

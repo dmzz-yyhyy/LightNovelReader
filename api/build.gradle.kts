@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.foundation)
     implementation(libs.compose.ui.graphics)
+    implementation(libs.androidx.text.vertical)
     implementation(libs.androidx.runtime)
     implementation(libs.kotlinx.coroutines.core)
     implementation(platform(libs.compose.bom))
@@ -116,15 +117,5 @@ dokka {
             setOf(VisibilityModifier.Public)
         )
 
-        perPackageOption {
-            matchingRegex.set("io\\.nightfish\\.lightnovelreader\\..*")
-            suppress.set(true)
-        }
-    }
-    dokkaSourceSets.create("main") {
-        perPackageOption {
-            matchingRegex.set(android.namespace)
-            suppress.set(false)
-        }
     }
 }

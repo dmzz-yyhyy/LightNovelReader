@@ -265,7 +265,9 @@ sealed interface Route : NavKey {
          * 颜色选择器调色盘用途类型（用于路由序列化）
          */
         enum class ColorPickerTargetType {
+            /** 文本颜色调色盘 */
             TEXT,
+            /** 背景颜色调色盘 */
             BACKGROUND,
         }
 

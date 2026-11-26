@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.benchmark.performance
 
+import android.os.Build
 import androidx.benchmark.macro.CompilationMode
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.StartupTimingMetric
@@ -30,7 +31,18 @@ class StartupScenarios {
             compilationMode = CompilationMode.Partial(),
             startupMode = mode,
             iterations = 5,
-            setupBlock = { pressHome() },
+            setupBlock = {
+                pressHome()
+                if (mode == StartupMode.COLD && Build.VERSION.SDK_INT >= 35) {
+                    // ProfileInstaller can unstop the package and enqueue BOOT_COMPLETED.
+                    // Flush broadcast loopers as well as queued broadcasts before the cold kill.
+                    dropShaderCache()
+                    val broadcasts = device.executeShellCommand(
+                        "am wait-for-broadcast-idle --flush-broadcast-loopers"
+                    )
+                    check("All broadcast queues are idle!" in broadcasts) { broadcasts }
+                }
+            },
         ) {
             startActivityAndWait()
         }

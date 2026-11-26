@@ -21,6 +21,16 @@ abstract class BenchmarkTestCase {
     protected val device: UiDevice =
         UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
+    protected val documentsPackage: String by lazy {
+        val resolved = shell(
+            "cmd package resolve-activity --brief -a android.intent.action.OPEN_DOCUMENT " +
+                "-c android.intent.category.OPENABLE -t application/octet-stream"
+        )
+        resolved.lineSequence().lastOrNull { '/' in it }
+            ?.substringBefore('/')?.trim()
+            ?: error("No system document picker resolved: $resolved")
+    }
+
     @Before
     fun prepareDeterministicAppState() {
         device.pressHome()
@@ -272,6 +282,18 @@ abstract class BenchmarkTestCase {
         device.waitForIdle()
     }
 
+    protected fun submitSearch(query: String) {
+        replaceText(0, query)
+        val field = device.wait(Until.findObject(By.clazz("android.widget.EditText")), UI_TIMEOUT)
+            ?: error("Search field was not visible")
+        field.click()
+        waitUntil("Search field did not receive focus") {
+            device.findObject(By.clazz("android.widget.EditText"))?.isFocused == true
+        }
+        device.pressEnter()
+        device.waitForIdle()
+    }
+
     protected fun setSliderForText(text: String, fraction: Float) {
         if (!device.hasObject(By.desc("$text slider"))) scrollToText(text)
         var slider: UiObject2? = null
@@ -354,9 +376,14 @@ abstract class BenchmarkTestCase {
     }
 
     protected fun assertCheckable(index: Int = 0, checked: Boolean) {
-        val controls = device.wait(Until.findObjects(By.checkable(true)), UI_TIMEOUT).orEmpty()
-        assertTrue("Checkable control $index was not visible", controls.size > index)
-        assertEquals("Unexpected checkable state at index $index", checked, controls[index].isChecked)
+        waitUntil("Checkable control $index did not become checked=$checked") {
+            try {
+                val controls = device.findObjects(By.checkable(true))
+                controls.getOrNull(index)?.isChecked == checked
+            } catch (_: StaleObjectException) {
+                false
+            }
+        }
     }
 
     protected fun assertSwitchForText(text: String, checked: Boolean) {
@@ -421,7 +448,6 @@ abstract class BenchmarkTestCase {
 
     companion object {
         const val TARGET_PACKAGE = "indi.dmzz_yyhyy.lightnovelreader"
-        const val DOCUMENTS_PACKAGE = "com.android.documentsui"
         const val PRIMARY_BOOK = "Benchmark Sample Novel"
         const val SECONDARY_BOOK = "Second Benchmark Novel"
         const val UI_TIMEOUT = 10_000L
