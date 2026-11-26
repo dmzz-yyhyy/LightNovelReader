@@ -1,29 +1,33 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.userdata
 
+import dagger.Lazy
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
-import io.nightfish.lightnovelreader.api.userdata.BooleanUserData
-import io.nightfish.lightnovelreader.api.userdata.ColorUserData
-import io.nightfish.lightnovelreader.api.userdata.FloatUserData
-import io.nightfish.lightnovelreader.api.userdata.IntListUserData
-import io.nightfish.lightnovelreader.api.userdata.IntUserData
-import io.nightfish.lightnovelreader.api.userdata.StringListUserData
-import io.nightfish.lightnovelreader.api.userdata.StringUserData
-import io.nightfish.lightnovelreader.api.userdata.UriUserData
+import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.userdata.UserData
+import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class UserDataRepository @Inject constructor(
-    private val userDataDao: UserDataDao
-) : io.nightfish.lightnovelreader.api.userdata.UserDataRepositoryApi {
-    override fun stringUserData(path: String) = StringUserData(path, userDataDao)
-    override fun floatUserData(path: String) = FloatUserData(path, userDataDao)
-    override fun intUserData(path: String) = IntUserData(path, userDataDao)
-    override fun booleanUserData(path: String) = BooleanUserData(path, userDataDao)
-    override fun intListUserData(path: String) = IntListUserData(path, userDataDao)
-    override fun stringListUserData(path: String) = StringListUserData(path, userDataDao)
-    override fun colorUserData(path: String) = ColorUserData(path, userDataDao)
-    override fun uriUserData(path: String) = UriUserData(path, userDataDao)
+    private val dao: UserDataDao,
+    private val sourceProvider: Lazy<WebBookDataSourceProvider>
+) : UserDataRepositoryApi {
+    override fun <T> userData(path: UserDataPath<T>, source: Identifier.DataSource?): UserData<T> =
+        UserData(
+            path,
+            path.identifier(
+                source ?: if (path.sourceScoped) sourceProvider.get().value.id else null
+            ),
+            dao
+        )
 
-    override suspend fun remove(path: String) = userDataDao.remove(path)
+    override suspend fun remove(path: UserDataPath<*>, source: Identifier.DataSource?) =
+        dao.remove(
+            path.identifier(
+                source ?: if (path.sourceScoped) sourceProvider.get().value.id else null
+            )
+        )
 }

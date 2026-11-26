@@ -1,6 +1,7 @@
 package indi.dmzz_yyhyy.lightnovelreader.utils
 
 import android.icu.text.MeasureFormat
+import android.icu.text.NumberFormat
 import android.icu.util.MeasureUnit
 import android.os.Build
 import java.util.Locale
@@ -41,12 +42,12 @@ data class DurationFormat(val locale: Locale = Locale.getDefault()) {
 
             if (component > 0) {
                 val formattedComponent =
-                    android.icu.text.NumberFormat.getInstance(locale).format(component)
+                    NumberFormat.getInstance(locale).format(component)
                 formattedStringComponents.add("$formattedComponent$unitDisplayName")
             }
 
             if (unit == smallestUnit) {
-                val formattedZero = android.icu.text.NumberFormat.getInstance(locale).format(0)
+                val formattedZero = NumberFormat.getInstance(locale).format(0)
                 if (formattedStringComponents.isEmpty()) {
                     formattedStringComponents.add("$formattedZero$unitDisplayName")
                 }

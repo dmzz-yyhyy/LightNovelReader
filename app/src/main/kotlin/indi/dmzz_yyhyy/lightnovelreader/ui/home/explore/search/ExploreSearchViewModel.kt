@@ -7,7 +7,9 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import io.nightfish.lightnovelreader.api.userdata.update
 import io.nightfish.lightnovelreader.api.util.LocalString
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +26,7 @@ class ExploreSearchViewModel @Inject constructor(
 ) : ViewModel() {
     private val _uiState = MutableExploreSearchUiState()
     private val searchHistoryUserData =
-        userDataRepository.stringListUserData(UserDataPath.Search.History.path)
+        userDataRepository.userData(UserDataPath.Search.History)
     private var searchTypeTipMap = mutableMapOf<String, LocalString>()
     private var searchJob: Job? = null
     val uiState: ExploreSearchUiState = _uiState
@@ -83,7 +85,7 @@ class ExploreSearchViewModel @Inject constructor(
 
     fun search(
         keyword: String,
-        navigateToSingleBook: (bookId: String) -> Unit
+        navigateToSingleBook: (bookId: Identifier.Book) -> Unit
     ) {
         _uiState.isLoading = true
         _uiState.isLoadingComplete = false

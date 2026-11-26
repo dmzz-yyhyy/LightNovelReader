@@ -12,8 +12,10 @@ import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.storage.StorageUsageRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.storage.StorageUsageSnapshot
+import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import indi.dmzz_yyhyy.lightnovelreader.data.work.CacheBookWork
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportBookToEPUBWork
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -23,6 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BookManagerViewModel @Inject constructor(
+    private val sourceProvider: WebBookDataSourceProvider,
     private val bookRepository: BookRepository,
     private val downloadProgressRepository: DownloadProgressRepository,
     private val database: LightNovelReaderDatabase,
@@ -80,7 +83,7 @@ class BookManagerViewModel @Inject constructor(
         localBookManagerUiState.sortReverse = reverse
     }
 
-    fun enterLocalBookSelection(id: String? = null) {
+    fun enterLocalBookSelection(id: Identifier.Book? = null) {
         localBookManagerUiState.isSelecting = true
         localBookManagerUiState.selectedIds = buildSet {
             addAll(localBookManagerUiState.selectedIds)
@@ -93,7 +96,7 @@ class BookManagerViewModel @Inject constructor(
         localBookManagerUiState.selectedIds = emptySet()
     }
 
-    fun toggleLocalBookSelect(id: String) {
+    fun toggleLocalBookSelect(id: Identifier.Book) {
         localBookManagerUiState.selectedIds =
             localBookManagerUiState.selectedIds.toMutableSet().apply {
                 if (!add(id)) remove(id)
@@ -120,7 +123,7 @@ class BookManagerViewModel @Inject constructor(
         }
     }
 
-    fun clearBookData(bookId: String, targets: List<LocalBookClearTarget>) {
+    fun clearBookData(bookId: Identifier.Book, targets: List<LocalBookClearTarget>) {
         viewModelScope.launch(Dispatchers.IO) {
             val count = clearBookDataItems(bookId, targets)
             if (count > 0) _clearedItemsFlow.emit(count)
@@ -153,15 +156,15 @@ class BookManagerViewModel @Inject constructor(
 
     suspend fun clearOrphanedDataItems(): Int {
         val linkedChapterIds = database.bookVolumesDao()
-            .getAllVolumeEntities()
+            .getAllVolumeEntities(sourceProvider.value.id.sourceNamespace)
             .flatMap { it.chapterIds }
             .toSet()
         val orphanChapterInfoIds = database.bookVolumesDao()
-            .getAllChapterInformationEntities()
+            .getAllChapterInformationEntities(sourceProvider.value.id.sourceNamespace)
             .map { it.id }
             .filterNot(linkedChapterIds::contains)
         val orphanChapterContentIds = database.chapterContentDao()
-            .getAllEntities()
+            .getAllEntities(sourceProvider.value.id.sourceNamespace)
             .map { it.id }
             .filterNot(linkedChapterIds::contains)
 
@@ -178,7 +181,10 @@ class BookManagerViewModel @Inject constructor(
         return orphanChapterInfoIds.size + orphanChapterContentIds.size
     }
 
-    suspend fun clearBookDataItems(bookId: String, targets: List<LocalBookClearTarget>): Int {
+    suspend fun clearBookDataItems(
+        bookId: Identifier.Book,
+        targets: List<LocalBookClearTarget>
+    ): Int {
         if (targets.isEmpty()) return 0
 
         val volumeEntities = database.bookVolumesDao().getVolumeEntitiesByBookId(bookId)
@@ -231,8 +237,10 @@ class BookManagerViewModel @Inject constructor(
     }
 
     private suspend fun updateLocalBooks(snapshot: StorageUsageSnapshot, loading: Boolean) {
-        val volumes = database.bookVolumesDao().getAllVolumeEntities()
-        val readingData = database.userReadingDataDao().getAll()
+        val volumes =
+            database.bookVolumesDao().getAllVolumeEntities(sourceProvider.value.id.sourceNamespace)
+        val readingData =
+            database.userReadingDataDao().getAll(sourceProvider.value.id.sourceNamespace)
         val bookReadingBytesMap = database.storageStatsDao()
             .getUserReadingBytes()
             .associate { it.id to it.bytes }
@@ -242,7 +250,9 @@ class BookManagerViewModel @Inject constructor(
             .mapValues { (_, list) -> list.size }
         val bookLastReadTimeMap = readingData.associate { it.id to it.lastReadTime }
 
-        val bookList = snapshot.books.map { usage ->
+        val bookList =
+            snapshot.books.filter { it.bookId.namespace == sourceProvider.value.id.sourceNamespace }
+                .map { usage ->
             val readingRecordBytes = bookReadingBytesMap[usage.bookId] ?: 0L
             LocalBookItem(
                 id = usage.bookId,

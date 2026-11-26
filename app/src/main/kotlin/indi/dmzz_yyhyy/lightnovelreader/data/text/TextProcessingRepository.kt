@@ -20,9 +20,12 @@ class TextProcessingRepository @Inject constructor(
     formatRepository: FormatRepository,
     val contentComponentRepository: ContentComponentRepository
 ) : TextProcessingRepositoryApi {
-    private val processors = mutableMapOf<Identifier, TextProcessor>()
+    private val processors = mutableMapOf<Identifier.TextProcessor, TextProcessor>()
 
-    override fun registerProcessors(identifier: Identifier, processor: TextProcessor) {
+    override fun registerProcessors(
+        identifier: Identifier.TextProcessor,
+        processor: TextProcessor
+    ) {
         if (processors.contains(identifier)) return
         processors[identifier] = processor
     }
@@ -51,7 +54,10 @@ class TextProcessingRepository @Inject constructor(
     fun processBookVolumes(block: () -> BookVolumes): BookVolumes =
         process(block.invoke()) { it::processBookVolumes }
 
-    fun processChapterContent(bookId: String, block: () -> ChapterContent): ChapterContent =
+    fun processChapterContent(
+        bookId: Identifier.Book,
+        block: () -> ChapterContent
+    ): ChapterContent =
         process(block.invoke()) { processor ->
             {
                 processor.processChapterContent(
@@ -65,7 +71,7 @@ class TextProcessingRepository @Inject constructor(
         }
 
     suspend fun coroutineProcessChapterContent(
-        bookId: String,
+        bookId: Identifier.Book,
         block: suspend () -> ChapterContent
     ): ChapterContent = process(block.invoke()) { processor ->
         {
@@ -84,9 +90,9 @@ class TextProcessingRepository @Inject constructor(
 
     init {
         registerProcessors(
-            "simplified_traditional_processor".ofId(),
+            "simplified_traditional_processor".ofId(Identifier::TextProcessor),
             simplifiedTraditionalProcessor
         )
-        registerProcessors("format_repository".ofId(), formatRepository)
+        registerProcessors("format_repository".ofId(Identifier::TextProcessor), formatRepository)
     }
 }

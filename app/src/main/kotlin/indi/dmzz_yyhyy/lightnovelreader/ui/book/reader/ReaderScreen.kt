@@ -105,6 +105,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.readerBackgroundColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -119,12 +120,12 @@ fun ReaderScreen(
     readingScreenUiState: ReaderScreenUiState,
     settingState: SettingState,
     onClickBackButton: () -> Unit,
-    accumulateReadTime: (bookId: String, Int) -> Unit,
-    updateTotalReadingTime: (bookId: String, Int) -> Unit,
+    accumulateReadTime: (bookId: Identifier.Book, Int) -> Unit,
+    updateTotalReadingTime: (bookId: Identifier.Book, Int) -> Unit,
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
-    onChangeChapter: (chapterId: String) -> Unit,
-    onReadingProgress: (String, Float, Boolean) -> Unit,
+    onChangeChapter: (chapterId: Identifier.Chapter) -> Unit,
+    onReadingProgress: (Identifier.Chapter, Float, Boolean) -> Unit,
     flushReadingProgress: () -> Unit,
     onClickReaderStyleSettings: () -> Unit
 ) {
@@ -136,7 +137,7 @@ fun ReaderScreen(
     var lastBackPressTime: Long by remember { mutableLongStateOf(0) }
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectionBottomSheet by remember { mutableStateOf(false) }
-    var selectedVolumeId by remember { mutableStateOf("") }
+    var selectedVolumeId by remember { mutableStateOf<Identifier.Volume?>(null) }
 
     val coroutineScope = rememberCoroutineScope()
     val settingsBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
@@ -279,7 +280,7 @@ fun ReaderScreen(
                             volume.chapters.any {
                                 it.id == currentChapter.id
                             }
-                        }?.volumeId.orEmpty()
+                        }?.volumeId
                 },
                 onClickChapter = { chapterId ->
                     onChangeChapter(chapterId)
@@ -302,7 +303,7 @@ fun ReaderScreen(
                         volume.chapters.any {
                             it.id == currentChapter.id
                         }
-                    }?.volumeId ?: ""
+                    }?.volumeId
                 }
             }
         }
@@ -316,12 +317,12 @@ fun Content(
     isImmersive: Boolean,
     readingScreenUiState: ReaderScreenUiState,
     settingState: SettingState,
-    updateTotalReadingTime: (bookId: String, Int) -> Unit,
-    accumulateReadingTime: (bookId: String, Int) -> Unit,
+    updateTotalReadingTime: (bookId: Identifier.Book, Int) -> Unit,
+    accumulateReadingTime: (bookId: Identifier.Book, Int) -> Unit,
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
     onChangeIsImmersive: () -> Unit,
-    onReadingProgress: (String, Float, Boolean) -> Unit,
+    onReadingProgress: (Identifier.Chapter, Float, Boolean) -> Unit,
     flushReadingProgress: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -442,7 +443,10 @@ fun Content(
         }
     }
     Box(
-        modifier = Modifier.fillMaxSize().clipToBounds().nestedScroll(backgroundScroll)
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .nestedScroll(backgroundScroll)
             .onSizeChanged { backgroundLength = if (isVertical) it.width else it.height }
     ) {
         if (settingState.enableBackgroundImage) {
@@ -453,10 +457,12 @@ fun Content(
                     painter = painter,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize().graphicsLayer {
-                        val offset = if (loopBackground) phase - copy * backgroundLength else 0f
-                        if (isVertical) translationX = offset else translationY = offset
-                    },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer {
+                            val offset = if (loopBackground) phase - copy * backgroundLength else 0f
+                            if (isVertical) translationX = offset else translationY = offset
+                        },
                 )
             }
         }

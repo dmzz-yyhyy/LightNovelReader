@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,7 +20,7 @@ interface FormattingRuleDao {
     suspend fun getAllBookRuleEntity(): List<FormattingRuleEntity>
 
     @Query("select * from formatting_rule where book_id = :bookId")
-    fun getBookRuleEntityFlow(bookId: String): Flow<List<FormattingRuleEntity>>
+    fun getBookRuleEntityFlow(bookId: Identifier.Book): Flow<List<FormattingRuleEntity>>
 
     @Query(
         "replace into formatting_rule (id, book_id, name, is_regex, `match`, replacement, is_enabled) " +
@@ -27,7 +28,7 @@ interface FormattingRuleDao {
     )
     suspend fun update(
         id: Int,
-        bookId: String,
+        bookId: Identifier.Book,
         name: String,
         isRegex: Boolean,
         match: String,

@@ -18,6 +18,7 @@ import io.nightfish.lightnovelreader.api.content.builder.image
 import io.nightfish.lightnovelreader.api.content.builder.paragraph
 import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.error.mapAsWebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -61,7 +62,7 @@ class Wenku8WebsiteDataSource(
                 )
             ).bind()
             return@coroutineBinding BookInformation(
-                id = id,
+                id = wenku8Api.id.child(Identifier::Book, id),
                 title = titleGroup
                     ?.get(1)?.value
                     ?: soup
@@ -149,7 +150,7 @@ class Wenku8WebsiteDataSource(
                         ).bind()
                     }
                     chapters = mutableListOf()
-                    volume = Volume(vId, title, chapters)
+                    volume = Volume(wenku8Api.id.child(Identifier::Volume, vId), title, chapters)
                     return@forEach
                 }
                 for (td in tr.select("td > a")) {
@@ -166,11 +167,16 @@ class Wenku8WebsiteDataSource(
                             )
                         ).bind()
                     }
-                    chapters.add(ChapterInformation(id, title))
+                    chapters.add(
+                        ChapterInformation(
+                            wenku8Api.id.child(Identifier::Chapter, id),
+                            title
+                        )
+                    )
                 }
             }
             volume?.let(volumes::add)
-            return@coroutineBinding BookVolumes(id, volumes)
+            return@coroutineBinding BookVolumes(wenku8Api.id.child(Identifier::Book, id), volumes)
         }
 
     override suspend fun getChapterContent(
@@ -253,16 +259,16 @@ class Wenku8WebsiteDataSource(
                 return@let null
             }?.let { bookVolumes ->
                 bookVolumes.volumes.forEach { volume ->
-                    return@let volume.chapters.firstOrNull { it.id == chapterId }?.title
+                    return@let volume.chapters.firstOrNull { it.id.id == chapterId }?.title
                 }
                 return@let null
             }
         return@coroutineBinding ChapterContent(
-            id = chapterId,
+            id = wenku8Api.id.child(Identifier::Chapter, chapterId),
             title = neoTitle ?: title,
             content = jsonObject,
-            prevChapter = prevChapter,
-            nextChapter = nextChapter
+            prevChapter = prevChapter?.let { wenku8Api.id.child(Identifier::Chapter, it) },
+            nextChapter = nextChapter?.let { wenku8Api.id.child(Identifier::Chapter, it) }
         )
     }
 
@@ -291,7 +297,7 @@ class Wenku8WebsiteDataSource(
                     emit(SearchResult.Error("Failed to parse single book id"))
                     return@flow
                 }
-                emit(SearchResult.SingleBook(id))
+                emit(SearchResult.SingleBook(wenku8Api.id.child(Identifier::Book, id)))
                 return@flow
             }
             soup.baseUri()
@@ -308,7 +314,7 @@ class Wenku8WebsiteDataSource(
             val books =
                 wenku8Api.getBookInformationListFromBookCards(soup.selectXpath("//*[@id=\"content\"]/table/tbody/tr/td/div"))
             for (pairs in books) {
-                emit(SearchResult.MultipleBook(pairs.first))
+                emit(SearchResult.MultipleBook(wenku8Api.id.child(Identifier::Book, pairs.first)))
                 wenku8Api.cache.cache(pairs.first.hashCode(), pairs.second)
             }
             /*

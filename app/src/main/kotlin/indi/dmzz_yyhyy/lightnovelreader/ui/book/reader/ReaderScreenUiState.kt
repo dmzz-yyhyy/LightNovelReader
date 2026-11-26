@@ -9,11 +9,12 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiS
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 @Stable
 interface ReaderScreenUiState {
-    val bookId: String?
-    val chapterId: String?
+    val bookId: Identifier.Book?
+    val chapterId: Identifier.Chapter?
     val userReadingData: UserReadingData?
     val bookVolumes: Result<BookVolumes, WebRequestError>?
     val readingProgress: Float?
@@ -24,8 +25,8 @@ interface ReaderScreenUiState {
 
 class MutableReaderScreenUiState(
 ) : ReaderScreenUiState {
-    override var bookId: String? by mutableStateOf(null)
-    override var chapterId: String? by mutableStateOf(null)
+    override var bookId: Identifier.Book? by mutableStateOf(null)
+    override var chapterId: Identifier.Chapter? by mutableStateOf(null)
     override var userReadingData: UserReadingData? by mutableStateOf(null)
     override var bookVolumes: Result<BookVolumes, WebRequestError>? by mutableStateOf(null)
     override var readingProgress: Float? by mutableStateOf(null)

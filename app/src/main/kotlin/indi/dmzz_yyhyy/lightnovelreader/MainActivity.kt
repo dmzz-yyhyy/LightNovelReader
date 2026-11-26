@@ -40,7 +40,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.LightNovelReaderApp
 import indi.dmzz_yyhyy.lightnovelreader.utils.FormattingSettings
 import indi.dmzz_yyhyy.lightnovelreader.utils.LogUtils
 import indi.dmzz_yyhyy.lightnovelreader.utils.combine
-import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
@@ -125,23 +124,23 @@ class MainActivity : ComponentActivity() {
         val webBookDataSourceFoundedFlow = flow {
             emit(webBookDataSourceProvider.isWebDataSourceFounded())
         }
-        val writeModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.WriteMode.path)
-        val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
-        val fontWeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
+        val writeModeUserData = userDataRepository.userData(UserDataPath.Reader.WriteMode)
+        val fontSizeUserData = userDataRepository.userData(UserDataPath.Reader.FontSize)
+        val fontWeightUserData = userDataRepository.userData(UserDataPath.Reader.FontWeigh)
         val lineHeightUserData =
-            userDataRepository.floatUserData(UserDataPath.Reader.LineHeight.path)
+            userDataRepository.userData(UserDataPath.Reader.LineHeight)
         val letterSpacingUserData =
-            userDataRepository.floatUserData(UserDataPath.Reader.LetterSpacing.path)
-        val textColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextColor.path)
+            userDataRepository.userData(UserDataPath.Reader.LetterSpacing)
+        val textColorUserData = userDataRepository.userData(UserDataPath.Reader.TextColor)
         val textDarkColorUserData =
-            userDataRepository.colorUserData(UserDataPath.Reader.TextDarkColor.path)
+            userDataRepository.userData(UserDataPath.Reader.TextDarkColor)
         val spacingBeforeParagraphUserData =
-            userDataRepository.floatUserData(UserDataPath.Reader.SpacingBeforeParagraph.path)
+            userDataRepository.userData(UserDataPath.Reader.SpacingBeforeParagraph)
         val spacingAfterParagraphUserData =
-            userDataRepository.floatUserData(UserDataPath.Reader.SpacingAfterParagraph.path)
+            userDataRepository.userData(UserDataPath.Reader.SpacingAfterParagraph)
         val firstLineTextIndentUserData =
-            userDataRepository.floatUserData(UserDataPath.Reader.FirstLineTextIndent.path)
-        val fontUriUserData = userDataRepository.uriUserData(UserDataPath.Reader.FontUri.path)
+            userDataRepository.userData(UserDataPath.Reader.FirstLineTextIndent)
+        val fontUriUserData = userDataRepository.userData(UserDataPath.Reader.FontUri)
         setContent {
             val readerStyle by remember {
                 val default = ReaderStyle()
@@ -224,8 +223,7 @@ class MainActivity : ComponentActivity() {
         coroutineScope.launch(Dispatchers.IO) {
             if (bookshelfRepository.getAllBookshelfIds().isEmpty())
                 bookshelfRepository.addBookshelf(
-                    Bookshelf(
-                        id = 1145140721,
+                    bookshelfRepository.newBookshelf("1145140721").copy(
                         name = "已收藏",
                         sortType = BookshelfSortType.Default,
                         sortReversed = false,
@@ -238,7 +236,7 @@ class MainActivity : ComponentActivity() {
 
     private fun observeDisplaySettings() {
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.AppLocale)
                 .getFlow()
                 .collect { value ->
                     val locale = Resources.getSystem().configuration.locales[0]
@@ -248,26 +246,26 @@ class MainActivity : ComponentActivity() {
                 }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkMode.path).getFlow()
+            userDataRepository.userData(UserDataPath.Settings.Display.DarkMode).getFlow()
                 .collect {
                     it?.let { darkMode = it }
                 }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.LightThemeName.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.LightThemeName)
                 .getFlow().collect {
                 it?.let { lightThemeName = it }
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.DarkThemeName.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.DarkThemeName)
                 .getFlow().collect {
                 it?.let { darkThemeName = it }
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             coroutineScope.launch(Dispatchers.IO) {
-                userDataRepository.booleanUserData(UserDataPath.Settings.Display.DynamicColors.path)
+                userDataRepository.userData(UserDataPath.Settings.Display.DynamicColors)
                     .getFlow().collect {
                     dynamicColor = it == true
                 }
@@ -277,25 +275,25 @@ class MainActivity : ComponentActivity() {
 
     private fun observeFormattingSettings() {
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.DateStyle.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.DateStyle)
                 .getFlow().collect {
                 it?.let { FormattingSettings.dateFormat = it }
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.Display.DateShowYear.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.DateShowYear)
                 .getFlow().collect {
                 it?.let { FormattingSettings.dateShowYear = it }
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.stringUserData(UserDataPath.Settings.Display.DateOrder.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.DateOrder)
                 .getFlow().collect {
                 it?.let { FormattingSettings.dateOrder = it }
             }
         }
         coroutineScope.launch(Dispatchers.IO) {
-            userDataRepository.booleanUserData(UserDataPath.Settings.Display.RelativeTimeStyle.path)
+            userDataRepository.userData(UserDataPath.Settings.Display.RelativeTimeStyle)
                 .getFlow().collect {
                 it?.let { FormattingSettings.useRelativeTime = it }
             }

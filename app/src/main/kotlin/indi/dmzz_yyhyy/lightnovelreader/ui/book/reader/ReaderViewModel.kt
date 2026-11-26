@@ -19,7 +19,9 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterContentUiS
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import io.nightfish.lightnovelreader.api.userdata.update
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -48,16 +50,16 @@ class ReaderViewModel @Inject constructor(
     private val _uiState = MutableReaderScreenUiState()
     val uiState: ReaderScreenUiState = _uiState
     private val readingBookListUserData =
-        userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
+        userDataRepository.userData(UserDataPath.ReadingBooks)
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private var volumeCollectJob: Job? = null
     private var currentChapterContentJob: Job? = null
     private var prevChapterContentJob: Job? = null
     private var nextChapterContentJob: Job? = null
-    private var prevRequestId: String? = null
-    private var nextRequestId: String? = null
+    private var prevRequestId: Identifier.Chapter? = null
+    private var nextRequestId: Identifier.Chapter? = null
     private var entryProgress: Float? = null
-    private var reportedProgressChapter: String? = null
+    private var reportedProgressChapter: Identifier.Chapter? = null
     private var lastQueuedProgress: ReadingPosition? = null
     private val readingDataMutex = Mutex()
     private val progressUpdates = Channel<ReadingPosition>(Channel.UNLIMITED)
@@ -79,10 +81,9 @@ class ReaderViewModel @Inject constructor(
     override fun onCleared() {
         flushReadingProgress()
         progressUpdates.close()
-        super.onCleared()
     }
 
-    private suspend fun addToReadingBook(bookId: String) {
+    private suspend fun addToReadingBook(bookId: Identifier.Book) {
         readingBookListUserData.update {
             val newList = it.toMutableList()
             if (it.contains(bookId))
@@ -92,7 +93,7 @@ class ReaderViewModel @Inject constructor(
         }
     }
 
-    fun changeBookId(bookId: String) {
+    fun changeBookId(bookId: Identifier.Book) {
         if (uiState.bookId == bookId) return
         flushReadingProgress()
         currentChapterContentJob?.cancel()
@@ -152,14 +153,14 @@ class ReaderViewModel @Inject constructor(
             emit(Err(WebRequestError("Chapter content failed", error.message.orEmpty(), error)))
         }
 
-    private fun UserReadingData.savedProgress(chapterId: String?): Float =
+    private fun UserReadingData.savedProgress(chapterId: Identifier.Chapter?): Float =
         currentChapterReadingProgressMap[chapterId]?.takeIf(Float::isFinite)?.coerceIn(0f, 1f) ?: 0f
 
-    fun changeChapter(chapterId: String) = changeChapter(chapterId, null)
+    fun changeChapter(chapterId: Identifier.Chapter) = changeChapter(chapterId, null)
 
-    private fun changeChapter(chapterId: String, progress: Float?) {
+    private fun changeChapter(chapterId: Identifier.Chapter, progress: Float?) {
         val bookId = uiState.bookId ?: return
-        if (chapterId.isBlank() || chapterId == uiState.chapterId) return
+        if (chapterId == uiState.chapterId) return
         flushReadingProgress()
         reportedProgressChapter = null
         entryProgress = progress
@@ -203,7 +204,7 @@ class ReaderViewModel @Inject constructor(
 
     private fun updateAdjacentChapters(
         chapter: ChapterContentUiState,
-        loaded: Map<String?, Result<ChapterContentUiState, WebRequestError>> = emptyMap(),
+        loaded: Map<Identifier.Chapter?, Result<ChapterContentUiState, WebRequestError>> = emptyMap(),
     ) {
         val bookId = uiState.bookId ?: return
         val volumes = uiState.bookVolumes?.get()
@@ -228,8 +229,8 @@ class ReaderViewModel @Inject constructor(
     }
 
     private fun loadAdjacent(
-        bookId: String,
-        chapterId: String,
+        bookId: Identifier.Book,
+        chapterId: Identifier.Chapter,
         onLoaded: (Result<ChapterContentUiState, WebRequestError>) -> Unit,
     ) = viewModelScope.launch {
         bookRepository.getChapterContentFlow(chapterId, bookId, WebDataSourcePriority.Low)
@@ -238,7 +239,7 @@ class ReaderViewModel @Inject constructor(
             .collect(onLoaded)
     }
 
-    fun updateReadingProgress(chapterId: String, progress: Float, settled: Boolean) {
+    fun updateReadingProgress(chapterId: Identifier.Chapter, progress: Float, settled: Boolean) {
         if (chapterId != uiState.chapterId || !progress.isFinite()) return
         reportedProgressChapter = chapterId
         _uiState.readingProgress = progress.coerceIn(0f, 1f)
@@ -282,14 +283,14 @@ class ReaderViewModel @Inject constructor(
     }
 
     private data class ReadingPosition(
-        val bookId: String,
-        val chapterId: String,
+        val bookId: Identifier.Book,
+        val chapterId: Identifier.Chapter,
         val title: String,
         val progress: Float,
         val totalChapters: Int,
     )
 
-    fun updateTotalReadingTime(bookId: String, totalReadingTime: Int) {
+    fun updateTotalReadingTime(bookId: Identifier.Book, totalReadingTime: Int) {
         coroutineScope.launch {
             readingDataMutex.withLock {
                 bookRepository.updateUserReadingData(bookId) {
@@ -302,8 +303,7 @@ class ReaderViewModel @Inject constructor(
         }
     }
 
-    fun accumulateReadingTime(bookId: String, seconds: Int) {
-        if (bookId.isBlank()) return
+    fun accumulateReadingTime(bookId: Identifier.Book, seconds: Int) {
         coroutineScope.launch {
             statsRepository.accumulateBookReadTime(bookId, seconds)
         }

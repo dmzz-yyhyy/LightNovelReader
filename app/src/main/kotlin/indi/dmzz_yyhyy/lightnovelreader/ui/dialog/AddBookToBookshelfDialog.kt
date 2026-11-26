@@ -16,15 +16,16 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BaseDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.CheckBoxListItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 fun NavEntryScope.addBookToBookshelfDialog() {
     overlayEntry<Route.AddBookToBookshelfDialog> {
@@ -48,7 +49,7 @@ fun NavEntryScope.addBookToBookshelfDialog() {
     }
 }
 
-fun Navigator.navigateToAddBookToBookshelfDialog(bookId: String) {
+fun Navigator.navigateToAddBookToBookshelfDialog(bookId: Identifier.Book) {
     navigate(Route.AddBookToBookshelfDialog(bookId))
 }
 
@@ -56,10 +57,10 @@ fun Navigator.navigateToAddBookToBookshelfDialog(bookId: String) {
 fun AddBookToBookshelfDialog(
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
-    onSelectBookshelf: (Int) -> Unit,
-    onDeselectBookshelf: (Int) -> Unit,
+    onSelectBookshelf: (Identifier.Bookshelf) -> Unit,
+    onDeselectBookshelf: (Identifier.Bookshelf) -> Unit,
     allBookshelf: List<Bookshelf>,
-    selectedBookshelfIds: List<Int>
+    selectedBookshelfIds: List<Identifier.Bookshelf>
 ) {
     val scrollState = rememberScrollState()
     BaseDialog(

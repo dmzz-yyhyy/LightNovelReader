@@ -56,6 +56,9 @@ import coil3.compose.AsyncImage
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.utils.ApkSignatureInfo
 import indi.dmzz_yyhyy.lightnovelreader.utils.ApkSignatureScheme
+import java.text.SimpleDateFormat
+import java.util.Locale
+import android.R as AndroidR
 
 @Composable
 fun InstallProgressDialog(
@@ -258,7 +261,7 @@ fun InstallProgressDialog(
             when (uiState.installStep) {
                 InstallStepState.Completed -> {
                     FilledTonalButton(onClick = onClickClose) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(AndroidR.string.ok))
                     }
                 }
 
@@ -440,13 +443,13 @@ fun DeleteProgressDialog(
 
                 DeleteStepState.Completed -> {
                     FilledTonalButton(onClick = onClose) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(AndroidR.string.ok))
                     }
                 }
 
                 DeleteStepState.Working -> {
                     FilledTonalButton(onClick = {}, enabled = false) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(AndroidR.string.ok))
                     }
                 }
             }
@@ -454,7 +457,7 @@ fun DeleteProgressDialog(
         dismissButton = {
             if (uiState.uninstallStep == DeleteStepState.Confirming) {
                 OutlinedButton(onClick = onClose) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(AndroidR.string.cancel))
                 }
             }
         }
@@ -660,7 +663,7 @@ fun UpdateCheckDialog(
                 } else {
                     val enabled = step != UpdateStepState.Checking
                     FilledTonalButton(onClick = onClose, enabled = enabled) {
-                        Text(text = stringResource(android.R.string.ok))
+                        Text(text = stringResource(AndroidR.string.ok))
                     }
                 }
             }
@@ -673,7 +676,7 @@ fun UpdateCheckDialog(
                 step == UpdateStepState.Error
             ) {
                 OutlinedButton(onClick = onClose) {
-                    Text(text = stringResource(android.R.string.cancel))
+                    Text(text = stringResource(AndroidR.string.cancel))
                 }
             }
         }
@@ -743,7 +746,7 @@ fun PluginNoSignatureDialog(
         },
         confirmButton = {
             FilledTonalButton(onClick = onClose) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(AndroidR.string.ok))
             }
         }
     )
@@ -788,7 +791,7 @@ fun PluginErrorDialog(
         },
         confirmButton = {
             FilledTonalButton(onClick = onClose) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(AndroidR.string.ok))
             }
         }
     )
@@ -801,7 +804,7 @@ fun PluginSignatureDialog(
 ) {
     val list = signatureInfo.orEmpty()
     val dateFormatter =
-        remember { java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) }
+        remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
 
     AlertDialog(
         onDismissRequest = onClose,
@@ -993,7 +996,7 @@ fun PluginSignatureDialog(
         },
         confirmButton = {
             FilledTonalButton(onClick = onClose) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(AndroidR.string.ok))
             }
         }
     )

@@ -1,8 +1,26 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter
 
 import androidx.room.TypeConverter
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import kotlinx.serialization.json.Json
 
 object ListConverter {
+    @TypeConverter
+    fun bookListToString(value: List<Identifier.Book>): String = Json.encodeToString(value)
+    @TypeConverter
+    fun stringToBookList(value: String): List<Identifier.Book> = Json.decodeFromString(value)
+    @TypeConverter
+    fun chapterListToString(value: List<Identifier.Chapter>): String = Json.encodeToString(value)
+    @TypeConverter
+    fun stringToChapterList(value: String): List<Identifier.Chapter> = Json.decodeFromString(value)
+    @TypeConverter
+    fun bookshelfListToString(value: List<Identifier.Bookshelf>): String =
+        Json.encodeToString(value)
+
+    @TypeConverter
+    fun stringToBookshelfList(value: String): List<Identifier.Bookshelf> =
+        Json.decodeFromString(value)
+
     @TypeConverter
     fun intListToString(intList: List<Int>): String {
         return intList.joinToString(",")

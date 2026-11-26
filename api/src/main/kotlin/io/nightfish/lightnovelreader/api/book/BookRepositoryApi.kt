@@ -3,6 +3,7 @@ package io.nightfish.lightnovelreader.api.book
 import androidx.navigation3.runtime.NavKey
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.flow.Flow
 
@@ -24,7 +25,7 @@ interface BookRepositoryApi {
      * @since Api 4
      */
     fun getBookInformationFlow(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Flow<Result<BookInformation, WebRequestError>>
 
@@ -40,7 +41,7 @@ interface BookRepositoryApi {
      * @since Api 4
      */
     fun getBookVolumesFlow(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Flow<Result<BookVolumes, WebRequestError>>
 
@@ -57,8 +58,8 @@ interface BookRepositoryApi {
      * @since Api 4
      */
     fun getChapterContentFlow(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Flow<Result<ChapterContent, WebRequestError>>
 
@@ -73,8 +74,8 @@ interface BookRepositoryApi {
      * @since Api 4
      */
     suspend fun preloadChapterContent(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     )
 
@@ -88,7 +89,7 @@ interface BookRepositoryApi {
      *
      * @since Api 2
      */
-    suspend fun getUserReadingData(bookId: String): UserReadingData
+    suspend fun getUserReadingData(bookId: Identifier.Book): UserReadingData
 
     /**
      * 获取阅读数据的流
@@ -101,7 +102,7 @@ interface BookRepositoryApi {
      *
      * @since Api 2
      */
-    fun getUserReadingDataFlow(bookId: String): Flow<UserReadingData>
+    fun getUserReadingDataFlow(bookId: Identifier.Book): Flow<UserReadingData>
 
     /**
      * 获取全部存在的书本阅读数据
@@ -121,7 +122,10 @@ interface BookRepositoryApi {
      *
      * @since Api 2
      */
-    suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData)
+    suspend fun updateUserReadingData(
+        id: Identifier.Book,
+        update: (UserReadingData) -> UserReadingData
+    )
 
     /**
      * 获取书本是缓存状态
@@ -132,7 +136,7 @@ interface BookRepositoryApi {
      *
      * @since Api 2
      */
-    suspend fun getIsBookCached(bookId: String): Boolean
+    suspend fun getIsBookCached(bookId: Identifier.Book): Boolean
 
     /**
      * 将书本标签点击事件交于数据源处处理

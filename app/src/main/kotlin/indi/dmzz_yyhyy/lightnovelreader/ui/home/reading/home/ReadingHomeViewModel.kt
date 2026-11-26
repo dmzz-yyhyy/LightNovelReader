@@ -8,7 +8,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import io.nightfish.lightnovelreader.api.userdata.update
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -22,9 +24,9 @@ class ReadingHomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val readingBooksUserData =
-        userDataRepository.stringListUserData(UserDataPath.ReadingBooks.path)
+        userDataRepository.userData(UserDataPath.ReadingBooks)
 
-    var recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>> by mutableStateOf(
+    var recentReadingBooks: List<Pair<Identifier.Book, Flow<RecentReadingBook>>> by mutableStateOf(
         emptyList()
     )
         private set
@@ -37,7 +39,7 @@ class ReadingHomeViewModel @Inject constructor(
             readingBooksUserData.getFlowWithDefault(emptyList()).collect { ids ->
                 recentReadingBooks = ids
                     .reversed()
-                    .filter(String::isNotBlank)
+
                     .map { id ->
                         val bookInformationFlow = bookRepository.getBookInformationFlow(id)
                         val userReadingDataFlow = bookRepository.getUserReadingDataFlow(id)
@@ -54,7 +56,7 @@ class ReadingHomeViewModel @Inject constructor(
         }
     }
 
-    fun openChapters(bookId: String) {
+    fun openChapters(bookId: Identifier.Book) {
         viewModelScope.launch(Dispatchers.IO) {
             val userData = bookRepository.getUserReadingData(bookId)
             chapterSheetUiState = ChapterSheetUiState(
@@ -65,7 +67,7 @@ class ReadingHomeViewModel @Inject constructor(
         }
     }
 
-    fun setVolume(volumeId: String) {
+    fun setVolume(volumeId: Identifier.Volume?) {
         chapterSheetUiState = chapterSheetUiState?.copy(selectedVolumeId = volumeId)
     }
 
@@ -73,7 +75,7 @@ class ReadingHomeViewModel @Inject constructor(
         chapterSheetUiState = null
     }
 
-    fun removeFromReadingList(bookId: String) {
+    fun removeFromReadingList(bookId: Identifier.Book) {
         viewModelScope.launch(Dispatchers.IO) {
             readingBooksUserData.update {
                 it.toMutableList().apply { remove(bookId) }
@@ -81,7 +83,7 @@ class ReadingHomeViewModel @Inject constructor(
         }
     }
 
-    fun addToReadingList(bookId: String) {
+    fun addToReadingList(bookId: Identifier.Book) {
         viewModelScope.launch(Dispatchers.IO) {
             readingBooksUserData.update {
                 it + listOf(bookId)

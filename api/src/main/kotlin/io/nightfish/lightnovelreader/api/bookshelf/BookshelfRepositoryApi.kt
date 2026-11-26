@@ -1,6 +1,7 @@
 package io.nightfish.lightnovelreader.api.bookshelf
 
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -17,7 +18,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun getAllBookshelfIds(): List<Int>
+    suspend fun getAllBookshelfIds(): List<Identifier.Bookshelf>
 
     /**
      * 删除指定书架
@@ -26,7 +27,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun deleteBookshelf(bookshelfId: Int)
+    suspend fun deleteBookshelf(bookshelfId: Identifier.Bookshelf)
 
     /**
      * 将书本添加到指定书架
@@ -36,7 +37,10 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun addBookIntoBookShelf(bookshelfId: Int, bookInformation: BookInformation)
+    suspend fun addBookIntoBookShelf(
+        bookshelfId: Identifier.Bookshelf,
+        bookInformation: BookInformation
+    )
 
     /**
      * 将书本标记为书架中已更新的书本
@@ -46,7 +50,10 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun addUpdatedBooksIntoBookShelf(bookShelfId: Int, bookId: String)
+    suspend fun addUpdatedBooksIntoBookShelf(
+        bookShelfId: Identifier.Bookshelf,
+        bookId: Identifier.Book
+    )
 
     /**
      * 获取所有书架中书本id的流
@@ -55,7 +62,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 2
      */
-    fun getAllBookshelfBookIdsFlow(): Flow<List<String>>
+    fun getAllBookshelfBookIdsFlow(): Flow<List<Identifier.Book>>
 
     /**
      * 从指定书架中删除书本
@@ -65,7 +72,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun deleteBookFromBookshelf(bookshelfId: Int, bookId: String)
+    suspend fun deleteBookFromBookshelf(bookshelfId: Identifier.Bookshelf, bookId: Identifier.Book)
 
     /**
      * 从指定书架的已更新列表中移除书本
@@ -75,7 +82,10 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun deleteBookFromBookshelfUpdatedBookIds(bookshelfId: Int, bookId: String)
+    suspend fun deleteBookFromBookshelfUpdatedBookIds(
+        bookshelfId: Identifier.Bookshelf,
+        bookId: Identifier.Book
+    )
 
     /**
      * 更新书架书本元数据的最后更新时间
@@ -85,7 +95,10 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun updateBookshelfBookMetadataLastUpdateTime(bookId: String, time: LocalDateTime)
+    suspend fun updateBookshelfBookMetadataLastUpdateTime(
+        bookId: Identifier.Book,
+        time: LocalDateTime
+    )
 
     /**
      * 清空所有书架数据
@@ -121,7 +134,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun getBookshelf(id: Int): Bookshelf?
+    suspend fun getBookshelf(id: Identifier.Bookshelf): Bookshelf?
 
     /**
      * 获取单个书架对象的流
@@ -132,7 +145,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 2
      */
-    fun getBookshelfFlow(id: Int): Flow<Bookshelf?>
+    fun getBookshelfFlow(id: Identifier.Bookshelf): Flow<Bookshelf?>
 
     /**
      * 添加新的书架实例
@@ -152,7 +165,10 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun updateBookshelf(bookshelfId: Int, updater: (Bookshelf) -> Bookshelf)
+    suspend fun updateBookshelf(
+        bookshelfId: Identifier.Bookshelf,
+        updater: (Bookshelf) -> Bookshelf
+    )
 
     /**
      * 获取所有书架书本的元数据列表
@@ -172,7 +188,7 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 4
      */
-    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata?
+    suspend fun getBookshelfBookMetadata(id: Identifier.Book): BookshelfBookMetadata?
 
     /**
      * 获取书架书本元数据的流
@@ -183,5 +199,5 @@ interface BookshelfRepositoryApi {
      *
      * @since Api 2
      */
-    fun getBookshelfBookMetadataFlow(id: String): Flow<BookshelfBookMetadata?>
+    fun getBookshelfBookMetadataFlow(id: Identifier.Book): Flow<BookshelfBookMetadata?>
 }

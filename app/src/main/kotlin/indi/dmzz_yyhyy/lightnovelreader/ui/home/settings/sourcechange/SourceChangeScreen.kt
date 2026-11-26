@@ -55,7 +55,7 @@ import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
 fun SourceChangeScreen(
     uiState: SourceChangeUiState,
     onClickBack: () -> Unit,
-    onApplyClick: (Identifier) -> Unit
+    onApplyClick: (Identifier.DataSource) -> Unit
 ) {
     var selectedSourceId by rememberSaveable(uiState.currentSourceId) {
         mutableStateOf(uiState.currentSourceId)
@@ -180,8 +180,8 @@ private fun SourceChangeBottomBar(
 private fun SourceChangeContent(
     modifier: Modifier = Modifier,
     uiState: SourceChangeUiState,
-    selectedSourceId: Identifier,
-    onSelectedChange: (Identifier) -> Unit
+    selectedSourceId: Identifier.DataSource,
+    onSelectedChange: (Identifier.DataSource) -> Unit
 ) {
     LazyColumn(
         modifier = modifier

@@ -59,6 +59,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.addToBookshelfAction
 import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,9 +71,9 @@ fun ExpandedPageScreen(
     init: (String) -> Unit,
     refreshResult: () -> Unit,
     loadMore: () -> Unit,
-    requestAddBookToBookshelf: (String) -> Unit,
+    requestAddBookToBookshelf: (Identifier.Book) -> Unit,
     onClickBack: () -> Unit,
-    onClickBook: (String) -> Unit,
+    onClickBook: (Identifier.Book) -> Unit,
     refresh: () -> Unit,
 ) {
     val rememberPullToRefreshState = rememberPullToRefreshState()

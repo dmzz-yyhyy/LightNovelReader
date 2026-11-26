@@ -1,5 +1,7 @@
 package io.nightfish.lightnovelreader.api.book
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+
 /**
  * 书本卷目录
  *
@@ -9,7 +11,7 @@ package io.nightfish.lightnovelreader.api.book
  * @since Api 4
  */
 data class BookVolumes(
-    val bookId: String,
+    val bookId: Identifier.Book,
     val volumes: List<Volume>
 ) {
     /**

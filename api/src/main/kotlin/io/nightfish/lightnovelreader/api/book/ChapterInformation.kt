@@ -1,5 +1,7 @@
 package io.nightfish.lightnovelreader.api.book
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+
 /**
  * 章节基础信息
  *
@@ -9,6 +11,6 @@ package io.nightfish.lightnovelreader.api.book
  * @since Api 4
  */
 data class ChapterInformation(
-    val id: String,
+    val id: Identifier.Chapter,
     val title: String
 )

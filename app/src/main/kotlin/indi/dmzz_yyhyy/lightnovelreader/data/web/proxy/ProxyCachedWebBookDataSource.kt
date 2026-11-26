@@ -4,6 +4,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onOk
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 
 class ProxyCachedWebBookDataSource(
@@ -15,26 +16,26 @@ class ProxyCachedWebBookDataSource(
     ): Result<T, WebRequestError> {
         val value = origin.cache?.getCache<T>(key.hashCode()) ?: return block.invoke()
             .onOk {
-                origin.cache?.cache(id.hashCode(), it)
+                origin.cache?.cache(key.hashCode(), it)
             }
         return Ok(value)
     }
 
-    override suspend fun getBookInformation(id: String, priority: WebDataSourcePriority) =
-        getOrCache(id) {
+    override suspend fun getBookInformation(id: Identifier.Book, priority: WebDataSourcePriority) =
+        getOrCache("book-information:$id") {
             proxiedWebBookDataSource.getBookInformation(id, priority)
         }
 
-    override suspend fun getBookVolumes(id: String, priority: WebDataSourcePriority) =
-        getOrCache(id) {
+    override suspend fun getBookVolumes(id: Identifier.Book, priority: WebDataSourcePriority) =
+        getOrCache("book-volumes:$id") {
             proxiedWebBookDataSource.getBookVolumes(id, priority)
         }
 
     override suspend fun getChapterContent(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority
-    ) = getOrCache(chapterId + bookId) {
+    ) = getOrCache("$chapterId:$bookId") {
         proxiedWebBookDataSource.getChapterContent(chapterId, bookId, priority)
     }
 }

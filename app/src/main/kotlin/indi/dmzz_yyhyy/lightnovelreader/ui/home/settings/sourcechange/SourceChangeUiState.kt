@@ -7,14 +7,14 @@ import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourceItem
 
 interface SourceChangeUiState {
-    val currentSourceId: Identifier?
+    val currentSourceId: Identifier.DataSource?
     val webDataSourceItems: List<WebDataSourceItem>
     val isProcessing: Boolean
     val lastError: String?
 }
 
 class MutableSourceChangeUiState : SourceChangeUiState {
-    override var currentSourceId: Identifier? by mutableStateOf(null)
+    override var currentSourceId: Identifier.DataSource? by mutableStateOf(null)
     override var webDataSourceItems: List<WebDataSourceItem> by mutableStateOf(emptyList())
     override var isProcessing: Boolean by mutableStateOf(false)
     override var lastError: String? by mutableStateOf(null)

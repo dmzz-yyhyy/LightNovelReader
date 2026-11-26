@@ -5,6 +5,7 @@ import java.time.DayOfWeek
 import java.time.Month
 import java.time.YearMonth
 import java.time.format.TextStyle
+import java.util.Locale as JavaUtilLocale
 
 private val locale = Locale.current
 
@@ -22,10 +23,10 @@ fun DayOfWeek.displayText(): String {
 
 fun Month.getDisplayName(short: Boolean, locale: Locale): String {
     val style = if (short) TextStyle.SHORT else TextStyle.FULL
-    return getDisplayName(style, java.util.Locale.forLanguageTag(locale.toLanguageTag()))
+    return getDisplayName(style, JavaUtilLocale.forLanguageTag(locale.toLanguageTag()))
 }
 
 fun DayOfWeek.getDisplayName(locale: Locale): String {
     val style = TextStyle.SHORT
-    return getDisplayName(style, java.util.Locale.forLanguageTag(locale.toLanguageTag()))
+    return getDisplayName(style, JavaUtilLocale.forLanguageTag(locale.toLanguageTag()))
 }

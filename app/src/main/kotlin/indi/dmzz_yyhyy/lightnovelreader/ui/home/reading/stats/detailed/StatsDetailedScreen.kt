@@ -46,18 +46,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.shimmer
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
+import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedText
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookInformationErrorCover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ActivityStatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.MonthlyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.ReadingDetailStatsCard
@@ -65,6 +65,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.WeeklyStatsChart
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.YearlyStatsChart
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -248,7 +249,7 @@ fun StatsCard(
 @Composable
 fun BookStack(
     modifier: Modifier = Modifier,
-    books: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>,
+    books: List<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>>,
     count: Int,
     scaleEnabled: Boolean = false,
     compact: Boolean = true,
@@ -417,7 +418,8 @@ private fun TopBar(
 private fun StatsDetailedBookCoverSkeleton() {
     val shimmer = rememberLoadingSkeletonShimmer()
     Box(
-        Modifier.size(63.dp, 90.dp)
+        Modifier
+            .size(63.dp, 90.dp)
             .shimmer(shimmer)
             .background(colorScheme.surfaceContainerLow, RoundedCornerShape(6.dp))
     )

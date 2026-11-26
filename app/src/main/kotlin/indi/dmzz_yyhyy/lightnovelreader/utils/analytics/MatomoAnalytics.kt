@@ -33,7 +33,7 @@ class MatomoAnalytics @Inject constructor(
 
     suspend fun initialize() {
         isStatisticsEnabled = if (BuildConfig.DEBUG) false
-        else userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
+        else userDataRepository.userData(UserDataPath.Settings.App.Statistics)
             .getOrDefault(true)
 
         if (!isStatisticsEnabled) return

@@ -38,6 +38,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.MeasuredComponent
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.chapterOverscroll
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.isVertical
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlin.math.roundToLong
 
 private data class ScrollItem(
@@ -46,7 +47,7 @@ private data class ScrollItem(
     val component: MeasuredComponent?,
     val blankLength: Int = 0,
 ) {
-    val key = "${chapter.chapterId.length}:${chapter.chapterId}:$index"
+    val key = "${chapter.chapterId.toString().length}:${chapter.chapterId}:$index"
 }
 
 private class ScrollItems(val chapters: List<ChapterLayout>, private val viewportLength: Int) {
@@ -109,7 +110,7 @@ internal fun ScrollContent(
     entryProgress: Float,
     onAdjacent: (Int) -> Unit,
     onToggleImmersive: () -> Unit,
-    onReadingProgress: (String, Float, Boolean) -> Unit,
+    onReadingProgress: (Identifier.Chapter, Float, Boolean) -> Unit,
 ) {
     val chapters = window.chapters
     val scrollItems = remember(chapters, viewportLength) { ScrollItems(chapters, viewportLength) }
@@ -123,8 +124,8 @@ internal fun ScrollContent(
     }
     var displayedItems by remember { mutableStateOf(scrollItems) }
     var currentChapterId by remember { mutableStateOf(window.current.chapterId) }
-    var awaitingChapter by remember { mutableStateOf<String?>(window.current.chapterId) }
-    var requestedChapter by remember { mutableStateOf<String?>(null) }
+    var awaitingChapter by remember { mutableStateOf<Identifier.Chapter?>(window.current.chapterId) }
+    var requestedChapter by remember { mutableStateOf<Identifier.Chapter?>(null) }
     val keepPrefix = listState.isScrollInProgress && listState.lastScrolledForward
 
     SideEffect {
@@ -163,7 +164,7 @@ internal fun ScrollContent(
     val report by rememberUpdatedState(onReadingProgress)
     val toggleImmersive by rememberUpdatedState(onToggleImmersive)
 
-    fun promoteVisibleChapter(chapterId: String) {
+    fun promoteVisibleChapter(chapterId: Identifier.Chapter) {
         if (awaitingChapter != null || requestedChapter != null) return
         val direction = when (chapterId) {
             latestWindow.previousId -> -1
@@ -200,10 +201,12 @@ internal fun ScrollContent(
         }
     }
 
-    val modifier = Modifier.fillMaxSize()
+    val modifier = Modifier
+        .fillMaxSize()
         .chapterOverscroll(mode, mode.isVertical, window.current.chapterId) { direction ->
             if (awaitingChapter == null && requestedChapter == null) {
-                val visible = listState.layoutInfo.firstContentItem()?.let { displayedItems.item(it.key) }
+                val visible =
+                    listState.layoutInfo.firstContentItem()?.let { displayedItems.item(it.key) }
                 val visibleChapter = visible?.chapter?.chapterId
                 if (visibleChapter == latestWindow.current.chapterId) {
                     adjacent(direction)
@@ -248,7 +251,11 @@ internal fun ScrollContent(
     }
 }
 
-private data class ScrollPosition(val chapterId: String, val progress: Float, val settled: Boolean)
+private data class ScrollPosition(
+    val chapterId: Identifier.Chapter,
+    val progress: Float,
+    val settled: Boolean
+)
 
 private fun LazyListLayoutInfo.firstContentItem() =
     visibleItemsInfo.firstOrNull { it.offset + it.size > viewportStartOffset }

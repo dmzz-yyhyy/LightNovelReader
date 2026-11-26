@@ -121,6 +121,7 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -131,11 +132,11 @@ fun DetailScreen(
     uiState: DetailUiState,
     onClickExportToEpub: (ExportSettings) -> Unit,
     onClickBackButton: () -> Unit,
-    onClickChapter: (String) -> Unit,
+    onClickChapter: (Identifier.Chapter) -> Unit,
     onClickReadFromStart: () -> Unit,
     onClickContinueReading: () -> Unit,
-    cacheBook: (String) -> Unit,
-    requestAddBookToBookshelf: (String) -> Unit,
+    cacheBook: (Identifier.Book) -> Unit,
+    requestAddBookToBookshelf: (Identifier.Book) -> Unit,
     onClickTag: (String) -> Unit,
     onClickCover: (Uri) -> Unit,
     onClickMarkAsRead: () -> Unit,
@@ -513,9 +514,9 @@ private fun DetailContent(
     uiState: DetailUiState,
     bookInformation: BookInformation,
     lazyListState: LazyListState,
-    onClickChapter: (String) -> Unit,
-    cacheBook: (String) -> Unit,
-    requestAddBookToBookshelf: (String) -> Unit,
+    onClickChapter: (Identifier.Chapter) -> Unit,
+    cacheBook: (Identifier.Book) -> Unit,
+    requestAddBookToBookshelf: (Identifier.Book) -> Unit,
     onClickTag: (String) -> Unit,
     onClickCover: (Uri) -> Unit,
     onClickShowInfo: () -> Unit,
@@ -1144,10 +1145,10 @@ private fun VolumeItem(
     modifier: Modifier,
     volume: Volume,
     hideReadChapters: Boolean = false,
-    readCompletedChapterIds: List<String>,
-    onClickChapter: (String) -> Unit,
+    readCompletedChapterIds: List<Identifier.Chapter>,
+    onClickChapter: (Identifier.Chapter) -> Unit,
     volumesSize: Int,
-    lastReadingChapterId: String?
+    lastReadingChapterId: Identifier.Chapter?
 ) {
     val readIds = remember(readCompletedChapterIds) { readCompletedChapterIds.toSet() }
     val (readCount, totalCount) = remember(volume.volumeId, readIds) {

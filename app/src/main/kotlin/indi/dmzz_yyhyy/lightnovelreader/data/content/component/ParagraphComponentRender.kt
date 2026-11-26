@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
-import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.data.ParagraphComponentData
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.render.cap.SizeMeasurable
 import io.nightfish.lightnovelreader.api.text.layout.resolveVerticalTypefaces
 import io.nightfish.lightnovelreader.api.text.layout.verticalParagraphText
@@ -102,8 +102,8 @@ class ParagraphComponentRender(
 
     private suspend fun readReaderStyle(): ReaderStyle {
         val default = ReaderStyle()
-        suspend fun value(path: UserDataPath, fallback: Float) =
-            userDataRepository.floatUserData(path.path).getOrDefault(fallback)
+        suspend fun value(path: UserDataPath<Float>, fallback: Float) =
+            userDataRepository.userData(path).getOrDefault(fallback)
         return default.copy(
             fontSize = value(UserDataPath.Reader.FontSize, default.fontSize.value).sp,
             fontWeight = FontWeight(value(UserDataPath.Reader.FontWeigh, default.fontWeight.weight.toFloat()).toInt()),
@@ -112,7 +112,7 @@ class ParagraphComponentRender(
             spacingBeforeParagraph = value(UserDataPath.Reader.SpacingBeforeParagraph, default.spacingBeforeParagraph.value).sp,
             spacingAfterParagraph = value(UserDataPath.Reader.SpacingAfterParagraph, default.spacingAfterParagraph.value).sp,
             textIndent = TextIndent(firstLine = value(UserDataPath.Reader.FirstLineTextIndent, default.textIndent.firstLine.value).em),
-            fontUri = userDataRepository.uriUserData(UserDataPath.Reader.FontUri.path).get(),
+            fontUri = userDataRepository.userData(UserDataPath.Reader.FontUri).get(),
         )
     }
 

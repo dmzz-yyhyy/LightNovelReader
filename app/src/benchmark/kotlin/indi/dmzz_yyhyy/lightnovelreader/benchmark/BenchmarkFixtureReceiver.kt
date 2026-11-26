@@ -29,6 +29,23 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlinx.coroutines.runBlocking
+import android.database.Cursor
+import android.util.Base64 as AndroidUtilBase64
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalDataManager
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupSelection
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DataSourceEntity
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.userdata.UserDataPath
+import java.io.File
+import java.util.Base64
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.json.JSONArray
+import org.json.JSONObject
 
 class BenchmarkFixtureReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -36,6 +53,154 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         Thread {
             try {
                 val result = when (intent.action) {
+                    "indi.dmzz_yyhyy.lightnovelreader.benchmark.MIGRATION_PREPARE_UPGRADE" -> {
+                        val database = LightNovelReaderDatabase.getInstance(context)
+                        database.close()
+                        val file = context.getDatabasePath("light_novel_reader_database")
+                        listOf(
+                            "",
+                            "-wal",
+                            "-shm",
+                            "-journal"
+                        ).forEach { File(file.absolutePath + it).delete() }
+                        context.contentResolver.openInputStream(
+                            Uri.parse(
+                                migrationArgument(
+                                    intent,
+                                    "input"
+                                )
+                            )
+                        )!!.use { input -> file.outputStream().use { input.copyTo(it) } }
+                        val folder = File(context.dataDir, "local_data").apply { mkdirs() }
+                        for ((extra, name) in listOf(
+                            "sourceA" to "fixture:sourceA",
+                            "sourceB" to "fixture:sourceB",
+                            "active" to "lightnovelreader:Wenku8"
+                        )) {
+                            migrationArgument(
+                                intent,
+                                extra
+                            )?.let { uri ->
+                                context.contentResolver.openInputStream(Uri.parse(uri))!!
+                                    .use { input ->
+                                        File(folder, name).outputStream().use { input.copyTo(it) }
+                                    }
+                            }
+                        }
+                        "migration=PREPARED"
+                    }
+
+                    "indi.dmzz_yyhyy.lightnovelreader.benchmark.MIGRATION_IMPORT" -> {
+                        runBlocking {
+                            context.contentResolver.openInputStream(
+                                Uri.parse(
+                                    migrationArgument(intent, "input")
+                                )
+                            )!!.use {
+                                migrationManager(context).import(
+                                    it,
+                                    intent.getBooleanExtra("overwrite", false)
+                                )
+                            }
+                        }
+                        "migration=IMPORTED"
+                    }
+
+                    "indi.dmzz_yyhyy.lightnovelreader.benchmark.MIGRATION_EXPORT" -> {
+                        runBlocking {
+                            context.contentResolver.openOutputStream(
+                                Uri.parse(
+                                    migrationArgument(
+                                        intent,
+                                        "output"
+                                    )
+                                ), "wt"
+                            )!!.use { output ->
+                                migrationManager(context).export(
+                                    output, BackupSelection(
+                                        localBookCache = intent.getBooleanExtra("cache", true),
+                                        bookshelf = intent.getBooleanExtra("bookshelf", true),
+                                        readingRecord = intent.getBooleanExtra("reading", true),
+                                        settings = intent.getBooleanExtra("settings", true),
+                                        bookshelfId = migrationArgument(
+                                            intent,
+                                            "shelf"
+                                        )?.let { Identifier.parseAs<Identifier.Bookshelf>(it) },
+                                        sourceNamespace = migrationArgument(intent, "namespace")
+                                    )
+                                )
+                            }
+                        }
+                        "migration=EXPORTED"
+                    }
+
+                    "indi.dmzz_yyhyy.lightnovelreader.benchmark.MIGRATION_READING" -> {
+                        val id = Identifier.parseAs<Identifier.Book>(
+                            requireNotNull(
+                                migrationArgument(
+                                    intent,
+                                    "id"
+                                )
+                            )
+                        )
+                        val data = runBlocking {
+                            requireNotNull(
+                                LightNovelReaderDatabase.getInstance(context).userReadingDataDao()
+                                    .getEntity(id)
+                            )
+                        }
+                        val json = JSONObject().put(
+                            "current",
+                            JSONObject(Json.encodeToString(data.currentChapterReadingProgressMap))
+                        )
+                            .put(
+                                "maximum",
+                                JSONObject(Json.encodeToString(data.maxChapterReadingProgressMap))
+                            )
+                        context.contentResolver.openOutputStream(
+                            Uri.parse(
+                                migrationArgument(
+                                    intent,
+                                    "output"
+                                )
+                            ), "wt"
+                        )!!.bufferedWriter().use { it.write(json.toString()) }
+                        "migration=READING"
+                    }
+
+                    "indi.dmzz_yyhyy.lightnovelreader.benchmark.MIGRATION_QUERY" -> {
+                        val sql = requireNotNull(migrationArgument(intent, "sql"))
+                        require(sql.startsWith("SELECT ") || sql.startsWith("PRAGMA "))
+                        val rows = JSONArray()
+                        LightNovelReaderDatabase.getInstance(context).openHelper.writableDatabase.query(
+                            sql
+                        ).use { cursor ->
+                            while (cursor.moveToNext()) {
+                                val row = JSONObject()
+                                for (index in 0 until cursor.columnCount) row.put(
+                                    cursor.getColumnName(index), when (cursor.getType(index)) {
+                                        Cursor.FIELD_TYPE_NULL -> JSONObject.NULL
+                                        Cursor.FIELD_TYPE_INTEGER -> cursor.getLong(index)
+                                        Cursor.FIELD_TYPE_FLOAT -> cursor.getDouble(index)
+                                        Cursor.FIELD_TYPE_BLOB -> Base64.getEncoder()
+                                            .encodeToString(cursor.getBlob(index))
+
+                                        else -> cursor.getString(index)
+                                    }
+                                )
+                                rows.put(row)
+                            }
+                        }
+                        context.contentResolver.openOutputStream(
+                            Uri.parse(
+                                migrationArgument(
+                                    intent,
+                                    "output"
+                                )
+                            ), "wt"
+                        )!!.bufferedWriter().use { it.write(rows.toString()) }
+                        "migration=QUERIED"
+                    }
                     ACTION_SEED -> {
                         runBlocking {
                             seed(LightNovelReaderDatabase.getInstance(context))
@@ -69,13 +234,27 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                         val value = runBlocking {
                             LightNovelReaderDatabase.getInstance(context)
                                 .userDataDao()
-                                .get(path)
+                                .get(
+                                    Identifier.SettingPath(
+                                        if (path in setOf(
+                                                "reading_books",
+                                                "bookshelf_order",
+                                                "search.history",
+                                                "completed_download_book_list"
+                                            )
+                                        ) SOURCE.sourceNamespace else Identifier.HOST_NAMESPACE,
+                                        path
+                                    )
+                                )
                         }
                         "user-data-path=$path;value=${value ?: "<null>"}"
                     }
 
                     ACTION_REPORT_BOOKSHELF -> {
-                        val id = intent.getIntExtra(EXTRA_BOOKSHELF_ID, -1)
+                        val id = SOURCE.child(
+                            Identifier::Bookshelf,
+                            intent.getIntExtra(EXTRA_BOOKSHELF_ID, -1).toString()
+                        )
                         val shelf = runBlocking {
                             LightNovelReaderDatabase.getInstance(context)
                                 .bookshelfDao()
@@ -93,7 +272,12 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                     }
 
                     ACTION_REPORT_BOOK_METADATA -> {
-                        val id = intent.getStringExtra(EXTRA_BOOK_ID).orEmpty()
+                        val id = intent.getStringExtra(EXTRA_BOOK_ID)?.let {
+                            if (it.startsWith("book:")) Identifier.parseAs<Identifier.Book>(it) else SOURCE.child(
+                                Identifier::Book,
+                                it
+                            )
+                        } ?: BOOK_ID
                         val metadata = runBlocking {
                             LightNovelReaderDatabase.getInstance(context)
                                 .bookshelfDao()
@@ -182,7 +366,22 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         }.start()
     }
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface MigrationAccess {
+        fun localDataManager(): LocalDataManager
+    }
+
+    private fun migrationArgument(intent: Intent, name: String): String? =
+        intent.getStringExtra(name)?.let {
+            String(AndroidUtilBase64.decode(it, AndroidUtilBase64.NO_WRAP), Charsets.UTF_8)
+        }
+
+    private fun migrationManager(context: Context) =
+        EntryPointAccessors.fromApplication(context, MigrationAccess::class.java).localDataManager()
+
     private suspend fun seed(database: LightNovelReaderDatabase) {
+        database.dataSourceDao().register(DataSourceEntity(SOURCE))
         val now = LocalDateTime.now()
         val book = BookInformationEntity(
             id = BOOK_ID,
@@ -264,7 +463,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 id = CHAPTER_ONE_ID,
                 title = "Benchmark Chapter One",
                 content = firstContent,
-                prevChapter = "",
+                prevChapter = null,
                 nextChapter = CHAPTER_TWO_ID,
             )
         )
@@ -274,7 +473,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 title = "Benchmark Chapter Two",
                 content = secondContent,
                 prevChapter = CHAPTER_ONE_ID,
-                nextChapter = "",
+                nextChapter = null,
             )
         )
         val secondBookFirstContent = ContentBuilder().apply {
@@ -288,7 +487,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 id = SECOND_BOOK_CHAPTER_ONE_ID,
                 title = "Second Book Chapter One",
                 content = secondBookFirstContent,
-                prevChapter = "",
+                prevChapter = null,
                 nextChapter = SECOND_BOOK_CHAPTER_TWO_ID,
             )
         )
@@ -298,7 +497,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                 title = "Second Book Chapter Two",
                 content = secondBookSecondContent,
                 prevChapter = SECOND_BOOK_CHAPTER_ONE_ID,
-                nextChapter = "",
+                nextChapter = null,
             )
         )
 
@@ -334,18 +533,14 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         )
         database.userDataDao().insert(
             UserDataEntity(
-                path = "reading_books",
-                group = "",
-                type = "StringList",
-                value = "$BOOK_ID,$SECOND_BOOK_ID",
+                id = UserDataPath.ReadingBooks.identifier(SOURCE),
+                value = Json.encodeToString(listOf(BOOK_ID, SECOND_BOOK_ID)),
             )
         )
         database.userDataDao().insert(
             UserDataEntity(
-                path = "bookshelf_order",
-                group = "",
-                type = "StringList",
-                value = BOOKSHELF_ID.toString(),
+                id = UserDataPath.BookshelfOrder.identifier(SOURCE),
+                value = Json.encodeToString(listOf(BOOKSHELF_ID)),
             )
         )
         database.bookshelfDao().insertBookshelf(
@@ -392,7 +587,7 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
             setMinute(9, 30)
             setMinute(10, 30)
         }
-        database.dailyCountDao().insert(DailyCountEntity(today, count))
+        database.dailyCountDao().insert(DailyCountEntity(SOURCE.sourceNamespace, today, count))
     }
 
     private fun ContentBuilder.appendProgressParagraphs(prefix: String) {
@@ -446,7 +641,8 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
     }
 
     private suspend fun extendRapidChapterChain(database: LightNovelReaderDatabase) {
-        val extraChapterIds = (3..12).map { "benchmark-chapter-$it" }
+        val extraChapterIds =
+            (3..12).map { SOURCE.child(Identifier::Chapter, "benchmark-chapter-$it") }
         database.bookVolumesDao().insertVolume(
             VolumeEntity(
                 bookId = BOOK_ID,
@@ -479,13 +675,14 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
                     title = "Benchmark Chapter $chapterNumber",
                     content = content,
                     prevChapter = if (index == 0) CHAPTER_TWO_ID else extraChapterIds[index - 1],
-                    nextChapter = extraChapterIds.getOrNull(index + 1).orEmpty(),
+                    nextChapter = extraChapterIds.getOrNull(index + 1),
                 )
             )
         }
     }
 
     companion object {
+        val SOURCE = Identifier.DataSource("lightnovelreader", "Wenku8")
         const val ACTION_SEED = "indi.dmzz_yyhyy.lightnovelreader.benchmark.SEED"
         const val ACTION_REEMIT_CHAPTER =
             "indi.dmzz_yyhyy.lightnovelreader.benchmark.REEMIT_CHAPTER"
@@ -515,18 +712,20 @@ class BenchmarkFixtureReceiver : BroadcastReceiver() {
         const val EXTRA_BOOKSHELF_ID = "bookshelf-id"
         const val EXTRA_BOOK_ID = "book-id"
 
-        const val BOOK_ID = "9999999"
-        const val SECOND_BOOK_ID = "9999998"
-        const val VOLUME_ID = "benchmark-volume"
-        const val SECOND_VOLUME_ID = "benchmark-volume-2"
-        const val CHAPTER_ONE_ID = "benchmark-chapter-1"
-        const val CHAPTER_TWO_ID = "benchmark-chapter-2"
-        const val SECOND_BOOK_VOLUME_ID = "second-benchmark-volume"
-        const val SECOND_BOOK_CHAPTER_ONE_ID = "second-benchmark-chapter-1"
-        const val SECOND_BOOK_CHAPTER_TWO_ID = "second-benchmark-chapter-2"
+        val BOOK_ID = SOURCE.child(Identifier::Book, "9999999")
+        val SECOND_BOOK_ID = SOURCE.child(Identifier::Book, "9999998")
+        val VOLUME_ID = SOURCE.child(Identifier::Volume, "benchmark-volume")
+        val SECOND_VOLUME_ID = SOURCE.child(Identifier::Volume, "benchmark-volume-2")
+        val CHAPTER_ONE_ID = SOURCE.child(Identifier::Chapter, "benchmark-chapter-1")
+        val CHAPTER_TWO_ID = SOURCE.child(Identifier::Chapter, "benchmark-chapter-2")
+        val SECOND_BOOK_VOLUME_ID = SOURCE.child(Identifier::Volume, "second-benchmark-volume")
+        val SECOND_BOOK_CHAPTER_ONE_ID =
+            SOURCE.child(Identifier::Chapter, "second-benchmark-chapter-1")
+        val SECOND_BOOK_CHAPTER_TWO_ID =
+            SOURCE.child(Identifier::Chapter, "second-benchmark-chapter-2")
         const val CHAPTER_ONE_END_MARKER = "Benchmark chapter one end marker."
         const val CHAPTER_TWO_START_MARKER = "Benchmark chapter two start marker."
-        const val BOOKSHELF_ID = 1_000_001
+        val BOOKSHELF_ID = SOURCE.child(Identifier::Bookshelf, "1000001")
         const val PROGRESS_PARAGRAPH_COUNT = 30
         val LONG_PARAGRAPH = (1..100).joinToString("") {
             "跨页段落${it.toString().padStart(3, '0')}，测绘切分必须保持全部文字的顺序，不得遗漏或重复。"

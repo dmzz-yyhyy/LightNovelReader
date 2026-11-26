@@ -1,6 +1,7 @@
 package io.nightfish.lightnovelreader.api.book
 
 import androidx.compose.runtime.Stable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.time.LocalDateTime
 
 /**
@@ -19,14 +20,14 @@ import java.time.LocalDateTime
  */
 @Stable
 data class UserReadingData(
-    val id: String,
+    val id: Identifier.Book,
     val lastReadTime: LocalDateTime? = null,
     val totalReadTime: Int = 0,
     val readingProgress: Float = 0f,
-    val lastReadChapterId: String? = null,
+    val lastReadChapterId: Identifier.Chapter? = null,
     val lastReadChapterTitle: String? = null,
-    val currentChapterReadingProgressMap: Map<String, Float> = mapOf(),
-    val maxChapterReadingProgressMap: Map<String, Float> = mapOf()
+    val currentChapterReadingProgressMap: Map<Identifier.Chapter, Float> = mapOf(),
+    val maxChapterReadingProgressMap: Map<Identifier.Chapter, Float> = mapOf()
 ) {
 
     /**
@@ -39,7 +40,10 @@ data class UserReadingData(
      *
      * @since Api 4
      */
-    fun copyWithUpdatedChapterReadingProgress(chapterId: String, progress: Float): UserReadingData {
+    fun copyWithUpdatedChapterReadingProgress(
+        chapterId: Identifier.Chapter,
+        progress: Float
+    ): UserReadingData {
         val maxProgress = progress.coerceAtLeast(this.maxChapterReadingProgressMap[chapterId] ?: 0f)
         val currentChapterReadingProgressMap = this.currentChapterReadingProgressMap.toMutableMap()
         val maxChapterReadingProgressMap = this.maxChapterReadingProgressMap.toMutableMap()

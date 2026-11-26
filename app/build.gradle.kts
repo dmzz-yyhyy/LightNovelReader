@@ -25,7 +25,7 @@ android {
         minSdk = 24
         targetSdk = 37
         // 版本号为x.y.z则versionCode为x*1000000+y*10000+z*1000+debug版本号(开发需要时迭代, 三位数)
-        versionCode = 1_03_00_016
+        versionCode = 1_03_00_017
         versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -180,6 +180,7 @@ dependencies {
     // Room
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
+    ksp(project(":app-compiler"))
     implementation(libs.room.ktx)
     // Splash API
     // WorkManager
@@ -250,3 +251,5 @@ tasks.register("printVersionCode") {
         println(android.defaultConfig.versionCode)
     }
 }
+
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }

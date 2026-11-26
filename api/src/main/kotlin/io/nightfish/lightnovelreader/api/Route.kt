@@ -1,7 +1,11 @@
 package io.nightfish.lightnovelreader.api
 
 import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.NavKey
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.userdata.UserDataColorSerializer
+import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.serialization.Serializable
 
 /**
@@ -56,7 +60,7 @@ sealed interface Route : NavKey {
              */
             @Serializable
             data class ReorderBooks(
-                val id: Int
+                val id: Identifier.Bookshelf
             ) : Route
 
             /** 书架排序界面路由 */
@@ -71,7 +75,7 @@ sealed interface Route : NavKey {
              */
             @Serializable
             data class Edit(
-                val id: Int,
+                val id: Identifier.Bookshelf?,
                 val title: String
             ) : Route
 
@@ -82,7 +86,7 @@ sealed interface Route : NavKey {
              */
             @Serializable
             data class DeleteBookshelfDialog(
-                val bookshelfId: Int
+                val bookshelfId: Identifier.Bookshelf
             ) : Route
 
             /**
@@ -92,7 +96,7 @@ sealed interface Route : NavKey {
              */
             @Serializable
             data class AddBookToBookshelfDialog(
-                val selectedBookIds: List<String>
+                val selectedBookIds: List<Identifier.Book>
             ) : Route
         }
 
@@ -143,7 +147,7 @@ sealed interface Route : NavKey {
                  */
                 @Serializable
                 data class Rules(
-                    val bookId: String
+                    val bookId: Identifier.Book
                 ) : Route
             }
 
@@ -220,7 +224,7 @@ sealed interface Route : NavKey {
          */
         @Serializable
         data class EditTextFormattingRuleDialog(
-            val bookId: String,
+            val bookId: Identifier.Book,
             val ruleId: Int
         ) : Route
     }
@@ -235,7 +239,7 @@ sealed interface Route : NavKey {
          */
         @Serializable
         data class Detail(
-            val bookId: String
+            val bookId: Identifier.Book
         ) : Route
 
         /**
@@ -246,8 +250,8 @@ sealed interface Route : NavKey {
          */
         @Serializable
         data class Reader(
-            val bookId: String,
-            val chapterId: String,
+            val bookId: Identifier.Book,
+            val chapterId: Identifier.Chapter,
         ) : Route
 
         /**
@@ -274,13 +278,13 @@ sealed interface Route : NavKey {
         /**
          * 颜色选择器对话框路由
          *
-         * @param colorUserDataPath 颜色用户数据的路径字符串
+         * @param colorUserDataPath 颜色用户数据的路径及序列化格式
          * @param colors 可选颜色的ARGB值列表
          * @param target 调色盘用途类型
          */
         @Serializable
         data class ColorPickerDialog(
-            val colorUserDataPath: String,
+            val colorUserDataPath: UserDataPath<@Serializable(UserDataColorSerializer::class) Color>,
             val colors: LongArray,
             val target: ColorPickerTargetType =
                 ColorPickerTargetType.BACKGROUND,
@@ -340,7 +344,7 @@ sealed interface Route : NavKey {
      */
     @Serializable
     data class AddBookToBookshelfDialog(
-        val bookId: String
+        val bookId: Identifier.Book
     ) : Route
 
     /**
@@ -350,19 +354,19 @@ sealed interface Route : NavKey {
      */
     @Serializable
     data class MarkAllChaptersAsReadDialog(
-        val bookId: String
+        val bookId: Identifier.Book
     ) : Route
 
     /**
      * 滑块数值设置对话框路由
      *
      * @param value 当前滑块数值
-     * @param floatUserDataPath 关联浮点型用户数据的路径字符串
+     * @param floatUserDataPath 关联浮点型用户数据的路径及序列化格式
      */
     @Serializable
     data class SliderValueDialog(
         val value: Float,
-        val floatUserDataPath: String
+        val floatUserDataPath: UserDataPath<Float>
     ) : Route
 
     /**

@@ -7,9 +7,10 @@ import androidx.core.net.toUri
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.IdentifierConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.UriConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.WorldCountConverter
@@ -19,6 +20,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookVolumesDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookshelfDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.ChapterContentDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DataSourceDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.FormattingRuleDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.StorageStatsDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.UserDataDao
@@ -30,14 +32,19 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DataSourceEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.migration.NamespacedDataMigration
 import io.nightfish.lightnovelreader.api.book.WordCount
 import io.nightfish.lightnovelreader.api.content.builder.buildContent
 import io.nightfish.lightnovelreader.api.content.builder.image
 import io.nightfish.lightnovelreader.api.content.builder.paragraph
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.cbor.Cbor
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
@@ -46,9 +53,11 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.put
+import java.io.File
 
 @Database(
     entities = [
+        DataSourceEntity::class,
         BookInformationEntity::class,
         VolumeEntity::class,
         ChapterInformationEntity::class,
@@ -61,10 +70,13 @@ import kotlinx.serialization.json.put
         DailyCountEntity::class,
         FormattingRuleEntity::class
     ],
-    version = 18,
-    exportSchema = false
+    version = 19,
+    exportSchema = true
 )
+@TypeConverters(IdentifierConverter::class, ListConverter::class)
 abstract class LightNovelReaderDatabase : RoomDatabase() {
+    abstract fun dataSourceDao(): DataSourceDao
+    abstract fun backupAccess(): BackupAccess
     abstract fun bookInformationDao(): BookInformationDao
     abstract fun bookVolumesDao(): BookVolumesDao
     abstract fun chapterContentDao(): ChapterContentDao
@@ -84,25 +96,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
             synchronized(this) {
                 var instance = INSTANCE
                 if (instance == null) {
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        LightNovelReaderDatabase::class.java,
-                        "light_novel_reader_database"
-                    )
-                        .addMigrations(
-                            MIGRATION_6_7,
-                            MIGRATION_7_8,
-                            MIGRATION_8_9,
-                            MIGRATION_9_10,
-                            MIGRATION_10_11,
-                            MIGRATION_11_12,
-                            MIGRATION_12_13,
-                            MIGRATION_13_14,
-                            MIGRATION_14_15,
-                            MIGRATION_15_16,
-                            MIGRATION_16_17,
-                            MIGRATION_17_18,
-                        )
+                    instance = builder(context.applicationContext, "light_novel_reader_database")
                         .allowMainThreadQueries()
                         .build()
                     INSTANCE = instance
@@ -110,6 +104,19 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                 return instance
             }
         }
+
+        /** 应用数据库与归档数据库共用增量迁移注册 */
+        private fun builder(context: Context, name: String) = Room.databaseBuilder(
+            context.applicationContext, LightNovelReaderDatabase::class.java, name
+        ).addMigrations(
+            MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10,
+            MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14,
+            MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18,
+            NamespacedDataMigration
+        )
+
+        fun openFile(context: Context, file: File): LightNovelReaderDatabase =
+            builder(context, file.absolutePath).setJournalMode(JournalMode.TRUNCATE).build()
 
         private val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
@@ -699,6 +706,7 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
         }
 
 
+        @OptIn(ExperimentalSerializationApi::class)
         private val MIGRATION_14_15 = object : Migration(14, 15) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("alter table user_reading_data rename to temp")
@@ -754,14 +762,20 @@ abstract class LightNovelReaderDatabase : RoomDatabase() {
                         )
                         contentValues.put(
                             "current_chapter_reading_progress_map",
-                            ChapterReadingProgressMapConverter.mapToByteArray(
-                                chapterReadingProgressMap
+                            Cbor.encodeToByteArray(
+                                MapSerializer(
+                                    kotlinx.serialization.serializer<String>(),
+                                    kotlinx.serialization.serializer<Float>()
+                                ), chapterReadingProgressMap
                             )
                         )
                         contentValues.put(
                             "max_chapter_reading_progress_map",
-                            ChapterReadingProgressMapConverter.mapToByteArray(
-                                chapterReadingProgressMap
+                            Cbor.encodeToByteArray(
+                                MapSerializer(
+                                    kotlinx.serialization.serializer<String>(),
+                                    kotlinx.serialization.serializer<Float>()
+                                ), chapterReadingProgressMap
                             )
                         )
                         db.insert(

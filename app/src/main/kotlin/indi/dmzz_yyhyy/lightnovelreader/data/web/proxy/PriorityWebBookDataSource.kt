@@ -24,7 +24,7 @@ interface PriorityWebBookDataSource {
 
     val cache: Cache? get() = null
 
-    val id: Identifier
+    val id: Identifier.DataSource
 
     fun onLoad() {}
 
@@ -43,25 +43,25 @@ interface PriorityWebBookDataSource {
     fun progressBookTagClick(tag: String): NavKey?
 
     suspend fun getCoverUriInVolume(
-        bookId: String,
+        bookId: Identifier.Book,
         volume: Volume,
-        volumeChapterContentMap: MutableMap<String, ChapterContent>,
+        volumeChapterContentMap: MutableMap<Identifier.Chapter, ChapterContent>,
         context: Context
     ): Uri?
 
     suspend fun getBookInformation(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Result<BookInformation, WebRequestError>
 
     suspend fun getBookVolumes(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Result<BookVolumes, WebRequestError>
 
     suspend fun getChapterContent(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority = WebDataSourcePriority.Default
     ): Result<ChapterContent, WebRequestError>
 }

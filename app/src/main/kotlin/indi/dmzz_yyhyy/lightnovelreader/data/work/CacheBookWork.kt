@@ -19,6 +19,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.download.MutableDownloadItem
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 @HiltWorker
 class CacheBookWork @AssistedInject constructor(
@@ -32,12 +33,12 @@ class CacheBookWork @AssistedInject constructor(
     companion object {
         private const val TAG = "CacheBookWork"
 
-        fun ofId(id: String): String = "cache:$id"
+        fun ofId(id: Identifier.Book): String = "cache:$id"
     }
 
     override suspend fun doWork(): Result {
-        val bookId = inputData.getString("bookId") ?: return Result.failure()
-        if (bookId.isBlank()) return Result.failure()
+        val bookId = inputData.getString("bookId")?.let { Identifier.parseAs<Identifier.Book>(it) }
+            ?: return Result.failure()
         val downloadItem = MutableDownloadItem(
             DownloadType.CACHE,
             bookId,

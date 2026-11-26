@@ -58,6 +58,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.home.BookshelfHomeUiSt
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -65,9 +66,9 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfReorderBooksScreen(
-    bookshelfId: Int,
+    bookshelfId: Identifier.Bookshelf,
     uiState: BookshelfHomeUiState,
-    prepare: (Int) -> Unit,
+    prepare: (Identifier.Bookshelf) -> Unit,
     onExit: () -> Unit,
     moveBook: (Int, Int) -> Unit,
     onClickBack: () -> Unit,
@@ -100,11 +101,11 @@ fun BookshelfReorderBooksScreen(
 fun BookshelfReorderBookshelvesScreen(
     uiState: BookshelfHomeUiState,
     prepare: () -> Unit,
-    onExit: (List<Int>) -> Unit,
+    onExit: (List<Identifier.Bookshelf>) -> Unit,
     onClickBack: () -> Unit,
-    onClickEditBookshelf: (Int) -> Unit
+    onClickEditBookshelf: (Identifier.Bookshelf) -> Unit
 ) {
-    var reorderedBookshelfIds by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+    var reorderedBookshelfIds by rememberSaveable { mutableStateOf(emptyList<Identifier.Bookshelf>()) }
 
     BackHandler {
         onExit(reorderedBookshelfIds)
@@ -147,7 +148,7 @@ fun BookshelfReorderBookshelvesScreen(
 
 @Composable
 fun BookshelfReorderContent(
-    reorderBooks: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
+    reorderBooks: List<Pair<Identifier.Book, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
     nestedScrollConnection: NestedScrollConnection,
     moveBook: (Int, Int) -> Unit,
 ) {
@@ -276,11 +277,11 @@ fun BookshelfReorderContent(
 
 @Composable
 fun BookshelfListReorderContent(
-    reorderBookshelfIds: List<Int>,
+    reorderBookshelfIds: List<Identifier.Bookshelf>,
     bookshelfList: List<BookshelfUiState>,
     nestedScrollConnection: NestedScrollConnection,
     moveBookshelf: (Int, Int) -> Unit,
-    onClickEditBookshelf: (Int) -> Unit
+    onClickEditBookshelf: (Identifier.Bookshelf) -> Unit
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     val bookshelfMap = bookshelfList.associateBy { it.id }

@@ -18,6 +18,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.utils.activityHiltViewModel
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,10 +33,11 @@ fun NavEntryScope.bookshelfHomeDestination(sharedTransitionScope: SharedTransiti
         val uiState =
             remember(navigator, bookshelfHomeViewModel, bookshelfNewTitle, bookshelfEditTitle) {
                 object : BookshelfHomeUiState by bookshelfHomeViewModel.uiState {
-                    override val enableReorderMode: () -> Unit = {
+                    override val enableReorderMode: () -> Unit = enableReorderMode@{
                         navigator.navigate(
                             Route.Main.Bookshelf.ReorderBooks(
                                 bookshelfHomeViewModel.uiState.selectedBookshelfId
+                                    ?: return@enableReorderMode
                             )
                         )
                     }
@@ -43,15 +45,15 @@ fun NavEntryScope.bookshelfHomeDestination(sharedTransitionScope: SharedTransiti
                         navigator.navigate(Route.Main.Bookshelf.ReorderBookshelves)
                     }
                     override val onCreate: () -> Unit = {
-                        navigator.navigateToBookshelfEditDestination(-1, bookshelfNewTitle)
+                        navigator.navigateToBookshelfEditDestination(null, bookshelfNewTitle)
                     }
-                    override val onEdit: (Int) -> Unit = { bookshelfId ->
+                    override val onEdit: (Identifier.Bookshelf) -> Unit = { bookshelfId ->
                         navigator.navigateToBookshelfEditDestination(
                             bookshelfId,
                             bookshelfEditTitle
                         )
                     }
-                    override val onBookClick: (String) -> Unit =
+                    override val onBookClick: (Identifier.Book) -> Unit =
                         navigator::navigateToBookDetailDestination
                     override val onRemove: () -> Unit = {
                         bookshelfHomeViewModel.removeSelectedBooks()
@@ -85,7 +87,7 @@ private fun NavEntryScope.addBookToBookshelfDialog() {
     overlayEntry<Route.Main.Bookshelf.AddBookToBookshelfDialog> { entry ->
         val navigator = LocalNavigator.current
         val viewModel = hiltViewModel<AddBookToBookshelfDialogViewModel>()
-        val dialogSelectedBookshelves = remember { mutableStateListOf<Int>() }
+        val dialogSelectedBookshelves = remember { mutableStateListOf<Identifier.Bookshelf>() }
         val allBookshelves by viewModel.allBookshelfFlow.collectAsStateWithLifecycle(emptyList<Bookshelf>())
         AddBookToBookshelfDialog(
             onDismissRequest = { navigator.popBackStack() },
@@ -103,6 +105,6 @@ private fun NavEntryScope.addBookToBookshelfDialog() {
     }
 }
 
-private fun Navigator.navigateToAddBookToBookshelfDialog(selectedBookIds: List<String>) {
+private fun Navigator.navigateToAddBookToBookshelfDialog(selectedBookIds: List<Identifier.Book>) {
     navigate(Route.Main.Bookshelf.AddBookToBookshelfDialog(selectedBookIds))
 }

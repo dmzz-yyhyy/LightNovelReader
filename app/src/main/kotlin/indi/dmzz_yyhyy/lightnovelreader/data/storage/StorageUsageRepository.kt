@@ -6,6 +6,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,7 +27,7 @@ class StorageUsageRepository @Inject constructor(
     }
 
     private val snapshotUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Data.StorageUsageSnapshot.path)
+        userDataRepository.userData(UserDataPath.Settings.Data.StorageUsageSnapshot)
     private val json = Json {
         ignoreUnknownKeys = true
     }
@@ -44,18 +45,18 @@ class StorageUsageRepository @Inject constructor(
             .associate { it.id to it.bytes }
 
         val volumeRows = storageStatsDao.getVolumeStorageRows()
-        val bookVolumeBytesMap = mutableMapOf<String, Long>()
-        val chapterToBookMap = mutableMapOf<String, String>()
+        val bookVolumeBytesMap = mutableMapOf<Identifier.Book, Long>()
+        val chapterToBookMap = mutableMapOf<Identifier.Chapter, Identifier.Book>()
         volumeRows.forEach { row ->
             bookVolumeBytesMap[row.bookId] =
                 (bookVolumeBytesMap[row.bookId] ?: 0L) + row.bytes
-            ListConverter.stringToStringList(row.chapterIdList)
-                .filter { it.isNotBlank() }
+            ListConverter.stringToChapterList(row.chapterIdList)
+
                 .forEach { chapterToBookMap[it] = row.bookId }
         }
 
         var orphanChapterInformationBytes = 0L
-        val bookChapterInfoBytesMap = mutableMapOf<String, Long>()
+        val bookChapterInfoBytesMap = mutableMapOf<Identifier.Book, Long>()
         storageStatsDao.getChapterInformationBytes().forEach { row ->
             val bookId = chapterToBookMap[row.id]
             if (bookId == null) {
@@ -67,7 +68,7 @@ class StorageUsageRepository @Inject constructor(
         }
 
         var orphanChapterContentBytes = 0L
-        val bookChapterContentBytesMap = mutableMapOf<String, Long>()
+        val bookChapterContentBytesMap = mutableMapOf<Identifier.Book, Long>()
         storageStatsDao.getChapterContentBytes().forEach { row ->
             val bookId = chapterToBookMap[row.id]
             if (bookId == null) {
@@ -78,7 +79,7 @@ class StorageUsageRepository @Inject constructor(
             }
         }
 
-        val bookIds = linkedSetOf<String>().apply {
+        val bookIds = linkedSetOf<Identifier.Book>().apply {
             addAll(bookInfoBytesMap.keys)
             addAll(bookVolumeBytesMap.keys)
             addAll(bookChapterInfoBytesMap.keys)
@@ -139,7 +140,7 @@ class StorageUsageRepository @Inject constructor(
     }
 
     suspend fun invalidateSnapshot() = withContext(Dispatchers.IO) {
-        userDataRepository.remove(UserDataPath.Settings.Data.StorageUsageSnapshot.path)
+        userDataRepository.remove(UserDataPath.Settings.Data.StorageUsageSnapshot)
     }
 
     private fun fileSize(file: File): Long {

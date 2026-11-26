@@ -15,18 +15,22 @@ interface DailyCountDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: DailyCountEntity)
 
-    @Query("SELECT * FROM daily_count WHERE date = :date")
-    suspend fun getByDate(date: LocalDate): DailyCountEntity?
+    @Query("SELECT * FROM daily_count WHERE date = :date AND source_namespace = :namespace")
+    suspend fun getByDate(date: LocalDate, namespace: String): DailyCountEntity?
 
-    @Query("SELECT * FROM daily_count WHERE date BETWEEN :start AND :end")
-    suspend fun getBetween(start: LocalDate, end: LocalDate): List<DailyCountEntity>
+    @Query("SELECT * FROM daily_count WHERE date BETWEEN :start AND :end AND source_namespace = :namespace")
+    suspend fun getBetween(
+        start: LocalDate,
+        end: LocalDate,
+        namespace: String
+    ): List<DailyCountEntity>
 
-    @Query("SELECT * FROM daily_count")
-    suspend fun getAll(): List<DailyCountEntity>
+    @Query("SELECT * FROM daily_count WHERE source_namespace = :namespace")
+    suspend fun getAll(namespace: String): List<DailyCountEntity>
 
-    @Query("SELECT * FROM daily_count WHERE date = :date")
-    suspend fun getEntity(date: LocalDate): DailyCountEntity?
+    @Query("SELECT * FROM daily_count WHERE date = :date AND source_namespace = :namespace")
+    suspend fun getEntity(date: LocalDate, namespace: String): DailyCountEntity?
 
-    @Query("DELETE FROM daily_count")
-    suspend fun clear()
+    @Query("DELETE FROM daily_count WHERE source_namespace = :namespace")
+    suspend fun clear(namespace: String)
 }

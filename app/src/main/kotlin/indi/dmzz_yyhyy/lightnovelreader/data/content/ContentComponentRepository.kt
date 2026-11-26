@@ -8,13 +8,13 @@ import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ImageComponentRen
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.ParagraphComponentRender
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjectorProvider
 import io.nightfish.lightnovelreader.api.content.ContentComponentRepositoryApi
-import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
-import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.content.component.ComponentRender
+import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
 import io.nightfish.lightnovelreader.api.content.component.data.ParagraphComponentData
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -60,11 +60,11 @@ class ContentComponentRepository @Inject constructor(
             } ?: listOf(ErrorContentComponentData("error to load components from json"))
 
     interface Registrar : ContentComponentRepositoryApi.Registrar {
-        override fun id(id: Identifier): RegisterBuilder
+        override fun id(id: Identifier.ContentComponent): RegisterBuilder
     }
 
     override val registrar = object : Registrar {
-        override fun id(id: Identifier) =
+        override fun id(id: Identifier.ContentComponent) =
             RegisterBuilder(
                 pluginInjectorProvider,
                 serializeMutableMap,
@@ -79,7 +79,7 @@ class ContentComponentRepository @Inject constructor(
         private val serializerMap: MutableMap<String, ComponentDataJsonElementSerializer<out AbstractContentComponentData>>,
         private val renderMap: MutableMap<String, AbstractContentComponentRender<*, *>>,
         private val dataKClassMap: MutableMap<String, KClass<out AbstractContentComponentData>>,
-        val id: Identifier
+        val id: Identifier.ContentComponent
     ) : ContentComponentRepositoryApi.RegisterBuilder {
         var componentRender: (() -> AbstractContentComponentRender<*, *>?)? = null
         var componentDataKClass: KClass<out AbstractContentComponentData>? = null

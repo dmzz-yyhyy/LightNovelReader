@@ -13,7 +13,7 @@ import io.nightfish.lightnovelreader.api.identifier.Identifier
  * @since Api 4
  */
 data class WebDataSourceItem(
-    val id: Identifier,
+    val id: Identifier.DataSource,
     val name: String,
     val provider: String,
 )

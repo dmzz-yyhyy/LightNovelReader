@@ -6,13 +6,14 @@ import com.github.michaelbull.result.map
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.TimeBarItem
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 fun generateTimeBarItems(
     recordList: List<BookRecord>,
-    colorMap: Map<String, Color>,
+    colorMap: Map<Identifier.Book, Color>,
     topLimit: Int = 8
 ): List<Flow<TimeBarItem>> {
 

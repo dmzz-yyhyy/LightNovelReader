@@ -4,27 +4,27 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupGroup
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupTable
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.JsonObjectConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serializer.JsonObjectSerializer
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
-@Serializable
 @TypeConverters(
     JsonObjectConverter::class
 )
 @Entity(tableName = "chapter_content")
+@BackupTable(BackupGroup.CACHE, "id", "chapter")
 data class ChapterContentEntity(
     @PrimaryKey
-    val id: String,
+    val id: Identifier.Chapter,
     val title: String,
-    @Serializable(JsonObjectSerializer::class)
     val content: JsonObject,
     @SerialName("lastChapter")
     @ColumnInfo(name = "lastChapter")
-    val prevChapter: String,
-    val nextChapter: String
+    val prevChapter: Identifier.Chapter?,
+    val nextChapter: Identifier.Chapter?
 ) : Mergeable<ChapterContentEntity> {
     override fun merge(new: ChapterContentEntity): ChapterContentEntity = new
 }

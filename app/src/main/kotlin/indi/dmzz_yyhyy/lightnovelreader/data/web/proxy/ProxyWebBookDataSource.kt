@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 
 interface ProxyWebBookDataSource : PriorityWebBookDataSource {
@@ -23,9 +24,9 @@ interface ProxyWebBookDataSource : PriorityWebBookDataSource {
     override val searchProvider get() = origin.searchProvider
     override val explorePageProvider get() = origin.explorePageProvider
     override suspend fun getCoverUriInVolume(
-        bookId: String,
+        bookId: Identifier.Book,
         volume: Volume,
-        volumeChapterContentMap: MutableMap<String, ChapterContent>,
+        volumeChapterContentMap: MutableMap<Identifier.Chapter, ChapterContent>,
         context: Context
     ): Uri? = origin.getCoverUriInVolume(bookId, volume, volumeChapterContentMap, context)
 }

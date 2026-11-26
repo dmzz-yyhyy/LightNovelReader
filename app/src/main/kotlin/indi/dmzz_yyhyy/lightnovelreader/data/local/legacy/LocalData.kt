@@ -1,24 +1,11 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.local.cbor
+package indi.dmzz_yyhyy.lightnovelreader.data.local.legacy
 
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterInformationEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.FormattingRuleEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserDataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeEntity
-import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDataIdentifierSerializer
-import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class LocalData(
-    @Serializable(LocalDataIdentifierSerializer::class)
-    val webBookDataSourceId: Identifier?,
+    @Serializable(LegacySourceIdSerializer::class)
+    val webBookDataSourceId: LegacySourceId?,
     val bookInformationEntities: List<BookInformationEntity>,
     val bookRecordEntities: List<BookRecordEntity>,
     val dailyCountEntities: List<DailyCountEntity>,

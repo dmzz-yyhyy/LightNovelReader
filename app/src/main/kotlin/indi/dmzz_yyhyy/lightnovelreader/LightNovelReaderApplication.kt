@@ -6,6 +6,7 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import dagger.hilt.android.HiltAndroidApp
+import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalDataManager
 import indi.dmzz_yyhyy.lightnovelreader.data.logging.LoggerRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.PluginManager
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.store.PluginUpdateCheckRepository
@@ -37,6 +38,9 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
     @Inject
     lateinit var matomoAnalytics: MatomoAnalytics
 
+    @Inject
+    lateinit var localDataManager: LocalDataManager
+
     override val workManagerConfiguration: Configuration
         get() =
             Configuration.Builder()
@@ -56,6 +60,7 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
         }
         // We have to ensure the plugin load before the activity start up, so we use run blocking here though it will block the main thread
         runBlocking {
+            localDataManager.migrateSourceArchives()
             pluginManager.initAllPlugin()
         }
         coroutineScope.launch(Dispatchers.IO) {
@@ -63,7 +68,7 @@ class LightNovelReaderApplication : Application(), Configuration.Provider {
             matomoAnalytics.trackAppLaunch()
             loggerRepository.startLogging()
             ProxyPool.enable =
-                userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path)
+                userDataRepository.userData(UserDataPath.Settings.Data.IsUseProxy)
                     .getOrDefault(false)
         }
         WorkManager.getInstance(this).cancelAllWork()

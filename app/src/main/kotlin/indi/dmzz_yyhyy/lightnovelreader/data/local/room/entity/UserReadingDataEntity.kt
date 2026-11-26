@@ -4,24 +4,24 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupGroup
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupTable
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ListConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDateTimeSerializer
-import kotlinx.serialization.Serializable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.time.LocalDateTime
 
-@Serializable
 @TypeConverters(
     ListConverter::class,
     LocalDateTimeConverter::class,
     ChapterReadingProgressMapConverter::class
 )
 @Entity(tableName = "user_reading_data")
+@BackupTable(BackupGroup.READING, "id", "book")
 data class UserReadingDataEntity(
     @PrimaryKey
-    val id: String,
-    @Serializable(LocalDateTimeSerializer::class)
+    val id: Identifier.Book,
     @ColumnInfo(name = "last_read_time")
     val lastReadTime: LocalDateTime,
     @ColumnInfo(name = "total_read_time")
@@ -29,13 +29,13 @@ data class UserReadingDataEntity(
     @ColumnInfo(name = "reading_progress")
     val readingProgress: Float,
     @ColumnInfo(name = "last_read_chapter_id")
-    val lastReadChapterId: String,
+    val lastReadChapterId: Identifier.Chapter?,
     @ColumnInfo(name = "last_read_chapter_title")
     val lastReadChapterTitle: String,
     @ColumnInfo(name = "current_chapter_reading_progress_map")
-    val currentChapterReadingProgressMap: Map<String, Float>,
+    val currentChapterReadingProgressMap: Map<Identifier.Chapter, Float>,
     @ColumnInfo(name = "max_chapter_reading_progress_map")
-    val maxChapterReadingProgressMap: Map<String, Float>
+    val maxChapterReadingProgressMap: Map<Identifier.Chapter, Float>
 ) : Mergeable<UserReadingDataEntity> {
     override fun merge(new: UserReadingDataEntity): UserReadingDataEntity = new.copy(
         lastReadTime = new.lastReadTime.coerceAtLeast(this.lastReadTime),

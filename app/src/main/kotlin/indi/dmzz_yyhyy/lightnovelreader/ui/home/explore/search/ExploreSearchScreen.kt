@@ -59,6 +59,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.addToBookshelfAction
 import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,14 +67,14 @@ fun ExploreSearchScreen(
     exploreUiState: ExploreUiState,
     exploreSearchUiState: ExploreSearchUiState,
     refresh: () -> Unit,
-    requestAddBookToBookshelf: (String) -> Unit,
+    requestAddBookToBookshelf: (Identifier.Book) -> Unit,
     onClickBack: () -> Unit,
     init: () -> Unit,
     onChangeSearchType: (String) -> Unit,
     onSearch: (String) -> Unit,
     onClickDeleteHistory: (String) -> Unit,
     onClickClearAllHistory: () -> Unit,
-    onClickBook: (String) -> Unit,
+    onClickBook: (Identifier.Book) -> Unit,
     updateSuggestions: (keyword: String) -> Unit
 ) {
     var searchKeyword by rememberSaveable { mutableStateOf("") }

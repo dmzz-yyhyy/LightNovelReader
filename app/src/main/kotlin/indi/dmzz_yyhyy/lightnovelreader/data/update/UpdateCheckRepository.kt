@@ -67,7 +67,7 @@ class UpdateCheckRepository @Inject constructor(
 
     init {
         coroutineScope.launch {
-            if (userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
+            if (userDataRepository.userData(UserDataPath.Settings.App.AutoCheckUpdate)
                     .getOrDefault(true)
             )
                 check()
@@ -84,13 +84,13 @@ class UpdateCheckRepository @Inject constructor(
         if (checkJob != null && checkJob!!.isActive) return
         checkJob = coroutineScope.launch {
             var updateChannelKey =
-                userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
+                userDataRepository.userData(UserDataPath.Settings.App.UpdateChannel)
                     .get() ?: MenuOptions.UpdateChannelOptions.DEVELOPMENT
             updateChannelKey = if (updateChannelKey == "CI") {
                 MenuOptions.UpdateChannelOptions.DEVELOPMENT
             } else updateChannelKey
             val distributionPlatform =
-                userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
+                userDataRepository.userData(UserDataPath.Settings.App.DistributionPlatform)
                     .get() ?: MenuOptions.UpdatePlatformOptions.LnrAPI
             Log.i(
                 "UpdateChecker",

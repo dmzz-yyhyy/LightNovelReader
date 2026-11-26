@@ -2,13 +2,15 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import kotlinx.serialization.Serializable
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupGroup
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupTable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
-@Serializable
 @Entity(tableName = "chapter_information")
+@BackupTable(BackupGroup.CACHE, "id", "chapter")
 data class ChapterInformationEntity(
     @PrimaryKey
-    val id: String,
+    val id: Identifier.Chapter,
     val title: String
 ) : Mergeable<ChapterInformationEntity> {
     override fun merge(new: ChapterInformationEntity): ChapterInformationEntity = new
