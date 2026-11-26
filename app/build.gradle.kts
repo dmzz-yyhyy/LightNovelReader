@@ -191,8 +191,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.cbor)
     // Swipe
     implementation(libs.swipe)
-    // Chart
-    implementation(libs.vico.compose.m3)
     // Potato Auto Proxy
     implementation(project(":proxy"))
     // Shimmer

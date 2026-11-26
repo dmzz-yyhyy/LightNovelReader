@@ -22,7 +22,6 @@ resilient = "2.0.0"
 runtime = "1.12.0"
 slf4jAndroid = "1.7.36"
 tinypinyin = "2.0.3"
-vico = "3.3.1"
 hilt = "2.60.1"
 androidXHilt = "1.4.0"
 coreKtx = "1.19.0"
@@ -86,7 +85,6 @@ reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reo
 resilient = { module = "io.github.santimattius.resilient:resilient", version.ref = "resilient" }
 slf4j-android = { module = "org.slf4j:slf4j-android", version.ref = "slf4jAndroid" }
 tinypinyin = { module = "me.majiajie:tinypinyin", version.ref = "tinypinyin" }
-vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 androidx-hilt-common = { module = "androidx.hilt:hilt-common", version.ref = "androidXHilt" }

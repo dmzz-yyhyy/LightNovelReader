@@ -35,9 +35,9 @@ import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.predefinedColors
 import indi.dmzz_yyhyy.lightnovelreader.utils.FileSizeUnit
 import indi.dmzz_yyhyy.lightnovelreader.utils.formatSize
+import indi.dmzz_yyhyy.lightnovelreader.utils.predefinedColors
 
 @Composable
 fun StorageOverviewContent(
