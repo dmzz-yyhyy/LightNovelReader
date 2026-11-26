@@ -9,20 +9,21 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 
 @Stable
 data class BookshelfUiState(
-    val id: Int,
+    val id: Identifier.Bookshelf,
     val name: String,
     val sortType: BookshelfSortType,
     val sortReversed: Boolean,
     val autoCache: Boolean,
     val systemUpdateReminder: Boolean,
-    val allBookFlows: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
-    val pinnedBookFlows: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
-    val updatedBookFlows: List<Pair<String, Flow<Result<BookshelfBookItem, WebRequestError>>>>
+    val allBookFlows: List<Pair<Identifier.Book, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
+    val pinnedBookFlows: List<Pair<Identifier.Book, Flow<Result<BookshelfBookItem, WebRequestError>>>>,
+    val updatedBookFlows: List<Pair<Identifier.Book, Flow<Result<BookshelfBookItem, WebRequestError>>>>
 )
 
 fun Bookshelf.toBookshelfUiState(

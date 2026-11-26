@@ -1,5 +1,6 @@
 package io.nightfish.lightnovelreader.api.bookshelf
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.time.LocalDateTime
 
 /**
@@ -12,8 +13,8 @@ import java.time.LocalDateTime
  * @since Api 2
  */
 data class BookshelfBookMetadata(
-    val id: String,
+    val id: Identifier.Book,
     val lastUpdate: LocalDateTime,
-    val bookShelfIds: List<Int>,
+    val bookShelfIds: List<Identifier.Bookshelf>,
 )
 

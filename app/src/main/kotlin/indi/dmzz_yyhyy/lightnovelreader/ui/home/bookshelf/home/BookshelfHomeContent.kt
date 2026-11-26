@@ -77,6 +77,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarSpacer
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -238,7 +239,7 @@ internal fun BookshelfHomeContent(
             }
 
             val selectedBookIdSet = uiState.selectedBookIds.toHashSet()
-            val onLongPress: (String) -> Unit = { bookId ->
+            val onLongPress: (Identifier.Book) -> Unit = { bookId ->
                 if (!uiState.selectMode) {
                     uiState.onEnableSelectMode()
                 }
@@ -307,20 +308,20 @@ internal fun BookshelfHomeContent(
 }
 
 private fun LazyListScope.bookshelfContent(
-    selectedBookIdSet: Set<String>,
+    selectedBookIdSet: Set<Identifier.Book>,
     titleHeight: Dp,
     shimmer: Shimmer,
     isSelectMode: Boolean,
-    onClickBook: (String) -> Unit,
-    onBookSelect: (String) -> Unit,
-    onLongPress: (String) -> Unit,
-    updatedBooks: List<Pair<String, Result<BookshelfBookItem, WebRequestError>?>>,
+    onClickBook: (Identifier.Book) -> Unit,
+    onBookSelect: (Identifier.Book) -> Unit,
+    onLongPress: (Identifier.Book) -> Unit,
+    updatedBooks: List<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>?>>,
     updatedExpanded: Boolean,
     onToggleUpdateExpand: () -> Unit,
-    pinnedBooks: List<Pair<String, Result<BookshelfBookItem, WebRequestError>?>>,
+    pinnedBooks: List<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>?>>,
     pinnedExpanded: Boolean,
     onTogglePinnedExpand: () -> Unit,
-    allBooks: List<Pair<String, Result<BookshelfBookItem, WebRequestError>?>>,
+    allBooks: List<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>?>>,
     allExpanded: Boolean,
     onToggleAllExpand: () -> Unit
 ) {
@@ -436,15 +437,15 @@ private fun LazyListScope.bookshelfContent(
 
 @Composable
 private fun BookshelfBookCard(
-    id: String,
+    id: Identifier.Book,
     bookshelfBookItem: Result<BookshelfBookItem, WebRequestError>?,
     selected: Boolean,
     selectMode: Boolean,
     titleHeight: Dp,
     shimmer: Shimmer,
-    onBookClick: (String) -> Unit,
-    onBookSelect: (String) -> Unit,
-    onLongPress: (String) -> Unit,
+    onBookClick: (Identifier.Book) -> Unit,
+    onBookSelect: (Identifier.Book) -> Unit,
+    onLongPress: (Identifier.Book) -> Unit,
 ) {
     Crossfade(
         targetState = bookshelfBookItem,
@@ -552,11 +553,11 @@ private fun CollapseHeader(
 }
 
 private fun sortBooks(
-    source: List<Pair<String, Result<BookshelfBookItem, WebRequestError>>>,
-    allBookIds: List<String>,
+    source: List<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>>>,
+    allBookIds: List<Identifier.Book>,
     sortType: BookshelfSortType,
     sortReversed: Boolean,
-): List<Pair<String, Result<BookshelfBookItem, WebRequestError>>> {
+): List<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>>> {
     val stableIndexMap = allBookIds.withIndex().associate { it.value to it.index }
     val locale = Locale.getDefault()
     val collator = Collator.getInstance(locale)
@@ -566,7 +567,7 @@ private fun sortBooks(
         }
 
         BookshelfSortType.Latest -> source.sortedWith(
-            compareByDescending<Pair<String, Result<BookshelfBookItem, WebRequestError>>> { pair ->
+            compareByDescending<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>>> { pair ->
                 pair.second.map { it.bookInformation.lastUpdated }.get()
             }.thenBy { stableIndexMap[it.first] ?: Int.MAX_VALUE }
         )
@@ -589,7 +590,7 @@ private fun sortBooks(
         )
 
         BookshelfSortType.WordCount -> source.sortedWith(
-            compareByDescending<Pair<String, Result<BookshelfBookItem, WebRequestError>>> { pair ->
+            compareByDescending<Pair<Identifier.Book, Result<BookshelfBookItem, WebRequestError>>> { pair ->
                 pair.second.map { it.bookInformation.wordCount.count }.getOrElse { 0 }
             }.thenBy { stableIndexMap[it.first] ?: Int.MAX_VALUE }
         )

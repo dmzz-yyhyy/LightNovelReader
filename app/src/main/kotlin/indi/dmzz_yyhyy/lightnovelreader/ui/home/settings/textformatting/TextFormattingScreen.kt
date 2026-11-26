@@ -53,11 +53,12 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShi
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun TextFormattingScreen(
-    onClickGroup: (String) -> Unit,
+    onClickGroup: (Identifier.Book) -> Unit,
     onClickBack: () -> Unit,
     groups: List<FormattingGroup>
 ) {
@@ -71,7 +72,7 @@ fun TextFormattingScreen(
             )
         }
     ) { paddingValues ->
-        val rules = groups.filter { it.id.isNotBlank() }
+        val rules = groups.filter { it.id != Identifier.ALL_BOOKS }
         if (rules.isEmpty()) {
             Column(
                 modifier = Modifier
@@ -79,8 +80,8 @@ fun TextFormattingScreen(
                     .fillMaxSize()
             ) {
                 GlobalRulesGroup(
-                    ruleCount = groups.firstOrNull { it.id.isEmpty() }?.size ?: 0,
-                    onClick = { onClickGroup("") }
+                    ruleCount = groups.firstOrNull { it.id == Identifier.ALL_BOOKS }?.size ?: 0,
+                    onClick = { onClickGroup(Identifier.ALL_BOOKS) }
                 )
                 EmptyPage(
                     modifier = Modifier.weight(1f),
@@ -95,8 +96,8 @@ fun TextFormattingScreen(
             ) {
                 item {
                     GlobalRulesGroup(
-                        ruleCount = groups.firstOrNull { it.id.isEmpty() }?.size ?: 0,
-                        onClick = { onClickGroup("") }
+                        ruleCount = groups.firstOrNull { it.id == Identifier.ALL_BOOKS }?.size ?: 0,
+                        onClick = { onClickGroup(Identifier.ALL_BOOKS) }
                     )
                 }
                 item {
@@ -187,7 +188,7 @@ private fun GlobalRulesGroup(
 
 @Composable
 private fun Group(
-    onClickGroup: (String) -> Unit,
+    onClickGroup: (Identifier.Book) -> Unit,
     formattingGroup: FormattingGroup,
     bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>
 ) {
@@ -323,15 +324,26 @@ private fun FormattingBookSkeleton() {
         modifier = Modifier.shimmer(shimmer),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(width = 60.dp, height = 87.dp).background(baseColor, RoundedCornerShape(8.dp)))
+        Box(Modifier
+            .size(width = 60.dp, height = 87.dp)
+            .background(baseColor, RoundedCornerShape(8.dp)))
         Spacer(Modifier.width(12.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(Modifier.fillMaxWidth(0.85f).height(24.dp).background(baseColor, cornerShape))
-            Box(Modifier.fillMaxWidth(0.4f).height(16.dp).background(baseColor, cornerShape))
-            Box(Modifier.fillMaxWidth(0.3f).height(16.dp).background(baseColor, cornerShape))
+            Box(Modifier
+                .fillMaxWidth(0.85f)
+                .height(24.dp)
+                .background(baseColor, cornerShape))
+            Box(Modifier
+                .fillMaxWidth(0.4f)
+                .height(16.dp)
+                .background(baseColor, cornerShape))
+            Box(Modifier
+                .fillMaxWidth(0.3f)
+                .height(16.dp)
+                .background(baseColor, cornerShape))
         }
     }
 }

@@ -1,9 +1,10 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.web
 
 import dalvik.system.PathClassLoader
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.LightNovelReaderDatabase
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DataSourceEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.plugin.injector.PluginInjector
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import indi.dmzz_yyhyy.lightnovelreader.utils.convertOldId
 import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
@@ -15,9 +16,9 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class WebBookDataSourceManager @Inject constructor(
+    private val database: LightNovelReaderDatabase,
     val userDataRepository: UserDataRepository
 ) : WebBookDataSourceManagerApi {
     private val _webDataSourceItems = mutableListOf<WebDataSourceItem>()
@@ -31,13 +32,15 @@ class WebBookDataSourceManager @Inject constructor(
         webBookDataSource: WebBookDataSource,
         webDataSourceItem: WebDataSourceItem
     ) {
+        require(webDataSourceItem.id == webBookDataSource.id)
         if (_webDataSourceItems.any { it.id == webDataSourceItem.id }) return
+        runBlocking { database.dataSourceDao().register(DataSourceEntity(webBookDataSource.id)) }
         _webDataSourceItems.add(webDataSourceItem)
         webBookDataSources.add(webBookDataSource)
         onWebDataSourceListChange()
     }
 
-    override fun unregisterWebDataSource(webDataSourceId: Identifier) {
+    override fun unregisterWebDataSource(webDataSourceId: Identifier.DataSource) {
         _webDataSourceItems.removeAll { it.id == webDataSourceId }
         webBookDataSources.removeAll { it.id == webDataSourceId }
         onWebDataSourceListChange()
@@ -49,6 +52,7 @@ class WebBookDataSourceManager @Inject constructor(
         classLoader: PathClassLoader,
         injector: PluginInjector,
         packageName: String,
+        namespace: String,
         webDataSourceClassNames: List<String>
     ) {
         val items = mutableListOf<WebDataSourceItem>()
@@ -57,7 +61,10 @@ class WebBookDataSourceManager @Inject constructor(
                 runCatching { classLoader.loadClass(className) }.getOrNull() ?: return@forEach
             if (!WebBookDataSource::class.java.isAssignableFrom(clazz)) return@forEach
             val instance = injector.provide<WebBookDataSource>(clazz)
-            if (instance is WebBookDataSource) items.add(loadWebDataSourceClass(instance))
+            if (instance is WebBookDataSource) {
+                require(instance.id.namespace == namespace) { "Datasource namespace must match plugin namespace" }
+                items.add(loadWebDataSourceClass(instance))
+            }
         }
         webDataSourceItemListMap[packageName] = items
     }
@@ -101,9 +108,9 @@ class WebBookDataSourceManager @Inject constructor(
 
     fun onWebDataSourceListChange() = runBlocking {
         val webDataSourcesId = userDataRepository
-            .stringUserData(UserDataPath.Settings.Data.WebDataSourceId.path)
+            .userData(UserDataPath.Settings.Data.WebDataSourceId)
             .get()
-            ?.convertOldId() ?: "Wenku8".ofId()
+            ?: "Wenku8".ofId(Identifier::DataSource)
         mutableWebDataSourceProvider.update(
             webBookDataSources
                 .find { it.id == webDataSourcesId }

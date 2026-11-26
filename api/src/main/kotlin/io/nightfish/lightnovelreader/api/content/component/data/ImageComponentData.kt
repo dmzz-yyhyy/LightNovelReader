@@ -3,6 +3,7 @@ package io.nightfish.lightnovelreader.api.content.component.data
 import android.content.Context
 import android.net.Uri
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.identifier.ofAppId
 import io.nightfish.lightnovelreader.api.serializer.UriSerializer
 import kotlinx.serialization.Serializable
@@ -27,7 +28,7 @@ data class ImageComponentData(
     val uri: Uri
 ) : AbstractContentComponentData() {
 
-    override val id = Companion.id
+    override val id: Identifier.ContentComponent = Companion.id
     override fun toJsonElement(): JsonElement = Json.encodeToJsonElement(this)
 
     override fun toHtmlElement(context: Context): Element =
@@ -44,7 +45,7 @@ data class ImageComponentData(
      */
     companion object {
         /** 图片组件的唯一标识字符串 */
-        val id = "image".ofAppId()
+        val id: Identifier.ContentComponent = "image".ofAppId(Identifier::ContentComponent)
 
         /** 默认JSON序列化器 */
         val jsonSerializer = object : ComponentDataJsonElementSerializer<ImageComponentData> {

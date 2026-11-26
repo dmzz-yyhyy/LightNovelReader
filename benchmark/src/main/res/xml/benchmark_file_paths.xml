@@ -3,4 +3,7 @@
     <cache-path
         name="plugin_fixtures"
         path="plugin-fixtures/" />
+    <cache-path
+        name="migration_fixtures"
+        path="migration-fixtures/" />
 </paths>

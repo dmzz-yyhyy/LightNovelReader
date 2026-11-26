@@ -1,4 +1,4 @@
-package indi.dmzz_yyhyy.lightnovelreader.data.local.cbor
+package indi.dmzz_yyhyy.lightnovelreader.data.local.legacy
 
 import kotlinx.serialization.Serializable
 

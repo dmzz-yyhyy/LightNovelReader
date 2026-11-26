@@ -180,6 +180,7 @@ dependencies {
     // Room
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
+    ksp(project(":app-compiler"))
     implementation(libs.room.ktx)
     // Splash API
     // WorkManager
@@ -250,3 +251,5 @@ tasks.register("printVersionCode") {
         println(android.defaultConfig.versionCode)
     }
 }
+
+ksp { arg("room.schemaLocation", "$projectDir/schemas") }

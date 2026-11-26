@@ -1,6 +1,7 @@
 package io.nightfish.lightnovelreader.api.book
 
 import androidx.compose.runtime.Stable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -16,11 +17,11 @@ import kotlinx.serialization.json.JsonObject
  */
 @Stable
 data class ChapterContent(
-    val id: String,
+    val id: Identifier.Chapter,
     val title: String,
     val content: JsonObject,
-    val prevChapter: String? = null,
-    val nextChapter: String? = null
+    val prevChapter: Identifier.Chapter? = null,
+    val nextChapter: Identifier.Chapter? = null
 ) {
 
     /**

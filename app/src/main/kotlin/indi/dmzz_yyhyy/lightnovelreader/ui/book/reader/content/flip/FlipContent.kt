@@ -45,9 +45,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.LayoutDirection
+import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.LocalVerticalTextSelection
 import indi.dmzz_yyhyy.lightnovelreader.data.content.component.VerticalTextSelection
-import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterComponent
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.ChapterLayoutWindow
@@ -56,19 +56,21 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.chapterOverscroll
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.content.isVertical
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
 private data class FlipPage(
-    val chapterId: String,
+    val chapterId: Identifier.Chapter,
     val index: Int,
     val count: Int,
     val components: List<MeasuredComponent>,
 ) {
-    val key = "${chapterId.length}:$chapterId:$index"
+    val key = "${chapterId.toString().length}:$chapterId:$index"
     val progress = if (count == 1) 1f else index.toFloat() / (count - 1)
 }
 
@@ -80,7 +82,7 @@ internal fun FlipContent(
     entryProgress: Float,
     onAdjacent: (Int) -> Unit,
     onToggleImmersive: () -> Unit,
-    onReadingProgress: (String, Float, Boolean) -> Unit,
+    onReadingProgress: (Identifier.Chapter, Float, Boolean) -> Unit,
 ) {
     val chapters = window.chapters
     val pages = remember(chapters) {
@@ -116,8 +118,8 @@ internal fun FlipContent(
         snapshotFlow { pager.isScrollInProgress to pager.currentPage }.collect { selection.clear() }
     }
     var currentChapterId by remember { mutableStateOf(active.chapterId) }
-    var awaitingChapter by remember { mutableStateOf<String?>(active.chapterId) }
-    var requestedChapter by remember { mutableStateOf<String?>(null) }
+    var awaitingChapter by remember { mutableStateOf<Identifier.Chapter?>(active.chapterId) }
+    var requestedChapter by remember { mutableStateOf<Identifier.Chapter?>(null) }
     var edgeRequest by remember { mutableStateOf<Int?>(null) }
     val animated = settingState.flipAnime != MenuOptions.FlipAnimationOptions.None
     val localRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
@@ -253,7 +255,7 @@ internal fun FlipContent(
                         if (interval > 0) {
                             volumeRepeat = scope.launch {
                                 while (true) {
-                                    delay(interval)
+                                    delay(interval.milliseconds)
                                     requests.trySend(direction)
                                 }
                             }
@@ -261,10 +263,12 @@ internal fun FlipContent(
                     }
                     true
                 }
+
                 KeyEventType.KeyUp -> {
                     volumeRepeat?.cancel()
                     true
                 }
+
                 else -> false
             }
         }
@@ -302,15 +306,16 @@ internal fun FlipContent(
             .testTag("flip-chapter-${active.chapterId}")
             .semantics {
                 testTagsAsResourceId = true
-                val restoring = awaitingChapter != null || currentPage?.chapterId != active.chapterId
+                val restoring =
+                    awaitingChapter != null || currentPage?.chapterId != active.chapterId
                 val direction = when (requestedChapter) {
                     null -> 0
                     window.previousId -> -1
                     else -> 1
                 }
                 contentDescription = "flip-state-page=${currentPage?.index ?: 0};" +
-                    "count=${active.pages.size};end=true;" +
-                    "animating=${pager.isScrollInProgress || restoring};direction=$direction"
+                        "count=${active.pages.size};end=true;" +
+                        "animating=${pager.isScrollInProgress || restoring};direction=$direction"
             },
         flingBehavior = flingBehavior,
         reverseLayout = rtl != localRtl,
@@ -318,11 +323,13 @@ internal fun FlipContent(
         key = { displayedPages[it].key },
     ) { index ->
         val page = displayedPages[index]
-        val modifier = Modifier.fillMaxSize().then(
-            if (currentPage?.key == page.key) {
-                Modifier.testTag("flip-page-${page.index}-${page.chapterId.hashCode()}")
-            } else Modifier
-        )
+        val modifier = Modifier
+            .fillMaxSize()
+            .then(
+                if (currentPage?.key == page.key) {
+                    Modifier.testTag("flip-page-${page.index}-${page.chapterId.hashCode()}")
+                } else Modifier
+            )
         if (page.components.isEmpty()) {
             Box(modifier, contentAlignment = Alignment.Center) {
                 Text(

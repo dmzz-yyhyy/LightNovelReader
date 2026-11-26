@@ -21,6 +21,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
 import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
@@ -35,8 +36,8 @@ class CheckUpdateWork @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         if (appContext !is LightNovelReaderApplication) return Result.failure()
-        val reminderBookMap = mutableMapOf<String, BookInformation>()
-        val needRemindBookIdSet = mutableSetOf<String>()
+        val reminderBookMap = mutableMapOf<Identifier.Book, BookInformation>()
+        val needRemindBookIdSet = mutableSetOf<Identifier.Book>()
         bookshelfRepository
             .getAllBookshelves()
             .filter { it.systemUpdateReminder }

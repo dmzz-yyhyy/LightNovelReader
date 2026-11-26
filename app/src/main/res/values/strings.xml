@@ -64,8 +64,8 @@
     <string name="import_merge">Merge</string>
     <string name="import_merge_desc">Merge into existing data</string>
     <string name="import_overwrite">Overwrite</string>
-    <string name="import_overwrite_desc">Clear all data, then import the selected data</string>
-    <string name="import_overwrite_warning">Choosing “Overwrite” will erase ALL local data, including bookshelves, reading history, cache, and settings, regardless of whether the imported file contains them. This action cannot be undone.</string>
+    <string name="import_overwrite_desc">Clear data for the sources included in the backup, then import</string>
+    <string name="import_overwrite_warning">Overwrite clears all data belonging to the sources included in the backup, including categories that were not exported, then imports the backup. Other sources are retained. Global settings and shared rules will be merged. This action cannot be undone.</string>
     <string name="import_overwrite_confirm">Confirm Overwrite</string>
     <string name="import_back">Back</string>
     <string name="import_in_progress_title">Importing…</string>

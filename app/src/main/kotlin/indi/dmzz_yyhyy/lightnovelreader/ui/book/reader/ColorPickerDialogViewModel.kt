@@ -5,7 +5,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
-import io.nightfish.lightnovelreader.api.userdata.ColorUserData
+import io.nightfish.lightnovelreader.api.userdata.UserData
+import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -16,10 +17,10 @@ import javax.inject.Inject
 class ColorPickerDialogViewModel @Inject constructor(
     val userDataRepository: UserDataRepository
 ) : ViewModel() {
-    private var colorUserData: ColorUserData? = null
+    private var colorUserData: UserData<Color>? = null
 
-    fun init(colorUserDataPath: String): Flow<Color?> {
-        colorUserData = userDataRepository.colorUserData(colorUserDataPath)
+    fun init(colorUserDataPath: UserDataPath<Color>): Flow<Color?> {
+        colorUserData = userDataRepository.userData(colorUserDataPath)
         return colorUserData!!.getFlow()
     }
 

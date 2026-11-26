@@ -33,12 +33,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextIndent
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.github.michaelbull.result.Err
@@ -59,6 +59,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.content.builder.ParagraphBuilder
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
 import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
@@ -71,8 +72,8 @@ internal data class ChapterLayoutWindow(
     val previous: ChapterLayout?,
     val current: ChapterLayout,
     val next: ChapterLayout?,
-    val previousId: String?,
-    val nextId: String?,
+    val previousId: Identifier.Chapter?,
+    val nextId: Identifier.Chapter?,
 ) {
     val chapters get() = listOfNotNull(previous, current, next)
 }
@@ -86,7 +87,7 @@ fun ChapterContent(
     changeIsImmersive: () -> Unit,
     onClickPrevChapter: () -> Unit,
     onClickNextChapter: () -> Unit,
-    onReadingProgress: (chapterId: String, progress: Float, settled: Boolean) -> Unit,
+    onReadingProgress: (chapterId: Identifier.Chapter, progress: Float, settled: Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -101,7 +102,9 @@ fun ChapterContent(
     val next = uiState.nextChapterContent?.get()
     val volumes = uiState.bookVolumes?.get()
 
-    BoxWithConstraints(modifier.fillMaxSize().padding(paddingValues)) {
+    BoxWithConstraints(modifier
+        .fillMaxSize()
+        .padding(paddingValues)) {
         val viewport = IntSize(constraints.maxWidth, constraints.maxHeight)
         val layouter = remember(bookId, flip, viewport, render, context, density, style, baseStyle) {
             ChapterLayouter(render, viewport, context, density, style, baseStyle, flip)
@@ -182,7 +185,9 @@ fun ChapterContent(
             }
         }
         AnimatedVisibility(!ready && error == null, enter = fadeIn(), exit = fadeOut()) {
-            Box(Modifier.fillMaxSize().background(readerBackgroundColor(settingState).copy(alpha = .92f))) {
+            Box(Modifier
+                .fillMaxSize()
+                .background(readerBackgroundColor(settingState).copy(alpha = .92f))) {
                 ChapterContentLoading(mode, style)
             }
         }
@@ -234,7 +239,7 @@ private fun rememberChapterNavigation(
 internal fun Modifier.chapterOverscroll(
     mode: WriteMode,
     horizontal: Boolean,
-    chapterId: String,
+    chapterId: Identifier.Chapter,
     onAdjacent: (Int) -> Unit,
 ): Modifier {
     val rtl = if (mode.isVertical) mode == WriteMode.VerticalRTL
@@ -277,7 +282,9 @@ internal fun Modifier.chapterOverscroll(
 private fun ChapterContentLoading(mode: WriteMode, style: ReaderStyle) {
     val shimmer = rememberLoadingSkeletonShimmer()
     val color = MaterialTheme.colorScheme.surfaceContainerHighest
-    Canvas(Modifier.fillMaxSize().shimmer(shimmer)) {
+    Canvas(Modifier
+        .fillMaxSize()
+        .shimmer(shimmer)) {
         val main = if (mode.isVertical) size.width else size.height
         val cross = if (mode.isVertical) size.height else size.width
         val fontSize = style.fontSize.toPx()

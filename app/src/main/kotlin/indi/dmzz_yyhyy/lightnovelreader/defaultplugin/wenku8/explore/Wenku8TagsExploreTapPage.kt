@@ -4,6 +4,7 @@ import androidx.core.net.toUri
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -62,7 +63,7 @@ class Wenku8TagsExploreTapPage(
             title = title,
             bookList = (0..5).map {
                 ExploreDisplayBook(
-                    id = idlList[it],
+                    id = Identifier.Book("lightnovelreader.Wenku8", idlList[it]),
                     title = titleList[it],
                     author = authorList[it],
                     coverUri = coverUrlList[it].toUri(),

@@ -25,7 +25,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
-
+import android.R as AndroidR
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +64,7 @@ fun ExploreScreen(
                         description = stringResource(R.string.offline_desc)
                     ) {
                         val networkErrorMessage = stringResource(R.string.network_error_message)
-                        val ok = stringResource(android.R.string.ok)
+                        val ok = stringResource(AndroidR.string.ok)
                         IconButton({
                             showSnackbar(
                                 coroutineScope = scope,

@@ -10,7 +10,7 @@ import io.nightfish.lightnovelreader.api.image.ImageSize
 import io.nightfish.lightnovelreader.api.image.ImageTransformation
 
 class Coil3Transformation(
-    val id: Identifier,
+    val id: Identifier.ImageTransformation,
     val uri: Uri,
     val transformation: ImageTransformation
 ) : Transformation() {

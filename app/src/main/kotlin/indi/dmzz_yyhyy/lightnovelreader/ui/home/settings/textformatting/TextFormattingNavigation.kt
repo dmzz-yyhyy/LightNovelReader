@@ -3,13 +3,14 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.EditTextFormattingRuleBottomSheet
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.navigateToSettingsTextFormattingRulesDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.textformatting.rules.settingsTextFormattingRulesDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 fun NavEntryScope.editTextFormattingRuleDialog() {
     overlayEntry<Route.Main.EditTextFormattingRuleDialog> {
@@ -39,7 +40,7 @@ fun NavEntryScope.editTextFormattingRuleDialog() {
     }
 }
 
-fun Navigator.navigateToEditTextFormattingRuleDialog(bookId: String, ruleId: Int) {
+fun Navigator.navigateToEditTextFormattingRuleDialog(bookId: Identifier.Book, ruleId: Int) {
     navigate(Route.Main.EditTextFormattingRuleDialog(bookId, ruleId))
 }
 

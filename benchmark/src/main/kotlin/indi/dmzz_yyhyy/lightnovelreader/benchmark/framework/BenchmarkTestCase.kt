@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.benchmark.framework
 
+import android.graphics.Color
 import android.graphics.Rect
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
@@ -364,9 +365,9 @@ abstract class BenchmarkTestCase {
         for (y in top until bottom step 8) {
             for (x in left until right step 8) {
                 val pixel = screenshot.getPixel(x, y)
-                red += android.graphics.Color.red(pixel)
-                green += android.graphics.Color.green(pixel)
-                blue += android.graphics.Color.blue(pixel)
+                red += Color.red(pixel)
+                green += Color.green(pixel)
+                blue += Color.blue(pixel)
                 samples++
             }
         }

@@ -40,11 +40,11 @@ interface WebBookDataSource {
     val cache: Cache? get() = null
 
     /**
-     * 数据源的唯一整数标识
+     * 数据源的唯一标识
      *
      * @since Api 4
      */
-    val id: Identifier
+    val id: Identifier.DataSource
 
     /**
      * 当数据源被加载时调用
@@ -110,7 +110,7 @@ interface WebBookDataSource {
      *
      * @since Api 4
      */
-    suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError>
+    suspend fun getBookInformation(id: Identifier.Book): Result<BookInformation, WebRequestError>
 
     /**
      * 获取书本卷目录
@@ -123,7 +123,7 @@ interface WebBookDataSource {
      *
      * @since Api 4
      */
-    suspend fun getBookVolumes(id: String): Result<BookVolumes, WebRequestError>
+    suspend fun getBookVolumes(id: Identifier.Book): Result<BookVolumes, WebRequestError>
 
     /**
      * 获取章节内容
@@ -138,8 +138,8 @@ interface WebBookDataSource {
      * @since Api 4
      */
     suspend fun getChapterContent(
-        chapterId: String,
-        bookId: String
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book
     ): Result<ChapterContent, WebRequestError>
 
     /**
@@ -166,9 +166,9 @@ interface WebBookDataSource {
      * @since Api 2
      */
     suspend fun getCoverUriInVolume(
-        bookId: String,
+        bookId: Identifier.Book,
         volume: Volume,
-        volumeChapterContentMap: MutableMap<String, ChapterContent>,
+        volumeChapterContentMap: MutableMap<Identifier.Chapter, ChapterContent>,
         context: Context
     ): Uri? = null
 }

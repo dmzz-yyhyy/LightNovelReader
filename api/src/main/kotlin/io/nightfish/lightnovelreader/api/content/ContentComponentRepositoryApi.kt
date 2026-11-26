@@ -1,8 +1,8 @@
 package io.nightfish.lightnovelreader.api.content
 
-import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlin.reflect.KClass
 
@@ -81,7 +81,7 @@ interface ContentComponentRepositoryApi {
          *
          * @since Api 4
          */
-        fun id(id: Identifier): RegisterBuilder
+        fun id(id: Identifier.ContentComponent): RegisterBuilder
     }
 
     /**

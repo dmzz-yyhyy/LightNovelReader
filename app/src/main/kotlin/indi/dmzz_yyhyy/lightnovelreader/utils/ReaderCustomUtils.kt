@@ -26,7 +26,7 @@ import coil3.size.Scale
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
-import io.nightfish.lightnovelreader.api.userdata.UriUserData
+import io.nightfish.lightnovelreader.api.userdata.UserData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,7 +51,7 @@ fun loadReaderFontFamilySafe(uri: Uri): FontFamily? {
 
 @Composable
 fun rememberReaderFontFamily(
-    fontFamilyUriUserData: UriUserData,
+    fontFamilyUriUserData: UserData<Uri>,
 ): FontFamily {
     val snackbarScope = rememberCoroutineScope()
     val uri by fontFamilyUriUserData.getFlowWithDefault(Uri.EMPTY)

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PluginMetadata(
     val packageName: String,
+    val namespace: String = packageName,
     val name: String,
     val version: Int,
     val versionName: String,
@@ -20,6 +21,7 @@ data class PluginMetadata(
         fun parse(plugin: Plugin, packageName: String, hasSignature: Boolean) =
             PluginMetadata(
                 packageName = packageName,
+                namespace = plugin.namespace,
                 name = plugin.name,
                 version = plugin.version,
                 versionName = plugin.versionName,

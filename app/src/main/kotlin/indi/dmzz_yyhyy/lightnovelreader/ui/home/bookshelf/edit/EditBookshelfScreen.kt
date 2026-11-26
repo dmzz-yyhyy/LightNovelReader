@@ -34,26 +34,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
-import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
-import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
-import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions.BookshelfSortTypeOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalClaimSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditBookshelfScreen(
     title: String,
-    bookshelfId: Int,
+    bookshelfId: Identifier.Bookshelf?,
     bookshelf: Bookshelf,
-    init: (Int) -> Unit,
+    init: (Identifier.Bookshelf?) -> Unit,
     onClickBack: () -> Unit,
     onClickSave: () -> Unit,
-    onClickDelete: (Int) -> Unit,
+    onClickDelete: (Identifier.Bookshelf) -> Unit,
     onNameChange: (String) -> Unit,
     onSortTypeChange: (BookshelfSortType) -> Unit,
     onAutoCacheChange: (Boolean) -> Unit,
@@ -164,7 +165,7 @@ fun EditBookshelfScreen(
                     onCheckedChange = onSystemUpdateReminderChange
                 )
             }
-            if (bookshelfId >= 0) {
+            if (bookshelfId != null) {
                 item {
                     SettingsClickableEntry(
                         painter = painterResource(R.drawable.delete_forever_24px),

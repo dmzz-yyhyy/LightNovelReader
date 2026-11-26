@@ -3,11 +3,12 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.bookmanager
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 data class LocalBookItem(
-    val id: String,
+    val id: Identifier.Book,
     val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>,
     val size: Long,
     val chapterCount: Int,

@@ -178,27 +178,44 @@ private fun verticalSelectionModifier(
                 val point = if (handle != null) down else awaitLongPressOrCancellation(down.id)
                     ?: return@awaitEachGesture
                 if (handle == null) {
-                    val offset = currentLayout.offsetAt(point.position, width, orientation, nearest = false)
-                        ?: return@awaitEachGesture
+                    val offset =
+                        currentLayout.offsetAt(point.position, width, orientation, nearest = false)
+                            ?: return@awaitEachGesture
                     selectWord(offset)
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
                 val initial = range
                 val grabbedOffset = when (handle) {
-                    true -> handles!!.first - down.position
-                    false -> handles!!.second - down.position
+                    true -> handles.first - down.position
+                    false -> handles.second - down.position
                     null -> Offset.Zero
                 }
                 point.consume()
                 dragging = true
                 try {
                     consumeSelectionDrag(point.id) { position ->
-                        val offset = currentLayout.offsetAt(position + grabbedOffset, width, orientation, nearest = true)
+                        val offset = currentLayout.offsetAt(
+                            position + grabbedOffset,
+                            width,
+                            orientation,
+                            nearest = true
+                        )
                             ?: return@consumeSelectionDrag
                         range = when (handle) {
-                            true -> if (offset < initial.end) TextRange(offset, initial.end) else range
-                            false -> if (offset > initial.start) TextRange(initial.start, offset) else range
-                            null -> TextRange(minOf(initial.start, offset), maxOf(initial.end, offset))
+                            true -> if (offset < initial.end) TextRange(
+                                offset,
+                                initial.end
+                            ) else range
+
+                            false -> if (offset > initial.start) TextRange(
+                                initial.start,
+                                offset
+                            ) else range
+
+                            null -> TextRange(
+                                minOf(initial.start, offset),
+                                maxOf(initial.end, offset)
+                            )
                         }
                     }
                 } finally {

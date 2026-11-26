@@ -1,5 +1,6 @@
 package io.nightfish.lightnovelreader.api.image
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.identifier.ofAppId
 
 /**
@@ -8,7 +9,7 @@ import io.nightfish.lightnovelreader.api.identifier.ofAppId
  * @since Api 4
  */
 object ImagePostProcessingPipeline {
-    private fun ofId(id: String) = "image_post_processing_pipeline:$id".ofAppId()
+    private fun ofId(id: String) = id.ofAppId(Identifier::ImagePipeline)
 
     /**
      * 阅读器图片控件与图片浏览页面所使用的后处理器管道

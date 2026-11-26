@@ -24,3 +24,5 @@ local.properties
 /compiler/build/**
 /build/**
 /artifacts/
+/ktor-browser/build/**
+/app-compiler/build/**

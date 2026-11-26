@@ -30,14 +30,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.shimmer
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
+import com.valentinilk.shimmer.shimmer
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.rememberLoadingSkeletonShimmer
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.BookStack
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsCard
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.StatsDetailedUiState
@@ -45,6 +45,7 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.detailed.currentDa
 import indi.dmzz_yyhyy.lightnovelreader.utils.stats.generateTimeBarItems
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
@@ -63,7 +64,7 @@ val predefinedColors = listOf(
 
 private fun assignColors(
     records: List<BookRecord>
-): Map<String, Color> {
+): Map<Identifier.Book, Color> {
     return records
         .groupBy { it.bookId }
         .mapValues { (_, list) -> list.sumOf { it.seconds } }
@@ -84,9 +85,9 @@ private fun assignColors(
  * @return startedBooks/finishedBooks 在日期范围内的 BookId 列表
  */
 private fun getBooksInRange(
-    bookDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>,
+    bookDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>,
     dateRange: ClosedRange<LocalDate>
-): List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> {
+): List<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>> {
     return bookDateMap
         .filterValues { it in dateRange }
         .toList()
@@ -100,7 +101,7 @@ private fun getBooksInRange(
 @Composable
 private fun BookActivitySection(
     titleResId: Int,
-    books: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>,
+    books: List<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>>,
     modifier: Modifier = Modifier
 ) {
     if (books.isEmpty()) return
@@ -168,7 +169,9 @@ private fun BookActivitySection(
 private fun StatsCardBookTitleSkeleton() {
     val shimmer = rememberLoadingSkeletonShimmer()
     Box(
-        Modifier.fillMaxWidth(0.8f).height(20.dp)
+        Modifier
+            .fillMaxWidth(0.8f)
+            .height(20.dp)
             .shimmer(shimmer)
             .background(colorScheme.surfaceContainerLow, RoundedCornerShape(4.dp))
     )

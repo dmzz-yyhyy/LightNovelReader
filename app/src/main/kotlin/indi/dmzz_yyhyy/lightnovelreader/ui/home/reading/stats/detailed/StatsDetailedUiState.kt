@@ -9,6 +9,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.statistics.BookRecord
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.Count
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -20,9 +21,9 @@ interface StatsDetailedUiState {
     var selectedDate: LocalDate
     var selectedViewIndex: Int
     val isLoading: Boolean
-    val bookFirstReadDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
-    val bookFirstFinishedDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
-    val bookFavoriteDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
+    val bookFirstReadDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
+    val bookFirstFinishedDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
+    val bookFavoriteDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate>
 }
 
 class MutableStatsDetailedUiState : StatsDetailedUiState {
@@ -35,13 +36,13 @@ class MutableStatsDetailedUiState : StatsDetailedUiState {
     override var selectedDate: LocalDate by mutableStateOf(LocalDate.now())
     override var selectedViewIndex: Int by mutableIntStateOf(0)
     override var isLoading: Boolean by mutableStateOf(false)
-    override var bookFirstReadDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+    override var bookFirstReadDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
         emptyMap()
     )
-    override var bookFirstFinishedDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+    override var bookFirstFinishedDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
         emptyMap()
     )
-    override var bookFavoriteDateMap: Map<Pair<String, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
+    override var bookFavoriteDateMap: Map<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>, LocalDate> by mutableStateOf(
         emptyMap()
     )
 }

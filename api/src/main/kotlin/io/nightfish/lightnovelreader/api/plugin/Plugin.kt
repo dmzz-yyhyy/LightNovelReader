@@ -3,6 +3,7 @@ package io.nightfish.lightnovelreader.api.plugin
 /**
  * 用于标注插件的元数据。
  *
+ * @property namespace 插件注册项所属的命名空间
  * @property name 插件显示名称
  * @property version 插件版本号（整数）
  * @property versionName 插件版本名称（字符串）
@@ -23,6 +24,7 @@ package io.nightfish.lightnovelreader.api.plugin
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Plugin(
     val name: String,
+    val namespace: String,
     val version: Int,
     val versionName: String,
     val author: String,

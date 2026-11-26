@@ -7,8 +7,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -16,9 +16,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -27,9 +24,14 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerScre
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.imageview.ImageViewerViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.ColorPickerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.readerstyle.navigateToSettingsReaderStyleDestination
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.saveBitmapAsPng
 import indi.dmzz_yyhyy.lightnovelreader.utils.ImageUtils.uriToBitmap
 import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -61,8 +63,8 @@ fun NavEntryScope.bookReaderDestination() {
 }
 
 fun Navigator.navigateToBookReaderDestination(
-    bookId: String,
-    chapterId: String,
+    bookId: Identifier.Book,
+    chapterId: Identifier.Chapter,
 ) {
     navigate(Route.Book.Reader(bookId, chapterId))
 }
@@ -87,7 +89,7 @@ private fun NavEntryScope.colorPickerDialog() {
 }
 
 fun Navigator.navigateToColorPickerDialog(
-    colorUserDataPath: String,
+    colorUserDataPath: UserDataPath<Color>,
     colors: List<Long>,
     target: Route.Book.ColorPickerTargetType = Route.Book.ColorPickerTargetType.BACKGROUND
 ) {

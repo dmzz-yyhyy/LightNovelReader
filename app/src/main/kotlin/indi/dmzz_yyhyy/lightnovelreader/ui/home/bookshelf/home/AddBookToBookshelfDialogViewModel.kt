@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.LocalBookDataSource
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +17,10 @@ class AddBookToBookshelfDialogViewModel @Inject constructor(
 ) : ViewModel() {
     var allBookshelfFlow = bookshelfRepository.getAllBookshelvesFlow()
 
-    fun markSelectedBooks(selectedBookIds: List<String>, bookshelfIds: List<Int>) {
+    fun markSelectedBooks(
+        selectedBookIds: List<Identifier.Book>,
+        bookshelfIds: List<Identifier.Bookshelf>
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             selectedBookIds.forEach { bookId ->
                 localBookDataSource.getBookInformation(bookId)?.let { bookInformation ->

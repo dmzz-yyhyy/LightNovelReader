@@ -29,7 +29,7 @@ interface WebBookDataSourceManagerApi {
      *
      * @since Api 4
      */
-    fun unregisterWebDataSource(webDataSourceId: Identifier)
+    fun unregisterWebDataSource(webDataSourceId: Identifier.DataSource)
 
     /**
      * 获取当前激活的网络数据源

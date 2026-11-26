@@ -70,6 +70,8 @@ import indi.dmzz_yyhyy.lightnovelreader.BuildConfig
 import indi.dmzz_yyhyy.lightnovelreader.R
 import kotlinx.coroutines.delay
 import kotlin.math.round
+import kotlin.time.Duration.Companion.seconds
+import android.R as AndroidR
 
 @Composable
 fun BaseDialog(
@@ -368,7 +370,7 @@ fun ImportUserDataDialog(
         if (confirmingOverwrite) {
             countdown = 3
             repeat(3) {
-                delay(1000)
+                delay(1.seconds)
                 countdown--
             }
         }
@@ -719,7 +721,7 @@ fun SettingsPrivacyPolicyDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(text = stringResource(android.R.string.ok))
+                Text(text = stringResource(AndroidR.string.ok))
             }
         }
     )
@@ -879,7 +881,7 @@ fun DeleteBookshelfDialog(
                 onClick = onConfirmation
             ) {
                 Text(
-                    text = stringResource(android.R.string.ok)
+                    text = stringResource(AndroidR.string.ok)
                 )
             }
         },

@@ -2,11 +2,12 @@ package indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.edit
 
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.DeleteBookshelfDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 fun NavEntryScope.bookshelfEditDestination() {
     entry<Route.Main.Bookshelf.Edit> {
@@ -32,7 +33,7 @@ fun NavEntryScope.bookshelfEditDestination() {
     deleteBookshelfDialog()
 }
 
-fun Navigator.navigateToBookshelfEditDestination(id: Int, title: String) {
+fun Navigator.navigateToBookshelfEditDestination(id: Identifier.Bookshelf?, title: String) {
     navigate(Route.Main.Bookshelf.Edit(id, title))
 }
 
@@ -51,6 +52,6 @@ private fun NavEntryScope.deleteBookshelfDialog() {
     }
 }
 
-private fun Navigator.navigateToDeleteBookshelfDialog(bookId: Int) {
+private fun Navigator.navigateToDeleteBookshelfDialog(bookId: Identifier.Bookshelf) {
     navigate(Route.Main.Bookshelf.DeleteBookshelfDialog(bookId))
 }

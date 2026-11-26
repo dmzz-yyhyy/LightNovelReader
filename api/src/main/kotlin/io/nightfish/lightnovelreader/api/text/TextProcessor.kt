@@ -5,6 +5,7 @@ import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.content.component.data.cap.TextData
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 /**
  * 文本处理器接口
@@ -106,7 +107,7 @@ interface TextProcessor {
      * @since Api 2
      */
     fun processChapterContent(
-        bookId: String,
+        bookId: Identifier.Book,
         chapterContent: ChapterContent,
         componentProcessor: ComponentProcessor
     ): ChapterContent = chapterContent.copy(

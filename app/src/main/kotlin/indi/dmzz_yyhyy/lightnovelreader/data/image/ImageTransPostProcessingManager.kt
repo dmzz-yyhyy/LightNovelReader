@@ -12,33 +12,43 @@ import javax.inject.Singleton
 @Singleton
 class ImageTransPostProcessingManager @Inject constructor() : ImageTransPostProcessingManagerApi {
     private val transformationMap =
-        mutableMapOf<Identifier, MutableMap<Identifier, ImageTransformation>>()
+        mutableMapOf<Identifier.ImagePipeline, MutableMap<Identifier.ImageTransformation, ImageTransformation>>()
 
-    override fun registerImagePostProcessPipeline(identifier: Identifier) {
+    override fun registerImagePostProcessPipeline(identifier: Identifier.ImagePipeline) {
         transformationMap[identifier] = mutableMapOf()
     }
 
     override fun registerImageTransformation(
-        pipeline: Identifier,
-        transformationIdentifier: Identifier,
+        pipeline: Identifier.ImagePipeline,
+        transformationIdentifier: Identifier.ImageTransformation,
         transformation: ImageTransformation
     ) {
         transformationMap[pipeline]?.put(transformationIdentifier, transformation)
     }
 
-    override fun getImageTransformations(pipeline: Identifier) = transformationMap[pipeline]
+    override fun getImageTransformations(pipeline: Identifier.ImagePipeline) =
+        transformationMap[pipeline]
         ?.map {
             Pair(it.key, it.value)
         }
 
-    override fun getImageTransformation(pipeline: Identifier, transformation: Identifier) =
+    override fun getImageTransformation(
+        pipeline: Identifier.ImagePipeline,
+        transformation: Identifier.ImageTransformation
+    ) =
         transformationMap[pipeline]?.get(transformation)
 
-    override fun unregisterTransformations(pipeline: Identifier, transformation: Identifier) {
+    override fun unregisterTransformations(
+        pipeline: Identifier.ImagePipeline,
+        transformation: Identifier.ImageTransformation
+    ) {
         transformationMap[pipeline]?.remove(transformation)
     }
 
-    fun getCoil3Transformations(pipeline: Identifier, uri: Uri): List<Transformation> {
+    fun getCoil3Transformations(
+        pipeline: Identifier.ImagePipeline,
+        uri: Uri
+    ): List<Transformation> {
         val transformations = getImageTransformations(pipeline) ?: return emptyList()
         if (transformations.isEmpty()) return emptyList()
         return transformations.map {

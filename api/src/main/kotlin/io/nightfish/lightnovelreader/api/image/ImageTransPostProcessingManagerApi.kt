@@ -15,7 +15,7 @@ interface ImageTransPostProcessingManagerApi {
      *
      * @since Api 4
      */
-    fun registerImagePostProcessPipeline(identifier: Identifier)
+    fun registerImagePostProcessPipeline(identifier: Identifier.ImagePipeline)
 
     /**
      * 注册图片转换器
@@ -27,8 +27,8 @@ interface ImageTransPostProcessingManagerApi {
      * @since Api 4
      */
     fun registerImageTransformation(
-        pipeline: Identifier,
-        transformationIdentifier: Identifier,
+        pipeline: Identifier.ImagePipeline,
+        transformationIdentifier: Identifier.ImageTransformation,
         transformation: ImageTransformation
     )
 
@@ -39,7 +39,7 @@ interface ImageTransPostProcessingManagerApi {
      *
      * @since Api 4
      */
-    fun getImageTransformations(pipeline: Identifier): Collection<Pair<Identifier, ImageTransformation>>?
+    fun getImageTransformations(pipeline: Identifier.ImagePipeline): Collection<Pair<Identifier.ImageTransformation, ImageTransformation>>?
 
     /**
      * 获取某个图片转换器实例
@@ -50,8 +50,8 @@ interface ImageTransPostProcessingManagerApi {
      * @since Api 4
      */
     fun getImageTransformation(
-        pipeline: Identifier,
-        transformation: Identifier
+        pipeline: Identifier.ImagePipeline,
+        transformation: Identifier.ImageTransformation
     ): ImageTransformation?
 
     /**
@@ -62,5 +62,8 @@ interface ImageTransPostProcessingManagerApi {
      *
      * @since Api 4
      */
-    fun unregisterTransformations(pipeline: Identifier, transformation: Identifier)
+    fun unregisterTransformations(
+        pipeline: Identifier.ImagePipeline,
+        transformation: Identifier.ImageTransformation
+    )
 }

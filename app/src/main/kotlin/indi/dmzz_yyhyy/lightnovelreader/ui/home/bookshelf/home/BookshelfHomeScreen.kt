@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -53,7 +54,7 @@ fun BookshelfHomeScreen(
     val saveAllBookshelfLauncher = launcher(uiState.saveAllBookshelfJsonData)
     val saveThisBookshelfLauncher = launcher(uiState.saveBookshelfJsonData)
     val importBookshelfLauncher = launcher(uiState.importBookshelf)
-    val listState = remember(uiState.selectedBookshelfId) { androidx.compose.foundation.lazy.LazyListState() }
+    val listState = remember(uiState.selectedBookshelfId) { LazyListState() }
 
     BackHandler(uiState.selectMode) {
         uiState.onDisableSelectMode()
@@ -84,7 +85,7 @@ fun BookshelfHomeScreen(
             val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
                 .setInputData(
                     workDataOf(
-                        "bookshelfId" to uiState.selectedBookshelfId,
+                        "bookshelfId" to uiState.selectedBookshelfId.toString(),
                         "uri" to uri.toString(),
                     )
                 )

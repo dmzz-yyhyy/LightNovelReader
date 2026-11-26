@@ -9,6 +9,7 @@ import android.net.Uri
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import android.text.TextUtils
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.DrawableCompat
@@ -127,7 +128,7 @@ object DefaultBookCoverRenderer {
             .setAlignment(Layout.Alignment.ALIGN_CENTER)
             .setIncludePad(false)
             .setMaxLines(3)
-            .setEllipsize(android.text.TextUtils.TruncateAt.END)
+            .setEllipsize(TextUtils.TruncateAt.END)
             .build()
         canvas.withTranslation(
             (width - layoutWidth) / 2f,

@@ -11,8 +11,9 @@ import androidx.compose.ui.unit.Density
 import indi.dmzz_yyhyy.lightnovelreader.utils.ofId
 import io.nightfish.lightnovelreader.api.content.component.ComponentDataJsonElementSerializer
 import io.nightfish.lightnovelreader.api.content.component.WriteMode
-import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
+import io.nightfish.lightnovelreader.api.content.component.render.AbstractContentComponentRender
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.theme.AppTypography
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -70,12 +71,13 @@ class ErrorContentComponentRender :
 data class ErrorContentComponentData(
     val message: String
 ) : AbstractContentComponentData() {
-    override val id = Companion.id
+    override val id: Identifier.ContentComponent = Companion.id
     override fun toJsonElement(): JsonElement = Json.encodeToJsonElement(this)
     override fun toHtmlElement(context: Context): Element = DocumentHelper.createElement("div")
 
     companion object {
-        val id = "error_content_component".ofId()
+        val id: Identifier.ContentComponent =
+            "error_content_component".ofId(Identifier::ContentComponent)
         val serializer = object : ComponentDataJsonElementSerializer<ErrorContentComponentData> {
             override fun toJsonElement(data: ErrorContentComponentData): JsonElement =
                 Json.encodeToJsonElement(data)

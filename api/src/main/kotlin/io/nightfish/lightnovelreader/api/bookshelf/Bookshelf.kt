@@ -1,7 +1,7 @@
 package io.nightfish.lightnovelreader.api.bookshelf
 
 import androidx.compose.runtime.Stable
-import kotlin.time.Clock
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 /**
  * 书架接口
@@ -20,13 +20,13 @@ import kotlin.time.Clock
  */
 @Stable
 data class Bookshelf(
-    val id: Int = Clock.System.now().epochSeconds.hashCode(),
+    val id: Identifier.Bookshelf,
     val name: String = "",
     val sortType: BookshelfSortType = BookshelfSortType.Default,
     val sortReversed: Boolean = false,
     val autoCache: Boolean = false,
     val systemUpdateReminder: Boolean = false,
-    val allBookIds: List<String> = emptyList(),
-    val pinnedBookIds: List<String> = emptyList(),
-    val updatedBookIds: List<String> = emptyList()
+    val allBookIds: List<Identifier.Book> = emptyList(),
+    val pinnedBookIds: List<Identifier.Book> = emptyList(),
+    val updatedBookIds: List<Identifier.Book> = emptyList()
 )

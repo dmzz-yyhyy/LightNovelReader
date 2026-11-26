@@ -3,6 +3,7 @@ package indi.dmzz_yyhyy.lightnovelreader.benchmark.framework
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Until
 import androidx.test.uiautomator.waitForStable
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -47,7 +48,7 @@ abstract class ReaderRegressionTestCase : ReaderTestCase() {
         repeat(3) {
             if (!device.hasObject(By.text("Reader Settings"))) return
             pressBack()
-            device.wait(androidx.test.uiautomator.Until.gone(By.text("Reader Settings")), 1_000L)
+            device.wait(Until.gone(By.text("Reader Settings")), 1_000L)
         }
         assertTextNotVisible("Reader Settings")
     }

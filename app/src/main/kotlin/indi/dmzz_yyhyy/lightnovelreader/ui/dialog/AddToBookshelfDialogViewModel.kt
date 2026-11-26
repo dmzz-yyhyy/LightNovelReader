@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,9 +21,10 @@ class AddToBookshelfDialogViewModel @Inject constructor(
 ) : ViewModel() {
     private val _addToBookshelfDialogUiState = MutableAddToBookshelfDialogUiState()
 
-    var bookId = ""
+    var bookId: Identifier.Book? = null
         set(value) {
             field = value
+            if (value == null) return
             viewModelScope.launch {
                 val allBookshelf = withContext(Dispatchers.IO) {
                     bookshelfRepository.getAllBookshelfIds()
@@ -40,23 +42,24 @@ class AddToBookshelfDialogViewModel @Inject constructor(
         }
     val addToBookshelfDialogUiState: AddToBookshelfDialogUiState = _addToBookshelfDialogUiState
 
-    fun onSelectBookshelf(bookshelfId: Int) {
-        if (bookId.isBlank()) return
+    fun onSelectBookshelf(bookshelfId: Identifier.Bookshelf) {
+        if (bookId == null) return
         _addToBookshelfDialogUiState.selectedBookshelfIds += listOf(bookshelfId)
     }
 
-    fun onDeselectBookshelf(bookshelfId: Int) {
-        if (bookId.isBlank()) return
+    fun onDeselectBookshelf(bookshelfId: Identifier.Bookshelf) {
+        if (bookId == null) return
         _addToBookshelfDialogUiState.selectedBookshelfIds.removeAll { it == bookshelfId }
     }
 
     fun onDismissAddToBookshelfRequest() {
-        if (bookId.isBlank()) return
+        if (bookId == null) return
         _addToBookshelfDialogUiState.selectedBookshelfIds.clear()
     }
 
     fun processAddToBookshelfRequest() {
-        if (bookId.isBlank()) return
+        if (bookId == null) return
+        val bookId = bookId ?: return
         viewModelScope.launch(Dispatchers.IO) {
             statsRepository.markBookFavorited(bookId)
             val oldBookShelfIds =

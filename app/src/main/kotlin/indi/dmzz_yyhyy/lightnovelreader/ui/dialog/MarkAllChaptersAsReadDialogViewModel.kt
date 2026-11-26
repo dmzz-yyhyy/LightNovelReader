@@ -12,6 +12,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.statistics.StatsRepository
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -26,12 +27,12 @@ class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
     var bookVolumeResult: Result<BookVolumes, WebRequestError>? by mutableStateOf(null)
         private set
 
-    var bookId by mutableStateOf("")
+    var bookId: Identifier.Book? by mutableStateOf(null)
         private set
 
     private var volumesJob: Job? = null
 
-    fun load(bookId: String) {
+    fun load(bookId: Identifier.Book) {
         if (bookId == this.bookId) return
         this.bookId = bookId
         volumesJob?.cancel()
@@ -43,7 +44,7 @@ class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
     }
 
     fun markAllChaptersAsRead() = binding {
-        if (bookId.isBlank()) return@binding Unit
+        val bookId = bookId ?: return@binding Unit
 
         val allChapterIds = bookVolumeResult
             ?.bind()
@@ -67,8 +68,8 @@ class MarkAllChaptersAsReadDialogViewModel @Inject constructor(
         }
     }
 
-    fun markChaptersAsRead(chapterIds: List<String>) = binding {
-        if (bookId.isBlank()) return@binding Unit
+    fun markChaptersAsRead(chapterIds: List<Identifier.Chapter>) = binding {
+        val bookId = bookId ?: return@binding Unit
 
         val allChapterIds = bookVolumeResult
             ?.bind()
