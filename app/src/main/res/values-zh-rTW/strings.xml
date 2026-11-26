@@ -63,8 +63,8 @@
     <string name="import_merge">合併</string>
     <string name="import_merge_desc">合併進現有資料</string>
     <string name="import_overwrite">覆蓋</string>
-    <string name="import_overwrite_desc">清空所有資料，再匯入選定資料</string>
-    <string name="import_overwrite_warning">「覆蓋」操作會清空本地的所有資料，包括書架、閱讀紀錄、快取和設定項等，無論要匯入的資料是否包含它們。該操作將無法撤銷。</string>
+    <string name="import_overwrite_desc">Clear data for the sources included in the backup, then import</string>
+    <string name="import_overwrite_warning">Overwrite clears all data belonging to the sources included in the backup, including categories that were not exported, then imports the backup. Other sources are retained. Global settings and shared rules will be merged. This action cannot be undone.</string>
     <string name="import_overwrite_confirm">確認覆蓋</string>
     <string name="import_back">返回</string>
     <string name="import_in_progress_title">正在匯入…</string>
