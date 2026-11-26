@@ -9,15 +9,16 @@ fun buildDailyDateDetails(
     records: List<BookRecord>,
     count: Count?
 ): DailyDateDetails? {
-    val readRecords = records.filter { it.seconds > 0 }
+    val readRecords = records.filter { it.reads > 0 || it.seconds > 0 }
     if (readRecords.isEmpty()) return null
+    val timedRecords = readRecords.filter { it.seconds > 0 }
 
     return DailyDateDetails(
         date = date,
-        totalSeconds = readRecords.sumOf { it.seconds },
+        totalSeconds = timedRecords.sumOf { it.seconds },
         readCount = readRecords.sumOf { it.reads },
         hourMinutes = (0..23).map { count?.getMinute(it) ?: 0 },
-        books = readRecords
+        books = timedRecords
             .map { DailyBookDetail(it.bookId, it.bookInformationFlow, it.seconds) }
             .sortedByDescending { it.seconds }
     )

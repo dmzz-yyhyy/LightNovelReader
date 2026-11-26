@@ -56,6 +56,8 @@ fun formatDate(
     order: DateOrder = DateOrder.AUTO,
     fields: DateFields = DateFields.FULL
 ): String {
+    if (date == LocalDate.MIN) return "-"
+
     val locale = appDisplayLocale
     val generator = DateTimePatternGenerator.getInstance(ULocale.forLocale(locale))
     val pattern: String

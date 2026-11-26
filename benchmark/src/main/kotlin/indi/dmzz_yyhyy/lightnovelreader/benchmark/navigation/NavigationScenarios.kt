@@ -43,17 +43,17 @@ class NavigationScenarios : BenchmarkTestCase() {
     }
 
     @Test
-    fun statisticsDetailSwitchesEveryTimeScale() {
+    fun statisticsTrendSwitchesEveryTimeScale() {
         launchApp()
         tapDescription("statistics")
         visibleText("Calendar")
-        tapText("Detail")
+        scrollToText("Trend")
 
-        listOf("Weekly", "Monthly", "Yearly").forEach { scale ->
+        listOf("Week", "Month", "Year").forEach { scale ->
             tapText(scale)
-            visibleText("Reading Time")
+            visibleText("Trend")
         }
         pressBack()
-        visibleText("Statistics")
+        visibleText("Reading")
     }
 }

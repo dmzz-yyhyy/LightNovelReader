@@ -47,7 +47,9 @@ class StatsOverviewViewModel @Inject constructor(
 
                 val today = LocalDate.now()
                 val dailyCounts = statsRepository.getAllDailyCounts()
+                    .filterKeys { !it.isAfter(today) }
                 val rawRecords = statsRepository.getAllBookRecords()
+                    .filter { !it.date.isAfter(today) }
                 val bookFlows = rawRecords.distinctBy { it.bookId }.associate { record ->
                     record.bookId to record.bookInformationFlow.take(1).shareIn(
                         scope = viewModelScope,
