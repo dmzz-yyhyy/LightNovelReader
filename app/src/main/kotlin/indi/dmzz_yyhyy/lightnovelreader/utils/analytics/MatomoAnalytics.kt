@@ -32,7 +32,7 @@ class MatomoAnalytics @Inject constructor(
     }
 
     suspend fun initialize() {
-        isStatisticsEnabled = if (BuildConfig.DEBUG) false
+        isStatisticsEnabled = if (BuildConfig.DEV_BUILD) false
         else userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
             .getOrDefault(true)
 
@@ -51,7 +51,7 @@ class MatomoAnalytics @Inject constructor(
 
     private fun buildAppInfo(): String {
         val version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
-        val buildType = if (BuildConfig.DEBUG) "debug" else "release"
+        val buildType = BuildConfig.BUILD_TYPE
         return "$version, $buildType"
     }
 

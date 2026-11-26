@@ -30,7 +30,7 @@ fun AboutSettingsList(
     val appInfo: String = buildString {
         appendLine(BuildConfig.APPLICATION_ID)
         append("${BuildConfig.VERSION_NAME} [${BuildConfig.VERSION_CODE}] - ")
-            .append(if (BuildConfig.DEBUG) "debug" else "release")
+            .append(BuildConfig.BUILD_TYPE)
     }
     var showAppInfoDialog by remember { mutableStateOf(false) }
     var showDisableStatsDialog by remember { mutableStateOf(false) }
@@ -97,7 +97,7 @@ fun AboutSettingsList(
         painter = painterResource(R.drawable.data_usage_24px),
         title = stringResource(R.string.settings_statistics),
         description = stringResource(R.string.settings_statistics_desc),
-        checked = if (BuildConfig.DEBUG) false else settingState.statistics,
+        checked = !BuildConfig.DEV_BUILD && settingState.statistics,
         onCheckedChange = { checked ->
             if (!checked && settingState.statistics) {
                 showDisableStatsDialog = true
@@ -105,7 +105,7 @@ fun AboutSettingsList(
                 settingState.statisticsUserData.asynchronousSet(checked)
             }
         },
-        enabled = !BuildConfig.DEBUG
+        enabled = !BuildConfig.DEV_BUILD
     )
     SettingsClickableEntry(
         modifier = Modifier.background(colorScheme.surfaceContainer),

@@ -141,7 +141,7 @@ fun SettingsScreen(
                     )
                 }
             }
-            if (BuildConfig.DEBUG) {
+            if (BuildConfig.DEV_BUILD) {
                 item {
                     SettingsCategory(
                         title = stringResource(R.string.debug_settings)
