@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -166,7 +167,6 @@ fun BaseDialog(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SliderDialog(
     onDismissRequest: () -> Unit,
@@ -215,11 +215,13 @@ fun SliderDialog(
 
             Spacer(Modifier.height(16.dp))
 
+            val sliderState = remember(steps, valueRange) {
+                SliderState(value = value, steps = steps, trackRange = valueRange)
+            }
+            sliderState.value = value
             Slider(
                 modifier = Modifier.fillMaxWidth(),
-                value = value,
-                valueRange = valueRange,
-                steps = steps,
+                state = sliderState,
                 onValueChange = { newValue ->
                     val adjustedValue = if (steps > 0) {
                         val stepSize = (valueRange.endInclusive - valueRange.start) / (steps + 1)

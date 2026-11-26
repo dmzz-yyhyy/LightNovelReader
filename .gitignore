@@ -22,5 +22,6 @@ local.properties
 /app/snapshot/
 /proxy/build/**
 /compiler/build/**
+/ktor-browser/build/
 /build/**
 /artifacts/
