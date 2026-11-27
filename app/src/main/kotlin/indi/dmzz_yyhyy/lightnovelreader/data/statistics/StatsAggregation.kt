@@ -19,7 +19,7 @@ fun buildDailyDateDetails(
         readCount = readRecords.sumOf { it.reads },
         hourMinutes = (0..23).map { count?.getMinute(it) ?: 0 },
         books = timedRecords
-            .map { DailyBookDetail(it.bookId, it.bookInformationFlow, it.seconds) }
+            .map { DailyBookDetail(it.book, it.bookInformationFlow, it.seconds) }
             .sortedByDescending { it.seconds }
     )
 }
@@ -70,11 +70,11 @@ fun buildStatsSummary(
         streakCursor = streakCursor.minusDays(1)
     }
 
-    val recordsByBook = records.groupBy { it.bookId }
+    val recordsByBook = records.groupBy { it.book }
     val topBooks = recordsByBook
-        .map { (bookId, bookRecords) ->
+        .map { (book, bookRecords) ->
             BookReadingTotal(
-                bookId = bookId,
+                book = book,
                 bookInformationFlow = bookRecords.first().bookInformationFlow,
                 seconds = bookRecords.sumOf { it.seconds.toLong() }
             )
@@ -96,7 +96,7 @@ fun buildStatsSummary(
         longestStreakEnd = longestStreakEnd,
         hourTotals = hourTotals,
         weekdayAverages = weekdayAverages,
-        startedCount = records.filter { it.reads > 0 }.map { it.bookId }.distinct().size,
+        startedCount = records.filter { it.reads > 0 }.map { it.book }.distinct().size,
         topBooks = topBooks
     )
 }

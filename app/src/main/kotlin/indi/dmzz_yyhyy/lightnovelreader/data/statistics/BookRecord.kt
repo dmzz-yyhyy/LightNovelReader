@@ -11,7 +11,7 @@ import java.time.LocalTime
 
 @Stable
 data class BookRecord(
-    val bookId: Identifier.Book,
+    val book: Identifier.Book,
     val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>,
     val date: LocalDate,
     val reads: Int,

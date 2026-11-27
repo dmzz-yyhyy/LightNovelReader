@@ -12,7 +12,7 @@ fun BookRecordEntity.toData(
     bookInformationFlow: Flow<Result<BookInformation, WebRequestError>> = bookRepository.getBookInformationFlow(bookId)
 ): BookRecord =
     BookRecord(
-        bookId = bookId,
+        book = bookId,
         bookInformationFlow = bookInformationFlow,
         date = date,
         reads = reads,
@@ -26,7 +26,7 @@ fun BookRecordEntity.toData(
 @Suppress("unused")
 fun BookRecord.toEntity(): BookRecordEntity =
     BookRecordEntity(
-        bookId = bookId,
+        bookId = book,
         date = date,
         reads = reads,
         seconds = seconds,

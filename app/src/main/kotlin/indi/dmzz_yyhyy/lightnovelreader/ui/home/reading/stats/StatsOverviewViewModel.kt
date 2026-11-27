@@ -50,15 +50,15 @@ class StatsOverviewViewModel @Inject constructor(
                     .filterKeys { !it.isAfter(today) }
                 val rawRecords = statsRepository.getAllBookRecords()
                     .filter { !it.date.isAfter(today) }
-                val bookFlows = rawRecords.distinctBy { it.bookId }.associate { record ->
-                    record.bookId to record.bookInformationFlow.take(1).shareIn(
+                val bookFlows = rawRecords.distinctBy { it.book }.associate { record ->
+                    record.book to record.bookInformationFlow.take(1).shareIn(
                         scope = viewModelScope,
                         started = SharingStarted.Lazily,
                         replay = 1
                     )
                 }
                 val bookRecords = rawRecords.map { record ->
-                    record.copy(bookInformationFlow = bookFlows.getValue(record.bookId))
+                    record.copy(bookInformationFlow = bookFlows.getValue(record.book))
                 }
 
                 val dayMinutes = dailyCounts
