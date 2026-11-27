@@ -1,44 +1,50 @@
 package io.nightfish.lightnovelreader.api.web.search
 
-import kotlinx.coroutines.flow.Flow
+import com.github.michaelbull.result.Result
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.util.LocalString
+import io.nightfish.lightnovelreader.api.util.local
+import io.nightfish.lightnovelreader.api.web.BookPageResult
+import io.nightfish.lightnovelreader.api.web.OptionValues
+import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
 
-/**
- * 搜索功能提供器接口
- * 实现此接口以支持搜索功能及搜索建议
- *
- * @since Api 2
- */
+/** 提供按需分页搜索、设置和结果筛选。 */
 interface SearchProvider {
-    /**
-     * 搜索类型列表
-     *
-     * @since Api 2
-     */
-    val searchTypes: List<SearchType>
+    /** 按展示顺序提供的搜索设置。 */
+    val settings: List<SearchSetting<*>>
+        get() = emptyList()
+
+    /** 按展示顺序提供的结果筛选器。 */
+    val filters: List<Filter<*>>
+        get() = emptyList()
 
     /**
-     * 执行搜索任务
+     * 获取当前设置对应的搜索提示。
      *
-     * 应当返回搜索结果的数据流
+     * @param settings 当前搜索设置
+     */
+    fun getSearchTip(settings: OptionValues): LocalString = "".local()
+
+    /**
+     * 请求一页搜索结果。只有首页可声明书籍直达结果。
      *
-     * @param searchType 搜索类别
      * @param keyword 搜索关键词
-     * @return 搜索结果的数据流
-     *
-     * @since Api 2
+     * @param settings 本轮搜索设置
+     * @param filters 本轮数据源筛选值
+     * @param cursor 上一页返回的游标，首页传入 null
      */
-    fun search(searchType: SearchType, keyword: String): Flow<SearchResult>
+    suspend fun loadPage(
+        keyword: String,
+        settings: OptionValues,
+        filters: OptionValues,
+        cursor: String?
+    ): Result<BookPageResult, WebRequestError>
 
     /**
-     * 用于提供搜索建议
-     * 会在输入的关键词发生变化时调用
+     * 生成搜索建议。
      *
-     * @param history 用户的搜索历史记录, 按照从早到晚的顺序排序
-     * @param keyword 当前输入的搜索关键词
-     * @return 所有搜索建议
-     *
-     * @since Api 2
+     * @param history 搜索历史
+     * @param keyword 尚未提交的输入
      */
-    fun getSearchSuggestions(history: List<String>, keyword: String): List<String> =
-        history.filter { it.startsWith(keyword) }
+    fun getSearchSuggestions(history: List<String>, keyword: String): List<String> = emptyList()
 }

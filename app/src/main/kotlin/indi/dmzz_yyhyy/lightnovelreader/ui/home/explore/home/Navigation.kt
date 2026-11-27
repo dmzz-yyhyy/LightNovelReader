@@ -18,7 +18,8 @@ fun NavEntryScope.exploreHomeDestination() {
         val navigator = LocalNavigator.current
         val exploreViewModel = activityHiltViewModel<ExploreViewModel>()
         val exploreHomeViewModel = hiltViewModel<ExploreHomeViewModel>()
-        if (exploreHomeViewModel.customExplorePageProvider == null) {
+        val customProvider = exploreHomeViewModel.customExplorePageProvider
+        if (customProvider == null) {
             ExploreHomeScreen(
                 exploreUiState = exploreViewModel.uiState,
                 exploreHomeUiState = exploreHomeViewModel.uiState,
@@ -27,13 +28,14 @@ fun NavEntryScope.exploreHomeDestination() {
                 init = exploreHomeViewModel::init,
                 changePage = exploreHomeViewModel::changePage,
                 onClickSearch = navigator::navigateToSearchDestination,
-                refresh = exploreHomeViewModel::refresh
+                refresh = exploreHomeViewModel::refresh,
+                checkConnection = exploreViewModel::refresh
             )
         } else {
             CustomExploreHomeScreen(
                 init = exploreHomeViewModel::init,
                 onClickSearch = navigator::navigateToSearchDestination,
-                customExplorePageProvider = exploreHomeViewModel.customExplorePageProvider!!
+                customExplorePageProvider = customProvider
             )
         }
     }

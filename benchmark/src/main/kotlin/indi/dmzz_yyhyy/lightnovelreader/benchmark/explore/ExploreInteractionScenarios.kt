@@ -42,11 +42,31 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
     }
 
     @Test
+    fun searchSettingsChangeTheQueryScope() {
+        launchApp()
+        openRoot("Explore")
+        tapDescription("search")
+        visibleText("请输入书本名称")
+
+        tapDescription("filter")
+        visibleText("Search settings")
+        tapClickableText("按作者名搜索")
+        pressBack()
+
+        visibleText("请输入作者名称")
+        tapDescription("filter")
+        tapClickableText("按书名搜索")
+        pressBack()
+        visibleText("请输入书本名称")
+    }
+
+    @Test
     fun searchHistorySupportsSingleDeleteAndClearAll() {
         launchApp()
         openRoot("Explore")
         tapDescription("search")
         submitSearch("automation-history")
+        tapClickableText("automation-history")
         tapDescription("clear")
         visibleText("Search History")
         visibleText("automation-history")
@@ -62,6 +82,7 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
         )
 
         submitSearch("clear-all-history")
+        tapClickableText("clear-all-history")
         tapDescription("clear")
         val clearAll = visibleText("Clear All")
         assertTrue(

@@ -1,0 +1,188 @@
+package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import com.github.michaelbull.result.map
+import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookCardItem
+import indi.dmzz_yyhyy.lightnovelreader.utils.addToBookshelfAction
+import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.PageBook
+import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
+import io.nightfish.lightnovelreader.api.web.explore.filter.FilterValues
+import kotlinx.coroutines.flow.flowOf
+
+@Composable
+internal fun PagedBookList(
+    state: BookPageState,
+    filters: List<Filter<*>>,
+    filterValues: () -> FilterValues,
+    updateFilters: (FilterValues) -> Unit,
+    append: () -> Unit,
+    retry: () -> Unit,
+    bookshelfIds: Set<Identifier.Book>,
+    processBook: (BookInformation) -> BookInformation,
+    onOpenBook: (Identifier.Book) -> Unit,
+    addToBookshelf: (Identifier.Book) -> Unit,
+    modifier: Modifier = Modifier,
+    heading: (@Composable () -> Unit)? = null
+) {
+    val listState = rememberLazyListState()
+    val latestState by rememberUpdatedState(state)
+    val latestAppend by rememberUpdatedState(append)
+    var anchor by remember { mutableStateOf<BookAnchor?>(null) }
+    var restoreAnchor by remember { mutableStateOf(false) }
+    var generation by rememberSaveable { mutableLongStateOf(state.generation) }
+
+    LaunchedEffect(state.generation) {
+        if (generation != state.generation) {
+            generation = state.generation
+            anchor = null
+            restoreAnchor = false
+            listState.scrollToItem(0)
+        }
+    }
+    LaunchedEffect(state.books) {
+        val position = anchor
+        if (restoreAnchor && position != null && state.books.isNotEmpty()) {
+            val visibleIds = state.books.map(PageBook::id)
+            val original = state.allBookIds.indexOf(position.id)
+            val retained = visibleIds.toHashSet()
+            val target = if (original >= 0) {
+                state.allBookIds.drop(original).firstOrNull { it in retained }
+                    ?: state.allBookIds.take(original).lastOrNull { it in retained }
+            } else null
+            val index = visibleIds.indexOf(target)
+            if (index >= 0) listState.scrollToItem(index, position.offset)
+        }
+        restoreAnchor = false
+    }
+
+    val pagingScroll = remember(listState) {
+        object : NestedScrollConnection {
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (source != NestedScrollSource.UserInput) return Offset.Zero
+                if (consumed.y != 0f || available.y != 0f) {
+                    anchor = null
+                    restoreAnchor = false
+                }
+                if (consumed.y + available.y < 0f && latestState.canAppend) {
+                    val size = latestState.books.size
+                    val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull { it.index < size }
+                    if (size == 0 || (lastVisible != null && lastVisible.index >= size - 3)) latestAppend()
+                }
+                return Offset.Zero
+            }
+        }
+    }
+
+    Column(modifier.fillMaxSize()) {
+        if (filters.isNotEmpty()) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(filters, key = { it.key.id }) { filter ->
+                    filter.Content(filterValues) { next ->
+                        val previous = filterValues()
+                        if (next.dataSource == previous.dataSource && next.local != previous.local) {
+                            if (anchor == null) {
+                                val layout = listState.layoutInfo
+                                val first = layout.visibleItemsInfo.firstOrNull { it.key is Identifier.Book }
+                                if (first != null) {
+                                    anchor = BookAnchor(
+                                        first.key as Identifier.Book,
+                                        (layout.viewportStartOffset - first.offset).coerceAtLeast(0)
+                                    )
+                                }
+                            }
+                            restoreAnchor = true
+                        }
+                        updateFilters(next)
+                    }
+                }
+            }
+            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+        }
+        heading?.invoke()
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxWidth().nestedScroll(pagingScroll),
+            state = listState,
+            contentPadding = PaddingValues(vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(state.books, key = PageBook::id) { book ->
+                val information = remember(book, processBook) {
+                    flowOf(book.information.map(processBook))
+                }
+                BookCardItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    bookInformationFlow = information,
+                    onClick = { onOpenBook(book.id) },
+                    onLongPress = withHaptic {},
+                    collected = book.id in bookshelfIds,
+                    swipeToRightActions = listOf(addToBookshelfAction.toSwipeAction { addToBookshelf(book.id) }),
+                    titleHeight = null
+                )
+            }
+            if (state.loading) {
+                item { LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) }
+            }
+            state.error?.let { error ->
+                item {
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            if (error.title.isNotBlank()) Text(error.title, style = MaterialTheme.typography.titleSmall)
+                            Text(error.message, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        TextButton(onClick = retry) { Text(stringResource(R.string.retry)) }
+                    }
+                }
+            }
+            if (state.books.isEmpty() && state.error == null && !state.loading && state.openBook == null) {
+                item {
+                    Text(
+                        stringResource(if (state.canAppend) R.string.explore_scroll_for_more else R.string.explore_no_results),
+                        Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+private data class BookAnchor(val id: Identifier.Book, val offset: Int)

@@ -341,6 +341,14 @@
     <string name="search_no_results">未搜索到内容</string>
     <string name="search_no_results_desc">检查拼写，或换一个关键词重试</string>
     <string name="search_results_title">\"%1$s\" 的搜索结果 (%2$d%3$s)</string>
+    <string name="explore_search_hint">搜索内容</string>
+    <string name="explore_search_settings">搜索设置</string>
+    <string name="explore_search_results">“%1$s”的搜索结果</string>
+    <string name="explore_no_results">没有符合条件的书目</string>
+    <string name="explore_scroll_for_more">继续滑动以查看下一页</string>
+    <string name="explore_fill_search">填入搜索建议</string>
+    <string name="explore_collapse">收起</string>
+    <string name="explore_expand">展开</string>
     <string name="search_history">搜索历史</string>
     <string name="start_reading">开始阅读</string>
     <string name="continue_reading">继续阅读</string>

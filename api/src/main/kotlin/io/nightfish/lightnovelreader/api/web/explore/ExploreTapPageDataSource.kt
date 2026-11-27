@@ -9,14 +9,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * @since Api 2
  */
-interface ExploreTapPageDataSource {
-    /**
-     * 卡片页的显示标题
-     *
-     * @since Api 2
-     */
-    val title: String
-
+interface ExploreTapPageDataSource : ExploreTapPage {
     /**
      * 获取卡片页行列表的数据流
      *

@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -47,6 +49,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +76,7 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.CustomExploreContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
@@ -82,9 +86,8 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.explore.ExplorePageContext
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +121,8 @@ fun ExploreHomeScreen(
     init: () -> Unit,
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit,
-    refresh: () -> Unit
+    refresh: () -> Unit,
+    checkConnection: () -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Column {
@@ -133,7 +137,7 @@ fun ExploreHomeScreen(
 
         if (exploreHomeUiState.pageTitles.isNotEmpty()) {
             ExploreScreen(
-                refresh = refresh,
+                refresh = checkConnection,
                 uiState = exploreUiState
             ) {
                 val selectedIndex = exploreHomeUiState.selectedPage
@@ -170,43 +174,43 @@ fun ExploreHomeScreen(
                         }
                     }
 
-                    var showEmptyPage by remember { mutableStateOf(false) }
-
-                    LaunchedEffect(exploreHomeUiState.explorePageBooksRawList) {
-                        if (exploreHomeUiState.explorePageBooksRawList.isEmpty()) {
-                            delay(140.milliseconds)
-                            showEmptyPage = true
-                        } else {
-                            showEmptyPage = false
+                    val customPage = exploreHomeUiState.customPage
+                    if (customPage != null) {
+                        key(customPage) {
+                            CustomExploreContent(
+                                customPage,
+                                ExplorePageContext(
+                                    enterAlwaysScrollBehavior.nestedScrollConnection,
+                                    onClickBook,
+                                    onClickExpand,
+                                    onClickSearch
+                                )
+                            )
                         }
-                    }
-
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .bottomBarPadding(),
-                        visible = showEmptyPage,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        Loading()
-                    }
-                    AnimatedContent(
-                        targetState = exploreHomeUiState.explorePageBooksRawList,
-                        contentKey = { exploreHomeUiState.selectedPage },
-                        transitionSpec = {
-                            (fadeIn(initialAlpha = 0.7f)).togetherWith(fadeOut(targetAlpha = 0.7f))
-                        },
-                        label = "ExplorePageBooksRawAnime"
-                    ) {
-                        ExplorePage(
-                            explorePageBooksRawList = it,
-                            onClickExpand = onClickExpand,
-                            onClickBook = onClickBook,
-                            nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
-                            refresh = refresh,
-                            pageKey = exploreHomeUiState.selectedPage
-                        )
+                    } else {
+                        AnimatedVisibility(
+                            modifier = Modifier.navigationBarsPadding().bottomBarPadding(),
+                            visible = exploreHomeUiState.isLoading,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Loading()
+                        }
+                        AnimatedContent(
+                            targetState = exploreHomeUiState.explorePageBooksRawList,
+                            contentKey = { exploreHomeUiState.selectedPage },
+                            transitionSpec = { fadeIn(initialAlpha = 0.7f) togetherWith fadeOut(targetAlpha = 0.7f) },
+                            label = "ExplorePageBooks"
+                        ) { bookRows ->
+                            ExplorePage(
+                                explorePageBooksRawList = bookRows,
+                                onClickExpand = onClickExpand,
+                                onClickBook = onClickBook,
+                                nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
+                                refresh = refresh,
+                                pageKey = exploreHomeUiState.selectedPage
+                            )
+                        }
                     }
                 }
             }
@@ -248,7 +252,7 @@ fun TopBar(
         actions = {
             IconButton(onClick = onClickSearch) {
                 Icon(
-                    painter = painterResource(id = R.drawable.search_24px),
+                    imageVector = Icons.Default.Search,
                     contentDescription = "search"
                 )
             }

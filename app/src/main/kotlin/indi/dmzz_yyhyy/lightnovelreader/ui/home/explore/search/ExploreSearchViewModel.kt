@@ -1,141 +1,133 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
+import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.BookPager
+import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import io.nightfish.lightnovelreader.api.userdata.update
-import io.nightfish.lightnovelreader.api.util.LocalString
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
+import io.nightfish.lightnovelreader.api.web.OptionValues
+import io.nightfish.lightnovelreader.api.web.explore.filter.FilterValues
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
 class ExploreSearchViewModel @Inject constructor(
-    private val exploreRepository: ExploreRepository,
-    private val bookshelfRepository: BookshelfRepository,
-    private val bookRepository: BookRepository,
+    exploreRepository: ExploreRepository,
+    bookshelfRepository: BookshelfRepository,
+    private val textProcessingRepository: TextProcessingRepository,
     userDataRepository: UserDataRepository
 ) : ViewModel() {
-    private val _uiState = MutableExploreSearchUiState()
-    private val searchHistoryUserData =
-        userDataRepository.userData(UserDataPath.Search.History)
-    private var searchTypeTipMap = mutableMapOf<String, LocalString>()
-    private var searchJob: Job? = null
-    val uiState: ExploreSearchUiState = _uiState
-
-    override fun onCleared() {
-        searchJob?.cancel()
+    private val provider = exploreRepository.searchProvider
+    private val historyData = userDataRepository.userData(UserDataPath.Search.History)
+    private val pager = BookPager<Request>(viewModelScope) { request, cursor ->
+        provider.loadPage(request.keyword, request.settings, request.filters, cursor)
     }
+    private var suggestionsJob: Job? = null
+    internal val pageState = pager.state
+    internal val settingDefinitions = provider.settings
+    internal val filterDefinitions = provider.filters
+    internal var settings by mutableStateOf(OptionValues.Empty)
+        private set
+    internal var filters by mutableStateOf(FilterValues())
+        private set
+    internal var keyword by mutableStateOf("")
+        private set
+    internal var submittedKeyword by mutableStateOf<String?>(null)
+        private set
+    internal var history by mutableStateOf(emptyList<String>())
+        private set
+    internal var suggestions by mutableStateOf(emptyList<String>())
+        private set
+    internal var bookshelfIds by mutableStateOf(emptySet<Identifier.Book>())
+        private set
 
-    fun init() {
-        viewModelScope.launch(Dispatchers.IO) {
-            searchTypeTipMap.clear()
-            _uiState.searchTypeNameMap.clear()
-            _uiState.searchTypeIdList.clear()
-            for (type in exploreRepository.searchTypes) {
-                searchTypeTipMap[type.type] = type.tip
-                _uiState.searchTypeNameMap[type.type] = type.name
-                _uiState.searchTypeIdList.add(type.type)
-            }
-            _uiState.searchType = _uiState.searchTypeIdList.getOrNull(0) ?: return@launch
-            _uiState.searchTip = searchTypeTipMap.getOrDefault(_uiState.searchType, LocalString(""))
-            searchHistoryUserData.getFlow().collect {
-                it?.let {
-                    _uiState.historyList = it.reversed()
-                }
-            }
+    init {
+        pager.setLocalFilters(filterDefinitions.map { it.predicate(filters.local) })
+        viewModelScope.launch {
+            historyData.getFlow().collect { history = it.orEmpty().asReversed().distinct() }
         }
         viewModelScope.launch {
-            bookshelfRepository.getAllBookshelfBookIdsFlow().collect {
-                _uiState.allBookshelfBookIds = it.toMutableList()
-            }
+            bookshelfRepository.getAllBookshelfBookIdsFlow().collect { bookshelfIds = it.toSet() }
         }
     }
 
-    fun changeSearchType(searchTypeId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.searchType = searchTypeId
-            _uiState.searchTip = searchTypeTipMap.getOrDefault(_uiState.searchType, LocalString(""))
+    internal fun getSearchTip() = provider.getSearchTip(settings)
+
+    internal fun updateInput(value: String) {
+        keyword = value
+        suggestionsJob?.cancel()
+        suggestions = emptyList()
+        if (value.isBlank()) return
+        val recent = history
+        suggestionsJob = viewModelScope.launch {
+            suggestions = withContext(Dispatchers.IO) { provider.getSearchSuggestions(recent, value) }.distinct()
         }
     }
 
-    fun deleteHistory(history: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            searchHistoryUserData.update {
-                val newList = it.toMutableList()
-                newList.remove(history)
-                return@update newList
-            }
+    internal fun search(input: String) {
+        val value = input.trim()
+        if (value.isEmpty()) return
+        keyword = value
+        submittedKeyword = value
+        reload()
+        viewModelScope.launch {
+            historyData.update { it.filterNot { entry -> entry == value } + value }
         }
     }
 
-    fun clearAllHistory() {
-        viewModelScope.launch(Dispatchers.IO) {
-            searchHistoryUserData.update { emptyList() }
-        }
+    internal fun editSearch() {
+        submittedKeyword = null
+        pager.clear()
+        updateInput(keyword)
     }
 
-    fun search(
-        keyword: String,
-        navigateToSingleBook: (bookId: Identifier.Book) -> Unit
-    ) {
-        _uiState.isLoading = true
-        _uiState.isLoadingComplete = false
-        _uiState.errorMessage = ""
-        _uiState.searchResult.clear()
-        searchJob?.cancel()
-        val searchType =
-            exploreRepository.searchTypes.firstOrNull { it.type == _uiState.searchType } ?: return
-        searchJob = viewModelScope.launch(Dispatchers.IO) {
-            val flow = exploreRepository.search(searchType, keyword)
-            _uiState.isLoading = false
-            flow.collect {
-                when (it) {
-                    is SearchResult.SingleBook -> launch(Dispatchers.Main) {
-                        _uiState.searchBarExpanded = true
-                        navigateToSingleBook(it.bookId)
-                    }
-
-                    is SearchResult.MultipleBook -> _uiState.searchResult.add(
-                        it.bookId to bookRepository.getBookInformationFlow(
-                            it.bookId
-                        )
-                    )
-
-                    is SearchResult.Error -> {
-                        _uiState.isLoadingComplete = true
-                        _uiState.errorMessage = it.error.message.toString()
-                    }
-
-                    is SearchResult.End -> _uiState.isLoadingComplete = true
-                    is SearchResult.Empty -> {
-                        _uiState.isLoadingComplete = true
-                    }
-                }
-            }
-        }
-        viewModelScope.launch(Dispatchers.IO) {
-            searchHistoryUserData.update {
-                val newList = it.toMutableList()
-                if (it.contains(keyword))
-                    newList.remove(keyword)
-                newList.add(keyword)
-                return@update newList
-            }
-        }
+    internal fun clearInput() {
+        editSearch()
+        updateInput("")
     }
 
-    fun updateSuggestions(keyword: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            _uiState.suggestions = exploreRepository.getSuggestions(_uiState.historyList, keyword)
-        }
+    internal fun changeSettings(values: OptionValues) {
+        if (settings == values) return
+        settings = values
+        reload()
     }
+
+    internal fun updateFilters(values: FilterValues) {
+        val previous = filters
+        filters = values
+        pager.setLocalFilters(filterDefinitions.map { it.predicate(values.local) })
+        if (values.dataSource != previous.dataSource) reload()
+    }
+
+    internal fun append() = pager.append()
+    internal fun retry() = pager.retry()
+    internal fun processBook(book: BookInformation) = textProcessingRepository.processBookInformation { book }
+
+    internal fun deleteHistory(entry: String) {
+        viewModelScope.launch { historyData.update { it - entry } }
+    }
+
+    internal fun clearHistory() {
+        viewModelScope.launch { historyData.update { emptyList() } }
+    }
+
+    private fun reload() {
+        val query = submittedKeyword ?: return
+        pager.start(Request(query, settings, filters.dataSource))
+    }
+
+    private data class Request(val keyword: String, val settings: OptionValues, val filters: OptionValues)
 }

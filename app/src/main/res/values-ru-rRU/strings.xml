@@ -350,6 +350,14 @@
     <string name="search_no_results">Результаты не найдены</string>
     <string name="search_no_results_desc">Проверьте правописание или попробуйте другие ключевые слова на китайском.</string>
     <string name="search_results_title">Результаты поиска по \"%1$s\" (%2$d%3$s)</string>
+    <string name="explore_search_hint">Поиск книг</string>
+    <string name="explore_search_settings">Настройки поиска</string>
+    <string name="explore_search_results">Результаты поиска «%1$s»</string>
+    <string name="explore_no_results">Подходящих книг нет</string>
+    <string name="explore_scroll_for_more">Прокрутите до следующей страницы</string>
+    <string name="explore_fill_search">Использовать подсказку</string>
+    <string name="explore_collapse">Свернуть</string>
+    <string name="explore_expand">Развернуть</string>
     <string name="search_history">История поиска</string>
     <string name="start_reading">Начать чтение</string>
     <string name="continue_reading">Продолжить чтение</string>

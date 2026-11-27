@@ -4,55 +4,37 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import kotlinx.coroutines.CoroutineScope
 
-/**
- * 探索页面内容提供器的封闭接口
- * 共有两种实现方式：使用软件默认布局或完全自定义页面内容
- *
- * @since Api 2
- */
+/** 提供宿主默认探索界面或整页自定义界面。 */
 sealed interface ExplorePageProvider {
-    /**
-     * 软件默认实现的探索页面
-     * 使用卡片页与展开页島效果组合的默认布局
-     *
-     * @since Api 2
-     */
+    /** 使用宿主提供的顶栏和标签栏。可混合注册标准页与自定义页。 */
     interface DefaultExplorePageProvider : ExplorePageProvider {
-        /** 已注册的探索页面 ID 有序列表 @since Api 2 */
-        val explorePageIdList: List<String>
+        /** 以页面标识为键的标签页，迭代顺序决定标签栏顺序。 */
+        val exploreTapPages: Map<String, ExploreTapPage>
 
-        /** 以页面 ID 为键的探索卡片页数据源映射 @since Api 2 */
-        val exploreTapPageDataSourceMap: Map<String, ExploreTapPageDataSource>
-
-        /** 以页面 ID 为键的探索展开页数据源映射 @since Api 2 */
-        val exploreExpandedPageDataSourceMap: Map<String, ExploreExpandedPageDataSource>
+        /** 以路由标识为键的展开页。 */
+        val exploreExpandedPages: Map<String, ExploreExpandedPage>
     }
 
     /**
-     * 完全自定义探索页面内容
-     * 实现者可自行决定页面布局和UI状态
+     * 自定义整个探索内容区域。
      *
-     * @since Api 2
+     * @param T 自定义界面状态的类型
      */
     interface CustomExplorePageProvider<T> : ExplorePageProvider {
-        /** 探索页面的 UI 状态数据 @since Api 2 */
+        /** 自定义界面的状态。 */
         val uiState: T
 
         /**
-         * 初始化探索页面的数据载入逻辑
+         * 初始化探索内容。
          *
-         * @param viewModelScope 绑定到页面生命周期的协程作用域
-         *
-         * @since Api 2
+         * @param viewModelScope 宿主提供的页面协程作用域
          */
         fun init(viewModelScope: CoroutineScope)
 
         /**
-         * 渲染探索页面的展示内容
+         * 渲染自定义探索内容。
          *
-         * @param nestedScrollConnection 嵌套滚动连接器，用于协调滚动事件
-         *
-         * @since Api 2
+         * @param nestedScrollConnection 与宿主顶栏联动的滚动连接
          */
         @Composable
         fun Content(nestedScrollConnection: NestedScrollConnection)
