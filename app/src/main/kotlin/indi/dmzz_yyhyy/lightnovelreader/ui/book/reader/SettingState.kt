@@ -16,62 +16,62 @@ class SettingState(
     userDataRepository: UserDataRepository,
     coroutineScope: CoroutineScope
 ) : AbstractSettingState(coroutineScope) {
-    val writeModeUserData = userDataRepository.stringUserData(UserDataPath.Reader.WriteMode.path)
+    val writeModeUserData = userDataRepository.userData(UserDataPath.Reader.WriteMode)
     val writeMode by writeModeUserData.safeAsState(WriteMode.Horizontal.name)
-    val fontSizeUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontSize.path)
-    val lineHeightUserData = userDataRepository.floatUserData(UserDataPath.Reader.LineHeight.path)
-    val fontWeighUserData = userDataRepository.floatUserData(UserDataPath.Reader.FontWeigh.path)
-    val spacingAfterParagraphUserData = userDataRepository.floatUserData(UserDataPath.Reader.SpacingAfterParagraph.path)
-    val firstLineTextIndentUserData = userDataRepository.floatUserData(UserDataPath.Reader.FirstLineTextIndent.path)
+    val fontSizeUserData = userDataRepository.userData(UserDataPath.Reader.FontSize)
+    val lineHeightUserData = userDataRepository.userData(UserDataPath.Reader.LineHeight)
+    val fontWeighUserData = userDataRepository.userData(UserDataPath.Reader.FontWeigh)
+    val spacingAfterParagraphUserData =
+        userDataRepository.userData(UserDataPath.Reader.SpacingAfterParagraph)
+    val firstLineTextIndentUserData =
+        userDataRepository.userData(UserDataPath.Reader.FirstLineTextIndent)
     val keepScreenOnUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.KeepScreenOn.path)
+        userDataRepository.userData(UserDataPath.Reader.KeepScreenOn)
     val enableHideStatusBarUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.EnableHideStatusBar.path)
+        userDataRepository.userData(UserDataPath.Reader.EnableHideStatusBar)
     val enableBackgroundImageUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.EnableBackgroundImage.path)
+        userDataRepository.userData(UserDataPath.Reader.EnableBackgroundImage)
     val backgroundImageDisplayModeUserData =
-        userDataRepository.stringUserData(UserDataPath.Reader.BackgroundImageDisplayMode.path)
+        userDataRepository.userData(UserDataPath.Reader.BackgroundImageDisplayMode)
     val isUsingFlipPageUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingFlipPage.path)
+        userDataRepository.userData(UserDataPath.Reader.IsUsingFlipPage)
     val isUsingClickFlipPageUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingClickFlipPage.path)
+        userDataRepository.userData(UserDataPath.Reader.IsUsingClickFlipPage)
     val isUsingVolumeKeyFlipUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.IsUsingVolumeKeyFlip.path)
+        userDataRepository.userData(UserDataPath.Reader.IsUsingVolumeKeyFlip)
     val volumeKeyContinuousFlipIntervalUserData =
-        userDataRepository.floatUserData(UserDataPath.Reader.VolumeKeyContinuousFlipInterval.path)
-    val flipAnimeUserData = userDataRepository.stringUserData(UserDataPath.Reader.FlipAnime.path)
+        userDataRepository.userData(UserDataPath.Reader.VolumeKeyContinuousFlipInterval)
+    val flipAnimeUserData = userDataRepository.userData(UserDataPath.Reader.FlipAnime)
     val batteryIndicatorDisplayModeUserData =
-        userDataRepository.stringUserData(UserDataPath.Reader.BatteryIndicatorDisplayMode.path)
+        userDataRepository.userData(UserDataPath.Reader.BatteryIndicatorDisplayMode)
     val enableTimeIndicatorUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.EnableTimeIndicator.path)
-    val enableChapterTitleIndicatorUserData = userDataRepository.booleanUserData(
-        UserDataPath.Reader.EnableChapterTitleIndicator.path
-    )
-    val enableReadingChapterProgressIndicatorUserData = userDataRepository.booleanUserData(
-        UserDataPath.Reader.EnableReadingChapterProgressIndicator.path
-    )
+        userDataRepository.userData(UserDataPath.Reader.EnableTimeIndicator)
+    val enableChapterTitleIndicatorUserData =
+        userDataRepository.userData(UserDataPath.Reader.EnableChapterTitleIndicator)
+    val enableReadingChapterProgressIndicatorUserData =
+        userDataRepository.userData(UserDataPath.Reader.EnableReadingChapterProgressIndicator)
     val autoPaddingUserData =
-        userDataRepository.booleanUserData(UserDataPath.Reader.AutoPadding.path)
-    val topPaddingUserData = userDataRepository.floatUserData(UserDataPath.Reader.TopPadding.path)
+        userDataRepository.userData(UserDataPath.Reader.AutoPadding)
+    val topPaddingUserData = userDataRepository.userData(UserDataPath.Reader.TopPadding)
     val bottomPaddingUserData =
-        userDataRepository.floatUserData(UserDataPath.Reader.BottomPadding.path)
-    val leftPaddingUserData = userDataRepository.floatUserData(UserDataPath.Reader.LeftPadding.path)
+        userDataRepository.userData(UserDataPath.Reader.BottomPadding)
+    val leftPaddingUserData = userDataRepository.userData(UserDataPath.Reader.LeftPadding)
     val rightPaddingUserData =
-        userDataRepository.floatUserData(UserDataPath.Reader.RightPadding.path)
-    val textColorUserData = userDataRepository.colorUserData(UserDataPath.Reader.TextColor.path)
+        userDataRepository.userData(UserDataPath.Reader.RightPadding)
+    val textColorUserData = userDataRepository.userData(UserDataPath.Reader.TextColor)
     val textDarkColorUserData =
-        userDataRepository.colorUserData(UserDataPath.Reader.TextDarkColor.path)
-    val fontUriUserData = userDataRepository.uriUserData(UserDataPath.Reader.FontUri.path)
+        userDataRepository.userData(UserDataPath.Reader.TextDarkColor)
+    val fontUriUserData = userDataRepository.userData(UserDataPath.Reader.FontUri)
     val backgroundColorUserData =
-        userDataRepository.colorUserData(UserDataPath.Reader.BackgroundColor.path)
+        userDataRepository.userData(UserDataPath.Reader.BackgroundColor)
     val backgroundDarkColorUserData =
-        userDataRepository.colorUserData(UserDataPath.Reader.BackgroundDarkColor.path)
+        userDataRepository.userData(UserDataPath.Reader.BackgroundDarkColor)
     val backgroundImageUriUserData =
-        userDataRepository.uriUserData(UserDataPath.Reader.BackgroundImageUri.path)
+        userDataRepository.userData(UserDataPath.Reader.BackgroundImageUri)
     val backgroundDarkImageUriUserData =
-        userDataRepository.uriUserData(UserDataPath.Reader.BackgroundDarkImageUri.path)
+        userDataRepository.userData(UserDataPath.Reader.BackgroundDarkImageUri)
     val backBlockModeUserData =
-        userDataRepository.stringUserData(UserDataPath.Reader.BackBlockMode.path)
+        userDataRepository.userData(UserDataPath.Reader.BackBlockMode)
     private val readerStyle = ReaderStyle()
 
     val fontSize by fontSizeUserData.safeAsState(readerStyle.fontSize.value)

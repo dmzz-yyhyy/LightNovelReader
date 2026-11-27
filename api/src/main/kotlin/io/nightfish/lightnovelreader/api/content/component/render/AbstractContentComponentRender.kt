@@ -27,7 +27,7 @@ abstract class AbstractContentComponentRender<Self, Data>: AxisMeasurable<Self, 
      *
      * @since Api 4
      */
-    abstract val id: Identifier
+    abstract val id: Identifier.ContentComponent
 
     /**
      * 组件的UI渲染函数

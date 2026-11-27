@@ -46,18 +46,19 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.components.ErrorPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChapterSelectionBottomSheet(
     sheetState: SheetState,
-    selectedVolumeId: String,
+    selectedVolumeId: Identifier.Volume?,
     bookVolumes: BookVolumes?,
     error: WebRequestError?,
-    readingChapterId: String,
+    readingChapterId: Identifier.Chapter,
     onDismissRequest: () -> Unit,
-    onClickChapter: (chapterId: String) -> Unit,
-    onChangeSelectedVolumeId: (volumeId: String) -> Unit
+    onClickChapter: (chapterId: Identifier.Chapter) -> Unit,
+    onChangeSelectedVolumeId: (volumeId: Identifier.Volume?) -> Unit
 ) {
     val lazyColumnState = rememberLazyListState()
 
@@ -68,7 +69,7 @@ fun ChapterSelectionBottomSheet(
     LaunchedEffect(sheetState.currentValue, autoScrolled, readingChapterId, bookVolumes) {
         if (autoScrolled) return@LaunchedEffect
         if (sheetState.currentValue != SheetValue.Expanded) return@LaunchedEffect
-        if (readingChapterId.isBlank()) return@LaunchedEffect
+
         val bookVolumes: BookVolumes = bookVolumes ?: return@LaunchedEffect
 
         val volumes = bookVolumes.volumes
@@ -178,7 +179,7 @@ fun ChapterSelectionBottomSheet(
                                     modifier = Modifier
                                         .clickable {
                                             onChangeSelectedVolumeId(
-                                                if (selectedVolumeId == volume.volumeId) ""
+                                                if (selectedVolumeId == volume.volumeId) null
                                                 else volume.volumeId
                                             )
                                         }

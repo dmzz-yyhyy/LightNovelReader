@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormatRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,7 +20,7 @@ import javax.inject.Inject
 class EditTextFormattingRuleDialogViewModel @Inject constructor(
     private val formattingRepository: FormatRepository,
 ) : ViewModel() {
-    private var bookId: String? = null
+    private var bookId: Identifier.Book? = null
     private var initialRuleHash: Int? by mutableStateOf(null)
     var formattingRule: FormattingRule? by mutableStateOf(null)
         private set
@@ -29,7 +30,7 @@ class EditTextFormattingRuleDialogViewModel @Inject constructor(
     val hasUnsavedChanges: Boolean
         get() = formattingRule?.hashCode() != initialRuleHash
 
-    fun load(bookId: String, ruleId: Int) {
+    fun load(bookId: Identifier.Book, ruleId: Int) {
         this.bookId = bookId
         formattingRule = null
         initialRuleHash = null

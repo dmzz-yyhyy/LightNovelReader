@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import io.nightfish.lightnovelreader.api.bookshelf.Bookshelf
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,13 +18,13 @@ import javax.inject.Inject
 class EditBookshelfViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository
 ) : ViewModel() {
-    var bookshelf: Bookshelf by mutableStateOf(Bookshelf())
+    var bookshelf: Bookshelf by mutableStateOf(bookshelfRepository.newBookshelf())
         private set
 
-    fun init(id: Int?) {
+    fun init(id: Identifier.Bookshelf?) {
         id ?: return
         viewModelScope.launch(Dispatchers.IO) {
-            bookshelf = bookshelfRepository.getBookshelf(id) ?: Bookshelf()
+            bookshelf = bookshelfRepository.getBookshelf(id) ?: bookshelfRepository.newBookshelf()
         }
     }
 

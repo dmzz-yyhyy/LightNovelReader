@@ -1,6 +1,5 @@
 package io.nightfish.lightnovelreader.api.identifier
 
-import com.github.michaelbull.result.getOrElse
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -28,9 +27,7 @@ class IdentifierSerializer : KSerializer<Identifier> {
      * @since Api 4
      */
     override fun deserialize(decoder: Decoder): Identifier =
-        decoder.decodeString().toId().getOrElse {
-            it.ofAppId()
-        }
+        Identifier.parse(decoder.decodeString())
 
     /**
      * 序列化

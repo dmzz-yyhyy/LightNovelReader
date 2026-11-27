@@ -1,5 +1,7 @@
 package io.nightfish.lightnovelreader.api.book
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+
 /**
  * 本地书本数据源接口
  * 提供对本地存储的书本数据的增删改查操作
@@ -16,7 +18,7 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 2
      */
-    suspend fun getBookInformation(id: String): BookInformation?
+    suspend fun getBookInformation(id: Identifier.Book): BookInformation?
 
     /**
      * 更新或写入本地书本详情
@@ -36,7 +38,7 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 2
      */
-    suspend fun getBookVolumes(id: String): BookVolumes?
+    suspend fun getBookVolumes(id: Identifier.Book): BookVolumes?
 
     /**
      * 更新或写入本地书本卷目录
@@ -56,7 +58,7 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 4
      */
-    suspend fun getChapterContent(id: String): ChapterContent?
+    suspend fun getChapterContent(id: Identifier.Chapter): ChapterContent?
 
     /**
      * 更新或写入本地章节内容
@@ -76,7 +78,7 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 4
      */
-    suspend fun getUserReadingData(id: String): UserReadingData
+    suspend fun getUserReadingData(id: Identifier.Book): UserReadingData
 
     /**
      * 更新用户书本阅读数据
@@ -86,7 +88,10 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 4
      */
-    suspend fun updateUserReadingData(id: String, update: (UserReadingData) -> UserReadingData)
+    suspend fun updateUserReadingData(
+        id: Identifier.Book,
+        update: (UserReadingData) -> UserReadingData
+    )
 
     /**
      * 获取全部用户书本阅读数据
@@ -106,7 +111,7 @@ interface LocalBookDataSourceApi {
      *
      * @since Api 2
      */
-    suspend fun isChapterContentExists(id: String): Boolean
+    suspend fun isChapterContentExists(id: Identifier.Chapter): Boolean
 
     /**
      * 清空所有本地书本数据

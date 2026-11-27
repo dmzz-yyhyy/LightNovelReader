@@ -23,6 +23,7 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
+import java.util.zip.ZipFile
 import javax.inject.Inject
 
 @HiltViewModel
@@ -96,7 +97,7 @@ class PluginStoreInstallViewModel @Inject constructor(
                     partFiles.forEach { it.delete() }
 
                     val extracted = File(tempDir, "store_${plugin.id}.lnrp")
-                    java.util.zip.ZipFile(mergedZip).use { zip ->
+                    ZipFile(mergedZip).use { zip ->
                         val entry = zip.entries().asSequence()
                             .firstOrNull { it.name.endsWith(".lnrp") || it.name.endsWith(".apk") }
                             ?: throw Exception("No plugin file found in archive")

@@ -13,6 +13,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingGroup
 import indi.dmzz_yyhyy.lightnovelreader.data.format.FormattingRule
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -26,12 +27,12 @@ class TextFormattingViewModel @Inject constructor(
 ) : ViewModel() {
     var formattingGroups by mutableStateOf(emptyList<FormattingGroup>())
         private set
-    var bookId = ""
+    var bookId: Identifier.Book = Identifier.ALL_BOOKS
     var rules by mutableStateOf(emptyList<FormattingRule>())
         private set
     private var rulesJob: Job? = null
     private val bookInformationFlowCache =
-        mutableMapOf<String, Flow<Result<BookInformation, WebRequestError>>>()
+        mutableMapOf<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -49,7 +50,7 @@ class TextFormattingViewModel @Inject constructor(
         }
     }
 
-    fun loadBookFormattingRules(bookId: String) {
+    fun loadBookFormattingRules(bookId: Identifier.Book) {
         this.bookId = bookId
         rules = emptyList()
         rulesJob?.cancel()

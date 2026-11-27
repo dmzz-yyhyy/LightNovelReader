@@ -7,12 +7,13 @@ import androidx.compose.runtime.setValue
 import com.github.michaelbull.result.Result
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
 interface DownloadItem {
     val type: DownloadType
-    val bookId: String
+    val bookId: Identifier.Book
     val startTime: LocalDateTime
     val progress: Float
     val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>
@@ -21,7 +22,7 @@ interface DownloadItem {
 @Stable
 class MutableDownloadItem(
     override val type: DownloadType,
-    override val bookId: String,
+    override val bookId: Identifier.Book,
     override val bookInformationFlow: Flow<Result<BookInformation, WebRequestError>>,
     override val startTime: LocalDateTime = LocalDateTime.now()
 ) : DownloadItem {

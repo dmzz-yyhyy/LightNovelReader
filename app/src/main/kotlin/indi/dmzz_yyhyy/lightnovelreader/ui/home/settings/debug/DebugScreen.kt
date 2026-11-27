@@ -26,13 +26,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
 
 @Composable
 fun DebugScreen(
     onClickBack: () -> Unit,
     onClickQuery: (String) -> Unit,
-    onClickOpenBook: (String) -> Unit,
+    onClickOpenBook: (Identifier.Book) -> Unit,
     result: String
 ) {
     LazyColumn(Modifier.fillMaxSize()) {
@@ -44,7 +45,7 @@ fun DebugScreen(
 }
 
 @Composable
-fun BookBlock(onClickOpenBook: (String) -> Unit) {
+fun BookBlock(onClickOpenBook: (Identifier.Book) -> Unit) {
     var bookId by remember { mutableStateOf("") }
 
     Column(Modifier.fillMaxWidth()) {
@@ -68,7 +69,10 @@ fun BookBlock(onClickOpenBook: (String) -> Unit) {
                 .padding(horizontal = 20.dp),
             horizontalArrangement = Arrangement.End
         ) {
-            Button(onClick = { onClickOpenBook(bookId) }) {
+            Button(onClick = {
+                runCatching { Identifier.parseAs<Identifier.Book>(bookId) }.getOrNull()
+                    ?.let(onClickOpenBook)
+            }) {
                 Text("打开")
             }
         }

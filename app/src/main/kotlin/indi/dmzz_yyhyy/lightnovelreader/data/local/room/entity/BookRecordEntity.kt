@@ -4,24 +4,23 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.TypeConverters
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupGroup
+import indi.dmzz_yyhyy.lightnovelreader.data.local.backup.BackupTable
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
-import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalDateSerializer
-import indi.dmzz_yyhyy.lightnovelreader.data.serializer.LocalTimeSerializer
-import kotlinx.serialization.Serializable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.time.LocalDate
 import java.time.LocalTime
 
-@Serializable
 @TypeConverters(LocalDateTimeConverter::class)
 @Entity(
     tableName = "book_records",
     primaryKeys = ["book_id", "date"],
     indices = [Index(value = ["date"])]
 )
+@BackupTable(BackupGroup.READING, "book_id", "book")
 data class BookRecordEntity(
     @ColumnInfo(name = "book_id")
-    val bookId: String,
-    @Serializable(LocalDateSerializer::class)
+    val bookId: Identifier.Book,
     @ColumnInfo(name = "date")
     val date: LocalDate,
     @ColumnInfo(name = "reads")
@@ -32,10 +31,8 @@ data class BookRecordEntity(
     val isFinished: Boolean = false,
     @ColumnInfo(name = "is_favorited")
     val isFavorited: Boolean = false,
-    @Serializable(LocalTimeSerializer::class)
     @ColumnInfo(name = "first_seen")
     val firstSeen: LocalTime,
-    @Serializable(LocalTimeSerializer::class)
     @ColumnInfo(name = "last_seen")
     val lastSeen: LocalTime,
 ) : Mergeable<BookRecordEntity> {

@@ -8,6 +8,7 @@ import androidx.room.TypeConverters
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.ChapterReadingProgressMapConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.UserReadingDataEntity
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -19,31 +20,31 @@ interface UserReadingDataDao {
                 "values (:id, :lastReadTime, :totalReadTime, :readingProgress, :lastReadChapterId, :lastReadChapterTitle, :currentChapterReadingProgressMap, :maxChapterReadingProgressMap)"
     )
     suspend fun insert(
-        id: String,
+        id: Identifier.Book,
         lastReadTime: LocalDateTime,
         totalReadTime: Int,
         readingProgress: Float,
-        lastReadChapterId: String,
+        lastReadChapterId: Identifier.Chapter?,
         lastReadChapterTitle: String,
-        currentChapterReadingProgressMap: Map<String, Float>,
-        maxChapterReadingProgressMap: Map<String, Float>
+        currentChapterReadingProgressMap: Map<Identifier.Chapter, Float>,
+        maxChapterReadingProgressMap: Map<Identifier.Chapter, Float>
     )
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(userReading: UserReadingDataEntity)
 
     @Query("select * from user_reading_data where id = :id")
-    suspend fun getEntity(id: String): UserReadingDataEntity?
+    suspend fun getEntity(id: Identifier.Book): UserReadingDataEntity?
 
     @Query("select * from user_reading_data where id = :id")
-    fun getEntityFlow(id: String): Flow<UserReadingDataEntity?>
+    fun getEntityFlow(id: Identifier.Book): Flow<UserReadingDataEntity?>
 
-    @Query("select * from user_reading_data")
-    suspend fun getAll(): List<UserReadingDataEntity>
+    @Query("select * from user_reading_data WHERE id GLOB 'book:' || :namespace || ':*'")
+    suspend fun getAll(namespace: String): List<UserReadingDataEntity>
 
     @Query("delete from user_reading_data where id in (:ids)")
-    suspend fun deleteByIds(ids: List<String>)
+    suspend fun deleteByIds(ids: List<Identifier.Book>)
 
-    @Query("delete from user_reading_data")
-    suspend fun clear()
+    @Query("delete from user_reading_data WHERE id GLOB 'book:' || :namespace || ':*'")
+    suspend fun clear(namespace: String)
 }

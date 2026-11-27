@@ -1,8 +1,10 @@
 package indi.dmzz_yyhyy.lightnovelreader.benchmark.bookshelf
 
+import android.graphics.Rect
 import android.os.SystemClock
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.uiautomator.By
 import indi.dmzz_yyhyy.lightnovelreader.benchmark.framework.BenchmarkTestCase
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -92,19 +94,19 @@ class BookshelfBehaviorScenarios : BenchmarkTestCase() {
     }
 
     private fun assertBookAbove(upperTitle: String, lowerTitle: String) {
-        var upper = emptyList<android.graphics.Rect>()
-        var lower = emptyList<android.graphics.Rect>()
+        var upper = emptyList<Rect>()
+        var lower = emptyList<Rect>()
         repeat(40) {
-            val allBooksTop = device.findObject(androidx.test.uiautomator.By.textStartsWith("All ("))
+            val allBooksTop = device.findObject(By.textStartsWith("All ("))
                 ?.visibleBounds?.bottom ?: Int.MAX_VALUE
-            upper = device.findObjects(androidx.test.uiautomator.By.text(upperTitle))
+            upper = device.findObjects(By.text(upperTitle))
                 .map { it.visibleBounds }
                 .filter { it.top >= allBooksTop }
-                .sortedWith(compareBy<android.graphics.Rect> { it.top }.thenBy { it.left })
-            lower = device.findObjects(androidx.test.uiautomator.By.text(lowerTitle))
+                .sortedWith(compareBy<Rect> { it.top }.thenBy { it.left })
+            lower = device.findObjects(By.text(lowerTitle))
                 .map { it.visibleBounds }
                 .filter { it.top >= allBooksTop }
-                .sortedWith(compareBy<android.graphics.Rect> { it.top }.thenBy { it.left })
+                .sortedWith(compareBy<Rect> { it.top }.thenBy { it.left })
             val firstUpper = upper.firstOrNull()
             val firstLower = lower.firstOrNull()
             if (firstUpper != null && firstLower != null) {

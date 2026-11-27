@@ -49,16 +49,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalNavigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.overlay.overlayEntry
 import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.book.ChapterInformation
 import io.nightfish.lightnovelreader.api.book.Volume
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 
 fun NavEntryScope.markAllChaptersAsReadDialog() {
     overlayEntry<Route.MarkAllChaptersAsReadDialog> { backStackEntry ->
@@ -103,7 +104,7 @@ fun NavEntryScope.markAllChaptersAsReadDialog() {
     }
 }
 
-fun Navigator.navigateToMarkAllChaptersAsReadDialog(bookId: String) {
+fun Navigator.navigateToMarkAllChaptersAsReadDialog(bookId: Identifier.Book) {
     navigate(Route.MarkAllChaptersAsReadDialog(bookId))
 }
 
@@ -113,7 +114,7 @@ private enum class MarkReadMode { All, Range }
 fun MarkAllChaptersAsReadDialog(
     onDismissRequest: () -> Unit,
     onConfirmAll: () -> Unit,
-    onConfirmRange: (List<String>) -> Unit,
+    onConfirmRange: (List<Identifier.Chapter>) -> Unit,
     volumes: List<Volume>
 ) {
     val allChapterIds = remember(volumes) {
@@ -124,8 +125,8 @@ fun MarkAllChaptersAsReadDialog(
     }
 
     var mode by remember { mutableStateOf(MarkReadMode.All) }
-    var startChapterId by remember { mutableStateOf<String?>(null) }
-    var endChapterId by remember { mutableStateOf<String?>(null) }
+    var startChapterId by remember { mutableStateOf<Identifier.Chapter?>(null) }
+    var endChapterId by remember { mutableStateOf<Identifier.Chapter?>(null) }
 
     val selectedIds = remember(startChapterId, endChapterId, allChapterIds) {
         val s = startChapterId?.let(indexMap::get) ?: return@remember emptyList()
@@ -145,7 +146,7 @@ fun MarkAllChaptersAsReadDialog(
         endChapterId = null
     }
 
-    fun onClickChapter(id: String) {
+    fun onClickChapter(id: Identifier.Chapter) {
         val s = startChapterId
         val e = endChapterId
         when {
@@ -271,15 +272,15 @@ private fun MarkReadModeSegmentedButton(
 private fun ChapterRangeTree(
     modifier: Modifier,
     volumes: List<Volume>,
-    selectedIds: Set<String>,
-    startId: String?,
-    endId: String?,
-    onClickChapter: (String) -> Unit
+    selectedIds: Set<Identifier.Chapter>,
+    startId: Identifier.Chapter?,
+    endId: Identifier.Chapter?,
+    onClickChapter: (Identifier.Chapter) -> Unit
 ) {
     val volumeKeys = remember(volumes) { volumes.map { it.volumeId } }
 
     val expandStates = remember(volumeKeys) {
-        mutableStateMapOf<String, Boolean>().apply {
+        mutableStateMapOf<Identifier.Volume, Boolean>().apply {
             volumes.forEach { this[it.volumeId] = true }
         }
     }

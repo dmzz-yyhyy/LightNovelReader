@@ -1,54 +1,51 @@
 package io.nightfish.lightnovelreader.api.userdata
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 
 /**
- * 用户数据的数据访问对象接口
- * 提供对持久化存储的底层操作
+ * 用户数据的持久化访问接口
+ * 值使用路径所声明的序列化器编码为 JSON
  *
- * @since Api 2
+ * @since Api 4
  */
 interface UserDataDaoApi {
     /**
-     * 写入或更新一条用户数据
+     * 写入用户数据, 已存在时覆盖
      *
-     * @param path 数据的完整路径
-     * @param group 数据所属的组路径
-     * @param type 数据类型名称字符串
-     * @param value 序列化后的字符串值
+     * @param id 设置标识符
+     * @param value JSON 格式的数据
      *
      * @since Api 4
      */
-    suspend fun insert(path: String, group: String, type: String, value: String)
+    suspend fun insert(id: Identifier.SettingPath, value: String)
 
     /**
-     * 通过路径读取用户数据的字符串值
+     * 读取用户数据
      *
-     * @param path 数据的完整路径
-     *
-     * @return 存储的字符串值, 如果不存在则返回null
+     * @param id 设置标识符
+     * @return JSON 格式的数据, 不存在时返回null
      *
      * @since Api 4
      */
-    suspend fun get(path: String): String?
+    suspend fun get(id: Identifier.SettingPath): String?
 
     /**
-     * 获取用户数据字符串值的可观测流
+     * 监听用户数据变化
      *
-     * @param path 数据的完整路径
-     *
-     * @return 存储字符串可空值的[Flow]
-     *
-     * @since Api 2
-     */
-    fun getFlow(path: String): Flow<String?>
-
-    /**
-     * 删除指定路径的用户数据
-     *
-     * @param path 要删除的数据路径
+     * @param id 设置标识符
+     * @return JSON 数据的可观测流, 不存在时发出null
      *
      * @since Api 4
      */
-    suspend fun remove(path: String)
+    fun getFlow(id: Identifier.SettingPath): Flow<String?>
+
+    /**
+     * 删除用户数据
+     *
+     * @param id 设置标识符
+     *
+     * @since Api 4
+     */
+    suspend fun remove(id: Identifier.SettingPath)
 }

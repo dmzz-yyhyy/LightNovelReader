@@ -29,13 +29,14 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Url
 import io.ktor.http.isSuccess
+import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.Volume
 import io.nightfish.lightnovelreader.api.book.WordCount
-import io.nightfish.lightnovelreader.api.Route
 import io.nightfish.lightnovelreader.api.content.component.data.ImageComponentData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.util.Cache
 import io.nightfish.lightnovelreader.api.web.WebBookDataSource
 import io.nightfish.lightnovelreader.api.web.WebDataSource
@@ -65,7 +66,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import java.net.ConnectException
-import java.net.UnknownHostException
 import java.nio.charset.Charset
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -77,7 +77,7 @@ import kotlin.time.Duration.Companion.seconds
     "Wenku8",
     "LightNovelReader for wenku8.net"
 )
-class Wenku8Api(private val context: Context) : WebBookDataSource {
+class Wenku8Api(context: Context) : WebBookDataSource {
     private val tagList = listOf(
         "校园", "青春", "恋爱", "治愈", "群像",
         "竞技", "音乐", "美食", "旅行", "欢乐向",
@@ -226,15 +226,16 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
         )
     }
 
-    override val id = "Wenku8".ofId()
+    override val id = "Wenku8".ofId(Identifier::DataSource)
 
-    override suspend fun getBookInformation(id: String) =
-        bookRequestDispatcher.getBookInformation(id)
+    override suspend fun getBookInformation(id: Identifier.Book) =
+        bookRequestDispatcher.getBookInformation(id.id)
 
-    override suspend fun getBookVolumes(id: String) = bookRequestDispatcher.getBookVolumes(id)
+    override suspend fun getBookVolumes(id: Identifier.Book) =
+        bookRequestDispatcher.getBookVolumes(id.id)
 
-    override suspend fun getChapterContent(chapterId: String, bookId: String) =
-        bookRequestDispatcher.getChapterContent(chapterId, bookId)
+    override suspend fun getChapterContent(chapterId: Identifier.Chapter, bookId: Identifier.Book) =
+        bookRequestDispatcher.getChapterContent(chapterId.id, bookId.id)
 
     override val searchProvider: SearchProvider = Wenku8SearchProvider(bookRequestDispatcher)
     override val explorePageProvider: ExplorePageProvider = Wenku8ExplorePageProvider(host, this)
@@ -244,9 +245,9 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
         if (tag in tagList) Route.Main.Explore.Expanded(tag) else null
 
     override suspend fun getCoverUriInVolume(
-        bookId: String,
+        bookId: Identifier.Book,
         volume: Volume,
-        volumeChapterContentMap: MutableMap<String, ChapterContent>,
+        volumeChapterContentMap: MutableMap<Identifier.Chapter, ChapterContent>,
         context: Context
     ): Uri? {
         return volume.chapters
@@ -293,7 +294,7 @@ class Wenku8Api(private val context: Context) : WebBookDataSource {
                         ?.attr("title")
                         ?.let { it1 -> titleRegex.find(it1)?.groups }
                     id to BookInformation(
-                        id = id,
+                        id = this.id.child(Identifier::Book, id),
                         title = titleGroup?.get(1)?.value
                             ?: element.selectFirst("div > div:nth-child(1) > a")
                                 ?.attr("title") ?: "",

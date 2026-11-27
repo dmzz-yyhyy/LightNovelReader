@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS `book_information` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `subtitle` TEXT NOT NULL, `cover_uri` TEXT NOT NULL, `author` TEXT NOT NULL, `description` TEXT NOT NULL, `tags` TEXT NOT NULL, `publishing_house` TEXT NOT NULL, `word_count` TEXT NOT NULL, `last_update` TEXT NOT NULL, `is_complete` INTEGER NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `volume` (`book_id` TEXT NOT NULL, `volume_id` TEXT NOT NULL, `volume_title` TEXT NOT NULL, `chapter_id_list` TEXT NOT NULL, `volume_index` INTEGER NOT NULL, PRIMARY KEY(`volume_id`));
+CREATE TABLE IF NOT EXISTS `chapter_information` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `chapter_content` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `lastChapter` TEXT NOT NULL, `nextChapter` TEXT NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `user_reading_data` (`id` TEXT NOT NULL, `last_read_time` TEXT NOT NULL, `total_read_time` INTEGER NOT NULL, `reading_progress` REAL NOT NULL, `last_read_chapter_id` TEXT NOT NULL, `last_read_chapter_title` TEXT NOT NULL, `current_chapter_reading_progress_map` BLOB NOT NULL, `max_chapter_reading_progress_map` BLOB NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `user_data` (`path` TEXT NOT NULL, `group` TEXT NOT NULL, `type` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`path`));
+CREATE TABLE IF NOT EXISTS `book_shelf` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `sort_type` TEXT NOT NULL, `sort_reversed` INTEGER NOT NULL, `auto_cache` INTEGER NOT NULL, `system_update_reminder` INTEGER NOT NULL, `all_book_ids` TEXT NOT NULL, `pinned_book_ids` TEXT NOT NULL, `updated_book_ids` TEXT NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `book_shelf_book_metadata` (`id` TEXT NOT NULL, `last_update` TEXT NOT NULL, `book_shelf_ids` TEXT NOT NULL, PRIMARY KEY(`id`));
+CREATE TABLE IF NOT EXISTS `book_records` (`book_id` TEXT NOT NULL, `date` INTEGER NOT NULL, `reads` INTEGER NOT NULL, `seconds` INTEGER NOT NULL, `is_finished` INTEGER NOT NULL, `is_favorited` INTEGER NOT NULL, `first_seen` INTEGER NOT NULL, `last_seen` INTEGER NOT NULL, PRIMARY KEY(`book_id`, `date`));
+CREATE INDEX IF NOT EXISTS `index_book_records_date` ON `book_records` (`date`);
+CREATE TABLE IF NOT EXISTS `daily_count` (`date` INTEGER NOT NULL, `time_count` BLOB NOT NULL, PRIMARY KEY(`date`));
+CREATE TABLE IF NOT EXISTS `formatting_rule` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `book_id` TEXT NOT NULL, `name` TEXT NOT NULL, `is_regex` INTEGER NOT NULL, `match` TEXT NOT NULL, `replacement` TEXT NOT NULL, `is_enabled` INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT);
+INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '860399e6f4456fff8999a3720795f4e8');

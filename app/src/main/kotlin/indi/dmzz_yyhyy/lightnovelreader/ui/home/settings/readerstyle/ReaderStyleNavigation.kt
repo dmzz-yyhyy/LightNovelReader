@@ -20,16 +20,16 @@ fun NavEntryScope.settingsReaderStyleDestination() {
             onClickBack = navigator::popBackStack,
             onClickChangeTextColor = {
                 navigator.navigateToColorPickerDialog(
-                    if (isDark) UserDataPath.Reader.TextDarkColor.path
-                    else UserDataPath.Reader.TextColor.path,
+                    if (isDark) UserDataPath.Reader.TextDarkColor
+                    else UserDataPath.Reader.TextColor,
                     listOf(-1, 0xFF1D1B20, 0xFFE6E0E9),
                     target = Route.Book.ColorPickerTargetType.TEXT,
                 )
             },
             onClickChangeBackgroundColor = {
                 navigator.navigateToColorPickerDialog(
-                    if (isDark) UserDataPath.Reader.BackgroundDarkColor.path
-                    else UserDataPath.Reader.BackgroundColor.path,
+                    if (isDark) UserDataPath.Reader.BackgroundDarkColor
+                    else UserDataPath.Reader.BackgroundColor,
                     listOf(
                         -1,
                         0x38E8CCA5,

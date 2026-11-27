@@ -56,7 +56,7 @@ data class ParagraphComponentData(
     TextData<ParagraphComponentData>,
     Divisible<ParagraphComponentData>
 {
-    override val id: Identifier = Companion.id
+    override val id: Identifier.ContentComponent = Companion.id
 
     /**
      * 合并阅读器、段落与文本节点样式, 生成用于测绘和渲染的文本
@@ -197,7 +197,7 @@ data class ParagraphComponentData(
      */
     companion object {
         /** 文本件的唯一标识字符串 */
-        val id = "paragraph".ofAppId()
+        val id: Identifier.ContentComponent = "paragraph".ofAppId(Identifier::ContentComponent)
 
         /** 默认JSON序列化器 */
         val jsonSerializer = object : ComponentDataJsonElementSerializer<ParagraphComponentData> {

@@ -15,6 +15,7 @@ import io.nightfish.lightnovelreader.api.content.component.WriteMode
 import io.nightfish.lightnovelreader.api.content.component.data.AbstractContentComponentData
 import io.nightfish.lightnovelreader.api.content.component.data.cap.Divisible
 import io.nightfish.lightnovelreader.api.content.component.render.cap.SizeMeasurable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.LocalComponentRender
 import io.nightfish.lightnovelreader.api.ui.ReaderStyle
 import kotlinx.coroutines.currentCoroutineContext
@@ -39,7 +40,7 @@ internal data class MeasuredComponent(
 }
 
 internal class ChapterLayout(
-    val chapterId: String,
+    val chapterId: Identifier.Chapter,
     val items: List<MeasuredComponent>,
     val pages: List<List<MeasuredComponent>>,
     val offsets: List<Long>,
@@ -60,7 +61,10 @@ internal class ChapterLayouter(
     private val pageLength = mode.main(viewport)
     private val crossSize = mode.cross(viewport)
 
-    suspend fun layout(chapterId: String, content: List<AbstractContentComponentData>): ChapterLayout {
+    suspend fun layout(
+        chapterId: Identifier.Chapter,
+        content: List<AbstractContentComponentData>
+    ): ChapterLayout {
         val items = mutableListOf<MeasuredComponent>()
         val pages = mutableListOf<List<MeasuredComponent>>()
         val offsets = mutableListOf(0L)

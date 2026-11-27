@@ -214,7 +214,7 @@ fun BookshelfHomeTopBar(
                                 },
                                 onClick = {
                                     mainMenuExpanded = false
-                                    uiState.onEdit(uiState.selectedBookshelfId)
+                                    uiState.selectedBookshelfId?.let(uiState.onEdit)
                                 }
                             )
                             DropdownMenuItem(

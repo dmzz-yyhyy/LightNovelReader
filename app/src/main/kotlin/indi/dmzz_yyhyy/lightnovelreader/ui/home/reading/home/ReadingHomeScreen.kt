@@ -70,10 +70,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.valentinilk.shimmer.ShimmerBounds
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.michaelbull.result.onErr
 import com.github.michaelbull.result.onOk
+import com.valentinilk.shimmer.ShimmerBounds
 import com.valentinilk.shimmer.shimmer
 import com.valentinilk.shimmer.unclippedBoundsInWindow
 import indi.dmzz_yyhyy.lightnovelreader.R
@@ -94,6 +94,7 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import me.saket.swipe.SwipeAction
@@ -103,15 +104,15 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun ReadingScreen(
-    recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>>,
-    onClickBook: (String) -> Unit,
-    onClickContinueReading: (String, String) -> Unit,
+    recentReadingBooks: List<Pair<Identifier.Book, Flow<RecentReadingBook>>>,
+    onClickBook: (Identifier.Book) -> Unit,
+    onClickContinueReading: (Identifier.Book, Identifier.Chapter) -> Unit,
     onClickDownloadManager: () -> Unit,
     onClickStats: () -> Unit,
-    onRemoveBook: (String) -> Unit,
-    onAddBook: (String) -> Unit,
+    onRemoveBook: (Identifier.Book) -> Unit,
+    onAddBook: (Identifier.Book) -> Unit,
     @Suppress("unused") sharedTransitionScope: SharedTransitionScope,
-    onClickOpenChapters: (String) -> Unit,
+    onClickOpenChapters: (Identifier.Book) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
@@ -159,24 +160,44 @@ private fun ReadingHomeCardSkeleton() {
     val cornerShapeLarge = RoundedCornerShape(10.dp)
 
     Row(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
             .shimmer(shimmer),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(Modifier.size(width = 118.dp, height = 172.dp).background(baseColor, cornerShapeLarge))
+        Box(Modifier
+            .size(width = 118.dp, height = 172.dp)
+            .background(baseColor, cornerShapeLarge))
         Column(
-            modifier = Modifier.padding(start = 14.dp, top = 4.dp).heightIn(172.dp).weight(1f),
+            modifier = Modifier
+                .padding(start = 14.dp, top = 4.dp)
+                .heightIn(172.dp)
+                .weight(1f),
             verticalArrangement = Arrangement.SpaceAround,
         ) {
-            Box(Modifier.size(128.dp, 38.dp).background(baseColor, cornerShape))
-            Box(Modifier.fillMaxWidth(0.9f).height(48.dp).background(baseColor, cornerShape))
-            Box(Modifier.fillMaxWidth(0.65f).height(20.dp).background(baseColor, cornerShape))
+            Box(Modifier
+                .size(128.dp, 38.dp)
+                .background(baseColor, cornerShape))
+            Box(Modifier
+                .fillMaxWidth(0.9f)
+                .height(48.dp)
+                .background(baseColor, cornerShape))
+            Box(Modifier
+                .fillMaxWidth(0.65f)
+                .height(20.dp)
+                .background(baseColor, cornerShape))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Box(Modifier.weight(1f).height(40.dp).background(baseColor, cornerShapeLarge))
-                Box(Modifier.weight(3f).height(40.dp).background(baseColor, cornerShapeLarge))
+                Box(Modifier
+                    .weight(1f)
+                    .height(40.dp)
+                    .background(baseColor, cornerShapeLarge))
+                Box(Modifier
+                    .weight(3f)
+                    .height(40.dp)
+                    .background(baseColor, cornerShapeLarge))
             }
         }
     }
@@ -186,12 +207,12 @@ private fun ReadingHomeCardSkeleton() {
 @Composable
 private fun ReadingContent(
     modifier: Modifier,
-    onClickBook: (String) -> Unit,
-    onClickContinueReading: (String, String) -> Unit,
-    onAddBook: (String) -> Unit,
-    onRemoveBook: (String) -> Unit,
-    recentReadingBooks: List<Pair<String, Flow<RecentReadingBook>>>,
-    onClickOpenChapters: (String) -> Unit
+    onClickBook: (Identifier.Book) -> Unit,
+    onClickContinueReading: (Identifier.Book, Identifier.Chapter) -> Unit,
+    onAddBook: (Identifier.Book) -> Unit,
+    onRemoveBook: (Identifier.Book) -> Unit,
+    recentReadingBooks: List<Pair<Identifier.Book, Flow<RecentReadingBook>>>,
+    onClickOpenChapters: (Identifier.Book) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -208,7 +229,7 @@ private fun ReadingContent(
         onRemoveBook,
         onAddBook
     ) {
-        { bookId: String, bookTitle: String ->
+        { bookId: Identifier.Book, bookTitle: String ->
             removeFromBookshelfAction.toSwipeAction {
                 onRemoveBook(bookId)
                 showSnackbar(
@@ -399,10 +420,10 @@ private fun ReadingBookErrCard(
 
 @Composable
 private fun ReadingHeaderErrCard(
-    bookId: String,
+    bookId: Identifier.Book,
     data: UserReadingData,
     error: WebRequestError,
-    onClickContinueReading: (String, String) -> Unit,
+    onClickContinueReading: (Identifier.Book, Identifier.Chapter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MM/dd") }
@@ -504,18 +525,42 @@ fun ReadingBookCardSkeleton(
     val baseColor = colorScheme.surfaceContainerLow
 
     Row(
-        modifier = modifier.height(144.dp).padding(4.dp)
+        modifier = modifier
+            .height(144.dp)
+            .padding(4.dp)
     ) {
-        Box(Modifier.size(94.dp, 142.dp).clip(cornerShapeLarge).background(baseColor))
+        Box(Modifier
+            .size(94.dp, 142.dp)
+            .clip(cornerShapeLarge)
+            .background(baseColor))
 
         Column(
-            modifier = Modifier.fillMaxHeight().padding(start = 12.dp).weight(1f),
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(start = 12.dp)
+                .weight(1f),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(Modifier.fillMaxWidth(0.9f).height(40.dp).clip(cornerShape).background(baseColor))
-            Box(Modifier.fillMaxWidth(0.43f).height(20.dp).clip(cornerShape).background(baseColor))
-            Box(Modifier.fillMaxWidth().height(48.dp).clip(cornerShape).background(baseColor))
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(cornerShape).background(baseColor))
+            Box(Modifier
+                .fillMaxWidth(0.9f)
+                .height(40.dp)
+                .clip(cornerShape)
+                .background(baseColor))
+            Box(Modifier
+                .fillMaxWidth(0.43f)
+                .height(20.dp)
+                .clip(cornerShape)
+                .background(baseColor))
+            Box(Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .clip(cornerShape)
+                .background(baseColor))
+            Box(Modifier
+                .fillMaxWidth()
+                .height(6.dp)
+                .clip(cornerShape)
+                .background(baseColor))
         }
     }
 }
@@ -666,10 +711,10 @@ private fun ReadingBookCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ReadingHeaderCardPager(
-    items: List<Pair<String, Flow<RecentReadingBook>>>,
+    items: List<Pair<Identifier.Book, Flow<RecentReadingBook>>>,
     modifier: Modifier = Modifier,
-    onClickContinueReading: (String, String) -> Unit,
-    onClickOpenChapters: (String) -> Unit,
+    onClickContinueReading: (Identifier.Book, Identifier.Chapter) -> Unit,
+    onClickOpenChapters: (Identifier.Book) -> Unit,
     titleHeight: Dp?
 ) {
     if (items.isEmpty()) return
@@ -796,8 +841,8 @@ private fun VerticalDotsIndicator(
 private fun ReadingHeaderCard(
     info: BookInformation,
     data: UserReadingData,
-    onClickContinueReading: (String, String) -> Unit,
-    onClickOpenDetail: (String) -> Unit,
+    onClickContinueReading: (Identifier.Book, Identifier.Chapter) -> Unit,
+    onClickOpenDetail: (Identifier.Book) -> Unit,
     modifier: Modifier = Modifier,
     titleHeight: Dp?
 ) {

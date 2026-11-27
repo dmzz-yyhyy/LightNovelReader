@@ -2,6 +2,7 @@ package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpag
 
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
 import io.nightfish.lightnovelreader.api.web.search.SearchResult
@@ -50,7 +51,7 @@ class HomeBookExpandPageDataSource(
                     emit(SearchResult.Error("Failed to parse single book id"))
                     return@flow
                 }
-                emit(SearchResult.SingleBook(id))
+                emit(SearchResult.SingleBook(wenku8Api.id.child(Identifier::Book, id)))
                 return@flow
             }
             if (maxPage == 1) {
@@ -65,7 +66,7 @@ class HomeBookExpandPageDataSource(
 
             val books = wenku8Api.getBookInformationListFromBookCards(soup.select(contentSelector))
             for (pairs in books) {
-                emit(SearchResult.MultipleBook(pairs.first))
+                emit(SearchResult.MultipleBook(wenku8Api.id.child(Identifier::Book, pairs.first)))
                 //FIXME 探索页重构
                 //if (localFilter.all { it.filter() }) {
                 //}

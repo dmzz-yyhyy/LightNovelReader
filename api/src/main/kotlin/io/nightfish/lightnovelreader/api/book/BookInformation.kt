@@ -2,6 +2,7 @@ package io.nightfish.lightnovelreader.api.book
 
 import android.net.Uri
 import androidx.compose.runtime.Stable
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import java.time.LocalDateTime
 
 /**
@@ -23,7 +24,7 @@ import java.time.LocalDateTime
  */
 @Stable
 data class BookInformation(
-    val id: String,
+    val id: Identifier.Book,
     val title: String,
     val subtitle: String = "",
     val coverUri: Uri = Uri.EMPTY,

@@ -18,7 +18,7 @@ class SimplifiedTraditionalProcessor @Inject constructor(
     init {
         CoroutineScope(Dispatchers.IO).launch {
             userDataRepository
-                .booleanUserData(UserDataPath.Reader.EnableSimplifiedTraditionalTransform.path)
+                .userData(UserDataPath.Reader.EnableSimplifiedTraditionalTransform)
                 .getFlowWithDefault(false)
                 .collect {
                     enabled = it

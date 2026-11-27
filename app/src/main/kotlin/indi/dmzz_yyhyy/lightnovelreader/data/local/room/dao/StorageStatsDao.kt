@@ -2,7 +2,8 @@ package indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao
 
 import androidx.room.Dao
 import androidx.room.Query
-import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.StorageBytes
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookStorageRow
+import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterStorageRow
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.VolumeStorageRow
 
 @Dao
@@ -27,7 +28,7 @@ interface StorageStatsDao {
         from book_information
         """
     )
-    suspend fun getBookInformationBytes(): List<StorageBytes>
+    suspend fun getBookInformationBytes(): List<BookStorageRow>
 
     @Query(
         """
@@ -57,7 +58,7 @@ interface StorageStatsDao {
         from chapter_information
         """
     )
-    suspend fun getChapterInformationBytes(): List<StorageBytes>
+    suspend fun getChapterInformationBytes(): List<ChapterStorageRow>
 
     @Query(
         """
@@ -73,7 +74,7 @@ interface StorageStatsDao {
         from chapter_content
         """
     )
-    suspend fun getChapterContentBytes(): List<StorageBytes>
+    suspend fun getChapterContentBytes(): List<ChapterStorageRow>
 
     @Query(
         """
@@ -92,7 +93,7 @@ interface StorageStatsDao {
         from user_reading_data
         """
     )
-    suspend fun getUserReadingBytes(): List<StorageBytes>
+    suspend fun getUserReadingBytes(): List<BookStorageRow>
 
     @Query(
         """

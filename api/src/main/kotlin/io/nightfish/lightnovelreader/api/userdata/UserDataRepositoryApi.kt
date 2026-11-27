@@ -1,106 +1,33 @@
 package io.nightfish.lightnovelreader.api.userdata
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+
 /**
  * 用户数据仓库接口
- * 提供创建各类型[UserData]对象的工厂方法, 以及删除数据的能力
+ * 根据路径声明创建相应类型的用户数据访问对象
  *
- * @since Api 2
+ * @since Api 4
  */
 interface UserDataRepositoryApi {
     /**
-     * 创建字符串类型的用户数据
+     * 获取指定路径的用户数据
      *
-     * @param path 用户数据路径
+     * @param T 路径所存储的值类型
+     * @param path 路径及序列化格式
+     * @param source 需要隔离的数据源, 省略时使用当前书源
+     * @return 已绑定归属的用户数据访问对象
      *
-     * @return [StringUserData]实例
-     *
-     * @since Api 2
+     * @since Api 4
      */
-    fun stringUserData(path: String): StringUserData
-
-    /**
-     * 创建浮点数类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [FloatUserData]实例
-     *
-     * @since Api 2
-     */
-    fun floatUserData(path: String): FloatUserData
-
-    /**
-     * 创建整数类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [IntUserData]实例
-     *
-     * @since Api 2
-     */
-    fun intUserData(path: String): IntUserData
-
-    /**
-     * 创建布尔类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [BooleanUserData]实例
-     *
-     * @since Api 2
-     */
-    fun booleanUserData(path: String): BooleanUserData
-
-    /**
-     * 创建整数列表类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [IntListUserData]实例
-     *
-     * @since Api 2
-     */
-    fun intListUserData(path: String): IntListUserData
-
-    /**
-     * 创建字符串列表类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [StringListUserData]实例
-     *
-     * @since Api 2
-     */
-    fun stringListUserData(path: String): StringListUserData
-
-    /**
-     * 创建颜色类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [ColorUserData]实例
-     *
-     * @since Api 2
-     */
-    fun colorUserData(path: String): ColorUserData
-
-    /**
-     * 创建 URI 类型的用户数据
-     *
-     * @param path 用户数据路径
-     *
-     * @return [UriUserData]实例
-     *
-     * @since Api 2
-     */
-    fun uriUserData(path: String): UriUserData
+    fun <T> userData(path: UserDataPath<T>, source: Identifier.DataSource? = null): UserData<T>
 
     /**
      * 删除指定路径的用户数据
      *
-     * @param path 要删除的数据路径
+     * @param path 用户数据路径
+     * @param source 需要隔离的数据源, 省略时使用当前书源
      *
      * @since Api 4
      */
-    suspend fun remove(path: String)
+    suspend fun remove(path: UserDataPath<*>, source: Identifier.DataSource? = null)
 }

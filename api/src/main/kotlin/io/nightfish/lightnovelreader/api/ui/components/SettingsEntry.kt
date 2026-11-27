@@ -53,9 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import io.nightfish.lightnovelreader.api.settings.SettingsMenuOptionGroup
-import io.nightfish.lightnovelreader.api.userdata.BooleanUserData
-import io.nightfish.lightnovelreader.api.userdata.FloatUserData
-import io.nightfish.lightnovelreader.api.userdata.StringUserData
+import io.nightfish.lightnovelreader.api.userdata.UserData
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
 
@@ -177,14 +175,14 @@ fun SettingsBasicEntry(
 
 /**
  * 带开关的设置项控件
- * 通过 [BooleanUserData] 控制开关状态, 切换时会异步写入用户数据
+ * 通过 [UserData] 控制开关状态, 切换时会异步写入用户数据
  *
  * @param modifier Modifier修饰符
  * @param painter 图标
  * @param title 设置项标题
  * @param description 设置项描述文字
  * @param checked 当前开关状态
- * @param booleanUserData 关联的 [BooleanUserData] 用户数据对象
+ * @param booleanUserData 关联的 [UserData] 用户数据对象
  * @param enabled 是否启用此设置项
  *
  * @since Api 2
@@ -196,7 +194,7 @@ fun SettingsSwitchEntry(
     title: String,
     description: String,
     checked: Boolean,
-    booleanUserData: BooleanUserData,
+    booleanUserData: UserData<Boolean>,
     enabled: Boolean = true
 ) {
     SettingsSwitchEntry(
@@ -359,7 +357,7 @@ fun SettingsClickableEntry(
 /**
  * 菜单选择设置项控件
  *
- * 通过 [StringUserData] 持久化数值, 切换时会异步写入用户数据
+ * 通过 [UserData] 持久化数值, 切换时会异步写入用户数据
  *
  * @param modifier Modifier修饰符
  * @param painter 图标
@@ -368,7 +366,7 @@ fun SettingsClickableEntry(
  * @param options 选项容器
  * @param enabled 是否启用此设置项
  * @param selectedOptionKey 当前选定选项的键值
- * @param stringUserData 关联的 [StringUserData] 用户数据对象
+ * @param stringUserData 关联的 [UserData] 用户数据对象
  *
  * @since Api 4
  */
@@ -381,7 +379,7 @@ fun SettingsMenuEntry(
     options: SettingsMenuOptionGroup,
     enabled: Boolean = true,
     selectedOptionKey: String,
-    stringUserData: StringUserData
+    stringUserData: UserData<String>
 ) {
     SettingsMenuEntry(
         modifier = modifier,
@@ -480,7 +478,7 @@ fun SettingsMenuEntry(
 
 /**
  * 滑块数值设置项控件
- * 通过 [FloatUserData] 持久化数值, 切换时会异步写入用户数据
+ * 通过 [UserData] 持久化数值, 切换时会异步写入用户数据
  *
  *
  * @param modifier Modifier 修饰符
@@ -492,7 +490,8 @@ fun SettingsMenuEntry(
  * @param enabled 是否启用交互 (含长按编辑)
  * @param valueRange 数值范围
  * @param valueFormat 连续取值时的格式化函数
- * @param floatUserData 关联的 [FloatUserData] 用户数据对象
+ * @param decimalFormat 数值的格式化模式
+ * @param floatUserData 关联的 [UserData] 用户数据对象
  * @param steps 离散步进值列表
  *
  * @since Api 4
@@ -509,7 +508,7 @@ fun SettingsSliderEntry(
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     valueFormat: (Float) -> Float = { (it * 2).roundToInt().toFloat() / 2 },
     decimalFormat: String = "0.0",
-    floatUserData: FloatUserData,
+    floatUserData: UserData<Float>,
     steps: List<Float>? = null
 ) {
     var tempValue by remember { mutableFloatStateOf(value) }

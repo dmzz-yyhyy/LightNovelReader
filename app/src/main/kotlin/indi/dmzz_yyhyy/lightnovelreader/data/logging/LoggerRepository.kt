@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
-import indi.dmzz_yyhyy.lightnovelreader.utils.buildReportHeader
 import indi.dmzz_yyhyy.lightnovelreader.data.userdata.UserDataRepository
+import indi.dmzz_yyhyy.lightnovelreader.utils.buildReportHeader
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +27,7 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import java.lang.Process as JavaLangProcess
 
 @Singleton
 class LoggerRepository @Inject constructor(
@@ -44,14 +45,15 @@ class LoggerRepository @Inject constructor(
     private var settingsJob: Job? = null
     private var loggingJob: Job? = null
     private var fileLoadJob: Job? = null
-    @Volatile private var loggingProcess: java.lang.Process? = null
+    @Volatile
+    private var loggingProcess: JavaLangProcess? = null
     private val currentPid = Process.myPid()
 
     @Synchronized
     fun startLogging() {
         if (settingsJob?.isActive == true) return
         settingsJob = coroutineScope.launch {
-            userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path)
+            userDataRepository.userData(UserDataPath.Settings.Data.LogLevel)
                 .getFlowWithDefault("none")
                 .map(LogLevel::from)
                 .distinctUntilChanged()

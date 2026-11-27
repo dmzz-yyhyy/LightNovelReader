@@ -17,7 +17,7 @@ abstract class AbstractContentComponentData {
      *
      * @since Api 4
      */
-    abstract val id: Identifier
+    abstract val id: Identifier.ContentComponent
 
     /**
      * 将数据序列化为JSON元素

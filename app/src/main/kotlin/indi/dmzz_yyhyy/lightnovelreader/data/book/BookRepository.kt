@@ -23,6 +23,7 @@ import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.book.UserReadingData
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -46,7 +47,7 @@ class BookRepository @Inject constructor(
     private val webBookDataSource get() = webBookDataSourceProvider.value
 
     override fun getBookInformationFlow(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority
     ): Flow<Result<BookInformation, WebRequestError>> = flow {
         val local = localBookDataSource.getBookInformation(id)
@@ -81,7 +82,7 @@ class BookRepository @Inject constructor(
     }
 
     override fun getBookVolumesFlow(
-        id: String,
+        id: Identifier.Book,
         priority: WebDataSourcePriority
     ): Flow<Result<BookVolumes, WebRequestError>> = flow {
         val local = localBookDataSource.getBookVolumes(id)
@@ -106,8 +107,8 @@ class BookRepository @Inject constructor(
     }
 
     override fun getChapterContentFlow(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority
     ): Flow<Result<ChapterContent, WebRequestError>> = flow {
         val local = localBookDataSource.getChapterContent(chapterId)
@@ -132,8 +133,8 @@ class BookRepository @Inject constructor(
     }
 
     override suspend fun preloadChapterContent(
-        chapterId: String,
-        bookId: String,
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book,
         priority: WebDataSourcePriority
     ) {
         webBookDataSource.getChapterContent(chapterId, bookId, priority)
@@ -145,17 +146,17 @@ class BookRepository @Inject constructor(
             }
     }
 
-    override suspend fun getUserReadingData(bookId: String): UserReadingData =
+    override suspend fun getUserReadingData(bookId: Identifier.Book): UserReadingData =
         localBookDataSource.getUserReadingData(bookId)
 
-    override fun getUserReadingDataFlow(bookId: String): Flow<UserReadingData> =
+    override fun getUserReadingDataFlow(bookId: Identifier.Book): Flow<UserReadingData> =
         localBookDataSource.getUserReadingDataFlow(bookId)
 
     override suspend fun getAllUserReadingData(): List<UserReadingData> =
         localBookDataSource.getAllUserReadingData()
 
     override suspend fun updateUserReadingData(
-        id: String,
+        id: Identifier.Book,
         update: (UserReadingData) -> UserReadingData
     ) {
         localBookDataSource.updateUserReadingData(id, update)
@@ -163,11 +164,11 @@ class BookRepository @Inject constructor(
 
     fun isCacheBookWorkFlow(workId: UUID) = workManager.getWorkInfoByIdFlow(workId)
 
-    fun cacheBook(bookId: String): OneTimeWorkRequest {
+    fun cacheBook(bookId: Identifier.Book): OneTimeWorkRequest {
         val workRequest = OneTimeWorkRequestBuilder<CacheBookWork>()
             .setInputData(
                 workDataOf(
-                    "bookId" to bookId
+                    "bookId" to bookId.toString()
                 )
             )
             .build()
@@ -179,7 +180,7 @@ class BookRepository @Inject constructor(
         return workRequest
     }
 
-    override suspend fun getIsBookCached(bookId: String): Boolean {
+    override suspend fun getIsBookCached(bookId: Identifier.Book): Boolean {
         localBookDataSource.getBookVolumes(bookId)?.let { bookVolumes ->
             if (bookVolumes.volumes.isEmpty())
                 return false

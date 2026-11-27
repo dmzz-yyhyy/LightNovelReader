@@ -20,6 +20,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.work.ImportDataWork
 import indi.dmzz_yyhyy.lightnovelreader.data.work.SaveBookshelfWork
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.bookshelf.toBookshelfUiState
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfSortType
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.userdata.UserDataPath
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,7 @@ class BookshelfHomeViewModel @Inject constructor(
     )
     val uiState: BookshelfHomeUiState = _uiState
     private val bookshelfOrderUserData =
-        userDataRepository.intListUserData(UserDataPath.BookshelfOrder.path)
+        userDataRepository.userData(UserDataPath.BookshelfOrder)
 
     fun load() {
         viewModelScope.launch {
@@ -86,13 +87,13 @@ class BookshelfHomeViewModel @Inject constructor(
         }
     }
 
-    fun changePage(bookshelfId: Int) {
+    fun changePage(bookshelfId: Identifier.Bookshelf) {
         _uiState.selectedBookshelfId = bookshelfId
     }
 
     fun changeSortType(sortType: BookshelfSortType) {
         viewModelScope.launch {
-            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
+            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId ?: return@launch) {
                 it.copy(
                     sortType = sortType
                 )
@@ -107,7 +108,7 @@ class BookshelfHomeViewModel @Inject constructor(
 
     fun changeSortReversed(sortReversed: Boolean) {
         viewModelScope.launch {
-            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) {
+            bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId ?: return@launch) {
                 it.copy(
                     sortReversed = sortReversed
                 )
@@ -120,7 +121,7 @@ class BookshelfHomeViewModel @Inject constructor(
         }
     }
 
-    fun enableReorderMode(bookshelfId: Int = _uiState.selectedBookshelfId) {
+    fun enableReorderMode(bookshelfId: Identifier.Bookshelf? = _uiState.selectedBookshelfId) {
         val bookshelf = _uiState.bookshelfList.firstOrNull { it.id == bookshelfId } ?: return
         _uiState.selectedBookshelfId = bookshelfId
         if (bookshelf.sortType != BookshelfSortType.Default) return
@@ -133,7 +134,9 @@ class BookshelfHomeViewModel @Inject constructor(
         if (_uiState.reorderMode) {
             val reorderedIds = _uiState.reorderBookIds.toList()
             viewModelScope.launch(Dispatchers.IO) {
-                bookshelfRepository.updateBookshelf(_uiState.selectedBookshelfId) { oldBookshelf ->
+                bookshelfRepository.updateBookshelf(
+                    _uiState.selectedBookshelfId ?: return@launch
+                ) { oldBookshelf ->
                     oldBookshelf.copy(
                         allBookIds = reorderedIds.map { it.first }
                     )
@@ -161,7 +164,7 @@ class BookshelfHomeViewModel @Inject constructor(
         disableBookshelfReorderMode(_uiState.reorderBookshelfIds.toList())
     }
 
-    fun disableBookshelfReorderMode(reorderedIds: List<Int>) {
+    fun disableBookshelfReorderMode(reorderedIds: List<Identifier.Bookshelf>) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_uiState.reorderBookshelfMode) {
                 _uiState.reorderBookshelfIds.clear()
@@ -190,7 +193,7 @@ class BookshelfHomeViewModel @Inject constructor(
         _uiState.selectedBookIds.clear()
     }
 
-    fun changeBookSelectState(bookId: String) {
+    fun changeBookSelectState(bookId: Identifier.Book) {
         if (_uiState.selectedBookIds.contains(bookId))
             _uiState.selectedBookIds.remove(bookId)
         else _uiState.selectedBookIds.add(bookId)
@@ -211,7 +214,7 @@ class BookshelfHomeViewModel @Inject constructor(
 
     fun pinSelectedBooks() {
         val selectedBookIds = _uiState.selectedBookIds.toList()
-        val selectedBookshelfId = _uiState.selectedBookshelfId
+        val selectedBookshelfId = _uiState.selectedBookshelfId ?: return
         if (selectedBookIds.isEmpty()) return
 
         viewModelScope.launch {
@@ -245,7 +248,7 @@ class BookshelfHomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.selectedBookIds.forEach {
                 bookshelfRepository.deleteBookFromBookshelf(
-                    _uiState.selectedBookshelfId,
+                    _uiState.selectedBookshelfId ?: return@launch,
                     it
                 )
             }
@@ -254,7 +257,7 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     @Suppress("UNUSED")
-    fun markSelectedBooks(bookshelfIds: List<Int>) {
+    fun markSelectedBooks(bookshelfIds: List<Identifier.Bookshelf>) {
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.selectedBookIds.forEach { bookId ->
                 bookshelfIds.forEach { bookshelfId ->
@@ -276,8 +279,7 @@ class BookshelfHomeViewModel @Inject constructor(
             val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
                 .setInputData(
                     workDataOf(
-                        "uri" to uri.toString(),
-                        "bookshelfId" to -1
+                        "uri" to uri.toString()
                     )
                 )
                 .build()
@@ -310,12 +312,13 @@ class BookshelfHomeViewModel @Inject constructor(
     }
 
     fun saveThisBookshelf(uri: Uri) {
+        val selectedId = uiState.selectedBookshelfId ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val workRequest = OneTimeWorkRequestBuilder<SaveBookshelfWork>()
                 .setInputData(
                     workDataOf(
                         "uri" to uri.toString(),
-                        "bookshelfId" to uiState.selectedBookshelfId
+                        "bookshelfId" to selectedId.toString()
                     )
                 )
                 .build()

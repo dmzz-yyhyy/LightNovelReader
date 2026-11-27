@@ -11,6 +11,7 @@ import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.LocalDateTimeC
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfBookMetadataEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookshelfEntity
 import io.nightfish.lightnovelreader.api.bookshelf.BookshelfBookMetadata
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDateTime
 
@@ -24,26 +25,26 @@ interface BookshelfDao {
     suspend fun createBookshelf(bookshelfEntity: BookshelfEntity)
 
     @Query("delete from book_shelf where id=:id")
-    suspend fun deleteBookshelf(id: Int)
+    suspend fun deleteBookshelf(id: Identifier.Bookshelf)
 
     @Query("select * from book_shelf where id=:id")
-    suspend fun getBookshelf(id: Int): BookshelfEntity?
+    suspend fun getBookshelf(id: Identifier.Bookshelf): BookshelfEntity?
 
     @Query("select * from book_shelf where id=:id")
-    fun getBookShelfFlow(id: Int): Flow<BookshelfEntity?>
+    fun getBookShelfFlow(id: Identifier.Bookshelf): Flow<BookshelfEntity?>
 
-    @Query("select * from book_shelf")
-    fun getAllBookshelvesFlow(): Flow<List<BookshelfEntity>>
+    @Query("select * from book_shelf WHERE id GLOB 'bookshelf:' || :namespace || ':*'")
+    fun getAllBookshelvesFlow(namespace: String): Flow<List<BookshelfEntity>>
 
-    @Query("select * from book_shelf")
-    suspend fun getAllBookshelves(): List<BookshelfEntity>
+    @Query("select * from book_shelf WHERE id GLOB 'bookshelf:' || :namespace || ':*'")
+    suspend fun getAllBookshelves(namespace: String): List<BookshelfEntity>
 
-    @Query("select * from book_shelf_book_metadata")
-    suspend fun getAllBookshelfBookMetadataEntities(): List<BookshelfBookMetadataEntity>
+    @Query("select * from book_shelf_book_metadata WHERE id GLOB 'book:' || :namespace || ':*'")
+    suspend fun getAllBookshelfBookMetadataEntities(namespace: String): List<BookshelfBookMetadataEntity>
 
     @Transaction
-    suspend fun getAllBookshelfBookMetadata(): List<BookshelfBookMetadata> =
-        getAllBookshelfBookMetadataEntities()
+    suspend fun getAllBookshelfBookMetadata(namespace: String): List<BookshelfBookMetadata> =
+        getAllBookshelfBookMetadataEntities(namespace)
             .map {
                 BookshelfBookMetadata(
                     it.id,
@@ -53,10 +54,10 @@ interface BookshelfDao {
             }
 
     @Query("select * from book_shelf_book_metadata where id=:id")
-    suspend fun getBookshelfBookMetadataEntity(id: String): BookshelfBookMetadataEntity?
+    suspend fun getBookshelfBookMetadataEntity(id: Identifier.Book): BookshelfBookMetadataEntity?
 
     @Query("select * from book_shelf_book_metadata where id=:id")
-    fun getBookshelfBookMetadataEntityFlow(id: String): Flow<BookshelfBookMetadataEntity?>
+    fun getBookshelfBookMetadataEntityFlow(id: Identifier.Book): Flow<BookshelfBookMetadataEntity?>
 
     @TypeConverters(LocalDateTimeConverter::class, ListConverter::class)
     @Query(
@@ -64,7 +65,7 @@ interface BookshelfDao {
                 " values (:id, :lastUpdate, :bookshelfIds)"
     )
     suspend fun insertBookshelfBookMetadata(
-        id: String,
+        id: Identifier.Book,
         lastUpdate: LocalDateTime,
         bookshelfIds: String,
     )
@@ -72,11 +73,11 @@ interface BookshelfDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBookshelfBookMetadata(entity: BookshelfBookMetadataEntity)
 
-    @Query("select id from book_shelf")
-    suspend fun getAllBookshelfIds(): List<Int>
+    @Query("select id from book_shelf WHERE id GLOB 'bookshelf:' || :namespace || ':*'")
+    suspend fun getAllBookshelfIds(namespace: String): List<Identifier.Bookshelf>
 
     @Transaction
-    suspend fun getBookshelfBookMetadata(id: String): BookshelfBookMetadata? =
+    suspend fun getBookshelfBookMetadata(id: Identifier.Book): BookshelfBookMetadata? =
         getBookshelfBookMetadataEntity(id)?.let {
             BookshelfBookMetadata(
                 it.id,
@@ -87,47 +88,47 @@ interface BookshelfDao {
 
     @Transaction
     suspend fun addBookshelfMetadata(
-        id: String,
+        id: Identifier.Book,
         lastUpdate: LocalDateTime,
-        bookshelfIds: List<Int>
+        bookshelfIds: List<Identifier.Bookshelf>
     ) {
         getBookshelfBookMetadataEntity(id).let {
             if (it == null)
                 insertBookshelfBookMetadata(
                     id,
                     lastUpdate,
-                    ListConverter.intListToString(bookshelfIds)
+                    ListConverter.bookshelfListToString(bookshelfIds)
                 )
             else
                 insertBookshelfBookMetadata(
                     id,
                     lastUpdate,
-                    ListConverter.intListToString((bookshelfIds + it.bookShelfIds).distinct())
+                    ListConverter.bookshelfListToString((bookshelfIds + it.bookShelfIds).distinct())
                 )
         }
     }
 
     @Query("delete from book_shelf_book_metadata where id=:id")
-    suspend fun deleteBookshelfBookMetadata(id: String)
+    suspend fun deleteBookshelfBookMetadata(id: Identifier.Book)
 
-    @Query("select * from book_shelf_book_metadata")
-    fun getAllBookshelfBookEntitiesFlow(): Flow<List<BookshelfBookMetadataEntity>>
+    @Query("select * from book_shelf_book_metadata WHERE id GLOB 'book:' || :namespace || ':*'")
+    fun getAllBookshelfBookEntitiesFlow(namespace: String): Flow<List<BookshelfBookMetadataEntity>>
 
-    @Query("select * from book_shelf_book_metadata")
-    suspend fun getAllBookshelfBookEntities(): List<BookshelfBookMetadataEntity>
+    @Query("select * from book_shelf_book_metadata WHERE id GLOB 'book:' || :namespace || ':*'")
+    suspend fun getAllBookshelfBookEntities(namespace: String): List<BookshelfBookMetadataEntity>
 
-    @Query("select id from book_shelf_book_metadata")
-    fun getAllBookshelfBookIdsFlow(): Flow<List<String>>
+    @Query("select id from book_shelf_book_metadata WHERE id GLOB 'book:' || :namespace || ':*'")
+    fun getAllBookshelfBookIdsFlow(namespace: String): Flow<List<Identifier.Book>>
 
-    @Query("delete from book_shelf")
-    suspend fun clearBookshelf()
+    @Query("delete from book_shelf WHERE id GLOB 'bookshelf:' || :namespace || ':*'")
+    suspend fun clearBookshelf(namespace: String)
 
-    @Query("delete from book_shelf_book_metadata")
-    suspend fun clearBookshelfBookMetadata()
+    @Query("delete from book_shelf_book_metadata WHERE id GLOB 'book:' || :namespace || ':*'")
+    suspend fun clearBookshelfBookMetadata(namespace: String)
 
     @Transaction
-    suspend fun clear() {
-        clearBookshelf()
-        clearBookshelfBookMetadata()
+    suspend fun clear(namespace: String) {
+        clearBookshelf(namespace)
+        clearBookshelfBookMetadata(namespace)
     }
 }

@@ -12,8 +12,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
-import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
 import androidx.work.WorkInfo
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onErr
@@ -24,10 +22,13 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToBookReaderDesti
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.navigateToImageViewerDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToAddBookToBookshelfDialog
 import indi.dmzz_yyhyy.lightnovelreader.ui.dialog.navigateToMarkAllChaptersAsReadDialog
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.NavEntryScope
+import indi.dmzz_yyhyy.lightnovelreader.ui.navigation.Navigator
 import indi.dmzz_yyhyy.lightnovelreader.utils.LocalSnackbarHost
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import indi.dmzz_yyhyy.lightnovelreader.utils.uriLauncher
 import io.nightfish.lightnovelreader.api.Route
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -204,7 +205,7 @@ fun NavEntryScope.bookDetailDestination() {
         )
     }
 }
-fun Navigator.navigateToBookDetailDestination(bookId: String) {
+fun Navigator.navigateToBookDetailDestination(bookId: Identifier.Book) {
     navigate(Route.Book.Detail(bookId))
 }
 

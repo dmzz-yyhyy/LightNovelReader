@@ -64,6 +64,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -80,10 +81,10 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.fadingEdge
 import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,7 +114,7 @@ fun ExploreHomeScreen(
     exploreUiState: ExploreUiState,
     exploreHomeUiState: ExploreHomeUiState,
     onClickExpand: (String) -> Unit,
-    onClickBook: (String) -> Unit,
+    onClickBook: (Identifier.Book) -> Unit,
     init: () -> Unit,
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit,
@@ -266,7 +267,7 @@ fun TopBar(
 fun ExplorePage(
     explorePageBooksRawList: List<ExploreBooksRow>,
     onClickExpand: (String) -> Unit,
-    onClickBook: (String) -> Unit,
+    onClickBook: (Identifier.Book) -> Unit,
     nestedScrollConnection: NestedScrollConnection,
     refresh: () -> Unit,
     pageKey: Int
@@ -321,9 +322,9 @@ private fun ExploreRowsList(
     modifier: Modifier,
     listState: LazyListState,
     rows: List<ExploreBooksRow>,
-    titleHeight: androidx.compose.ui.unit.Dp,
+    titleHeight: Dp,
     onClickExpand: (String) -> Unit,
-    onClickBook: (String) -> Unit
+    onClickBook: (Identifier.Book) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -353,9 +354,9 @@ private fun ExploreRowsList(
 private fun ExploreRowSection(
     modifier: Modifier,
     row: ExploreBooksRow,
-    titleHeight: androidx.compose.ui.unit.Dp,
+    titleHeight: Dp,
     onClickExpand: (String) -> Unit,
-    onClickBook: (String) -> Unit
+    onClickBook: (Identifier.Book) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -392,7 +393,7 @@ private fun ExploreRowSection(
 
         val lazyRowState = rememberLazyListState()
         val validBooks = remember(row.bookList) {
-            row.bookList.filter { it.id.isNotBlank() }
+            row.bookList.filter { it.id.id.isNotBlank() }
         }
 
         CompositionLocalProvider(LocalOverscrollFactory provides null) {
@@ -445,8 +446,8 @@ private fun ExploreRowSection(
 @Composable
 private fun ExploreBookCard(
     book: ExploreDisplayBook,
-    titleHeight: androidx.compose.ui.unit.Dp,
-    onClickBook: (String) -> Unit
+    titleHeight: Dp,
+    onClickBook: (Identifier.Book) -> Unit
 ) {
     Column(
         modifier = Modifier

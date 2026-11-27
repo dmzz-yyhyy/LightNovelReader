@@ -142,7 +142,7 @@ fun BookInfoBottomSheet(
 
             InfoItem(
                 title = stringResource(R.string.detail_info_id),
-                content = bookInformation.id,
+                content = bookInformation.id.toString(),
                 titleStyle = titleStyle,
                 contentStyle = contentStyle,
                 icon = painterResource(R.drawable.info_24px)

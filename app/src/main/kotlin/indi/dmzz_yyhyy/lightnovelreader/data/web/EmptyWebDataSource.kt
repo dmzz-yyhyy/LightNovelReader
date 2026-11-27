@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 
 object EmptyWebDataSource : WebBookDataSource {
-    override val id: Identifier = "EmptyWebDataSource".ofId()
+    override val id: Identifier.DataSource = "EmptyWebDataSource".ofId(Identifier::DataSource)
     override suspend fun isOffLine(): Boolean = true
 
     override val offLine: Boolean = true
@@ -45,15 +45,15 @@ object EmptyWebDataSource : WebBookDataSource {
 
     }
 
-    override suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError> =
+    override suspend fun getBookInformation(id: Identifier.Book): Result<BookInformation, WebRequestError> =
         Err(WebRequestError("Empty data source", "The current data source is empty"))
 
-    override suspend fun getBookVolumes(id: String): Result<BookVolumes, WebRequestError> =
+    override suspend fun getBookVolumes(id: Identifier.Book): Result<BookVolumes, WebRequestError> =
         Err(WebRequestError("Empty data source", "The current data source is empty"))
 
     override suspend fun getChapterContent(
-        chapterId: String,
-        bookId: String
+        chapterId: Identifier.Chapter,
+        bookId: Identifier.Book
     ): Result<ChapterContent, WebRequestError> =
         Err(WebRequestError("Empty data source", "The current data source is empty"))
 }

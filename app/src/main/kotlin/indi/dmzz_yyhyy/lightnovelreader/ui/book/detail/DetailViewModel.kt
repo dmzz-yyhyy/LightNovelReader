@@ -20,11 +20,14 @@ import indi.dmzz_yyhyy.lightnovelreader.data.bookshelf.BookshelfRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadProgressRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.download.DownloadType
 import indi.dmzz_yyhyy.lightnovelreader.data.work.ExportBookToEPUBWork
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.WebDataSourcePriority
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,11 +43,11 @@ class DetailViewModel @Inject constructor(
 
     var isInitialized by mutableStateOf(false)
         private set
-    private var bookId: String? = null
+    private var bookId: Identifier.Book? = null
     private var bookInformationJob: Job? = null
     private var bookVolumesJob: Job? = null
 
-    fun init(bookId: String) {
+    fun init(bookId: Identifier.Book) {
         Log.d("DetailViewModel", "Init bookId = $bookId")
         if (isInitialized) return
         isInitialized = true
@@ -80,7 +83,7 @@ class DetailViewModel @Inject constructor(
         bookId?.let(::requestBookVolumes)
     }
 
-    private fun requestBookInformation(bookId: String) {
+    private fun requestBookInformation(bookId: Identifier.Book) {
         bookInformationJob?.cancel()
         _uiState.bookInformation = null
         bookInformationJob = viewModelScope.launch(Dispatchers.IO) {
@@ -105,7 +108,7 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    private fun requestBookVolumes(bookId: String) {
+    private fun requestBookVolumes(bookId: Identifier.Book) {
         bookVolumesJob?.cancel()
         _uiState.bookVolumes = null
         bookVolumesJob = viewModelScope.launch(Dispatchers.IO) {
@@ -115,7 +118,7 @@ class DetailViewModel @Inject constructor(
         }
     }
 
-    fun cacheBook(bookId: String): Flow<WorkInfo?> {
+    fun cacheBook(bookId: Identifier.Book): Flow<WorkInfo?> {
         val work = bookRepository.cacheBook(bookId)
         val isCachedFlow = bookRepository.isCacheBookWorkFlow(work.id)
         viewModelScope.launch(Dispatchers.IO) {
@@ -131,16 +134,19 @@ class DetailViewModel @Inject constructor(
     fun onClickTag(tag: String) = bookRepository.progressBookTagClick(tag)
 
 
-    fun exportToEpub(uri: Uri, bookId: String, title: String): Flow<WorkInfo?> {
+    fun exportToEpub(uri: Uri, bookId: Identifier.Book, title: String): Flow<WorkInfo?> {
         val workRequest = OneTimeWorkRequestBuilder<ExportBookToEPUBWork>()
             .setInputData(
                 workDataOf(
-                    "bookId" to bookId,
+                    "bookId" to bookId.toString(),
                     "uri" to uri.toString(),
                     "title" to title,
                     "includeImages" to exportSettings.includeImages,
                     "exportType" to exportSettings.exportType.name,
-                    "selectedVolume" to exportSettings.selectedVolumeIds.joinToString(",")
+                    "selectedVolume" to Json.encodeToString(
+                        ListSerializer(Identifier.Volume.Serializer),
+                        exportSettings.selectedVolumeIds.toList()
+                    )
                 )
             )
             .build()

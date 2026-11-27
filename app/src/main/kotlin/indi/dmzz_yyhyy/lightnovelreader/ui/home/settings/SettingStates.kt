@@ -13,30 +13,29 @@ class SettingState(
     coroutineScope: CoroutineScope
 ) : AbstractSettingState(coroutineScope) {
     val checkUpdateUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.App.AutoCheckUpdate.path)
+        userDataRepository.userData(UserDataPath.Settings.App.AutoCheckUpdate)
     val appLocaleKeyUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.AppLocale.path)
+        userDataRepository.userData(UserDataPath.Settings.Display.AppLocale)
     val statisticsUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.App.Statistics.path)
+        userDataRepository.userData(UserDataPath.Settings.App.Statistics)
     val updateChannelKeyUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.App.UpdateChannel.path)
+        userDataRepository.userData(UserDataPath.Settings.App.UpdateChannel)
     val distributionPlatformKeyUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.App.DistributionPlatform.path)
+        userDataRepository.userData(UserDataPath.Settings.App.DistributionPlatform)
     val logLevelKeyUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Data.LogLevel.path)
+        userDataRepository.userData(UserDataPath.Settings.Data.LogLevel)
     val isUseProxyUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.Data.IsUseProxy.path)
-    val enableSimplifiedTraditionalTransformUserData = userDataRepository.booleanUserData(
-        UserDataPath.Reader.EnableSimplifiedTraditionalTransform.path
-    )
+        userDataRepository.userData(UserDataPath.Settings.Data.IsUseProxy)
+    val enableSimplifiedTraditionalTransformUserData =
+        userDataRepository.userData(UserDataPath.Reader.EnableSimplifiedTraditionalTransform)
     val dateFormatUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.DateStyle.path)
+        userDataRepository.userData(UserDataPath.Settings.Display.DateStyle)
     val dateShowYearUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.Display.DateShowYear.path)
+        userDataRepository.userData(UserDataPath.Settings.Display.DateShowYear)
     val dateOrderUserData =
-        userDataRepository.stringUserData(UserDataPath.Settings.Display.DateOrder.path)
+        userDataRepository.userData(UserDataPath.Settings.Display.DateOrder)
     val useRelativeTimeUserData =
-        userDataRepository.booleanUserData(UserDataPath.Settings.Display.RelativeTimeStyle.path)
+        userDataRepository.userData(UserDataPath.Settings.Display.RelativeTimeStyle)
 
     val checkUpdate by checkUpdateUserData.asState(true)
     val appLocaleKey by appLocaleKeyUserData.asState("none")

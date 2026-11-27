@@ -63,7 +63,7 @@ class PluginManager @Inject constructor(
     val errorPluginMap: Map<String, String> get() = mutableErrorPluginMap
 
     private val enabledPluginsUserData =
-        userDataRepository.stringListUserData(UserDataPath.Plugin.EnabledPlugins.path)
+        userDataRepository.userData(UserDataPath.Plugin.EnabledPlugins)
 
     val pluginsDir: File = appContext.dataDir.resolve("plugins")
     val pluginsTempDir: File = appContext.cacheDir.resolve("plugins_tmp")
@@ -416,8 +416,12 @@ class PluginManager @Inject constructor(
             getPluginMetadataAndPluginClass(packageInfo.packageName)
         }.andThen { pair ->
             mutableErrorPluginMap.remove(pluginPackage)
+            require(pair.first.namespace != "lightnovelreader") { "The host namespace is reserved" }
+            require(pair.first.namespace.matches(Regex("[A-Za-z0-9_.-]+"))) { "Invalid plugin namespace" }
+            require(mutableAllPluginMetadataList.none { it.packageName != pluginPackage && it.namespace == pair.first.namespace }) { "Plugin namespace is already in use" }
             val pluginClazz = pair.second
             val pluginContext = PluginContext(
+                namespace = pair.first.namespace,
                 packageName = packageInfo.packageName,
                 dataDir = getPluginDataDir(pluginDir),
                 pluginFile = plugin,
@@ -443,6 +447,7 @@ class PluginManager @Inject constructor(
                     classLoader,
                     pluginInjector,
                     pluginPackage,
+                    pair.first.namespace,
                     webDataSourceClassNames
                 )
             }.onErr {

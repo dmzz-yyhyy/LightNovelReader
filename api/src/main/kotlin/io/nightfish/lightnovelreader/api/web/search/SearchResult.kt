@@ -1,5 +1,8 @@
 package io.nightfish.lightnovelreader.api.web.search
 
+import io.nightfish.lightnovelreader.api.identifier.Identifier
+import kotlin.Error as KotlinError
+
 /**
  * 搜索类数据流传输的密封类
  * 根据不同变体软件会有不同响应
@@ -17,7 +20,7 @@ sealed class SearchResult {
      * @since Api 2
      */
     class SingleBook(
-        val bookId: String
+        val bookId: Identifier.Book
     ) : SearchResult()
 
     /**
@@ -30,7 +33,7 @@ sealed class SearchResult {
      * @since Api 4
      */
     class MultipleBook(
-        val bookId: String
+        val bookId: Identifier.Book
     ) : SearchResult()
 
 
@@ -45,7 +48,7 @@ sealed class SearchResult {
     class Error(
         val error: Throwable
     ) : SearchResult() {
-        constructor(message: String) : this(kotlin.Error(message))
+        constructor(message: String) : this(KotlinError(message))
     }
 
     /**

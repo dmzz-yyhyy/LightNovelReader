@@ -1,5 +1,6 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -7,9 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.github.michaelbull.result.Result
-import androidx.compose.runtime.Stable
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.util.LocalString
 import kotlinx.coroutines.flow.Flow
 
@@ -25,8 +26,8 @@ interface ExploreSearchUiState {
     val searchTypeNameMap: Map<String, LocalString>
     val searchType: String
     val searchTip: LocalString
-    val searchResult: List<Pair<String, Flow<Result<BookInformation, WebRequestError>>>>
-    val allBookshelfBookIds: List<String>
+    val searchResult: List<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>>
+    val allBookshelfBookIds: List<Identifier.Book>
     val dropdownMenuExpanded: Boolean
     val searchBarExpanded: Boolean
     fun setDropdownMenuExpandedState(state: Boolean)
@@ -44,9 +45,9 @@ class MutableExploreSearchUiState : ExploreSearchUiState {
     override var searchTypeNameMap = mutableStateMapOf<String, LocalString>()
     override var searchType: String by mutableStateOf("")
     override var searchTip: LocalString by mutableStateOf(LocalString(""))
-    override var searchResult: SnapshotStateList<Pair<String, Flow<Result<BookInformation, WebRequestError>>>> =
+    override var searchResult: SnapshotStateList<Pair<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>> =
         mutableStateListOf()
-    override var allBookshelfBookIds: List<String> by mutableStateOf(emptyList())
+    override var allBookshelfBookIds: List<Identifier.Book> by mutableStateOf(emptyList())
     override var dropdownMenuExpanded by mutableStateOf(false)
     override var searchBarExpanded by mutableStateOf(true)
     override fun setDropdownMenuExpandedState(state: Boolean) {

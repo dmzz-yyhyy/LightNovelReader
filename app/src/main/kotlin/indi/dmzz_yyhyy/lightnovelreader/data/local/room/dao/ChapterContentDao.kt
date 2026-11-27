@@ -8,6 +8,7 @@ import androidx.room.Update
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.converter.JsonObjectConverter
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.ChapterContentEntity
 import io.nightfish.lightnovelreader.api.book.ChapterContent
+import io.nightfish.lightnovelreader.api.identifier.Identifier
 import kotlinx.serialization.json.JsonObject
 
 @Dao
@@ -18,11 +19,11 @@ interface ChapterContentDao {
                 "values (:id, :title, :content, :prevChapter, :nextChapter)"
     )
     suspend fun update(
-        id: String,
+        id: Identifier.Chapter,
         title: String,
         content: JsonObject,
-        prevChapter: String,
-        nextChapter: String
+        prevChapter: Identifier.Chapter?,
+        nextChapter: Identifier.Chapter?
     )
 
     @Transaction
@@ -31,8 +32,8 @@ interface ChapterContentDao {
             chapterContent.id,
             chapterContent.title,
             chapterContent.content,
-            chapterContent.prevChapter ?: "",
-            chapterContent.nextChapter ?: ""
+            chapterContent.prevChapter,
+            chapterContent.nextChapter
         )
     }
 
@@ -48,20 +49,20 @@ interface ChapterContentDao {
     }
 
     @Query("select * from chapter_content where id = :id")
-    suspend fun get(id: String): ChapterContentEntity?
+    suspend fun get(id: Identifier.Chapter): ChapterContentEntity?
 
     @Query("select id from chapter_content where id = :id")
-    suspend fun getId(id: String): String?
+    suspend fun getId(id: Identifier.Chapter): Identifier.Chapter?
 
-    @Query("delete from chapter_content")
-    suspend fun clear()
+    @Query("delete from chapter_content WHERE id GLOB 'chapter:' || :namespace || ':*'")
+    suspend fun clear(namespace: String)
 
     @Query("delete from chapter_content where id in (:ids)")
-    suspend fun deleteByIds(ids: List<String>)
+    suspend fun deleteByIds(ids: List<Identifier.Chapter>)
 
     @Update
     suspend fun updateEntities(vararg entities: ChapterContentEntity)
 
-    @Query("select * from chapter_content")
-    suspend fun getAllEntities(): List<ChapterContentEntity>
+    @Query("select * from chapter_content WHERE id GLOB 'chapter:' || :namespace || ':*'")
+    suspend fun getAllEntities(namespace: String): List<ChapterContentEntity>
 }

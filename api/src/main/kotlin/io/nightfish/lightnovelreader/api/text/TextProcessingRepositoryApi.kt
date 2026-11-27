@@ -17,5 +17,5 @@ interface TextProcessingRepositoryApi {
      *
      * @since Api 4
      */
-    fun registerProcessors(identifier: Identifier, processor: TextProcessor)
+    fun registerProcessors(identifier: Identifier.TextProcessor, processor: TextProcessor)
 }
