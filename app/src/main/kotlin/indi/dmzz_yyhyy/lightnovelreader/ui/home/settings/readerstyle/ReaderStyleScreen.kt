@@ -72,8 +72,6 @@ import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.ReaderWriteModeSetting
 import indi.dmzz_yyhyy.lightnovelreader.ui.book.reader.SettingState
-import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
-import io.nightfish.lightnovelreader.api.ui.components.SettingsSliderEntry
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.SettingsCategory
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.settings.data.MenuOptions
 import indi.dmzz_yyhyy.lightnovelreader.utils.KRAFT_PAPER_CACHE_KEY
@@ -85,6 +83,8 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.readerTextColor
 import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
 import io.nightfish.lightnovelreader.api.ui.components.SettingsClickableEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsMenuEntry
+import io.nightfish.lightnovelreader.api.ui.components.SettingsSliderEntry
 import io.nightfish.lightnovelreader.api.ui.components.SettingsSwitchEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -261,7 +261,7 @@ fun ReaderTextSettings(
         )
 
         val fontPicker = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
+            contract = ActivityResultContracts.OpenDocument()
         ) { uri ->
             uri ?: return@rememberLauncherForActivityResult
             coroutineScope.launch(Dispatchers.IO) {
@@ -308,7 +308,7 @@ fun ReaderTextSettings(
                         Uri.EMPTY
                     )
 
-                    MenuOptions.SelectText.Customize -> fontPicker.launch("*/*")
+                    MenuOptions.SelectText.Customize -> fontPicker.launch(arrayOf("*/*"))
                 }
             }
         )
