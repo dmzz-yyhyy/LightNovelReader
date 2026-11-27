@@ -125,7 +125,8 @@ fun RollingNumber(
 ) {
     val isNegative = number < 0
     val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
-    val string = remember(number) { "${abs(number)}" }
+    // abs(Int.MIN_VALUE) 仍为负数，会生成带 '-' 的字符串并在 digitToInt() 处崩溃，改用 Long 计算
+    val string = remember(number) { "${abs(number.toLong())}" }
     val transition = updateTransition(string)
     val styleNoSpacing = style.merge(color = textColor).copy(letterSpacing = TextUnit.Unspecified)
     val size = rememberTextStyleNumberMaxSize(style)
@@ -196,7 +197,8 @@ fun RollingNumber(
             }
         }
         if (length != null) {
-            items(length - max - if (isNegative) 1 else 0) {
+            // 数字位数超过 length 时 count 会变成负数，LazyRow 会直接抛异常
+            items((length - max - if (isNegative) 1 else 0).coerceAtLeast(0)) {
                 Spacer(Modifier.size(size))
             }
         }
