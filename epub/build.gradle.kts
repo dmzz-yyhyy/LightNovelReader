@@ -8,7 +8,8 @@ plugins {
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+    testImplementation(kotlin("test-junit5"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation(libs.dom4j)
     implementation(libs.jaxen)
 }
