@@ -42,11 +42,34 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
     }
 
     @Test
+    fun searchSettingsChangeTheQueryScope() {
+        launchApp()
+        openRoot("Explore")
+        tapDescription("search")
+        visibleText("Enter a book title")
+
+        tapDescription("filter")
+        visibleText("Search settings")
+        tapClickableText("Search by author")
+        pressBack()
+
+        visibleText("Enter an author name")
+        tapDescription("filter")
+        tapClickableText("Search by title")
+        pressBack()
+        visibleText("Enter a book title")
+    }
+
+    @Test
     fun searchHistorySupportsSingleDeleteAndClearAll() {
         launchApp()
         openRoot("Explore")
         tapDescription("search")
+        visibleText("Nothing Here")
+        visibleText("Recent searches will be saved here. Use the search bar to search for something.")
+
         submitSearch("automation-history")
+        editSearchResults("automation-history")
         tapDescription("clear")
         visibleText("Search History")
         visibleText("automation-history")
@@ -60,8 +83,10 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
             "Deleted history entry remained visible",
             device.wait(Until.gone(By.text("automation-history")), UI_TIMEOUT),
         )
+        visibleText("Nothing Here")
 
         submitSearch("clear-all-history")
+        editSearchResults("clear-all-history")
         tapDescription("clear")
         val clearAll = visibleText("Clear All")
         assertTrue(
@@ -70,5 +95,14 @@ class ExploreInteractionScenarios : BenchmarkTestCase() {
         )
         tapClickable(clearAll)
         assertTrue(device.wait(Until.gone(By.text("clear-all-history")), UI_TIMEOUT))
+        visibleText("Nothing Here")
+    }
+
+    private fun editSearchResults(query: String) {
+        visibleText("Results for “$query”")
+        waitUntil("Search editor did not finish leaving the screen") {
+            !device.hasObject(By.desc("clear"))
+        }
+        tapClickableText(query)
     }
 }
