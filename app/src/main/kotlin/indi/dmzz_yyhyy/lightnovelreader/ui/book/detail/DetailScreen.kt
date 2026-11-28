@@ -325,7 +325,9 @@ fun DetailScreen(
                 )
             }
         }
-        AnimatedVisibility(visible = showInfoBottomSheet) {
+        // ModalBottomSheet 本身是独立的 Dialog 窗口，不能用 AnimatedVisibility 包裹：
+        // 那样只会推迟窗口移除，期间透明的全屏弹窗会吞掉所有点击和返回操作。
+        if (showInfoBottomSheet) {
             uiState.bookInformation?.onOk { bookInformation ->
                 BookInfoBottomSheet(
                     bookInformation = bookInformation,

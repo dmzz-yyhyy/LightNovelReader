@@ -40,6 +40,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -57,9 +58,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -107,8 +110,12 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.rememberReaderBackgroundPainter
 import indi.dmzz_yyhyy.lightnovelreader.utils.showSnackbar
 import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.ui.LocalReaderStyle
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import java.time.LocalTime
 import java.util.Locale
 import kotlin.time.Duration.Companion.seconds
@@ -138,10 +145,9 @@ fun ReaderScreen(
     var showSettingsBottomSheet by remember { mutableStateOf(false) }
     var showChapterSelectionBottomSheet by remember { mutableStateOf(false) }
     var selectedVolumeId by remember { mutableStateOf<Identifier.Volume?>(null) }
+    var isNavigatingToReaderStyle by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
-    val settingsBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
-    val chaptersBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
 
     val claim = LocalClaimSnackbarHost.current
 
@@ -243,53 +249,83 @@ fun ReaderScreen(
             flushReadingProgress = flushReadingProgress,
         )
     }
-    AnimatedVisibility(visible = showSettingsBottomSheet) {
+    // 注意：ModalBottomSheet 在 Android 上是一个独立的、全屏且模态的 Dialog 窗口
+    // (cancel() 被重写为空操作，面板隐藏后其返回键处理也会被禁用)。
+    // 只要这个窗口没有被及时移除，它就会吞掉整个屏幕的点击与返回手势，表现为"界面卡死"。
+    // 因此这里：
+    // 1. 不再用 AnimatedVisibility 包裹 —— 它无法给另一个窗口做动画，只会推迟 Dialog 的移除时机；
+    // 2. 每次打开都使用全新的 SheetState，避免沿用上一次残留(被打断/超时)的状态导致面板不可见但窗口仍在；
+    // 3. 跳转到"阅读器样式"前先收起并移除弹窗，等窗口真正销毁后再导航，
+    //    而不是让弹窗窗口悬挂在新页面之上，依赖页面切换动画结束才被动销毁
+    //    (realme UI 5.0 等机型上会因此卡死：无法返回、无法点击)。
+    if (showSettingsBottomSheet) {
+        val settingsBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
         SettingsBottomSheet(
             sheetState = settingsBottomSheetState,
             onDismissRequest = {
-                coroutineScope.launch { settingsBottomSheetState.hide() }.invokeOnCompletion {
-                    if (!settingsBottomSheetState.isVisible) {
-                        showSettingsBottomSheet = false
-                    }
-                }
+                // ModalBottomSheet 在回调 onDismissRequest 之前已经完成了隐藏动画，直接移除即可
                 showSettingsBottomSheet = false
             },
             settingState = settingState,
-            onClickReaderStyleSettings = onClickReaderStyleSettings
+            onClickReaderStyleSettings = {
+                if (!isNavigatingToReaderStyle) {
+                    isNavigatingToReaderStyle = true
+                    // 使用阅读页自身的 coroutineScope，而不是弹窗内部的 scope：
+                    // 弹窗被移除时其内部 scope 会被取消，导致后续导航永远不会执行。
+                    coroutineScope.launch {
+                        try {
+                            settingsBottomSheetState.hideSafely()
+                            showSettingsBottomSheet = false
+                            // 等待两帧：第一帧的重组会把弹窗移出组合(onDispose 中 dismiss Dialog)，
+                            // 确保 Dialog 窗口已从 WindowManager 中移除、焦点回到 Activity 后再导航
+                            withFrameNanos { }
+                            withFrameNanos { }
+                            Log.i("ReaderScreen", "Settings sheet closed, navigating to reader style")
+                            onClickReaderStyleSettings()
+                        } finally {
+                            showSettingsBottomSheet = false
+                            isNavigatingToReaderStyle = false
+                        }
+                    }
+                }
+            }
         )
     }
 
-    AnimatedVisibility(visible = showChapterSelectionBottomSheet) {
-        readingScreenUiState.currentChapterContent?.onOk { currentChapter ->
+    if (showChapterSelectionBottomSheet) {
+        val chaptersBottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden)
+        // 使用 chapterId 而不是 currentChapterContent：
+        // 原先章节正文加载失败(Err)或切换章节加载中(null)时目录弹窗会直接消失/无法打开，
+        // 用户无法通过目录换到其它章节；且标记位残留，正文加载完成后弹窗又会突然弹出。
+        val readingChapterId = readingScreenUiState.chapterId
+        if (readingChapterId == null) {
+            LaunchedEffect(Unit) { showChapterSelectionBottomSheet = false }
+        } else {
             ChapterSelectionBottomSheet(
                 sheetState = chaptersBottomSheetState,
                 selectedVolumeId = selectedVolumeId,
                 bookVolumes = readingScreenUiState.bookVolumes?.get(),
                 error = readingScreenUiState.bookVolumes?.getError(),
-                readingChapterId = currentChapter.id,
+                readingChapterId = readingChapterId,
                 onDismissRequest = {
-                    coroutineScope.launch { chaptersBottomSheetState.hide() }
-                        .invokeOnCompletion {
-                            if (!chaptersBottomSheetState.isVisible) {
-                                showChapterSelectionBottomSheet = false
-                            }
-                        }
                     showChapterSelectionBottomSheet = false
                     selectedVolumeId = readingScreenUiState.bookVolumes?.get()?.volumes
                         ?.firstOrNull { volume ->
                             volume.chapters.any {
-                                it.id == currentChapter.id
+                                it.id == readingChapterId
                             }
                         }?.volumeId
                 },
                 onClickChapter = { chapterId ->
                     onChangeChapter(chapterId)
-                    coroutineScope.launch { chaptersBottomSheetState.hide() }
-                        .invokeOnCompletion {
-                            if (!chaptersBottomSheetState.isVisible) {
-                                showChapterSelectionBottomSheet = false
-                            }
+                    coroutineScope.launch {
+                        try {
+                            chaptersBottomSheetState.hideSafely()
+                        } finally {
+                            // 无论隐藏动画是否被打断，都要移除弹窗窗口
+                            showChapterSelectionBottomSheet = false
                         }
+                    }
                 },
                 onChangeSelectedVolumeId = {
                     selectedVolumeId = it
@@ -297,14 +333,13 @@ fun ReaderScreen(
             )
         }
         LaunchedEffect(readingScreenUiState.bookVolumes) {
-            readingScreenUiState.currentChapterContent?.onOk { currentChapter ->
-                readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
-                    selectedVolumeId = bookVolumes.volumes.firstOrNull { volume ->
-                        volume.chapters.any {
-                            it.id == currentChapter.id
-                        }
-                    }?.volumeId
-                }
+            val readingChapterId = readingScreenUiState.chapterId ?: return@LaunchedEffect
+            readingScreenUiState.bookVolumes?.onOk { bookVolumes ->
+                selectedVolumeId = bookVolumes.volumes.firstOrNull { volume ->
+                    volume.chapters.any {
+                        it.id == readingChapterId
+                    }
+                }?.volumeId
             }
         }
     }
@@ -536,6 +571,23 @@ fun Content(
     }
 }
 
+/**
+ * 安全地收起底部弹窗：
+ * - 最多等待 [timeoutMillis]，动画因机型/系统动画设置异常而迟迟不结束时也不会一直挂起；
+ * - 被其它拖拽或动画打断(MutationInterruptedException)时不向外抛出，
+ *   保证调用方后续"移除弹窗 / 执行导航"的逻辑一定会执行。
+ * 若外层协程本身已被取消，则照常抛出取消异常。
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+internal suspend fun SheetState.hideSafely(timeoutMillis: Long = 400L) {
+    try {
+        withTimeoutOrNull(timeoutMillis) { hide() }
+    } catch (e: CancellationException) {
+        currentCoroutineContext().ensureActive()
+        Log.w("ReaderScreen", "Bottom sheet hide animation was interrupted", e)
+    }
+}
+
 private fun updateReaderImmersiveMode(
     window: Window,
     immersive: Boolean,
@@ -704,6 +756,17 @@ fun Indicator(
     enableReadingChapterProgressIndicator: Boolean,
     readingChapterProgress: Float
 ) {
+    // 原先时间与电量只在 Indicator 重组时读取一次，停留在同一页(尤其是翻页模式)时
+    // 时钟会停在旧时间。这里每到整分钟刷新一次。
+    val now by produceState(initialValue = LocalTime.now(), enableTimeIndicator, enableBatteryIndicator) {
+        if (!enableTimeIndicator && !enableBatteryIndicator) return@produceState
+        while (true) {
+            val current = LocalTime.now()
+            value = current
+            val untilNextMinute = (60 - current.second) * 1000L - current.nano / 1_000_000
+            delay(untilNextMinute.coerceAtLeast(200L))
+        }
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -715,24 +778,30 @@ fun Indicator(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (enableBatteryIndicator) {
-                val batteryManager =
-                    LocalContext.current.getSystemService(BATTERY_SERVICE) as BatteryManager
-                val batLevel: Int =
-                    batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
-                RollingNumber(
-                    modifier = Modifier.align(Alignment.CenterVertically),
-                    number = batLevel,
-                    style = typography.bodyLarge,
-                    color = colorScheme.onSurfaceVariant,
-                    length = 3
-                )
-                Text(
-                    text = "%",
-                    style = typography.bodyLarge,
-                    fontWeight = FontWeight.W500,
-                    color = colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.width(4.dp))
+                val context = LocalContext.current
+                // getIntProperty 在不支持的设备上返回 Integer.MIN_VALUE，
+                // 直接交给 RollingNumber 会因 abs(Int.MIN_VALUE) 溢出而崩溃，这里只接受 0..100。
+                val batLevel: Int = remember(now) {
+                    val batteryManager = context.getSystemService(BATTERY_SERVICE) as? BatteryManager
+                    batteryManager?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                        ?.takeIf { it in 0..100 } ?: -1
+                }
+                if (batLevel >= 0) {
+                    RollingNumber(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        number = batLevel,
+                        style = typography.bodyLarge,
+                        color = colorScheme.onSurfaceVariant,
+                        length = 3
+                    )
+                    Text(
+                        text = "%",
+                        style = typography.bodyLarge,
+                        fontWeight = FontWeight.W500,
+                        color = colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
                 Icon(
                     modifier = Modifier
                         .size(20.dp)
@@ -760,8 +829,8 @@ fun Indicator(
                     text = String.format(
                         Locale.US,
                         "%d:%02d",
-                        LocalTime.now().hour,
-                        LocalTime.now().minute
+                        now.hour,
+                        now.minute
                     ),
                     style = typography.bodyLarge.copy(
                         letterSpacing = 1.sp

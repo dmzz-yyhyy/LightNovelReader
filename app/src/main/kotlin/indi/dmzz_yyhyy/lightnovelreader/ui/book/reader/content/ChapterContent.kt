@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +30,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -184,15 +186,25 @@ fun ChapterContent(
                 }
             }
         }
+        // 加载中 / 加载失败时正文组件(Flip/ScrollContent)并不存在，原先整页没有任何点击响应，
+        // 用户无法呼出菜单栏(返回、目录、设置)；若返回拦截设为"完全拦截"则会被困在阅读页。
+        // 这里让加载页与错误页也能通过点击切换菜单栏。
+        val toggleImmersive by rememberUpdatedState(changeIsImmersive)
+        val tapToToggleImmersive = remember {
+            Modifier.pointerInput(Unit) {
+                detectTapGestures { toggleImmersive() }
+            }
+        }
         AnimatedVisibility(!ready && error == null, enter = fadeIn(), exit = fadeOut()) {
             Box(Modifier
                 .fillMaxSize()
+                .then(tapToToggleImmersive)
                 .background(readerBackgroundColor(settingState).copy(alpha = .92f))) {
                 ChapterContentLoading(mode, style)
             }
         }
         AnimatedVisibility(!ready && error != null, enter = fadeIn(), exit = fadeOut()) {
-            ChapterContentError()
+            ChapterContentError(tapToToggleImmersive)
         }
     }
 }
@@ -310,8 +322,8 @@ private fun ChapterContentLoading(mode: WriteMode, style: ReaderStyle) {
 }
 
 @Composable
-private fun ChapterContentError() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun ChapterContentError(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = stringResource(R.string.error_chapter_content_generic),
             style = MaterialTheme.typography.bodyLarge,

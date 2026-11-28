@@ -99,7 +99,10 @@ fun InterruptibleNavDisplay(
         mutableStateListOf<OverlayScene<NavKey>>()
     }
 
-    LaunchedEffect(sceneState.overlayScenes) {
+    // 同时以 currentOverlays.size 作为 key：如果同 key 的旧弹窗还在播放退出动画，
+    // 新弹窗会暂时被跳过；旧弹窗移除后需要重新检查一次，否则新弹窗永远不会显示，
+    // 但它仍留在返回栈中(表现为点击无反应、需要多按一次返回)。
+    LaunchedEffect(sceneState.overlayScenes, currentOverlays.size) {
         sceneState.overlayScenes.forEach { overlay ->
             if (currentOverlays.none { it.key == overlay.key }) {
                 currentOverlays += overlay
