@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.Flow
 import me.saket.swipe.SwipeAction
 import me.saket.swipe.SwipeableActionsBox
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookCardItem(
     modifier: Modifier = Modifier,

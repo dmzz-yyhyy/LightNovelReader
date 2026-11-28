@@ -8,7 +8,6 @@ import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.expanded.exploreExpandDe
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.home.exploreHomeDestination
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search.exploreSearchDestination
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 fun NavEntryScope.exploreNavigation() {
     exploreHomeDestination()
     exploreExpandDestination()

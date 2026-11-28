@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -21,6 +22,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.CustomExploreContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
@@ -31,7 +33,6 @@ import io.nightfish.lightnovelreader.api.web.explore.CustomExploreExpandedPage
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageContext
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ExpandedPageScreen(
     exploreUiState: ExploreUiState,
@@ -52,13 +53,14 @@ internal fun ExpandedPageScreen(
             MediumTopAppBar(
                 title = {
                     Text(
-                        page?.let {
+                        text = page?.let {
                             stringResource(
                                 R.string.nav_explore_child,
                                 viewModel.processTitle(it.title)
                             )
-                        }
-                            ?: stringResource(R.string.nav_explore),
+                        } ?: stringResource(R.string.nav_explore),
+                        style = MaterialTheme.typography.displayLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -109,7 +111,12 @@ internal fun ExpandedPageScreen(
                     )
                 )
 
-                null -> Text(stringResource(R.string.explore_no_results), Modifier.padding(16.dp))
+                null -> EmptyPage(
+                    modifier = Modifier.fillMaxSize(),
+                    icon = painterResource(R.drawable.search_24px),
+                    title = stringResource(R.string.search_no_results),
+                    description = stringResource(R.string.search_no_results_desc)
+                )
             }
         }
     }

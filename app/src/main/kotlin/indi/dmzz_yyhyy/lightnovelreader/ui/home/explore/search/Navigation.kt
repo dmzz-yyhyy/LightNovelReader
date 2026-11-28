@@ -14,10 +14,10 @@ fun NavEntryScope.exploreSearchDestination() {
     entry<Route.Main.Explore.Search> {
         val navigator = LocalNavigator.current
         val exploreViewModel = activityHiltViewModel<ExploreViewModel>()
-        val viewModel = hiltViewModel<ExploreSearchViewModel>()
         ExploreSearchScreen(
             exploreUiState = exploreViewModel.uiState,
-            viewModel = viewModel,
+            viewModel = hiltViewModel(),
+            isActive = navigator.currentRoute == Route.Main.Explore.Search,
             checkConnection = exploreViewModel::refresh,
             onBack = { navigator.popBackStack() },
             onOpenBook = navigator::navigateToBookDetailDestination,

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,12 +25,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+private const val SUBMITTED_KEYWORD = "submittedKeyword"
+
 @HiltViewModel
 class ExploreSearchViewModel @Inject constructor(
     exploreRepository: ExploreRepository,
     bookshelfRepository: BookshelfRepository,
     private val textProcessingRepository: TextProcessingRepository,
-    userDataRepository: UserDataRepository
+    userDataRepository: UserDataRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val provider = exploreRepository.searchProvider
     private val historyData = userDataRepository.userData(UserDataPath.Search.History)
@@ -44,9 +48,7 @@ class ExploreSearchViewModel @Inject constructor(
         private set
     internal var filters by mutableStateOf(FilterValues())
         private set
-    internal var keyword by mutableStateOf("")
-        private set
-    internal var submittedKeyword by mutableStateOf<String?>(null)
+    internal var submittedKeyword by mutableStateOf(savedStateHandle.get<String>(SUBMITTED_KEYWORD))
         private set
     internal var history by mutableStateOf(emptyList<String>())
         private set
@@ -57,6 +59,7 @@ class ExploreSearchViewModel @Inject constructor(
 
     init {
         pager.setLocalFilters(filterDefinitions.map { it.predicate(filters.local) })
+        reload()
         viewModelScope.launch {
             historyData.getFlow().collect { history = it.orEmpty().asReversed().distinct() }
         }
@@ -68,8 +71,7 @@ class ExploreSearchViewModel @Inject constructor(
     @Composable
     internal fun getSearchTip() = provider.getSearchTip(settings)
 
-    internal fun updateInput(value: String) {
-        keyword = value
+    internal fun updateSuggestions(value: String) {
         suggestionsJob?.cancel()
         suggestions = emptyList()
         if (value.isBlank()) return
@@ -85,25 +87,20 @@ class ExploreSearchViewModel @Inject constructor(
     }
 
     internal fun search(input: String) {
-        val value = input.trim()
-        if (value.isEmpty()) return
-        keyword = value
-        submittedKeyword = value
+        val query = input.trim()
+        if (query.isEmpty()) return
+        submittedKeyword = query
+        savedStateHandle[SUBMITTED_KEYWORD] = query
         reload()
         viewModelScope.launch {
-            historyData.update { it.filterNot { entry -> entry == value } + value }
+            historyData.update { it.filterNot { entry -> entry == query } + query }
         }
     }
 
-    internal fun editSearch() {
+    internal fun returnToSearch() {
         submittedKeyword = null
+        savedStateHandle.remove<String>(SUBMITTED_KEYWORD)
         pager.clear()
-        updateInput(keyword)
-    }
-
-    internal fun clearInput() {
-        editSearch()
-        updateInput("")
     }
 
     internal fun changeSettings(values: OptionValues) {

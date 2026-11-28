@@ -1,27 +1,27 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.search
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,214 +31,219 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.withResumed
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
-import indi.dmzz_yyhyy.lightnovelreader.ui.components.AnimatedTextLine
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.SectionHeader
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.PagedBookList
 import io.nightfish.lightnovelreader.api.identifier.Identifier
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ExploreSearchScreen(
     exploreUiState: ExploreUiState,
     viewModel: ExploreSearchViewModel,
+    isActive: Boolean,
     checkConnection: () -> Unit,
     onBack: () -> Unit,
     onOpenBook: (Identifier.Book) -> Unit,
     addToBookshelf: (Identifier.Book) -> Unit
 ) {
-    val colorScheme = LocalAppTheme.current.colorScheme
     val page by viewModel.pageState.collectAsStateWithLifecycle()
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val resultKeyword = viewModel.submittedKeyword
+    val input = rememberTextFieldState(initialText = resultKeyword.orEmpty())
+    val initialSearchBarValue = remember {
+        if (resultKeyword == null) SearchBarValue.Expanded else SearchBarValue.Collapsed
+    }
+    val searchBarState = rememberSearchBarState(initialValue = initialSearchBarValue)
+    val expanded = searchBarState.targetValue == SearchBarValue.Expanded
+    val searchBarCollapsed = searchBarState.currentValue == SearchBarValue.Collapsed
+    val scope = rememberCoroutineScope()
+    val resultListState = rememberSaveableStateHolder()
+    val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    val focus = LocalFocusManager.current
-    val inputFocus = remember { FocusRequester() }
+    val hasSettings = viewModel.settingDefinitions.isNotEmpty()
     var showSettings by rememberSaveable { mutableStateOf(false) }
-    var requestEditorFocus by remember { mutableStateOf(false) }
+    var historyExpanded by rememberSaveable { mutableStateOf(true) }
+
+    fun collapseSearch(query: String) {
+        focusManager.clearFocus()
+        keyboard?.hide()
+        if (input.text.toString() != query) input.setTextAndPlaceCursorAtEnd(query)
+        scope.launch { searchBarState.animateToCollapsed() }
+    }
 
     fun submit(value: String) {
-        if (value.isBlank()) return
-        focus.clearFocus()
-        keyboard?.hide()
-        viewModel.search(value)
+        val query = value.trim()
+        if (!isActive || query.isEmpty()) return
+        viewModel.search(query)
+        collapseSearch(query)
     }
 
     fun openSettings() {
-        focus.clearFocus()
         keyboard?.hide()
         showSettings = true
     }
 
-    LaunchedEffect(page.openBook) {
-        page.openBook?.let {
-            viewModel.editSearch()
-            onOpenBook(it)
-        }
+    BackHandler(enabled = isActive && expanded && resultKeyword != null && !exploreUiState.isOffLine) {
+        viewModel.submittedKeyword?.let(::collapseSearch)
     }
 
+    LaunchedEffect(input) {
+        snapshotFlow { input.text.toString() }.collect { viewModel.updateSuggestions(it) }
+    }
+    LaunchedEffect(isActive, resultKeyword, searchBarState) {
+        if (isActive && resultKeyword == null && searchBarState.currentValue == SearchBarValue.Collapsed) {
+            searchBarState.animateToExpanded()
+        }
+    }
+    LaunchedEffect(isActive, expanded, exploreUiState.isOffLine, lifecycle) {
+        if (isActive && expanded && !exploreUiState.isOffLine) {
+            lifecycle.withResumed {
+                focusRequester.requestFocus()
+                keyboard?.show()
+            }
+        }
+    }
+    LaunchedEffect(page.openBook, isActive, expanded, searchBarCollapsed, lifecycle) {
+        if (isActive && !expanded && searchBarCollapsed) {
+            page.openBook?.let { book ->
+                lifecycle.withResumed {
+                    viewModel.returnToSearch()
+                    onOpenBook(book)
+                }
+            }
+        }
+    }
+    val outerHorizontal by animateDpAsState(if (expanded) 0.dp else 16.dp, label = "Search outer horizontal")
+    val outerVertical by animateDpAsState(if (expanded) 0.dp else 8.dp, label = "Search outer vertical")
+    val searchBarColors = SearchBarDefaults.colors()
+
     ExploreScreen(
-        modifier = Modifier.fillMaxSize().statusBarsPadding(),
+        modifier = Modifier.fillMaxSize(),
         refresh = checkConnection,
         uiState = exploreUiState
     ) {
-        AnimatedContent(
-            targetState = viewModel.submittedKeyword,
-            modifier = Modifier.fillMaxSize().navigationBarsPadding().imePadding(),
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            contentKey = { it != null },
-            label = "Search screen"
-        ) { submitted ->
-            if (submitted == null) {
-                Box(Modifier.fillMaxSize()) {
-                    Column(Modifier.fillMaxSize()) {
-                        LaunchedEffect(requestEditorFocus) {
-                            if (requestEditorFocus) {
-                                inputFocus.requestFocus()
-                                requestEditorFocus = false
-                            }
-                        }
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = if (expanded) searchBarColors.containerColor else MaterialTheme.colorScheme.background,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            topBar = {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = outerHorizontal)
+                        .padding(bottom = outerVertical)
+                ) {
+                    val inputField: @Composable () -> Unit = {
                         val tip = viewModel.getSearchTip()
-                        TextField(
-                            value = viewModel.keyword,
-                            onValueChange = viewModel::updateInput,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .focusRequester(inputFocus),
-                            leadingIcon = {
-                                IconButton(onClick = onBack) {
-                                    Icon(
-                                        painterResource(R.drawable.arrow_back_24px),
-                                        contentDescription = "back"
-                                    )
-                                }
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(
-                                    visible = viewModel.keyword.isNotEmpty(),
-                                    enter = fadeIn(),
-                                    exit = fadeOut()
-                                ) {
-                                    IconButton(onClick = viewModel::clearInput) {
-                                        Icon(
-                                            painterResource(R.drawable.close_24px),
-                                            contentDescription = "clear"
-                                        )
+                        SearchBarDefaults.InputField(
+                            textFieldState = input,
+                            searchBarState = searchBarState,
+                            onSearch = ::submit,
+                            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+                            leadingIcon = { SearchBackButton(onBack) },
+                            trailingIcon = when {
+                                expanded && input.text.isNotEmpty() -> {
+                                    {
+                                        IconButton(onClick = { input.setTextAndPlaceCursorAtEnd("") }) {
+                                            Icon(
+                                                painterResource(R.drawable.close_24px),
+                                                contentDescription = "clear"
+                                            )
+                                        }
                                     }
                                 }
+                                !expanded && hasSettings -> {
+                                    {
+                                        IconButton(onClick = ::openSettings) {
+                                            Icon(Icons.Outlined.Settings, contentDescription = "filter")
+                                        }
+                                    }
+                                }
+                                else -> null
                             },
                             placeholder = {
-                                AnimatedTextLine(
+                                Text(
                                     text = tip.ifBlank { stringResource(R.string.explore_search_hint) },
-                                    color = colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
-                            },
-                            shape = MaterialTheme.shapes.extraLarge,
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = colorScheme.surfaceContainerHigh,
-                                unfocusedContainerColor = colorScheme.surfaceContainerHigh,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = { submit(viewModel.keyword) })
-                        )
-                        SearchSuggestions(
-                            input = viewModel.keyword,
-                            history = viewModel.history,
-                            suggestions = viewModel.suggestions,
-                            onSubmit = ::submit,
-                            onFill = viewModel::updateInput,
-                            onDelete = viewModel::deleteHistory,
-                            clearHistory = viewModel::clearHistory,
-                            modifier = Modifier.weight(1f)
+                            }
                         )
                     }
-                    if (viewModel.settingDefinitions.isNotEmpty()) {
-                        FloatingActionButton(
-                            onClick = ::openSettings,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(24.dp)
-                        ) {
-                            Icon(
-                                painterResource(R.drawable.filled_settings_24px),
-                                contentDescription = "filter"
-                            )
+                    if (expanded) {
+                        inputField()
+                    } else {
+                        SearchBar(
+                            state = searchBarState,
+                            inputField = inputField,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = searchBarColors
+                        )
+                    }
+                }
+            }
+        ) { padding ->
+            if (expanded) {
+                Column(Modifier.fillMaxSize().padding(padding).navigationBarsPadding().imePadding()) {
+                    HorizontalDivider(color = searchBarColors.dividerColor)
+                    Box(Modifier.fillMaxSize()) {
+                        SearchSuggestions(
+                            input = input.text.toString(),
+                            history = viewModel.history,
+                            suggestions = viewModel.suggestions,
+                            historyExpanded = historyExpanded,
+                            onToggleHistory = { historyExpanded = !historyExpanded },
+                            onSubmit = ::submit,
+                            onFill = { input.setTextAndPlaceCursorAtEnd(it) },
+                            onDelete = viewModel::deleteHistory,
+                            clearHistory = viewModel::clearHistory,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        if (hasSettings) {
+                            SearchSettingsFab(::openSettings, Modifier.align(Alignment.BottomEnd))
                         }
                     }
                 }
-            } else {
-                Column(Modifier.fillMaxSize()) {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 4.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                painterResource(R.drawable.arrow_back_24px),
-                                contentDescription = "back"
-                            )
-                        }
-                        OutlinedTextField(
-                            value = viewModel.keyword,
-                            onValueChange = {
-                                viewModel.editSearch()
-                                viewModel.updateInput(it)
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .onFocusChanged {
-                                    if (it.isFocused) {
-                                        requestEditorFocus = true
-                                        viewModel.editSearch()
-                                    }
-                                },
-                            shape = MaterialTheme.shapes.large,
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = { submit(viewModel.keyword) })
-                        )
-                        if (viewModel.settingDefinitions.isNotEmpty()) {
-                            IconButton(onClick = ::openSettings) {
-                                Icon(Icons.Outlined.Settings, contentDescription = "filter")
-                            }
-                        }
-                    }
+            } else if (resultKeyword != null) {
+                resultListState.SaveableStateProvider("searchResults") {
                     PagedBookList(
                         state = page,
                         filters = viewModel.filterDefinitions,
@@ -250,11 +255,11 @@ internal fun ExploreSearchScreen(
                         processBook = viewModel::processBook,
                         onOpenBook = onOpenBook,
                         addToBookshelf = addToBookshelf,
+                        modifier = Modifier.fillMaxSize().padding(padding).navigationBarsPadding(),
                         heading = {
-                            Text(
-                                stringResource(R.string.explore_search_results, submitted),
-                                Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp),
-                                style = MaterialTheme.typography.titleMedium
+                            SectionHeader(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                text = stringResource(R.string.explore_search_results, resultKeyword)
                             )
                         }
                     )
@@ -262,25 +267,52 @@ internal fun ExploreSearchScreen(
             }
         }
     }
+
     if (showSettings) {
-        ModalBottomSheet(onDismissRequest = { showSettings = false }) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item {
-                    Text(
-                        stringResource(R.string.explore_search_settings),
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-                items(viewModel.settingDefinitions, key = { it.key.id }) { setting ->
-                    setting.Content({ viewModel.settings }, viewModel::changeSettings)
-                    HorizontalDivider(Modifier.padding(top = 12.dp))
-                }
+        SearchSettingsSheet(viewModel, onDismissRequest = { showSettings = false })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchSettingsSheet(viewModel: ExploreSearchViewModel, onDismissRequest: () -> Unit) {
+    var draft by remember { mutableStateOf(viewModel.settings) }
+    ModalBottomSheet(
+        onDismissRequest = {
+            viewModel.changeSettings(draft)
+            onDismissRequest()
+        }
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            item {
+                Text(
+                    stringResource(R.string.explore_search_settings),
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            items(viewModel.settingDefinitions, key = { it.key.id }) { setting ->
+                setting.Content({ draft }) { draft = it }
+                HorizontalDivider(Modifier.padding(top = 12.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun SearchBackButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(painterResource(R.drawable.arrow_back_24px), contentDescription = "back")
+    }
+}
+
+@Composable
+private fun SearchSettingsFab(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FloatingActionButton(onClick = onClick, modifier = modifier.padding(24.dp)) {
+        Icon(painterResource(R.drawable.filled_settings_24px), contentDescription = "filter")
     }
 }
 
@@ -289,18 +321,18 @@ private fun SearchSuggestions(
     input: String,
     history: List<String>,
     suggestions: List<String>,
+    historyExpanded: Boolean,
+    onToggleHistory: () -> Unit,
     onSubmit: (String) -> Unit,
     onFill: (String) -> Unit,
     onDelete: (String) -> Unit,
     clearHistory: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var historyExpanded by rememberSaveable { mutableStateOf(true) }
     val recent = history.filter { it.contains(input, ignoreCase = true) }
-    AnimatedContent(
+    Crossfade(
         targetState = history.isEmpty() && (input.isBlank() || suggestions.isEmpty()),
         modifier = modifier.fillMaxWidth(),
-        transitionSpec = { fadeIn() togetherWith fadeOut() },
         label = "Search history empty state"
     ) { showEmptyPage ->
         if (showEmptyPage) {
@@ -312,18 +344,17 @@ private fun SearchSuggestions(
         } else {
             LazyColumn(
                 Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 88.dp)
+                contentPadding = PaddingValues(bottom = 88.dp)
             ) {
                 if (input.isBlank() && history.isNotEmpty()) {
                     item(key = "history-header") {
                         Row(
-                            Modifier.fillMaxWidth().animateItem(),
+                            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 3.dp).animateItem(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                stringResource(R.string.search_history),
-                                Modifier.weight(1f),
-                                style = MaterialTheme.typography.titleMedium
+                            SectionHeader(
+                                modifier = Modifier.weight(1f),
+                                text = stringResource(R.string.search_history),
                             )
                             TextButton(onClick = clearHistory) {
                                 Text(stringResource(R.string.clear_all))
@@ -332,15 +363,10 @@ private fun SearchSuggestions(
                                 targetValue = if (historyExpanded) 180f else 0f,
                                 label = "Search history arrow"
                             )
-                            IconButton(onClick = { historyExpanded = !historyExpanded }) {
-                                val description = if (historyExpanded) {
-                                    R.string.explore_collapse
-                                } else {
-                                    R.string.explore_expand
-                                }
+                            IconButton(onClick = onToggleHistory) {
                                 Icon(
                                     painterResource(R.drawable.keyboard_arrow_up_24px),
-                                    contentDescription = stringResource(description),
+                                    contentDescription = if (historyExpanded) "collapse" else "expand",
                                     modifier = Modifier.rotate(rotation)
                                 )
                             }
@@ -353,7 +379,11 @@ private fun SearchSuggestions(
                             entry, R.drawable.outline_schedule_24px, onSubmit, Modifier.animateItem()
                         ) {
                             IconButton(onClick = { onDelete(entry) }) {
-                                Icon(painterResource(R.drawable.close_24px), contentDescription = "delete")
+                                Icon(
+                                    modifier = Modifier.size(20.dp),
+                                    painter = painterResource(R.drawable.close_24px),
+                                    contentDescription = "delete"
+                                )
                             }
                         }
                     }
@@ -364,9 +394,9 @@ private fun SearchSuggestions(
                     ) {
                         IconButton(onClick = { onFill(entry) }) {
                             Icon(
-                                painterResource(R.drawable.arrow_outward_24px),
-                                contentDescription = stringResource(R.string.explore_fill_search),
-                                modifier = Modifier.rotate(-90f)
+                                modifier = Modifier.rotate(-90f).size(20.dp),
+                                painter = painterResource(R.drawable.arrow_outward_24px),
+                                contentDescription = "fill"
                             )
                         }
                     }
@@ -386,20 +416,23 @@ private fun SearchSuggestionRow(
 ) {
     Column(modifier) {
         Row(
-            Modifier
-                .fillMaxWidth()
-                .clickable { onClick(value) },
+            modifier = Modifier.fillMaxWidth()
+                .clickable { onClick(value) }
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painterResource(icon),
+                modifier = Modifier.size(20.dp),
+                painter = painterResource(icon),
                 contentDescription = null,
                 tint = LocalAppTheme.current.colorScheme.onSurfaceVariant
             )
             Text(value, Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             trailing()
         }
-        HorizontalDivider()
+        HorizontalDivider(
+            Modifier.padding(horizontal = 16.dp)
+        )
     }
 }

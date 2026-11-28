@@ -68,7 +68,8 @@ private fun publishingHouseFilter(): LocalFilter<String> {
                 "文库: ${choices.toMap().getValue(value)}",
                 value.isNotEmpty(),
                 choices,
-                change
+                onSelect = change,
+                selectedOption = value
             )
         },
         matches = { value, book -> value.isEmpty() || book.information.get()?.publishingHouse?.trim() == value }

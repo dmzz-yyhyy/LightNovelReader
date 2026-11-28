@@ -1,17 +1,30 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,16 +40,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.github.michaelbull.result.map
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.BookCardItem
+import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.utils.addToBookshelfAction
 import indi.dmzz_yyhyy.lightnovelreader.utils.withHaptic
 import io.nightfish.lightnovelreader.api.book.BookInformation
@@ -98,8 +117,8 @@ internal fun PagedBookList(
                 consumed: Offset,
                 available: Offset,
                 source: NestedScrollSource
-            ): Offset {
-                if (source != NestedScrollSource.UserInput) return Offset.Zero
+            ): Offset = Offset.Zero.also {
+                if (source != NestedScrollSource.UserInput) return@also
                 if (consumed.y != 0f || available.y != 0f) {
                     anchor = null
                     restoreAnchor = false
@@ -142,16 +161,21 @@ internal fun PagedBookList(
                     }
                 }
             }
-            HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp)
+                    .padding(bottom = 2.dp)
+            )
         }
-        heading?.invoke()
+        heading?.invoke() ?: Spacer(Modifier.height(8.dp))
+        val lineHeight = MaterialTheme.typography.titleMedium.lineHeight
+        val titleHeight = with(LocalDensity.current) { (lineHeight * 2.2f).toDp() }
+
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
                 .nestedScroll(pagingScroll),
             state = listState,
-            contentPadding = PaddingValues(vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(state.books, key = PageBook::id) { book ->
@@ -169,7 +193,7 @@ internal fun PagedBookList(
                             book.id
                         )
                     }),
-                    titleHeight = null
+                    titleHeight = titleHeight
                 )
             }
             if (state.loading) {
@@ -200,16 +224,65 @@ internal fun PagedBookList(
                     }
                 }
             }
-            if (state.books.isEmpty() && state.error == null && !state.loading && state.openBook == null) {
+            if (state.canAppend && !state.loading && state.error == null && state.openBook == null) {
+                item(key = "scroll-for-more") {
+                    if (state.books.isEmpty()) {
+                        ScrollForMoreHint(
+                            onClick = latestAppend,
+                            modifier = Modifier.fillParentMaxSize().navigationBarsPadding()
+                        )
+                    } else {
+                        ScrollForMoreHint(
+                            onClick = latestAppend,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                        )
+                    }
+                }
+            } else if (state.books.isEmpty() && state.error == null && !state.loading && state.openBook == null) {
                 item {
-                    Text(
-                        stringResource(if (state.canAppend) R.string.explore_scroll_for_more else R.string.explore_no_results),
-                        Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = LocalAppTheme.current.colorScheme.onSurfaceVariant
+                    EmptyPage(
+                        modifier = Modifier.fillParentMaxSize().navigationBarsPadding(),
+                        icon = painterResource(R.drawable.search_24px),
+                        title = stringResource(R.string.search_no_results),
+                        description = stringResource(R.string.search_no_results_desc)
                     )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ScrollForMoreHint(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isEmpty: Boolean = false
+) {
+    val color = LocalAppTheme.current.colorScheme.onSurfaceVariant
+    Column(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.keyboard_arrow_up_24px),
+            contentDescription = null,
+            tint = color,
+            modifier = Modifier
+                .size(32.dp)
+                .rotate(180f)
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            modifier = Modifier.padding(horizontal = 32.dp),
+            text = if (isEmpty) stringResource(R.string.explore_scroll_for_more_empty)
+            else stringResource(R.string.explore_scroll_for_more),
+            style = MaterialTheme.typography.titleSmall,
+            color = color,
+            textAlign = TextAlign.Center
+        )
     }
 }
 

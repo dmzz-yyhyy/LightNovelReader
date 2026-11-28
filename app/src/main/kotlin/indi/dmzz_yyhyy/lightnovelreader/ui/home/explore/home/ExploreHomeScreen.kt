@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -33,7 +31,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -90,7 +87,6 @@ import io.nightfish.lightnovelreader.api.identifier.Identifier
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageContext
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomExploreHomeScreen(
     init: () -> Unit,
@@ -112,7 +108,6 @@ fun CustomExploreHomeScreen(
 }
 
 @SuppressLint("UnusedTargetStateInContentKeyLambda")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ExploreHomeScreen(
     exploreUiState: ExploreUiState,
@@ -231,7 +226,6 @@ fun ExploreHomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
@@ -271,9 +265,6 @@ fun TopBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalAnimationApi::class
-)
 @Composable
 fun ExplorePage(
     explorePageBooksRawList: List<ExploreBooksRow>,
@@ -360,7 +351,6 @@ private fun ExploreRowsList(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExploreRowSection(
     modifier: Modifier,
@@ -445,9 +435,7 @@ private fun ExploreRowSection(
             }
         }
         Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
             HorizontalDivider()
         }
