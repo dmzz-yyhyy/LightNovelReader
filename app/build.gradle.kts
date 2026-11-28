@@ -30,6 +30,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "BENCHMARK", "false")
+        buildConfigField("boolean", "DEV_BUILD", "false")
         vectorDrawables {
             useSupportLibrary = true
         }
@@ -51,6 +52,7 @@ android {
             applicationIdSuffix = ".debug"
             isDebuggable = true
             isJniDebuggable = true
+            buildConfigField("boolean", "DEV_BUILD", "true")
             vcsInfo.include = false
             versionNameSuffix = "-" + defaultConfig.versionCode.toString()
         }
@@ -79,6 +81,17 @@ android {
             buildConfigField("boolean", "BENCHMARK", "true")
         }
 
+        register("perf") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-" + defaultConfig.versionCode.toString() + "-perf"
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("debug")
+            isDebuggable = false
+            isMinifyEnabled = false
+            buildConfigField("boolean", "DEV_BUILD", "true")
+        }
+
         base {
             archivesName = "LightNovelReader-${defaultConfig.versionName}"
         }
@@ -101,6 +114,10 @@ android {
 }
 
 androidComponents {
+    onVariants(selector().withBuildType("perf")) { variant ->
+        variant.sources.res?.addStaticSourceDirectory("src/debug/res")
+    }
+
     onVariants(selector().withBuildType("snapshot")) { variant ->
         variant.outputs.forEach { output ->
             val outputImpl = output as com.android.build.api.variant.impl.VariantOutputImpl
@@ -192,8 +209,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.cbor)
     // Swipe
     implementation(libs.swipe)
-    // Chart
-    implementation(libs.vico.compose.m3)
     // Potato Auto Proxy
     implementation(project(":proxy"))
     // Shimmer

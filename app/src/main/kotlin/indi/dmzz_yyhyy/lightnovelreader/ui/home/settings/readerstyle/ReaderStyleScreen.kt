@@ -137,17 +137,22 @@ fun ReaderThemeSettingsList(
 
         LaunchedEffect(settingState.enableBackgroundImage) {
             val now = settingState.enableBackgroundImage
-            if (!lastEnabled && now) {
+            val justEnabled = !lastEnabled && now
+            lastEnabled = now
+            if (justEnabled) {
                 val loader = context.imageLoader
 
                 val key = KRAFT_PAPER_CACHE_KEY
 
                 val memHit = loader.memoryCache?.get(MemoryCache.Key(key)) != null
-                val diskHit = loader.diskCache?.openSnapshot(key)?.use { true } ?: false
+                // 磁盘缓存查询涉及文件 IO，不要放在主线程
+                val diskHit = withContext(Dispatchers.IO) {
+                    loader.diskCache?.openSnapshot(key)?.use { true } ?: false
+                }
 
                 if (!memHit && !diskHit) {
-                    snackbarHostState.showSnackbar("正在下载纸张背景…")
-
+                    // 先开始下载再提示：showSnackbar 会一直挂起到提示消失(约 4 秒)，
+                    // 原先的顺序导致下载被推迟，且期间离开页面会取消协程，下载根本不会开始。
                     loader.enqueue(
                         ImageRequest.Builder(context)
                             .data(KRAFT_PAPER_URL)
@@ -158,9 +163,10 @@ fun ReaderThemeSettingsList(
                             .diskCacheKey(key)
                             .build()
                     )
+
+                    snackbarHostState.showSnackbar("正在下载纸张背景…")
                 }
             }
-            lastEnabled = now
         }
 
 

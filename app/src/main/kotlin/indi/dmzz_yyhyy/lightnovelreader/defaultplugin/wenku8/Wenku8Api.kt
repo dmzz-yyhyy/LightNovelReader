@@ -75,7 +75,7 @@ import kotlin.time.Duration.Companion.seconds
 
 @WebDataSource(
     "Wenku8",
-    "LightNovelReader from wenku8.net"
+    "LightNovelReader for wenku8.net"
 )
 class Wenku8Api(context: Context) : WebBookDataSource {
     private val tagList = listOf(
