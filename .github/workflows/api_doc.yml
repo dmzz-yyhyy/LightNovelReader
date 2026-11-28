@@ -38,6 +38,87 @@ jobs:
         with:
           name: api-doc
           path: api/build/dokka/html
+          if-no-files-found: error
+          overwrite: true
+
+  DeployReviewApiDoc:
+    runs-on: ubuntu-latest
+    needs: CheckApiDoc
+    # Fork and Dependabot runs do not receive the Vercel repository secret.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    permissions:
+      pull-requests: write
+    concurrency:
+      group: api-doc-preview-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      PREVIEW_DIRECTORY: api-doc-preview
+
+    steps:
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Download the generated documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: api-doc
+          path: ${{ runner.temp }}/${{ env.PREVIEW_DIRECTORY }}/.vercel/output/static
+
+      - name: Deploy API docs to Vercel Preview
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          preview_dir="$RUNNER_TEMP/$PREVIEW_DIRECTORY"
+          output_dir="$preview_dir/.vercel/output"
+          if [[ ! -f "$output_dir/static/index.html" ]]; then
+            echo 'The documentation artifact is missing index.html.'
+            exit 1
+          fi
+          printf '{"version":3}\n' > "$output_dir/config.json"
+
+          vercel link --cwd "$preview_dir" --yes --scope nightfishs-projects \
+            --project lightnovelreader-api-doc --token "$VERCEL_TOKEN"
+          preview_url=$(vercel deploy --cwd "$preview_dir" --prebuilt --archive=tgz --yes --token "$VERCEL_TOKEN")
+          if [[ ! "$preview_url" =~ ^https://[a-zA-Z0-9.-]+$ ]]; then
+            echo 'Vercel did not return a preview URL.'
+            exit 1
+          fi
+          echo "url=$preview_url" >> "$GITHUB_OUTPUT"
+          printf '[API documentation preview](%s)\n' "$preview_url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Add or update the preview link on the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          marker='<!-- api-doc-preview -->'
+          comments="repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments"
+          comment_id=$(gh api --paginate "$comments?per_page=100" |
+            jq -sr --arg marker "$marker" '[.[][] | select(.user.login == "github-actions[bot]")
+              | select(.body | startswith($marker))] | first | .id // empty')
+
+          pr=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")
+          if ! jq -e --arg sha "$HEAD_SHA" --arg base "$BASE_REF" \
+            '.state == "open" and .head.sha == $sha and .base.ref == $base' <<< "$pr" > /dev/null; then
+            echo "Pull request #$PR_NUMBER changed while deploying."
+            exit 0
+          fi
+
+          body=$(printf '%s\n[API documentation preview](%s) for `%s`.\n' "$marker" "$PREVIEW_URL" "${HEAD_SHA:0:7}")
+          if [[ -n "$comment_id" ]]; then
+            gh api --method PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" -f body="$body" > /dev/null
+          else
+            gh api --method POST "$comments" -f body="$body" > /dev/null
+          fi
 
   DeployProductionApiDoc:
     runs-on: ubuntu-latest
