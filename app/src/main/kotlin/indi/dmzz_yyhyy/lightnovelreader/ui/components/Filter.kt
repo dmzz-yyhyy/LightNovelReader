@@ -1,241 +1,99 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.components
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.nonInteractiveScrollbar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
-import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
-import io.nightfish.lightnovelreader.api.web.explore.filter.SingleChoiceFilter
-import io.nightfish.lightnovelreader.api.web.explore.filter.SliderFilter
-import io.nightfish.lightnovelreader.api.web.explore.filter.SwitchFilter
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
-fun Filter<*>.Component(
-    dialog: (@Composable () -> Unit) -> Unit,
-    onChange: () -> Unit
-) {
-    this.addOnChangeListener(Int.MIN_VALUE) {
-        onChange.invoke()
-    }
-    when (this) {
-        is SwitchFilter -> {
-            var enabled by remember { mutableStateOf(this.value) }
-            LaunchedEffect(this.value) {
-                enabled = this@Component.value
-            }
-            BaseFilter(
-                title = this.getTitle().resolve(),
-                selected = enabled,
-                onClick = {
-                    enabled = !enabled
-                    this.value = enabled
-                }
-            )
-        }
-
-        is SingleChoiceFilter -> {
-            var enabled by remember { mutableStateOf(this.value != this.getDefaultChoice()) }
-            var displayDialog by remember { mutableStateOf(false) }
-            var selected by remember { mutableStateOf(this.value) }
-            LaunchedEffect(this.value) {
-                enabled = this@Component.value != this@Component.getDefaultChoice()
-                displayDialog = false
-                selected = this@Component.value
-            }
-            LaunchedEffect(displayDialog) {
-                if (displayDialog)
-                    dialog {
-                        FilterChipsDialog(
-                            enable = displayDialog,
-                            selected = selected,
-                            title = this@Component.dialogTitle.resolve(),
-                            description = this@Component.description.resolve(),
-                            onSelectedChange = {
-                                selected = it
-                                enabled = it != this@Component.getDefaultChoice()
-                            },
-                            choices = this@Component.getAllChoices(),
-                            onConfirmation = {
-                                displayDialog = false
-                                this@Component.value = selected
-                            },
-                            onDismissRequest = {
-                                displayDialog = false
-                                selected = this@Component.value
-                            },
-                        )
-                    }
-                else
-                    dialog {}
-            }
-            BaseFilter(
-                title = "${this.getTitle().resolve()}: $selected",
-                selected = enabled,
-                onClick = {
-                    displayDialog = true
-                }
-            )
-        }
-
-        is SliderFilter -> {
-            var enabled by remember { mutableStateOf(this.enabled) }
-            var displayDialog by remember { mutableStateOf(false) }
-            var value by remember { mutableFloatStateOf(this.value) }
-            LaunchedEffect(this@Component.enabled) {
-                enabled = this@Component.enabled
-            }
-            LaunchedEffect(displayDialog) {
-                dialog {
-                    if (displayDialog)
-                        SliderDialog(
-                            onDismissRequest = {
-                                displayDialog = false
-                                value = this@Component.value
-                            },
-                            onConfirmation = {
-                                displayDialog = false
-                                this@Component.value = value
-                            },
-                            value = value,
-                            valueRange = this@Component.valueRange,
-                            steps = this@Component.steps,
-                            onSlideChange = { value = it },
-                            onSliderChangeFinished = { },
-                            title = this@Component.getTitle().resolve(),
-                            description = this@Component.description
-                        )
-                }
-            }
-            BaseFilter(
-                title = "${this.displayTitle.resolve()}: ${this.displayValue}",
-                selected = enabled,
-                onClick = {
-                    displayDialog = true
-                }
-            )
-        }
-    }
-}
-
-@Composable
-fun BaseFilter(
-    modifier: Modifier = Modifier,
+internal fun FilterDropdown(
     title: String,
     selected: Boolean,
-    onClick: () -> Unit
+    choices: List<Pair<String, String>>,
+    onSelect: (String) -> Unit,
+    selectedOption: String? = null
 ) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = {
-            AnimatedContent(
-                targetState = if (selected) MaterialTheme.colorScheme.onSecondaryContainer
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-                label = "FilterTitleColorAnime",
-            ) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.W500,
-                    color = it
-                )
-            }
-        },
-        modifier = modifier,
-        leadingIcon = {
-            AnimatedVisibility(
-                visible = selected,
-            ) {
-                Icon(
-                    modifier = Modifier.size(18.dp),
-                    painter = painterResource(R.drawable.check_24px),
-                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                    contentDescription = null
-                )
-            }
+    var expanded by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val scrollIndicatorState = scrollState.scrollIndicatorState
+    val fadeDelayMillis = 2_200
+    var showInitialScrollbar by remember(expanded) { mutableStateOf(expanded) }
+    val isScrolling = scrollState.isScrollInProgress
+    LaunchedEffect(expanded, isScrolling) {
+        if (showInitialScrollbar && !isScrolling) {
+            delay(fadeDelayMillis.toLong().milliseconds)
+            showInitialScrollbar = false
         }
-    )
-}
-
-@Composable
-fun FilterChipsDialog(
-    enable: Boolean,
-    selected: String,
-    title: String,
-    description: String,
-    choices: List<String>,
-    onSelectedChange: (String) -> Unit,
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-) {
-    AnimatedVisibility(
-        visible = enable,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        BaseDialog(
-            icon = painterResource(R.drawable.text_fields_24px),
-            title = title,
-            description = description,
-            onDismissRequest = onDismissRequest,
-            onConfirmation = onConfirmation,
-            dismissText = stringResource(id = R.string.cancel),
-            confirmationText = stringResource(id = R.string.apply),
+    }
+    val modifier = Modifier.heightIn(max = 500.dp)
+    Box {
+        FilterChip(
+            selected = selected,
+            onClick = { expanded = true },
+            label = { Text(title) },
+            trailingIcon = {
+                Icon(
+                    painterResource(R.drawable.keyboard_arrow_up_24px),
+                    contentDescription = null,
+                    modifier = Modifier.rotate(180f)
+                )
+            }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = if (scrollIndicatorState != null) {
+                modifier.padding(horizontal = 4.dp).nonInteractiveScrollbar(
+                    state = scrollIndicatorState,
+                    orientation = Orientation.Vertical,
+                    isFadeEnabled = !showInitialScrollbar,
+                    fadeDelayMillis = fadeDelayMillis,
+                    mainAxisTrackInset = 8.dp,
+                    crossAxisTrackInset = 4.dp
+                ).padding(end = 14.dp)
+            } else modifier,
+            scrollState = scrollState
         ) {
-            FlowRow(
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(horizontal = 33.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-                maxItemsInEachRow = 4
-            ) {
-                choices.forEach { choice ->
-                    FilterChip(
-                        modifier = Modifier.padding(0.dp),
-                        selected = choice == selected,
-                        onClick = {
-                            onSelectedChange(choice)
-                        },
-                        label = {
-                            AnimatedContent(
-                                targetState = if (choice == selected) MaterialTheme.colorScheme.onSecondaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant,
-                                label = "FilterTitleColorAnime",
-                            ) {
-                                Text(
-                                    text = choice,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.W500,
-                                    color = it
-                                )
-                            }
-                        }
-                    )
-                }
+            choices.forEach { (value, label) ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = label,
+                            style = if (selectedOption != null) MaterialTheme.typography.bodyLarge
+                            else LocalTextStyle.current
+                        )
+                    },
+                    leadingIcon = if (selectedOption != null) {
+                        { RadioButton(selected = selectedOption == value, onClick = null) }
+                    } else null,
+                    onClick = {
+                        expanded = false
+                        onSelect(value)
+                    }
+                )
             }
         }
     }

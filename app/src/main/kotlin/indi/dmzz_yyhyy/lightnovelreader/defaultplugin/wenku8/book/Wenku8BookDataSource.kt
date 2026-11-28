@@ -5,8 +5,7 @@ import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import io.nightfish.lightnovelreader.api.book.ChapterContent
 import io.nightfish.lightnovelreader.api.error.WebRequestError
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
-import kotlinx.coroutines.flow.Flow
+import io.nightfish.lightnovelreader.api.web.BookPageResult
 
 interface Wenku8BookDataSource {
     suspend fun getBookInformation(id: String): Result<BookInformation, WebRequestError>
@@ -16,5 +15,9 @@ interface Wenku8BookDataSource {
         bookId: String
     ): Result<ChapterContent, WebRequestError>
 
-    fun search(searchType: String, keyword: String): Flow<SearchResult>
+    suspend fun search(
+        searchType: String,
+        keyword: String,
+        cursor: String?
+    ): Result<BookPageResult, WebRequestError>
 }

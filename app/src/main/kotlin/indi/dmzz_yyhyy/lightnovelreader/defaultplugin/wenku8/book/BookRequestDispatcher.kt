@@ -4,8 +4,6 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Result
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
 import io.nightfish.lightnovelreader.api.error.WebRequestError
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
-import kotlinx.coroutines.flow.Flow
 
 class BookRequestDispatcher(
     val host: String,
@@ -45,7 +43,6 @@ class BookRequestDispatcher(
         getChapterContent(chapterId, bookId)
     }
 
-    override fun search(searchType: String, keyword: String): Flow<SearchResult> {
-        return source.first().search(searchType, keyword)
-    }
+    override suspend fun search(searchType: String, keyword: String, cursor: String?) =
+        rotation { search(searchType, keyword, cursor) }
 }

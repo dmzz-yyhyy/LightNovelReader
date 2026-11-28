@@ -6,36 +6,48 @@ import kotlinx.coroutines.CoroutineScope
 
 /**
  * 探索页面内容提供器的封闭接口
- * 共有两种实现方式：使用软件默认布局或完全自定义页面内容
+ * 支持使用宿主默认布局或自定义整个探索页面内容
  *
  * @since Api 2
  */
 sealed interface ExplorePageProvider {
     /**
-     * 软件默认实现的探索页面
-     * 使用卡片页与展开页島效果组合的默认布局
+     * 使用宿主默认布局的探索页面提供器
+     * 可同时注册由宿主渲染的页面和由插件渲染内容的自定义页面
      *
      * @since Api 2
      */
     interface DefaultExplorePageProvider : ExplorePageProvider {
-        /** 已注册的探索页面 ID 有序列表 @since Api 2 */
-        val explorePageIdList: List<String>
+        /**
+         * 以页面标识为键的探索卡片页映射
+         * 映射的迭代顺序决定标签栏的显示顺序
+         *
+         * @since Api 4
+         */
+        val exploreTapPages: Map<String, ExploreTapPage>
 
-        /** 以页面 ID 为键的探索卡片页数据源映射 @since Api 2 */
-        val exploreTapPageDataSourceMap: Map<String, ExploreTapPageDataSource>
-
-        /** 以页面 ID 为键的探索展开页数据源映射 @since Api 2 */
-        val exploreExpandedPageDataSourceMap: Map<String, ExploreExpandedPageDataSource>
+        /**
+         * 以路由标识为键的探索展开页映射
+         *
+         * @since Api 4
+         */
+        val exploreExpandedPages: Map<String, ExploreExpandedPage>
     }
 
     /**
-     * 完全自定义探索页面内容
-     * 实现者可自行决定页面布局和UI状态
+     * 完全自定义探索页面内容的接口
+     * 实现者可自行决定页面布局和 UI 状态
+     *
+     * @param T 探索页面 UI 状态的类型
      *
      * @since Api 2
      */
     interface CustomExplorePageProvider<T> : ExplorePageProvider {
-        /** 探索页面的 UI 状态数据 @since Api 2 */
+        /**
+         * 探索页面的 UI 状态数据
+         *
+         * @since Api 2
+         */
         val uiState: T
 
         /**
@@ -50,7 +62,7 @@ sealed interface ExplorePageProvider {
         /**
          * 渲染探索页面的展示内容
          *
-         * @param nestedScrollConnection 嵌套滚动连接器，用于协调滚动事件
+         * @param nestedScrollConnection 用于协调页面和宿主顶栏滚动的嵌套滚动连接
          *
          * @since Api 2
          */

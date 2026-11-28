@@ -1,45 +1,39 @@
 package io.nightfish.lightnovelreader.api.web.explore
 
+import com.github.michaelbull.result.Result
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.web.BookPageResult
+import io.nightfish.lightnovelreader.api.web.OptionValues
 import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
-import kotlinx.coroutines.flow.Flow
 
 /**
  * 探索展开页的数据源接口
- * 展开页支持过滤器、切换不同内容以及分页加载
+ * 宿主负责展示书目、应用过滤器和请求后续页
  *
  * @since Api 2
  */
-interface ExploreExpandedPageDataSource {
-    /**
-     * 展开页的显示标题
-     *
-     * @since Api 2
-     */
-    val title: String
-
+interface ExploreExpandedPageDataSource : ExploreExpandedPage {
     /**
      * 展开页支持的过滤器列表
+     * 列表顺序决定数据源过滤器和本地过滤器的显示顺序
      *
      * @since Api 2
      */
     val filters: List<Filter<*>>
+        get() = emptyList()
 
     /**
-     * 加载更多搜索结果
-     * 应谓发对[getResultFlow]的数据流进行更新
+     * 加载一页探索展开页的书目
+     * 同一轮分页使用相同的数据源过滤条件
      *
-     * @since Api 2
+     * @param cursor 上一页返回的游标，请求首页时为 `null`
+     * @param filters 本轮分页使用的数据源过滤器选项快照
+     * @return 包含[BookPageResult.Page]或[WebRequestError]的结果
+     *
+     * @since Api 4
      */
-    fun loadMore()
-
-    /**
-     * 探索展开页的数据流，提供[SearchResult]
-     * 应谓为热数据流，永远保持活跃
-     *
-     * @return 探索展开页的数据流
-     *
-     * @since Api 2
-     */
-    fun getResultFlow(): Flow<SearchResult>
+    suspend fun loadPage(
+        cursor: String?,
+        filters: OptionValues
+    ): Result<BookPageResult.Page, WebRequestError>
 }

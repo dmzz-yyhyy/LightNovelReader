@@ -1,13 +1,20 @@
 package indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import indi.dmzz_yyhyy.lightnovelreader.data.explore.ExploreRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.text.TextProcessingRepository
+import io.nightfish.lightnovelreader.api.web.explore.CustomExploreTapPage
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
+import io.nightfish.lightnovelreader.api.web.explore.ExploreTapPageDataSource
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,71 +23,62 @@ class ExploreHomeViewModel @Inject constructor(
     private val textProcessingRepository: TextProcessingRepository,
     exploreRepository: ExploreRepository
 ) : ViewModel() {
-    private val _uiState = MutableExploreHomeUiState()
-    private var workingExplorePageJob: Job? = null
-    private var workingExploreBooksRowsJob: Job? = null
-    val uiState: ExploreHomeUiState = _uiState
-    private val explorePageProvider = exploreRepository.explorePageProvider
-    var customExplorePageProvider: ExplorePageProvider.CustomExplorePageProvider<*>? = null
-
-    init {
-        if (explorePageProvider is ExplorePageProvider.CustomExplorePageProvider<*>) {
-            customExplorePageProvider = explorePageProvider
-        }
+    private val provider = exploreRepository.explorePageProvider
+    private val pages =
+        (provider as? ExplorePageProvider.DefaultExplorePageProvider)?.exploreTapPages
+            ?.values.orEmpty().toList()
+    private val mutableUiState = MutableExploreHomeUiState().apply {
+        pageTitles = pages.map { it.title }
     }
+    val uiState: ExploreHomeUiState = mutableUiState
+    val customExplorePageProvider = provider as? ExplorePageProvider.CustomExplorePageProvider<*>
+    private var rowsJob: Job? = null
+    private var started = false
 
     fun init() {
-        when (explorePageProvider) {
-            is ExplorePageProvider.DefaultExplorePageProvider -> {
-                if (_uiState.pageTitles.isEmpty()) {
-                    _uiState.pageTitles =
-                        explorePageProvider.exploreTapPageDataSourceMap.map { it.value.title }
-                }
-                if (_uiState.explorePageBooksRawList.isEmpty()) {
-                    loadPage(_uiState.selectedPage, forceRefresh = true)
-                }
-            }
-
-            is ExplorePageProvider.CustomExplorePageProvider<*> -> explorePageProvider.init(
-                viewModelScope
-            )
-        }
+        if (started) return
+        started = true
+        customExplorePageProvider?.init(viewModelScope)
+        loadPage(uiState.selectedPage)
     }
 
     fun changePage(page: Int) {
-        loadPage(page)
-    }
-
-    private fun loadPage(page: Int, forceRefresh: Boolean = false) {
-        if (explorePageProvider !is ExplorePageProvider.DefaultExplorePageProvider) return
-        if (explorePageProvider.explorePageIdList.isEmpty()) return
-        val pageChanged = _uiState.selectedPage != page
-        if (!forceRefresh && !pageChanged && _uiState.explorePageBooksRawList.isNotEmpty()) return
-        workingExplorePageJob?.cancel()
-        workingExploreBooksRowsJob?.cancel()
-        _uiState.selectedPage = page
-        _uiState.explorePageBooksRawList = emptyList()
-        workingExplorePageJob = viewModelScope.launch {
-            val selectedId = explorePageProvider.explorePageIdList[page]
-            val explorePageMap = explorePageProvider.exploreTapPageDataSourceMap
-            _uiState.pageTitles = explorePageMap.map { it.value.title }
-            workingExploreBooksRowsJob = viewModelScope.launch(Dispatchers.IO) {
-                explorePageMap[selectedId]?.getRowsFlow()?.collect { exploreBooksRows ->
-                    _uiState.explorePageBooksRawList = exploreBooksRows
-                        .map { exploreBooksRow ->
-                            exploreBooksRow.copy(
-                                bookList = exploreBooksRow.bookList.map {
-                                    textProcessingRepository.processExploreBooksRow(it)
-                                }
-                            )
-                        }
-                }
-            }
-        }
+        if (page != uiState.selectedPage) loadPage(page)
     }
 
     fun refresh() {
-        _uiState.explorePageBooksRawList = emptyList()
-        loadPage(_uiState.selectedPage, forceRefresh = true)
+        loadPage(uiState.selectedPage)
+    }
+
+    private fun loadPage(index: Int) {
+        val page = pages.getOrNull(index) ?: return
+        rowsJob?.cancel()
+        mutableUiState.selectedPage = index
+        mutableUiState.customPage = page as? CustomExploreTapPage
+        mutableUiState.explorePageBooksRawList = emptyList()
+        mutableUiState.isLoading = page is ExploreTapPageDataSource
+        if (page is ExploreTapPageDataSource) {
+            rowsJob = viewModelScope.launch {
+                try {
+                    page.getRowsFlow()
+                        .map { rows ->
+                            rows.map { row ->
+                                row.copy(bookList = row.bookList.map(textProcessingRepository::processExploreBooksRow))
+                            }
+                        }
+                        .flowOn(Dispatchers.IO)
+                        .collect {
+                            mutableUiState.explorePageBooksRawList = it
+                            mutableUiState.isLoading = false
+                        }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Log.w("ExploreHome", "探索标签页加载失败", error)
+                } finally {
+                    if (isActive) mutableUiState.isLoading = false
+                }
+            }
+        }
     }
 }

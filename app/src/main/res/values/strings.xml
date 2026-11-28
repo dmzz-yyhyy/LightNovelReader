@@ -122,6 +122,8 @@
     <string name="local_book_clear_confirm_content">If you continue, the selected content will be deleted and %1$s of storage space will be freed.\nYou can re-import or download the content later.\nThis action cannot be undone.</string>
     <string name="confirm_exit">Confirm Exit?</string>
     <string name="hint_unsaved_changes_will_be_lost">If you exit now, your unsaved changes will be lost.</string>
+    <string name="explore_scroll_for_more_empty">No matching results on this page. Scroll to load the next page.</string>
+    <string name="explore_scroll_for_more">Scroll to load the next page</string>
     <string name="reading_stats_load_failed">Failed to load reading statistics.</string>
 
     <!-- Snackbar Hints -->
@@ -361,6 +363,14 @@
     <string name="search_no_results">No Results Found</string>
     <string name="search_no_results_desc">Check your spelling or try a different keyword.</string>
     <string name="search_results_title">Search Results for "%1$s" (%2$d%3$s)</string>
+    <string name="explore_search_hint">Search books</string>
+    <string name="explore_search_scope">Search scope</string>
+    <string name="explore_search_by_title">Search by title</string>
+    <string name="explore_search_by_author">Search by author</string>
+    <string name="explore_search_title_hint">Enter a book title</string>
+    <string name="explore_search_author_hint">Enter an author name</string>
+    <string name="explore_search_settings">Search settings</string>
+    <string name="explore_search_results">Results for “%1$s”</string>
     <string name="search_history">Search History</string>
     <string name="start_reading">Start Reading</string>
     <string name="continue_reading">Continue Reading</string>

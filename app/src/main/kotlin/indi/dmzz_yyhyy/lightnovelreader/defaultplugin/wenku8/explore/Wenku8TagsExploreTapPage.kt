@@ -20,15 +20,15 @@ class Wenku8TagsExploreTapPage(
 
     override fun getRowsFlow(): Flow<List<ExploreBooksRow>> = flow {
         val rows = mutableListOf<ExploreBooksRow>()
-        wenku8Api.getWithWenku8Cookie("${host}/modules/article/tags.php").component1()
+        wenku8Api.getWithWenku8Cookie("${host}/modules/article/tags.php")
+            .component1()
             ?.select("a[href~=tags\\.php\\?t=.*]")
             ?.slice(0..48)
             ?.map { "${host}/modules/article/" + it.attr("href") }
             ?.forEach { url ->
-                val soup = wenku8Api.getWithWenku8Cookie(
-                    url.split("=").component1()[0] + "=" +
+                val fixedUrl = url.split("=")[0] + "=" +
                             URLEncoder.encode(url.split("=")[1], "gb2312")
-                ).component1()
+                val soup = wenku8Api.getWithWenku8Cookie(fixedUrl).component1()
                 rows.add(
                     getExploreBookRow(
                         soup = soup,

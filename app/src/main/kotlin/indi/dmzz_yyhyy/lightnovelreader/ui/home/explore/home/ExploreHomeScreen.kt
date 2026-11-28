@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -31,7 +29,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -70,9 +70,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import indi.dmzz_yyhyy.lightnovelreader.R
+import indi.dmzz_yyhyy.lightnovelreader.ui.LocalAppTheme
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Cover
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.EmptyPage
 import indi.dmzz_yyhyy.lightnovelreader.ui.components.Loading
+import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.CustomExploreContent
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreScreen
 import indi.dmzz_yyhyy.lightnovelreader.ui.home.explore.ExploreUiState
 import indi.dmzz_yyhyy.lightnovelreader.utils.bottomBarPadding
@@ -82,11 +84,9 @@ import indi.dmzz_yyhyy.lightnovelreader.utils.navigationBarSpacer
 import io.nightfish.lightnovelreader.api.explore.ExploreBooksRow
 import io.nightfish.lightnovelreader.api.explore.ExploreDisplayBook
 import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.explore.ExplorePageContext
 import io.nightfish.lightnovelreader.api.web.explore.ExplorePageProvider
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomExploreHomeScreen(
     init: () -> Unit,
@@ -108,7 +108,6 @@ fun CustomExploreHomeScreen(
 }
 
 @SuppressLint("UnusedTargetStateInContentKeyLambda")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun ExploreHomeScreen(
     exploreUiState: ExploreUiState,
@@ -118,7 +117,8 @@ fun ExploreHomeScreen(
     init: () -> Unit,
     changePage: (Int) -> Unit,
     onClickSearch: () -> Unit,
-    refresh: () -> Unit
+    refresh: () -> Unit,
+    checkConnection: () -> Unit
 ) {
     val enterAlwaysScrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Column {
@@ -133,7 +133,7 @@ fun ExploreHomeScreen(
 
         if (exploreHomeUiState.pageTitles.isNotEmpty()) {
             ExploreScreen(
-                refresh = refresh,
+                refresh = checkConnection,
                 uiState = exploreUiState
             ) {
                 val selectedIndex = exploreHomeUiState.selectedPage
@@ -149,7 +149,7 @@ fun ExploreHomeScreen(
                                     )
                                     .height(4.dp)
                                     .clip(RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp)),
-                                color = MaterialTheme.colorScheme.secondary
+                                color = LocalAppTheme.current.colorScheme.secondary
                             )
                         }
                     ) {
@@ -170,43 +170,49 @@ fun ExploreHomeScreen(
                         }
                     }
 
-                    var showEmptyPage by remember { mutableStateOf(false) }
-
-                    LaunchedEffect(exploreHomeUiState.explorePageBooksRawList) {
-                        if (exploreHomeUiState.explorePageBooksRawList.isEmpty()) {
-                            delay(140.milliseconds)
-                            showEmptyPage = true
-                        } else {
-                            showEmptyPage = false
+                    val customPage = exploreHomeUiState.customPage
+                    if (customPage != null) {
+                        key(customPage) {
+                            CustomExploreContent(
+                                customPage,
+                                ExplorePageContext(
+                                    enterAlwaysScrollBehavior.nestedScrollConnection,
+                                    onClickBook,
+                                    onClickExpand,
+                                    onClickSearch
+                                )
+                            )
                         }
-                    }
-
-                    AnimatedVisibility(
-                        modifier = Modifier
-                            .navigationBarsPadding()
-                            .bottomBarPadding(),
-                        visible = showEmptyPage,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        Loading()
-                    }
-                    AnimatedContent(
-                        targetState = exploreHomeUiState.explorePageBooksRawList,
-                        contentKey = { exploreHomeUiState.selectedPage },
-                        transitionSpec = {
-                            (fadeIn(initialAlpha = 0.7f)).togetherWith(fadeOut(targetAlpha = 0.7f))
-                        },
-                        label = "ExplorePageBooksRawAnime"
-                    ) {
-                        ExplorePage(
-                            explorePageBooksRawList = it,
-                            onClickExpand = onClickExpand,
-                            onClickBook = onClickBook,
-                            nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
-                            refresh = refresh,
-                            pageKey = exploreHomeUiState.selectedPage
-                        )
+                    } else {
+                        AnimatedVisibility(
+                            modifier = Modifier
+                                .navigationBarsPadding()
+                                .bottomBarPadding(),
+                            visible = exploreHomeUiState.isLoading,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Loading()
+                        }
+                        AnimatedContent(
+                            targetState = exploreHomeUiState.explorePageBooksRawList,
+                            contentKey = { exploreHomeUiState.selectedPage },
+                            transitionSpec = {
+                                fadeIn(initialAlpha = 0.7f) togetherWith fadeOut(
+                                    targetAlpha = 0.7f
+                                )
+                            },
+                            label = "ExplorePageBooks"
+                        ) { bookRows ->
+                            ExplorePage(
+                                explorePageBooksRawList = bookRows,
+                                onClickExpand = onClickExpand,
+                                onClickBook = onClickBook,
+                                nestedScrollConnection = enterAlwaysScrollBehavior.nestedScrollConnection,
+                                refresh = refresh,
+                                pageKey = exploreHomeUiState.selectedPage
+                            )
+                        }
                     }
                 }
             }
@@ -220,7 +226,6 @@ fun ExploreHomeScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
@@ -231,7 +236,7 @@ fun TopBar(
             Text(
                 text = stringResource(id = R.string.nav_explore),
                 style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = LocalAppTheme.current.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -248,21 +253,18 @@ fun TopBar(
         actions = {
             IconButton(onClick = onClickSearch) {
                 Icon(
-                    painter = painterResource(id = R.drawable.search_24px),
+                    imageVector = Icons.Default.Search,
                     contentDescription = "search"
                 )
             }
         },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            scrolledContainerColor = MaterialTheme.colorScheme.background
+            scrolledContainerColor = LocalAppTheme.current.colorScheme.background
         )
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-    ExperimentalAnimationApi::class
-)
 @Composable
 fun ExplorePage(
     explorePageBooksRawList: List<ExploreBooksRow>,
@@ -349,7 +351,6 @@ private fun ExploreRowsList(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ExploreRowSection(
     modifier: Modifier,
@@ -374,7 +375,7 @@ private fun ExploreRowSection(
                 text = row.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.W600,
-                color = MaterialTheme.colorScheme.onSurface
+                color = LocalAppTheme.current.colorScheme.onSurface
             )
             if (row.expandable) {
                 IconButton(
@@ -434,9 +435,7 @@ private fun ExploreRowSection(
             }
         }
         Box(
-            Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
             HorizontalDivider()
         }
@@ -490,7 +489,7 @@ private fun ExploreBookCard(
                     style = MaterialTheme.typography.headlineMedium.copy(
                         letterSpacing = 0.5.sp
                     ),
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = LocalAppTheme.current.colorScheme.secondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

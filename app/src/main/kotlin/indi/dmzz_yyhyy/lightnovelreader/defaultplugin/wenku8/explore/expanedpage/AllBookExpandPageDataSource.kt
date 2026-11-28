@@ -1,83 +1,45 @@
 package indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.explore.expanedpage
 
+import com.github.michaelbull.result.Result
+import com.github.michaelbull.result.coroutines.coroutineBinding
 import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.Wenku8Api
-import indi.dmzz_yyhyy.lightnovelreader.utils.network.selectFirstXpath
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.parseBookPage
+import indi.dmzz_yyhyy.lightnovelreader.defaultplugin.wenku8.redirectedBookId
+import io.nightfish.lightnovelreader.api.error.WebRequestError
+import io.nightfish.lightnovelreader.api.error.mapAsWebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
+import io.nightfish.lightnovelreader.api.web.BookPageResult
+import io.nightfish.lightnovelreader.api.web.OptionValues
+import io.nightfish.lightnovelreader.api.web.PageBook
 import io.nightfish.lightnovelreader.api.web.explore.ExploreExpandedPageDataSource
 import io.nightfish.lightnovelreader.api.web.explore.filter.Filter
-import io.nightfish.lightnovelreader.api.web.search.SearchResult
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 class HomeBookExpandPageDataSource(
-    val host: String,
-    val wenku8Api: Wenku8Api,
-    private val baseUrl: String = "${host}/modules/article/articlelist.php",
+    host: String,
+    private val wenku8Api: Wenku8Api,
+    override val title: String,
+    override val filters: List<Filter<*>>,
+    private val baseUrl: String = "$host/modules/article/articlelist.php",
     private val extendedParameters: String = "",
     private val contentSelector: String = "#content > table.grid > tbody > tr > td > div",
-    override val title: String,
-    filtersBuilder: HomeBookExpandPageDataSource.() -> List<Filter<*>>,
+    private val queryOptions: (OptionValues) -> String = { "" }
 ) : ExploreExpandedPageDataSource {
-    override val filters = filtersBuilder(this)
-    private var maxPage = 1
-    private var targetPage = 1
-    private var currentPage = 1
-    var arg = ""
-
-    override fun getResultFlow(): Flow<SearchResult> = flow {
-        maxPage = 1
-        targetPage = 1
-        currentPage = 1
-        while (targetPage <= maxPage) {
-            if (targetPage < currentPage) {
-                delay(1.milliseconds)
-                continue
+    override suspend fun loadPage(
+        cursor: String?,
+        filters: OptionValues
+    ): Result<BookPageResult.Page, WebRequestError> =
+        coroutineBinding {
+            val page = cursor?.toInt() ?: 1
+            val url = "$baseUrl?page=$page${queryOptions(filters)}$extendedParameters"
+            val document = wenku8Api.getWithWenku8Cookie(url)
+                .mapAsWebRequestError("探索页加载失败", "无法请求探索页书目")
+                .bind()
+            val directBook = document.redirectedBookId()
+            if (directBook != null) {
+                val id = wenku8Api.id.child(Identifier::Book, directBook)
+                BookPageResult.Page(listOf(PageBook(id, wenku8Api.getBookInformation(id))), null)
+            } else {
+                wenku8Api.parseBookPage(document, contentSelector, page)
             }
-            val soup =
-                wenku8Api.getWithWenku8Cookie("${baseUrl}?page=$currentPage$arg$extendedParameters")
-                    .component1()
-            if (soup == null) {
-                emit(SearchResult.Error("Failed to request the web page"))
-                return@flow
-            }
-            val menu =
-                soup.selectFirstXpath("//*[@id=\"content\"]/div[1]/div[4]/div/span[1]/fieldset/div/a")
-            if (menu != null && menu.text().contains("小说目录")) {
-                val id = menu.attr("href").split("/").getOrNull(3)
-                if (id == null) {
-                    emit(SearchResult.Error("Failed to parse single book id"))
-                    return@flow
-                }
-                emit(SearchResult.SingleBook(wenku8Api.id.child(Identifier::Book, id)))
-                return@flow
-            }
-            if (maxPage == 1) {
-                val page = soup.selectFirstXpath("//*[@id=\"pagelink\"]/em")?.text()?.split("/")
-                    ?.getOrNull(1)?.toIntOrNull()
-                if (page == null) {
-                    emit(SearchResult.Error("Failed to request the web page"))
-                    return@flow
-                }
-                maxPage = page
-            }
-
-            val books = wenku8Api.getBookInformationListFromBookCards(soup.select(contentSelector))
-            for (pairs in books) {
-                emit(SearchResult.MultipleBook(wenku8Api.id.child(Identifier::Book, pairs.first)))
-                //FIXME 探索页重构
-                //if (localFilter.all { it.filter() }) {
-                //}
-            }
-            currentPage++
-            delay(1.seconds)
         }
-        emit(SearchResult.End())
-    }
-
-    override fun loadMore() {
-        targetPage = maxPage.coerceAtMost(targetPage + 1)
-    }
 }
