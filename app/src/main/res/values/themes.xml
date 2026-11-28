@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Base.Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.App" parent="Base.Theme.App" />
 
     <style name="Theme.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_background</item>
@@ -13,7 +15,7 @@
 
     <style name="AppTheme" parent="Theme.Splash" />
 
-    <style name="DialogTheme" parent="@style/Theme.App">
+    <style name="DialogTheme" parent="Base.Theme.App">
         <item name="android:colorBackground">?colorBackgroundFloating</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
