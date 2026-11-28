@@ -1,12 +1,16 @@
 package indi.dmzz_yyhyy.lightnovelreader.data.statistics
 
+import com.github.michaelbull.result.Result
 import indi.dmzz_yyhyy.lightnovelreader.data.book.BookRepository
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.BookRecordDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.dao.DailyCountDao
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.BookRecordEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.local.room.entity.DailyCountEntity
 import indi.dmzz_yyhyy.lightnovelreader.data.web.WebBookDataSourceProvider
+import io.nightfish.lightnovelreader.api.book.BookInformation
+import io.nightfish.lightnovelreader.api.error.WebRequestError
 import io.nightfish.lightnovelreader.api.identifier.Identifier
+import kotlinx.coroutines.flow.Flow
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
@@ -77,6 +81,20 @@ class StatsRepository @Inject constructor(
     suspend fun getDailyCounts(start: LocalDate, end: LocalDate): Map<LocalDate, Count> {
         return dailyCountDao.getBetween(start, end, sourceProvider.value.id.sourceNamespace)
             .associate { it.date to it.timeCount }
+    }
+
+    suspend fun getAllDailyCounts(): Map<LocalDate, Count> {
+        return dailyCountDao.getAll(sourceProvider.value.id.sourceNamespace)
+            .associate { it.date to it.timeCount }
+    }
+
+    suspend fun getAllBookRecords(): List<BookRecord> {
+        val flows = mutableMapOf<Identifier.Book, Flow<Result<BookInformation, WebRequestError>>>()
+        return bookRecordDao.getAllBookRecords(sourceProvider.value.id.sourceNamespace)
+            .map { record ->
+                val flow = flows.getOrPut(record.bookId) { bookRepository.getBookInformationFlow(record.bookId) }
+                record.toData(bookRepository, flow)
+            }
     }
 
     suspend fun getTotalReadingSummary(): TotalReadingSummary {

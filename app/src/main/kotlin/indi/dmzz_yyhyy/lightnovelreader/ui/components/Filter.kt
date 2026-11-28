@@ -180,7 +180,6 @@ fun BaseFilter(
     )
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FilterChipsDialog(
     enable: Boolean,

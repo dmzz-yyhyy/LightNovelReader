@@ -17,14 +17,15 @@ fun formTime(
     val now = LocalDateTime.now()
     val locale = appDisplayLocale
 
-    val absFormatter = dateFormatter(
+    fun absoluteDate() = formatDate(
+        time.toLocalDate(),
         dateFormat,
         FormattingSettings.dateShowYear,
         DateOrder.fromString(FormattingSettings.dateOrder)
-    ).withLocale(locale)
+    )
 
     if (!useRelativeTime) {
-        return time.format(absFormatter)
+        return absoluteDate()
     }
 
     val minutesAgo = ChronoUnit.MINUTES.between(time, now)
@@ -33,7 +34,7 @@ fun formTime(
     val rdf = RelativeDateTimeFormatter.getInstance(locale)
 
     return when {
-        hoursAgo >= 72 -> time.format(absFormatter)
+        hoursAgo >= 72 -> absoluteDate()
         hoursAgo >= 24 -> rdf.format((hoursAgo / 24).toDouble(), Direction.LAST, RelativeUnit.DAYS)
         hoursAgo >= 1 -> rdf.format(hoursAgo.toDouble(), Direction.LAST, RelativeUnit.HOURS)
         minutesAgo >= 1 -> rdf.format(minutesAgo.toDouble(), Direction.LAST, RelativeUnit.MINUTES)
@@ -43,7 +44,7 @@ fun formTime(
             RelativeUnit.MINUTES
         )
 
-        else -> time.format(absFormatter)
+        else -> absoluteDate()
     }
 }
 

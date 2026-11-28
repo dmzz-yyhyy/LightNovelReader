@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
-import indi.dmzz_yyhyy.lightnovelreader.ui.home.reading.stats.predefinedColors
+import indi.dmzz_yyhyy.lightnovelreader.utils.predefinedColors
 
 private object RegexTheme {
     val parentheses = predefinedColors[2]

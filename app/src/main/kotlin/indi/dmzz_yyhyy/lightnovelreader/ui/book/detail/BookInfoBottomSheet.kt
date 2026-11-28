@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import indi.dmzz_yyhyy.lightnovelreader.R
 import indi.dmzz_yyhyy.lightnovelreader.data.book.get
 import indi.dmzz_yyhyy.lightnovelreader.data.book.volumeChapterCountText
-import indi.dmzz_yyhyy.lightnovelreader.utils.dateFormatter
+import indi.dmzz_yyhyy.lightnovelreader.utils.formatDate
 import io.nightfish.lightnovelreader.api.book.BookInformation
 import io.nightfish.lightnovelreader.api.book.BookVolumes
 import kotlinx.coroutines.launch
@@ -166,7 +166,7 @@ fun BookInfoBottomSheet(
 
             InfoItem(
                 title = stringResource(R.string.detail_info_updated_on),
-                content = bookInformation.lastUpdated.format(dateFormatter()) + "\n" +
+                content = formatDate(bookInformation.lastUpdated.toLocalDate()) + "\n" +
                         if (bookInformation.isComplete) stringResource(R.string.book_completed)
                         else stringResource(R.string.book_ongoing),
                 titleStyle = titleStyle,

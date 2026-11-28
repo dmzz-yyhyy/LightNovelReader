@@ -69,7 +69,7 @@ class LogUtils(
 fun buildReportHeader(): String {
     val report = StringBuilder()
     report.append("LightNovelReader ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-    if (BuildConfig.DEBUG) report.append(", DEBUG build")
+    if (BuildConfig.DEV_BUILD) report.append(", ${BuildConfig.BUILD_TYPE.uppercase()} build")
     report.append("\n")
 
     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z", Locale.US)
