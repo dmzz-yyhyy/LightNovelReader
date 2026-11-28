@@ -58,6 +58,8 @@ jobs:
         shell: bash
     env:
       PREVIEW_DIRECTORY: api-doc-preview
+      VERCEL_SCOPE: nightfishs-projects
+      VERCEL_PROJECT: lightnovelreader-api-doc
 
     steps:
       - name: Install Vercel CLI
@@ -82,13 +84,16 @@ jobs:
           fi
           printf '{"version":3}\n' > "$output_dir/config.json"
 
-          vercel link --cwd "$preview_dir" --yes --scope nightfishs-projects \
-            --project lightnovelreader-api-doc --token "$VERCEL_TOKEN"
+          vercel link --cwd "$preview_dir" --yes --scope "$VERCEL_SCOPE" \
+            --project "$VERCEL_PROJECT" --token "$VERCEL_TOKEN"
+          vercel project protection disable "$VERCEL_PROJECT" --sso \
+            --scope "$VERCEL_SCOPE" --token "$VERCEL_TOKEN" --non-interactive
           preview_url=$(vercel deploy --cwd "$preview_dir" --prebuilt --archive=tgz --yes --token "$VERCEL_TOKEN")
-          if [[ ! "$preview_url" =~ ^https://[a-zA-Z0-9.-]+$ ]]; then
+          if [[ ! "$preview_url" =~ ^https://[a-zA-Z0-9.-]+\.vercel\.app$ ]]; then
             echo 'Vercel did not return a preview URL.'
             exit 1
           fi
+
           echo "url=$preview_url" >> "$GITHUB_OUTPUT"
           printf '[API documentation preview](%s)\n' "$preview_url" >> "$GITHUB_STEP_SUMMARY"
 
