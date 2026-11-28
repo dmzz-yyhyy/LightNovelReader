@@ -23,15 +23,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -205,7 +208,12 @@ fun ReaderScreen(
             }
         },
         snackbarHost = {
-            SnackbarHost(LocalSnackbarHost.current) { data ->
+            SnackbarHost(
+                hostState = LocalSnackbarHost.current,
+                modifier = Modifier.windowInsetsPadding(
+                    WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+                )
+            ) { data ->
                 LnrSnackbar(
                     data,
                     modifier = Modifier
@@ -507,7 +515,11 @@ fun Content(
                     settingState.enableReadingChapterProgressIndicator ||
                     settingState.enableChapterTitleIndicator
 
-        Box(Modifier.fillMaxSize()) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(stableInsets.only(WindowInsetsSides.Horizontal))
+        ) {
             ChapterContent(
                 uiState = readingScreenUiState,
                 settingState = settingState,

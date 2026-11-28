@@ -11,7 +11,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,7 +44,9 @@ fun MainNavigationBar(
 
     AnimatedContent(
         targetState = navigator.mainDestination,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal)),
         transitionSpec = transitionSpec,
         contentKey = MainDestination::index,
         label = "main destination",
@@ -81,11 +84,7 @@ private fun NavigateBar(
     val avdSettings = AnimatedImageVector.animatedVectorResource(R.drawable.animated_settings)
 
 
-    NavigationBar(
-        windowInsets = WindowInsets.systemBars.only(
-            WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal
-        )
-    ) {
+    NavigationBar {
         NavigationBarItem(
             selected = isReading,
             onClick = { navigator.navigate(MainDestination.Reading) },
